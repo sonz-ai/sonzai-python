@@ -1,0 +1,122 @@
+"""Session resource for the Sonzai SDK."""
+
+from __future__ import annotations
+
+from typing import Any, Dict, List, Optional, Union
+
+from .._http import AsyncHTTPClient, HTTPClient
+from ..types import ChatMessage, SessionResponse
+
+
+class Sessions:
+    """Sync session lifecycle operations."""
+
+    def __init__(self, http: HTTPClient) -> None:
+        self._http = http
+
+    def start(
+        self,
+        agent_id: str,
+        *,
+        user_id: str,
+        session_id: str,
+        instance_id: Optional[str] = None,
+    ) -> SessionResponse:
+        """Start a chat session."""
+        body: Dict[str, Any] = {
+            "user_id": user_id,
+            "session_id": session_id,
+        }
+        if instance_id:
+            body["instance_id"] = instance_id
+
+        data = self._http.post(
+            f"/api/v1/agents/{agent_id}/sessions/start", json_data=body
+        )
+        return SessionResponse.model_validate(data)
+
+    def end(
+        self,
+        agent_id: str,
+        *,
+        user_id: str,
+        session_id: str,
+        instance_id: Optional[str] = None,
+        total_messages: int = 0,
+        duration_seconds: int = 0,
+        messages: Optional[List[Union[ChatMessage, Dict[str, str]]]] = None,
+    ) -> SessionResponse:
+        """End a chat session."""
+        body: Dict[str, Any] = {
+            "user_id": user_id,
+            "session_id": session_id,
+            "total_messages": total_messages,
+            "duration_seconds": duration_seconds,
+        }
+        if instance_id:
+            body["instance_id"] = instance_id
+        if messages:
+            body["messages"] = [
+                m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
+            ]
+
+        data = self._http.post(
+            f"/api/v1/agents/{agent_id}/sessions/end", json_data=body
+        )
+        return SessionResponse.model_validate(data)
+
+
+class AsyncSessions:
+    """Async session lifecycle operations."""
+
+    def __init__(self, http: AsyncHTTPClient) -> None:
+        self._http = http
+
+    async def start(
+        self,
+        agent_id: str,
+        *,
+        user_id: str,
+        session_id: str,
+        instance_id: Optional[str] = None,
+    ) -> SessionResponse:
+        body: Dict[str, Any] = {
+            "user_id": user_id,
+            "session_id": session_id,
+        }
+        if instance_id:
+            body["instance_id"] = instance_id
+
+        data = await self._http.post(
+            f"/api/v1/agents/{agent_id}/sessions/start", json_data=body
+        )
+        return SessionResponse.model_validate(data)
+
+    async def end(
+        self,
+        agent_id: str,
+        *,
+        user_id: str,
+        session_id: str,
+        instance_id: Optional[str] = None,
+        total_messages: int = 0,
+        duration_seconds: int = 0,
+        messages: Optional[List[Union[ChatMessage, Dict[str, str]]]] = None,
+    ) -> SessionResponse:
+        body: Dict[str, Any] = {
+            "user_id": user_id,
+            "session_id": session_id,
+            "total_messages": total_messages,
+            "duration_seconds": duration_seconds,
+        }
+        if instance_id:
+            body["instance_id"] = instance_id
+        if messages:
+            body["messages"] = [
+                m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
+            ]
+
+        data = await self._http.post(
+            f"/api/v1/agents/{agent_id}/sessions/end", json_data=body
+        )
+        return SessionResponse.model_validate(data)
