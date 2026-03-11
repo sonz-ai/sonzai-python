@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Iterator, List, Optional, Union
+from collections.abc import Iterator
+from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
@@ -42,12 +43,12 @@ class Agents:
         self,
         agent_id: str,
         *,
-        messages: List[Union[ChatMessage, Dict[str, str]]],
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        instance_id: Optional[str] = None,
+        messages: list[ChatMessage | dict[str, str]],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
         stream: bool = False,
-    ) -> Union[ChatResponse, Iterator[ChatStreamEvent]]:
+    ) -> ChatResponse | Iterator[ChatStreamEvent]:
         """Send a chat message to an agent.
 
         Args:
@@ -64,7 +65,7 @@ class Agents:
         msgs = [
             m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
         ]
-        body: Dict[str, Any] = {"messages": msgs}
+        body: dict[str, Any] = {"messages": msgs}
         if user_id is not None:
             body["user_id"] = user_id
         if session_id is not None:
@@ -79,7 +80,7 @@ class Agents:
 
         return self._chat_sync(path, body)
 
-    def _chat_sync(self, path: str, body: Dict[str, Any]) -> ChatResponse:
+    def _chat_sync(self, path: str, body: dict[str, Any]) -> ChatResponse:
         """Consume SSE stream and return aggregated response."""
         content_parts: list[str] = []
         usage = None
@@ -99,7 +100,7 @@ class Agents:
         )
 
     def _stream_chat(
-        self, path: str, body: Dict[str, Any]
+        self, path: str, body: dict[str, Any]
     ) -> Iterator[ChatStreamEvent]:
         for event in self._http.stream_sse("POST", path, json_data=body):
             yield ChatStreamEvent.model_validate(event)
@@ -108,15 +109,15 @@ class Agents:
         self,
         agent_id: str,
         *,
-        messages: List[Union[ChatMessage, Dict[str, str]]],
+        messages: list[ChatMessage | dict[str, str]],
         template_id: str,
-        config_override: Optional[Dict[str, Any]] = None,
+        config_override: dict[str, Any] | None = None,
     ) -> EvaluationResult:
         """Evaluate an agent against a template."""
         msgs = [
             m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
         ]
-        body: Dict[str, Any] = {"messages": msgs, "template_id": template_id}
+        body: dict[str, Any] = {"messages": msgs, "template_id": template_id}
         if config_override:
             body["config_override"] = config_override
 
@@ -129,14 +130,14 @@ class Agents:
         self,
         agent_id: str,
         *,
-        sessions: Optional[List[Dict[str, Any]]] = None,
-        user_persona: Optional[Dict[str, Any]] = None,
-        config: Optional[Dict[str, Any]] = None,
-        model: Optional[str] = None,
-        config_override: Optional[Dict[str, Any]] = None,
+        sessions: list[dict[str, Any]] | None = None,
+        user_persona: dict[str, Any] | None = None,
+        config: dict[str, Any] | None = None,
+        model: str | None = None,
+        config_override: dict[str, Any] | None = None,
     ) -> Iterator[SimulationEvent]:
         """Run a simulation and stream events."""
-        body: Dict[str, Any] = {}
+        body: dict[str, Any] = {}
         if sessions is not None:
             body["sessions"] = sessions
         if user_persona is not None:
@@ -158,15 +159,15 @@ class Agents:
         agent_id: str,
         *,
         template_id: str,
-        sessions: Optional[List[Dict[str, Any]]] = None,
-        user_persona: Optional[Dict[str, Any]] = None,
-        simulation_config: Optional[Dict[str, Any]] = None,
-        model: Optional[str] = None,
-        config_override: Optional[Dict[str, Any]] = None,
-        adaptation_template_id: Optional[str] = None,
+        sessions: list[dict[str, Any]] | None = None,
+        user_persona: dict[str, Any] | None = None,
+        simulation_config: dict[str, Any] | None = None,
+        model: str | None = None,
+        config_override: dict[str, Any] | None = None,
+        adaptation_template_id: str | None = None,
     ) -> Iterator[SimulationEvent]:
         """Run simulation + evaluation combined."""
-        body: Dict[str, Any] = {"template_id": template_id}
+        body: dict[str, Any] = {"template_id": template_id}
         if sessions is not None:
             body["sessions"] = sessions
         if user_persona is not None:
@@ -191,10 +192,10 @@ class Agents:
         *,
         template_id: str,
         source_run_id: str,
-        adaptation_template_id: Optional[str] = None,
+        adaptation_template_id: str | None = None,
     ) -> Iterator[SimulationEvent]:
         """Re-evaluate an existing run."""
-        body: Dict[str, Any] = {
+        body: dict[str, Any] = {
             "template_id": template_id,
             "source_run_id": source_run_id,
         }
@@ -209,9 +210,9 @@ class Agents:
     # -- Context Engine convenience accessors --
 
     def get_mood(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> MoodResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -220,9 +221,9 @@ class Agents:
         return MoodResponse.model_validate(data)
 
     def get_mood_history(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> MoodResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -231,9 +232,9 @@ class Agents:
         return MoodResponse.model_validate(data)
 
     def get_relationships(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> RelationshipResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -242,9 +243,9 @@ class Agents:
         return RelationshipResponse.model_validate(data)
 
     def get_habits(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> HabitsResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -253,9 +254,9 @@ class Agents:
         return HabitsResponse.model_validate(data)
 
     def get_goals(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> GoalsResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -264,9 +265,9 @@ class Agents:
         return GoalsResponse.model_validate(data)
 
     def get_interests(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> InterestsResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -275,9 +276,9 @@ class Agents:
         return InterestsResponse.model_validate(data)
 
     def get_diary(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> DiaryResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -305,10 +306,10 @@ class AsyncAgents:
         self,
         agent_id: str,
         *,
-        messages: List[Union[ChatMessage, Dict[str, str]]],
-        user_id: Optional[str] = None,
-        session_id: Optional[str] = None,
-        instance_id: Optional[str] = None,
+        messages: list[ChatMessage | dict[str, str]],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
         stream: bool = False,
     ) -> Any:
         """Send a chat message to an agent.
@@ -318,7 +319,7 @@ class AsyncAgents:
         msgs = [
             m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
         ]
-        body: Dict[str, Any] = {"messages": msgs}
+        body: dict[str, Any] = {"messages": msgs}
         if user_id is not None:
             body["user_id"] = user_id
         if session_id is not None:
@@ -333,7 +334,7 @@ class AsyncAgents:
 
         return await self._chat_aggregate(path, body)
 
-    async def _chat_aggregate(self, path: str, body: Dict[str, Any]) -> ChatResponse:
+    async def _chat_aggregate(self, path: str, body: dict[str, Any]) -> ChatResponse:
         content_parts: list[str] = []
         usage = None
 
@@ -350,7 +351,7 @@ class AsyncAgents:
             usage=usage,
         )
 
-    async def _stream_chat(self, path: str, body: Dict[str, Any]):  # type: ignore[no-untyped-def]
+    async def _stream_chat(self, path: str, body: dict[str, Any]):  # type: ignore[no-untyped-def]
         async for event in self._http.stream_sse("POST", path, json_data=body):
             yield ChatStreamEvent.model_validate(event)
 
@@ -358,14 +359,14 @@ class AsyncAgents:
         self,
         agent_id: str,
         *,
-        messages: List[Union[ChatMessage, Dict[str, str]]],
+        messages: list[ChatMessage | dict[str, str]],
         template_id: str,
-        config_override: Optional[Dict[str, Any]] = None,
+        config_override: dict[str, Any] | None = None,
     ) -> EvaluationResult:
         msgs = [
             m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
         ]
-        body: Dict[str, Any] = {"messages": msgs, "template_id": template_id}
+        body: dict[str, Any] = {"messages": msgs, "template_id": template_id}
         if config_override:
             body["config_override"] = config_override
 
@@ -378,13 +379,13 @@ class AsyncAgents:
         self,
         agent_id: str,
         *,
-        sessions: Optional[List[Dict[str, Any]]] = None,
-        user_persona: Optional[Dict[str, Any]] = None,
-        config: Optional[Dict[str, Any]] = None,
-        model: Optional[str] = None,
-        config_override: Optional[Dict[str, Any]] = None,
+        sessions: list[dict[str, Any]] | None = None,
+        user_persona: dict[str, Any] | None = None,
+        config: dict[str, Any] | None = None,
+        model: str | None = None,
+        config_override: dict[str, Any] | None = None,
     ):  # type: ignore[no-untyped-def]
-        body: Dict[str, Any] = {}
+        body: dict[str, Any] = {}
         if sessions is not None:
             body["sessions"] = sessions
         if user_persona is not None:
@@ -406,14 +407,14 @@ class AsyncAgents:
         agent_id: str,
         *,
         template_id: str,
-        sessions: Optional[List[Dict[str, Any]]] = None,
-        user_persona: Optional[Dict[str, Any]] = None,
-        simulation_config: Optional[Dict[str, Any]] = None,
-        model: Optional[str] = None,
-        config_override: Optional[Dict[str, Any]] = None,
-        adaptation_template_id: Optional[str] = None,
+        sessions: list[dict[str, Any]] | None = None,
+        user_persona: dict[str, Any] | None = None,
+        simulation_config: dict[str, Any] | None = None,
+        model: str | None = None,
+        config_override: dict[str, Any] | None = None,
+        adaptation_template_id: str | None = None,
     ):  # type: ignore[no-untyped-def]
-        body: Dict[str, Any] = {"template_id": template_id}
+        body: dict[str, Any] = {"template_id": template_id}
         if sessions is not None:
             body["sessions"] = sessions
         if user_persona is not None:
@@ -438,9 +439,9 @@ class AsyncAgents:
         *,
         template_id: str,
         source_run_id: str,
-        adaptation_template_id: Optional[str] = None,
+        adaptation_template_id: str | None = None,
     ):  # type: ignore[no-untyped-def]
-        body: Dict[str, Any] = {
+        body: dict[str, Any] = {
             "template_id": template_id,
             "source_run_id": source_run_id,
         }
@@ -453,9 +454,9 @@ class AsyncAgents:
             yield SimulationEvent.model_validate(event)
 
     async def get_mood(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> MoodResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -464,9 +465,9 @@ class AsyncAgents:
         return MoodResponse.model_validate(data)
 
     async def get_mood_history(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> MoodResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -475,9 +476,9 @@ class AsyncAgents:
         return MoodResponse.model_validate(data)
 
     async def get_relationships(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> RelationshipResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -486,9 +487,9 @@ class AsyncAgents:
         return RelationshipResponse.model_validate(data)
 
     async def get_habits(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> HabitsResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -497,9 +498,9 @@ class AsyncAgents:
         return HabitsResponse.model_validate(data)
 
     async def get_goals(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> GoalsResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -508,9 +509,9 @@ class AsyncAgents:
         return GoalsResponse.model_validate(data)
 
     async def get_interests(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> InterestsResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -519,9 +520,9 @@ class AsyncAgents:
         return InterestsResponse.model_validate(data)
 
     async def get_diary(
-        self, agent_id: str, *, user_id: Optional[str] = None, instance_id: Optional[str] = None
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> DiaryResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:

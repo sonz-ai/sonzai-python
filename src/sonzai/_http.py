@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, Generator, Iterator, Optional
+from collections.abc import Generator, Iterator
+from typing import Any
 
 import httpx
 
@@ -84,8 +85,8 @@ class HTTPClient:
         method: str,
         path: str,
         *,
-        json_data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
     ) -> Any:
         # Strip None values from params
         if params:
@@ -103,15 +104,15 @@ class HTTPClient:
             return response.json()
         return response.text
 
-    def get(self, path: str, *, params: Optional[Dict[str, Any]] = None) -> Any:
+    def get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return self.request("GET", path, params=params)
 
     def post(
         self,
         path: str,
         *,
-        json_data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
     ) -> Any:
         return self.request("POST", path, json_data=json_data, params=params)
 
@@ -119,7 +120,7 @@ class HTTPClient:
         self,
         path: str,
         *,
-        json_data: Optional[Dict[str, Any]] = None,
+        json_data: dict[str, Any] | None = None,
     ) -> Any:
         return self.request("PUT", path, json_data=json_data)
 
@@ -127,7 +128,7 @@ class HTTPClient:
         self,
         path: str,
         *,
-        json_data: Optional[Dict[str, Any]] = None,
+        json_data: dict[str, Any] | None = None,
     ) -> Any:
         return self.request("PATCH", path, json_data=json_data)
 
@@ -139,8 +140,8 @@ class HTTPClient:
         method: str,
         path: str,
         *,
-        json_data: Optional[Dict[str, Any]] = None,
-    ) -> Iterator[Dict[str, Any]]:
+        json_data: dict[str, Any] | None = None,
+    ) -> Iterator[dict[str, Any]]:
         """Send a request and yield parsed SSE events."""
         with self._client.stream(
             method,
@@ -183,8 +184,8 @@ class AsyncHTTPClient:
         method: str,
         path: str,
         *,
-        json_data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
     ) -> Any:
         if params:
             params = {k: v for k, v in params.items() if v is not None}
@@ -201,15 +202,15 @@ class AsyncHTTPClient:
             return response.json()
         return response.text
 
-    async def get(self, path: str, *, params: Optional[Dict[str, Any]] = None) -> Any:
+    async def get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return await self.request("GET", path, params=params)
 
     async def post(
         self,
         path: str,
         *,
-        json_data: Optional[Dict[str, Any]] = None,
-        params: Optional[Dict[str, Any]] = None,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
     ) -> Any:
         return await self.request("POST", path, json_data=json_data, params=params)
 
@@ -217,7 +218,7 @@ class AsyncHTTPClient:
         self,
         path: str,
         *,
-        json_data: Optional[Dict[str, Any]] = None,
+        json_data: dict[str, Any] | None = None,
     ) -> Any:
         return await self.request("PUT", path, json_data=json_data)
 
@@ -225,14 +226,14 @@ class AsyncHTTPClient:
         self,
         path: str,
         *,
-        json_data: Optional[Dict[str, Any]] = None,
+        json_data: dict[str, Any] | None = None,
     ) -> Any:
         return await self.request("PATCH", path, json_data=json_data)
 
     async def delete(self, path: str) -> Any:
         return await self.request("DELETE", path)
 
-    async def stream_sse(self, method: str, path: str, *, json_data: Optional[Dict[str, Any]] = None):  # type: ignore[no-untyped-def]
+    async def stream_sse(self, method: str, path: str, *, json_data: dict[str, Any] | None = None):  # type: ignore[no-untyped-def]
         """Send a request and yield parsed SSE events asynchronously."""
         async with self._client.stream(
             method,
@@ -258,7 +259,7 @@ class AsyncHTTPClient:
         await self._client.aclose()
 
 
-def _parse_sse_stream(lines: Iterator[str]) -> Generator[Dict[str, Any], None, None]:
+def _parse_sse_stream(lines: Iterator[str]) -> Generator[dict[str, Any], None, None]:
     """Parse SSE lines into JSON dicts."""
     for line in lines:
         line = line.strip()

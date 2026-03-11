@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import os
-from typing import Optional
 
 from ._http import AsyncHTTPClient, HTTPClient
 from .resources.agents import Agents, AsyncAgents
@@ -47,8 +46,8 @@ class Sonzai:
     def __init__(
         self,
         *,
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
         timeout: float = 30.0,
         max_retries: int = 2,
     ) -> None:
@@ -119,8 +118,8 @@ class AsyncSonzai:
     def __init__(
         self,
         *,
-        api_key: Optional[str] = None,
-        base_url: Optional[str] = None,
+        api_key: str | None = None,
+        base_url: str | None = None,
         timeout: float = 30.0,
         max_retries: int = 2,
     ) -> None:

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import EvalRun, EvalRunListResponse, SessionResponse
@@ -17,12 +17,12 @@ class EvalRuns:
     def list(
         self,
         *,
-        agent_id: Optional[str] = None,
+        agent_id: str | None = None,
         limit: int = 20,
         offset: int = 0,
     ) -> EvalRunListResponse:
         """List eval runs."""
-        params: Dict[str, Any] = {"limit": limit, "offset": offset}
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
         if agent_id:
             params["agent_id"] = agent_id
 
@@ -49,11 +49,11 @@ class AsyncEvalRuns:
     async def list(
         self,
         *,
-        agent_id: Optional[str] = None,
+        agent_id: str | None = None,
         limit: int = 20,
         offset: int = 0,
     ) -> EvalRunListResponse:
-        params: Dict[str, Any] = {"limit": limit, "offset": offset}
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
         if agent_id:
             params["agent_id"] = agent_id
         data = await self._http.get("/api/v1/eval-runs", params=params)

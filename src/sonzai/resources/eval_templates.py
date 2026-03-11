@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import EvalTemplate, EvalTemplateCategory, EvalTemplateListResponse, SessionResponse
@@ -14,9 +14,9 @@ class EvalTemplates:
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
-    def list(self, *, template_type: Optional[str] = None) -> EvalTemplateListResponse:
+    def list(self, *, template_type: str | None = None) -> EvalTemplateListResponse:
         """List all eval templates."""
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if template_type:
             params["type"] = template_type
 
@@ -38,10 +38,10 @@ class EvalTemplates:
         temperature: float = 0.3,
         max_tokens: int = 8192,
         scoring_rubric: str = "",
-        categories: Optional[List[Dict[str, Any]]] = None,
+        categories: list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
         """Create a new eval template."""
-        body: Dict[str, Any] = {
+        body: dict[str, Any] = {
             "name": name,
             "description": description,
             "template_type": template_type,
@@ -60,17 +60,17 @@ class EvalTemplates:
         self,
         template_id: str,
         *,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        template_type: Optional[str] = None,
-        judge_model: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
-        scoring_rubric: Optional[str] = None,
-        categories: Optional[List[Dict[str, Any]]] = None,
+        name: str | None = None,
+        description: str | None = None,
+        template_type: str | None = None,
+        judge_model: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+        scoring_rubric: str | None = None,
+        categories: list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
         """Update an eval template."""
-        body: Dict[str, Any] = {}
+        body: dict[str, Any] = {}
         if name is not None:
             body["name"] = name
         if description is not None:
@@ -105,8 +105,8 @@ class AsyncEvalTemplates:
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 
-    async def list(self, *, template_type: Optional[str] = None) -> EvalTemplateListResponse:
-        params: Dict[str, Any] = {}
+    async def list(self, *, template_type: str | None = None) -> EvalTemplateListResponse:
+        params: dict[str, Any] = {}
         if template_type:
             params["type"] = template_type
         data = await self._http.get("/api/v1/eval-templates", params=params)
@@ -126,9 +126,9 @@ class AsyncEvalTemplates:
         temperature: float = 0.3,
         max_tokens: int = 8192,
         scoring_rubric: str = "",
-        categories: Optional[List[Dict[str, Any]]] = None,
+        categories: list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
-        body: Dict[str, Any] = {
+        body: dict[str, Any] = {
             "name": name,
             "description": description,
             "template_type": template_type,
@@ -146,16 +146,16 @@ class AsyncEvalTemplates:
         self,
         template_id: str,
         *,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        template_type: Optional[str] = None,
-        judge_model: Optional[str] = None,
-        temperature: Optional[float] = None,
-        max_tokens: Optional[int] = None,
-        scoring_rubric: Optional[str] = None,
-        categories: Optional[List[Dict[str, Any]]] = None,
+        name: str | None = None,
+        description: str | None = None,
+        template_type: str | None = None,
+        judge_model: str | None = None,
+        temperature: float | None = None,
+        max_tokens: int | None = None,
+        scoring_rubric: str | None = None,
+        categories: list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
-        body: Dict[str, Any] = {}
+        body: dict[str, Any] = {}
         if name is not None:
             body["name"] = name
         if description is not None:

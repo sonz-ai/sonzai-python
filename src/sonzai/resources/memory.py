@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import MemoryResponse, MemorySearchResponse, MemoryTimelineResponse
@@ -18,14 +18,14 @@ class Memory:
         self,
         agent_id: str,
         *,
-        user_id: Optional[str] = None,
-        instance_id: Optional[str] = None,
-        parent_id: Optional[str] = None,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+        parent_id: str | None = None,
         include_contents: bool = False,
         limit: int = 50,
     ) -> MemoryResponse:
         """Get the memory tree for an agent."""
-        params: Dict[str, Any] = {"limit": limit}
+        params: dict[str, Any] = {"limit": limit}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -43,11 +43,11 @@ class Memory:
         agent_id: str,
         *,
         query: str,
-        instance_id: Optional[str] = None,
+        instance_id: str | None = None,
         limit: int = 20,
     ) -> MemorySearchResponse:
         """Search agent memories."""
-        params: Dict[str, Any] = {"q": query, "limit": limit}
+        params: dict[str, Any] = {"q": query, "limit": limit}
         if instance_id:
             params["instance_id"] = instance_id
 
@@ -60,13 +60,13 @@ class Memory:
         self,
         agent_id: str,
         *,
-        user_id: Optional[str] = None,
-        instance_id: Optional[str] = None,
-        start: Optional[str] = None,
-        end: Optional[str] = None,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+        start: str | None = None,
+        end: str | None = None,
     ) -> MemoryTimelineResponse:
         """Get memory timeline for an agent."""
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -92,13 +92,13 @@ class AsyncMemory:
         self,
         agent_id: str,
         *,
-        user_id: Optional[str] = None,
-        instance_id: Optional[str] = None,
-        parent_id: Optional[str] = None,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+        parent_id: str | None = None,
         include_contents: bool = False,
         limit: int = 50,
     ) -> MemoryResponse:
-        params: Dict[str, Any] = {"limit": limit}
+        params: dict[str, Any] = {"limit": limit}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
@@ -118,10 +118,10 @@ class AsyncMemory:
         agent_id: str,
         *,
         query: str,
-        instance_id: Optional[str] = None,
+        instance_id: str | None = None,
         limit: int = 20,
     ) -> MemorySearchResponse:
-        params: Dict[str, Any] = {"q": query, "limit": limit}
+        params: dict[str, Any] = {"q": query, "limit": limit}
         if instance_id:
             params["instance_id"] = instance_id
 
@@ -134,12 +134,12 @@ class AsyncMemory:
         self,
         agent_id: str,
         *,
-        user_id: Optional[str] = None,
-        instance_id: Optional[str] = None,
-        start: Optional[str] = None,
-        end: Optional[str] = None,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+        start: str | None = None,
+        end: str | None = None,
     ) -> MemoryTimelineResponse:
-        params: Dict[str, Any] = {}
+        params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:

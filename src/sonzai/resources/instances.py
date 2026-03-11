@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import AgentInstance, InstanceListResponse, SessionResponse
@@ -24,10 +24,10 @@ class Instances:
         agent_id: str,
         *,
         name: str,
-        description: Optional[str] = None,
+        description: str | None = None,
     ) -> AgentInstance:
         """Create a new agent instance."""
-        body: Dict[str, Any] = {"name": name}
+        body: dict[str, Any] = {"name": name}
         if description:
             body["description"] = description
 
@@ -73,9 +73,9 @@ class AsyncInstances:
         agent_id: str,
         *,
         name: str,
-        description: Optional[str] = None,
+        description: str | None = None,
     ) -> AgentInstance:
-        body: Dict[str, Any] = {"name": name}
+        body: dict[str, Any] = {"name": name}
         if description:
             body["description"] = description
 

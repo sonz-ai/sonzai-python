@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import NotificationListResponse, SessionResponse
@@ -18,12 +18,12 @@ class Notifications:
         self,
         agent_id: str,
         *,
-        status: Optional[str] = None,
-        user_id: Optional[str] = None,
+        status: str | None = None,
+        user_id: str | None = None,
         limit: int = 50,
     ) -> NotificationListResponse:
         """List notifications for an agent."""
-        params: Dict[str, Any] = {"limit": limit}
+        params: dict[str, Any] = {"limit": limit}
         if status:
             params["status"] = status
         if user_id:
@@ -65,11 +65,11 @@ class AsyncNotifications:
         self,
         agent_id: str,
         *,
-        status: Optional[str] = None,
-        user_id: Optional[str] = None,
+        status: str | None = None,
+        user_id: str | None = None,
         limit: int = 50,
     ) -> NotificationListResponse:
-        params: Dict[str, Any] = {"limit": limit}
+        params: dict[str, Any] = {"limit": limit}
         if status:
             params["status"] = status
         if user_id:

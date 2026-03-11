@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -19,8 +19,8 @@ class ChatMessage(BaseModel):
 
 
 class ChatChoice(BaseModel):
-    delta: Dict[str, str] = Field(default_factory=dict)
-    finish_reason: Optional[str] = None
+    delta: dict[str, str] = Field(default_factory=dict)
+    finish_reason: str | None = None
     index: int = 0
 
 
@@ -35,11 +35,11 @@ class ChatUsage(BaseModel):
 class ChatStreamEvent(BaseModel):
     """A single SSE event from the chat stream."""
 
-    choices: List[ChatChoice] = Field(default_factory=list)
-    usage: Optional[ChatUsage] = None
-    type: Optional[str] = None
-    data: Optional[Dict[str, Any]] = None
-    error: Optional[Dict[str, str]] = None
+    choices: list[ChatChoice] = Field(default_factory=list)
+    usage: ChatUsage | None = None
+    type: str | None = None
+    data: dict[str, Any] | None = None
+    error: dict[str, str] | None = None
 
     @property
     def content(self) -> str:
@@ -57,7 +57,7 @@ class ChatResponse(BaseModel):
 
     content: str
     session_id: str
-    usage: Optional[ChatUsage] = None
+    usage: ChatUsage | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -73,8 +73,8 @@ class MemoryNode(BaseModel):
     title: str = ""
     summary: str = ""
     importance: float = 0.0
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class AtomicFact(BaseModel):
@@ -87,12 +87,12 @@ class AtomicFact(BaseModel):
     importance: float = 0.0
     supersedes_id: str = ""
     session_id: str = ""
-    created_at: Optional[str] = None
+    created_at: str | None = None
 
 
 class MemoryResponse(BaseModel):
-    nodes: List[MemoryNode] = Field(default_factory=list)
-    contents: Dict[str, List[AtomicFact]] = Field(default_factory=dict)
+    nodes: list[MemoryNode] = Field(default_factory=list)
+    contents: dict[str, list[AtomicFact]] = Field(default_factory=dict)
 
 
 class MemorySearchResult(BaseModel):
@@ -103,19 +103,19 @@ class MemorySearchResult(BaseModel):
 
 
 class MemorySearchResponse(BaseModel):
-    results: List[MemorySearchResult] = Field(default_factory=list)
+    results: list[MemorySearchResult] = Field(default_factory=list)
 
 
 class TimelineSession(BaseModel):
     session_id: str = ""
-    facts: List[AtomicFact] = Field(default_factory=list)
-    first_fact_at: Optional[str] = None
-    last_fact_at: Optional[str] = None
+    facts: list[AtomicFact] = Field(default_factory=list)
+    first_fact_at: str | None = None
+    last_fact_at: str | None = None
     fact_count: int = 0
 
 
 class MemoryTimelineResponse(BaseModel):
-    sessions: List[TimelineSession] = Field(default_factory=list)
+    sessions: list[TimelineSession] = Field(default_factory=list)
     total_facts: int = 0
 
 
@@ -169,29 +169,29 @@ class PersonalityProfile(BaseModel):
     bio: str = ""
     avatar_url: str = ""
     personality_prompt: str = ""
-    speech_patterns: List[str] = Field(default_factory=list)
-    true_interests: List[str] = Field(default_factory=list)
-    true_dislikes: List[str] = Field(default_factory=list)
-    primary_traits: List[str] = Field(default_factory=list)
+    speech_patterns: list[str] = Field(default_factory=list)
+    true_interests: list[str] = Field(default_factory=list)
+    true_dislikes: list[str] = Field(default_factory=list)
+    primary_traits: list[str] = Field(default_factory=list)
     temperature: float = 0.0
     big5: Big5 = Field(default_factory=Big5)
     dimensions: PersonalityDimensions = Field(default_factory=PersonalityDimensions)
     preferences: PersonalityPreferences = Field(default_factory=PersonalityPreferences)
     behaviors: PersonalityBehaviors = Field(default_factory=PersonalityBehaviors)
-    emotional_tendencies: Dict[str, float] = Field(default_factory=dict)
-    created_at: Optional[str] = None
+    emotional_tendencies: dict[str, float] = Field(default_factory=dict)
+    created_at: str | None = None
 
 
 class PersonalityDelta(BaseModel):
     delta_id: str = ""
     change: str = ""
     reason: str = ""
-    created_at: Optional[str] = None
+    created_at: str | None = None
 
 
 class PersonalityResponse(BaseModel):
     profile: PersonalityProfile = Field(default_factory=PersonalityProfile)
-    evolution: List[PersonalityDelta] = Field(default_factory=list)
+    evolution: list[PersonalityDelta] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -215,12 +215,12 @@ class AgentInstance(BaseModel):
     description: str = ""
     status: str = ""
     is_default: bool = False
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class InstanceListResponse(BaseModel):
-    instances: List[AgentInstance] = Field(default_factory=list)
+    instances: list[AgentInstance] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -237,12 +237,12 @@ class Notification(BaseModel):
     intent: str = ""
     generated_message: str = ""
     status: str = ""
-    consumed_at: Optional[str] = None
-    created_at: Optional[str] = None
+    consumed_at: str | None = None
+    created_at: str | None = None
 
 
 class NotificationListResponse(BaseModel):
-    notifications: List[Notification] = Field(default_factory=list)
+    notifications: list[Notification] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -294,7 +294,7 @@ class EvalCategory(BaseModel):
 class EvaluationResult(BaseModel):
     score: float = 0.0
     feedback: str = ""
-    categories: List[EvalCategory] = Field(default_factory=list)
+    categories: list[EvalCategory] = Field(default_factory=list)
 
 
 class EvalTemplateCategory(BaseModel):
@@ -313,13 +313,13 @@ class EvalTemplate(BaseModel):
     temperature: float = 0.3
     max_tokens: int = 8192
     scoring_rubric: str = ""
-    categories: List[EvalTemplateCategory] = Field(default_factory=list)
-    created_at: Optional[str] = None
-    updated_at: Optional[str] = None
+    categories: list[EvalTemplateCategory] = Field(default_factory=list)
+    created_at: str | None = None
+    updated_at: str | None = None
 
 
 class EvalTemplateListResponse(BaseModel):
-    templates: List[EvalTemplate] = Field(default_factory=list)
+    templates: list[EvalTemplate] = Field(default_factory=list)
 
 
 class EvalRun(BaseModel):
@@ -328,26 +328,26 @@ class EvalRun(BaseModel):
     agent_id: str = ""
     agent_name: str = ""
     status: str = ""
-    character_config: Dict[str, Any] = Field(default_factory=dict)
+    character_config: dict[str, Any] = Field(default_factory=dict)
     template_id: str = ""
-    template_snapshot: Dict[str, Any] = Field(default_factory=dict)
-    simulation_config: Dict[str, Any] = Field(default_factory=dict)
+    template_snapshot: dict[str, Any] = Field(default_factory=dict)
+    simulation_config: dict[str, Any] = Field(default_factory=dict)
     simulation_model: str = ""
-    user_persona: Dict[str, Any] = Field(default_factory=dict)
-    transcript: List[Any] = Field(default_factory=list)
-    evaluation_result: Dict[str, Any] = Field(default_factory=dict)
-    adaptation_result: Dict[str, Any] = Field(default_factory=dict)
-    simulation_state: Dict[str, Any] = Field(default_factory=dict)
+    user_persona: dict[str, Any] = Field(default_factory=dict)
+    transcript: list[Any] = Field(default_factory=list)
+    evaluation_result: dict[str, Any] = Field(default_factory=dict)
+    adaptation_result: dict[str, Any] = Field(default_factory=dict)
+    simulation_state: dict[str, Any] = Field(default_factory=dict)
     total_sessions: int = 0
     total_turns: int = 0
     simulated_minutes: int = 0
     total_cost_usd: float = 0.0
-    created_at: Optional[str] = None
-    completed_at: Optional[str] = None
+    created_at: str | None = None
+    completed_at: str | None = None
 
 
 class EvalRunListResponse(BaseModel):
-    runs: List[EvalRun] = Field(default_factory=list)
+    runs: list[EvalRun] = Field(default_factory=list)
     total_count: int = 0
 
 
@@ -365,9 +365,9 @@ class SimulationEvent(BaseModel):
     total_turns: int = 0
     total_cost_usd: float = 0.0
     message: str = ""
-    eval_result: Optional[Dict[str, Any]] = None
-    adaptation_result: Optional[Dict[str, Any]] = None
-    error: Optional[Dict[str, str]] = None
+    eval_result: dict[str, Any] | None = None
+    adaptation_result: dict[str, Any] | None = None
+    error: dict[str, str] | None = None
 
     model_config = {"extra": "allow"}
 
@@ -381,7 +381,7 @@ class UserPersona(BaseModel):
     id: str = ""
     name: str = ""
     background: str = ""
-    personality_traits: List[str] = Field(default_factory=list)
+    personality_traits: list[str] = Field(default_factory=list)
     communication_style: str = ""
 
     model_config = {"extra": "allow"}

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import ChatMessage, SessionResponse
@@ -20,10 +20,10 @@ class Sessions:
         *,
         user_id: str,
         session_id: str,
-        instance_id: Optional[str] = None,
+        instance_id: str | None = None,
     ) -> SessionResponse:
         """Start a chat session."""
-        body: Dict[str, Any] = {
+        body: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
         }
@@ -41,13 +41,13 @@ class Sessions:
         *,
         user_id: str,
         session_id: str,
-        instance_id: Optional[str] = None,
+        instance_id: str | None = None,
         total_messages: int = 0,
         duration_seconds: int = 0,
-        messages: Optional[List[Union[ChatMessage, Dict[str, str]]]] = None,
+        messages: list[ChatMessage | dict[str, str]] | None = None,
     ) -> SessionResponse:
         """End a chat session."""
-        body: Dict[str, Any] = {
+        body: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
             "total_messages": total_messages,
@@ -78,9 +78,9 @@ class AsyncSessions:
         *,
         user_id: str,
         session_id: str,
-        instance_id: Optional[str] = None,
+        instance_id: str | None = None,
     ) -> SessionResponse:
-        body: Dict[str, Any] = {
+        body: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
         }
@@ -98,12 +98,12 @@ class AsyncSessions:
         *,
         user_id: str,
         session_id: str,
-        instance_id: Optional[str] = None,
+        instance_id: str | None = None,
         total_messages: int = 0,
         duration_seconds: int = 0,
-        messages: Optional[List[Union[ChatMessage, Dict[str, str]]]] = None,
+        messages: list[ChatMessage | dict[str, str]] | None = None,
     ) -> SessionResponse:
-        body: Dict[str, Any] = {
+        body: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
             "total_messages": total_messages,

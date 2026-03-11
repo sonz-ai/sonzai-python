@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import PersonalityResponse
@@ -19,10 +19,10 @@ class Personality:
         agent_id: str,
         *,
         history_limit: int = 200,
-        since: Optional[str] = None,
+        since: str | None = None,
     ) -> PersonalityResponse:
         """Get personality profile and evolution history."""
-        params: Dict[str, Any] = {"history_limit": history_limit}
+        params: dict[str, Any] = {"history_limit": history_limit}
         if since:
             params["since"] = since
 
@@ -43,9 +43,9 @@ class AsyncPersonality:
         agent_id: str,
         *,
         history_limit: int = 200,
-        since: Optional[str] = None,
+        since: str | None = None,
     ) -> PersonalityResponse:
-        params: Dict[str, Any] = {"history_limit": history_limit}
+        params: dict[str, Any] = {"history_limit": history_limit}
         if since:
             params["since"] = since
 
