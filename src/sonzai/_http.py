@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Generator, Iterator
+from collections.abc import AsyncIterator, Generator, Iterator
 from typing import Any
 
 import httpx
@@ -233,7 +233,7 @@ class AsyncHTTPClient:
     async def delete(self, path: str) -> Any:
         return await self.request("DELETE", path)
 
-    async def stream_sse(self, method: str, path: str, *, json_data: dict[str, Any] | None = None):  # type: ignore[no-untyped-def]
+    async def stream_sse(self, method: str, path: str, *, json_data: dict[str, Any] | None = None) -> AsyncIterator[dict[str, Any]]:
         """Send a request and yield parsed SSE events asynchronously."""
         async with self._client.stream(
             method,

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
@@ -351,7 +351,7 @@ class AsyncAgents:
             usage=usage,
         )
 
-    async def _stream_chat(self, path: str, body: dict[str, Any]):  # type: ignore[no-untyped-def]
+    async def _stream_chat(self, path: str, body: dict[str, Any]) -> AsyncIterator[ChatStreamEvent]:
         async for event in self._http.stream_sse("POST", path, json_data=body):
             yield ChatStreamEvent.model_validate(event)
 
@@ -384,7 +384,7 @@ class AsyncAgents:
         config: dict[str, Any] | None = None,
         model: str | None = None,
         config_override: dict[str, Any] | None = None,
-    ):  # type: ignore[no-untyped-def]
+    ) -> AsyncIterator[SimulationEvent]:
         body: dict[str, Any] = {}
         if sessions is not None:
             body["sessions"] = sessions
@@ -413,7 +413,7 @@ class AsyncAgents:
         model: str | None = None,
         config_override: dict[str, Any] | None = None,
         adaptation_template_id: str | None = None,
-    ):  # type: ignore[no-untyped-def]
+    ) -> AsyncIterator[SimulationEvent]:
         body: dict[str, Any] = {"template_id": template_id}
         if sessions is not None:
             body["sessions"] = sessions
@@ -440,7 +440,7 @@ class AsyncAgents:
         template_id: str,
         source_run_id: str,
         adaptation_template_id: str | None = None,
-    ):  # type: ignore[no-untyped-def]
+    ) -> AsyncIterator[SimulationEvent]:
         body: dict[str, Any] = {
             "template_id": template_id,
             "source_run_id": source_run_id,

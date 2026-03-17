@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import builtins
 from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import EvalTemplate, EvalTemplateCategory, EvalTemplateListResponse, SessionResponse
+
+# Alias to avoid shadowing by the ``list`` method on resource classes.
+_list = builtins.list
 
 
 class EvalTemplates:
@@ -38,7 +42,7 @@ class EvalTemplates:
         temperature: float = 0.3,
         max_tokens: int = 8192,
         scoring_rubric: str = "",
-        categories: list[dict[str, Any]] | None = None,
+        categories: _list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
         """Create a new eval template."""
         body: dict[str, Any] = {
@@ -67,7 +71,7 @@ class EvalTemplates:
         temperature: float | None = None,
         max_tokens: int | None = None,
         scoring_rubric: str | None = None,
-        categories: list[dict[str, Any]] | None = None,
+        categories: _list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
         """Update an eval template."""
         body: dict[str, Any] = {}
@@ -126,7 +130,7 @@ class AsyncEvalTemplates:
         temperature: float = 0.3,
         max_tokens: int = 8192,
         scoring_rubric: str = "",
-        categories: list[dict[str, Any]] | None = None,
+        categories: _list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
         body: dict[str, Any] = {
             "name": name,
@@ -153,7 +157,7 @@ class AsyncEvalTemplates:
         temperature: float | None = None,
         max_tokens: int | None = None,
         scoring_rubric: str | None = None,
-        categories: list[dict[str, Any]] | None = None,
+        categories: _list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
         body: dict[str, Any] = {}
         if name is not None:
