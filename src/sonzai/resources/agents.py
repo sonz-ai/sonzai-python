@@ -196,8 +196,20 @@ class Agents:
         *,
         messages: list[ChatMessage | dict[str, str]],
         user_id: str | None = None,
+        user_display_name: str | None = None,
         session_id: str | None = None,
         instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        continuation_token: str | None = None,
+        ai_service_cookie: str | None = None,
+        request_type: str | None = None,
+        language: str | None = None,
+        compiled_system_prompt: str | None = None,
+        interaction_role: str | None = None,
+        timezone: str | None = None,
+        tool_capabilities: dict[str, bool] | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
         stream: bool = False,
     ) -> ChatResponse | Iterator[ChatStreamEvent]:
         """Send a chat message to an agent.
@@ -206,8 +218,20 @@ class Agents:
             agent_id: The agent to chat with.
             messages: List of messages (dicts with 'role' and 'content').
             user_id: Optional user identifier (defaults to 'api-user' server-side).
+            user_display_name: Optional display name for the user.
             session_id: Optional session ID (auto-created if omitted).
             instance_id: Optional instance ID for scoped sessions.
+            provider: Optional LLM provider override.
+            model: Optional model override.
+            continuation_token: Optional token for multi-turn continuation.
+            ai_service_cookie: Optional cookie for AI service affinity.
+            request_type: Optional request type hint.
+            language: Optional language code.
+            compiled_system_prompt: Optional pre-compiled system prompt.
+            interaction_role: Optional interaction role.
+            timezone: Optional user timezone.
+            tool_capabilities: Optional built-in tool toggles.
+            tool_definitions: Optional external tool definitions.
             stream: If True, return an iterator of ChatStreamEvent.
 
         Returns:
@@ -219,10 +243,34 @@ class Agents:
         body: dict[str, Any] = {"messages": msgs}
         if user_id is not None:
             body["user_id"] = user_id
+        if user_display_name is not None:
+            body["user_display_name"] = user_display_name
         if session_id is not None:
             body["session_id"] = session_id
         if instance_id is not None:
             body["instance_id"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        if continuation_token is not None:
+            body["continuation_token"] = continuation_token
+        if ai_service_cookie is not None:
+            body["ai_service_cookie"] = ai_service_cookie
+        if request_type is not None:
+            body["request_type"] = request_type
+        if language is not None:
+            body["language"] = language
+        if compiled_system_prompt is not None:
+            body["compiled_system_prompt"] = compiled_system_prompt
+        if interaction_role is not None:
+            body["interaction_role"] = interaction_role
+        if timezone is not None:
+            body["timezone"] = timezone
+        if tool_capabilities is not None:
+            body["tool_capabilities"] = tool_capabilities
+        if tool_definitions is not None:
+            body["tool_definitions"] = tool_definitions
 
         path = f"/api/v1/agents/{agent_id}/chat"
 
@@ -753,8 +801,20 @@ class AsyncAgents:
         *,
         messages: list[ChatMessage | dict[str, str]],
         user_id: str | None = None,
+        user_display_name: str | None = None,
         session_id: str | None = None,
         instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        continuation_token: str | None = None,
+        ai_service_cookie: str | None = None,
+        request_type: str | None = None,
+        language: str | None = None,
+        compiled_system_prompt: str | None = None,
+        interaction_role: str | None = None,
+        timezone: str | None = None,
+        tool_capabilities: dict[str, bool] | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
         stream: bool = False,
     ) -> Any:
         """Send a chat message to an agent.
@@ -767,10 +827,34 @@ class AsyncAgents:
         body: dict[str, Any] = {"messages": msgs}
         if user_id is not None:
             body["user_id"] = user_id
+        if user_display_name is not None:
+            body["user_display_name"] = user_display_name
         if session_id is not None:
             body["session_id"] = session_id
         if instance_id is not None:
             body["instance_id"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        if continuation_token is not None:
+            body["continuation_token"] = continuation_token
+        if ai_service_cookie is not None:
+            body["ai_service_cookie"] = ai_service_cookie
+        if request_type is not None:
+            body["request_type"] = request_type
+        if language is not None:
+            body["language"] = language
+        if compiled_system_prompt is not None:
+            body["compiled_system_prompt"] = compiled_system_prompt
+        if interaction_role is not None:
+            body["interaction_role"] = interaction_role
+        if timezone is not None:
+            body["timezone"] = timezone
+        if tool_capabilities is not None:
+            body["tool_capabilities"] = tool_capabilities
+        if tool_definitions is not None:
+            body["tool_definitions"] = tool_definitions
 
         path = f"/api/v1/agents/{agent_id}/chat"
 

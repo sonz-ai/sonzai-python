@@ -40,6 +40,25 @@ class ChatStreamEvent(BaseModel):
     data: dict[str, Any] | None = None
     error: dict[str, str] | None = None
 
+    # Rich event fields (populated based on type)
+    message_index: int = 0
+    is_follow_up: bool = False
+    replacement: bool = False
+    full_content: str = ""
+    finish_reason: str = ""
+    continuation_token: str = ""
+    response_cookie: str = ""
+    message_count: int = 0
+    side_effects: dict[str, Any] | None = None
+    enriched_context: dict[str, Any] | None = None
+    build_duration_ms: int = 0
+    used_fast_path: bool = False
+    error_message: str = ""
+    error_code: str = ""
+    is_token_error: bool = False
+
+    model_config = {"extra": "allow"}
+
     @property
     def content(self) -> str:
         if self.choices:
