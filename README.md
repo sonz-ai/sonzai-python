@@ -69,6 +69,26 @@ print(response.content)
 print(f"Tokens used: {response.usage.total_tokens}")
 ```
 
+### Chat (Advanced Options)
+
+```python
+response = client.agents.chat(
+    "agent-id",
+    messages=[{"role": "user", "content": "Hello!"}],
+    user_id="user-123",
+    user_display_name="Alex",
+    provider="openai",
+    model="gpt-4o",
+    language="en",
+    timezone="America/New_York",
+    compiled_system_prompt="You are a helpful assistant.",
+    tool_capabilities={"web_search": True, "remember_name": True, "image_generation": False},
+    tool_definitions=[
+        {"name": "get_weather", "description": "Get current weather", "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}},
+    ],
+)
+```
+
 ### Memory
 
 ```python
