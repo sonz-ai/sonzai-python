@@ -8,6 +8,8 @@ from ._http import AsyncHTTPClient, HTTPClient
 from .resources.agents import Agents, AsyncAgents
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
 from .resources.eval_templates import AsyncEvalTemplates, EvalTemplates
+from .resources.voice import AsyncVoices, Voices
+from .resources.webhooks import AsyncWebhooks, Webhooks
 
 DEFAULT_BASE_URL = "https://api.sonz.ai"
 
@@ -20,6 +22,9 @@ class Sonzai:
         from sonzai import Sonzai
 
         client = Sonzai(api_key="your-api-key")
+
+        # Create an agent
+        agent = client.agents.create(name="Luna")
 
         # Chat with an agent
         response = client.agents.chat(
@@ -42,6 +47,8 @@ class Sonzai:
     agents: Agents
     eval_templates: EvalTemplates
     eval_runs: EvalRuns
+    voices: Voices
+    webhooks: Webhooks
 
     def __init__(
         self,
@@ -77,6 +84,8 @@ class Sonzai:
         self.agents = Agents(self._http)
         self.eval_templates = EvalTemplates(self._http)
         self.eval_runs = EvalRuns(self._http)
+        self.voices = Voices(self._http)
+        self.webhooks = Webhooks(self._http)
 
     def close(self) -> None:
         """Close the underlying HTTP client."""
@@ -114,6 +123,8 @@ class AsyncSonzai:
     agents: AsyncAgents
     eval_templates: AsyncEvalTemplates
     eval_runs: AsyncEvalRuns
+    voices: AsyncVoices
+    webhooks: AsyncWebhooks
 
     def __init__(
         self,
@@ -141,6 +152,8 @@ class AsyncSonzai:
         self.agents = AsyncAgents(self._http)
         self.eval_templates = AsyncEvalTemplates(self._http)
         self.eval_runs = AsyncEvalRuns(self._http)
+        self.voices = AsyncVoices(self._http)
+        self.webhooks = AsyncWebhooks(self._http)
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""

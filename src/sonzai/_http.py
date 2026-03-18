@@ -132,8 +132,8 @@ class HTTPClient:
     ) -> Any:
         return self.request("PATCH", path, json_data=json_data)
 
-    def delete(self, path: str) -> Any:
-        return self.request("DELETE", path)
+    def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
+        return self.request("DELETE", path, params=params)
 
     def stream_sse(
         self,
@@ -230,8 +230,8 @@ class AsyncHTTPClient:
     ) -> Any:
         return await self.request("PATCH", path, json_data=json_data)
 
-    async def delete(self, path: str) -> Any:
-        return await self.request("DELETE", path)
+    async def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
+        return await self.request("DELETE", path, params=params)
 
     async def stream_sse(self, method: str, path: str, *, json_data: dict[str, Any] | None = None) -> AsyncIterator[dict[str, Any]]:
         """Send a request and yield parsed SSE events asynchronously."""

@@ -384,3 +384,313 @@ class UserPersona(BaseModel):
     communication_style: str = ""
 
     model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Agent CRUD
+# ---------------------------------------------------------------------------
+
+
+class Agent(BaseModel):
+    agent_id: str = ""
+    name: str = ""
+    bio: str = ""
+    gender: str = ""
+    avatar_url: str = ""
+    status: str = ""
+    personality_prompt: str = ""
+    speech_patterns: list[str] = Field(default_factory=list)
+    true_interests: list[str] = Field(default_factory=list)
+    true_dislikes: list[str] = Field(default_factory=list)
+    created_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class DeleteResponse(BaseModel):
+    success: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Events / Dialogue
+# ---------------------------------------------------------------------------
+
+
+class TriggerEventResponse(BaseModel):
+    accepted: bool = False
+    event_id: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class DialogueResponse(BaseModel):
+    response: str = ""
+    side_effects: dict[str, Any] | None = None
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Constellation / Breakthroughs / Wakeups / Mood Aggregate
+# ---------------------------------------------------------------------------
+
+
+class ConstellationResponse(BaseModel):
+    model_config = {"extra": "allow"}
+
+
+class BreakthroughsResponse(BaseModel):
+    model_config = {"extra": "allow"}
+
+
+class WakeupsResponse(BaseModel):
+    model_config = {"extra": "allow"}
+
+
+class MoodAggregateResponse(BaseModel):
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Memory Facts / Reset / Seed
+# ---------------------------------------------------------------------------
+
+
+class Fact(BaseModel):
+    fact_id: str = ""
+    agent_id: str = ""
+    user_id: str = ""
+    content: str = ""
+    category: str = ""
+    confidence: float = 0.0
+    mention_count: int = 0
+    created_at: str | None = None
+    last_mentioned_at: str | None = None
+    context_examples: list[str] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class FactListResponse(BaseModel):
+    facts: list[Fact] = Field(default_factory=list)
+    total_count: int = 0
+    has_more: bool = False
+
+
+class MemoryResetResponse(BaseModel):
+    agent_id: str = ""
+    user_id: str = ""
+    status: str = ""
+    facts_deleted: int = 0
+    relationships_deleted: int = 0
+
+    model_config = {"extra": "allow"}
+
+
+class SeedMemoriesResponse(BaseModel):
+    memories_created: int = 0
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Personality Update
+# ---------------------------------------------------------------------------
+
+
+class PersonalityUpdateResponse(BaseModel):
+    agent_id: str = ""
+    status: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Voice
+# ---------------------------------------------------------------------------
+
+
+class Voice(BaseModel):
+    voice_id: str = ""
+    voice_name: str = ""
+    gender: str = ""
+    tier: int = 0
+    provider: str = ""
+    language: str = ""
+    accent: str = ""
+    age_profile: str = ""
+    description: str = ""
+    sample_audio_url: str = ""
+    availability: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class VoiceListResponse(BaseModel):
+    voices: list[Voice] = Field(default_factory=list)
+    total_count: int = 0
+    has_more: bool = False
+
+
+class VoiceMatchResponse(BaseModel):
+    voice_id: str = ""
+    voice_name: str = ""
+    match_score: float = 0.0
+    reasoning: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class TTSResponse(BaseModel):
+    audio: str = ""
+    content_type: str = ""
+    voice_name: str = ""
+    duration_ms: int = 0
+
+    model_config = {"extra": "allow"}
+
+
+class VoiceChatResponse(BaseModel):
+    transcript: str = ""
+    response: str = ""
+    audio: str = ""
+    content_type: str = ""
+    continuation_token: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Generation
+# ---------------------------------------------------------------------------
+
+
+class GenerateBioResponse(BaseModel):
+    bio: str = ""
+    tone: str = ""
+    confidence: float = 0.0
+
+    model_config = {"extra": "allow"}
+
+
+class ImageGenerateResponse(BaseModel):
+    image_id: str = ""
+    public_url: str = ""
+    mime_type: str = ""
+    generation_time_ms: int = 0
+
+    model_config = {"extra": "allow"}
+
+
+class GenerateCharacterResponse(BaseModel):
+    bio: str = ""
+    personality_prompt: str = ""
+    big5: dict[str, Any] = Field(default_factory=dict)
+    speech_patterns: list[str] = Field(default_factory=list)
+    true_interests: list[str] = Field(default_factory=list)
+    true_dislikes: list[str] = Field(default_factory=list)
+    primary_traits: list[str] = Field(default_factory=list)
+    dimensions: dict[str, Any] = Field(default_factory=dict)
+    preferences: dict[str, Any] = Field(default_factory=dict)
+    behaviors: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = {"extra": "allow"}
+
+
+class GenerateSeedMemoriesResponse(BaseModel):
+    memories: list[dict[str, Any]] = Field(default_factory=list)
+    memories_stored: int = 0
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Custom States
+# ---------------------------------------------------------------------------
+
+
+class CustomState(BaseModel):
+    state_id: str = ""
+    agent_id: str = ""
+    scope: str = ""
+    key: str = ""
+    value: Any = None
+    content_type: str = ""
+    user_id: str = ""
+    instance_id: str = ""
+    created_at: str | None = None
+    updated_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CustomStateListResponse(BaseModel):
+    states: list[CustomState] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Webhooks
+# ---------------------------------------------------------------------------
+
+
+class WebhookEndpoint(BaseModel):
+    event_type: str = ""
+    webhook_url: str = ""
+    auth_header: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class WebhookRegisterResponse(BaseModel):
+    success: bool = False
+    signing_secret: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class WebhookListResponse(BaseModel):
+    webhooks: list[WebhookEndpoint] = Field(default_factory=list)
+
+
+class WebhookDeliveryAttempt(BaseModel):
+    attempt_id: str = ""
+    event_type: str = ""
+    webhook_url: str = ""
+    response_code: int = 0
+    response_body: str = ""
+    error_message: str = ""
+    duration_ms: int = 0
+    attempt_number: int = 0
+    status: str = ""
+    created_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class DeliveryAttemptsResponse(BaseModel):
+    attempts: list[WebhookDeliveryAttempt] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Wakeup Scheduling
+# ---------------------------------------------------------------------------
+
+
+class ScheduledWakeup(BaseModel):
+    wakeup_id: str = ""
+    agent_id: str = ""
+    user_id: str = ""
+    scheduled_at: str = ""
+    check_type: str = ""
+    status: str = ""
+    intent: str = ""
+    last_topic: str = ""
+    event_description: str = ""
+    occasion: str = ""
+    interest_topic: str = ""
+    executed_at: str | None = None
+    created_at: str | None = None
+
+    model_config = {"extra": "allow"}

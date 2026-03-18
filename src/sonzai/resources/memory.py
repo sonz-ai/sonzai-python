@@ -2,10 +2,20 @@
 
 from __future__ import annotations
 
+import builtins
 from typing import Any
 
+_list = builtins.list
+
 from .._http import AsyncHTTPClient, HTTPClient
-from ..types import MemoryResponse, MemorySearchResponse, MemoryTimelineResponse
+from ..types import (
+    FactListResponse,
+    MemoryResetResponse,
+    MemoryResponse,
+    MemorySearchResponse,
+    MemoryTimelineResponse,
+    SeedMemoriesResponse,
+)
 
 
 class Memory:
@@ -81,6 +91,74 @@ class Memory:
         )
         return MemoryTimelineResponse.model_validate(data)
 
+    def seed(
+        self,
+        agent_id: str,
+        *,
+        user_id: str,
+        memories: _list[dict[str, Any]],
+        instance_id: str | None = None,
+    ) -> SeedMemoriesResponse:
+        """Bulk import initial memories for an agent during setup."""
+        body: dict[str, Any] = {
+            "user_id": user_id,
+            "memories": memories,
+        }
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+
+        data = self._http.post(
+            f"/api/v1/agents/{agent_id}/memory/seed", json_data=body
+        )
+        return SeedMemoriesResponse.model_validate(data)
+
+    def list_facts(
+        self,
+        agent_id: str,
+        *,
+        user_id: str | None = None,
+        category: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> FactListResponse:
+        """List atomic facts for an agent, optionally filtered by category."""
+        params: dict[str, Any] = {}
+        if user_id:
+            params["user_id"] = user_id
+        if category:
+            params["category"] = category
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+
+        data = self._http.get(
+            f"/api/v1/agents/{agent_id}/memory/facts", params=params
+        )
+        return FactListResponse.model_validate(data)
+
+    def reset(
+        self,
+        agent_id: str,
+        *,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> MemoryResetResponse:
+        """Delete all memory for an agent, optionally scoped to a user or instance."""
+        params: dict[str, Any] = {}
+        if user_id:
+            params["user_id"] = user_id
+        if instance_id:
+            params["instance_id"] = instance_id
+
+        data = self._http.delete(
+            f"/api/v1/agents/{agent_id}/memory",
+            params=params if params else None,
+        )
+        if isinstance(data, dict):
+            return MemoryResetResponse.model_validate(data)
+        return MemoryResetResponse(agent_id=agent_id, status="reset")
+
 
 class AsyncMemory:
     """Async memory operations for an agent."""
@@ -153,3 +231,71 @@ class AsyncMemory:
             f"/api/v1/agents/{agent_id}/memory/timeline", params=params
         )
         return MemoryTimelineResponse.model_validate(data)
+
+    async def seed(
+        self,
+        agent_id: str,
+        *,
+        user_id: str,
+        memories: _list[dict[str, Any]],
+        instance_id: str | None = None,
+    ) -> SeedMemoriesResponse:
+        """Bulk import initial memories for an agent during setup."""
+        body: dict[str, Any] = {
+            "user_id": user_id,
+            "memories": memories,
+        }
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+
+        data = await self._http.post(
+            f"/api/v1/agents/{agent_id}/memory/seed", json_data=body
+        )
+        return SeedMemoriesResponse.model_validate(data)
+
+    async def list_facts(
+        self,
+        agent_id: str,
+        *,
+        user_id: str | None = None,
+        category: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+    ) -> FactListResponse:
+        """List atomic facts for an agent, optionally filtered by category."""
+        params: dict[str, Any] = {}
+        if user_id:
+            params["user_id"] = user_id
+        if category:
+            params["category"] = category
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+
+        data = await self._http.get(
+            f"/api/v1/agents/{agent_id}/memory/facts", params=params
+        )
+        return FactListResponse.model_validate(data)
+
+    async def reset(
+        self,
+        agent_id: str,
+        *,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> MemoryResetResponse:
+        """Delete all memory for an agent, optionally scoped to a user or instance."""
+        params: dict[str, Any] = {}
+        if user_id:
+            params["user_id"] = user_id
+        if instance_id:
+            params["instance_id"] = instance_id
+
+        data = await self._http.delete(
+            f"/api/v1/agents/{agent_id}/memory",
+            params=params if params else None,
+        )
+        if isinstance(data, dict):
+            return MemoryResetResponse.model_validate(data)
+        return MemoryResetResponse(agent_id=agent_id, status="reset")
