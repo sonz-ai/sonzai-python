@@ -9,6 +9,7 @@ _list = builtins.list
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
+    FactHistoryResponse,
     FactListResponse,
     MemoryResetResponse,
     MemoryResponse,
@@ -159,6 +160,12 @@ class Memory:
             return MemoryResetResponse.model_validate(data)
         return MemoryResetResponse(agent_id=agent_id, status="reset")
 
+    def get_fact_history(self, agent_id: str, fact_id: str) -> FactHistoryResponse:
+        """Get the version history for a specific fact."""
+        return FactHistoryResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history")
+        )
+
 
 class AsyncMemory:
     """Async memory operations for an agent."""
@@ -299,3 +306,9 @@ class AsyncMemory:
         if isinstance(data, dict):
             return MemoryResetResponse.model_validate(data)
         return MemoryResetResponse(agent_id=agent_id, status="reset")
+
+    async def get_fact_history(self, agent_id: str, fact_id: str) -> FactHistoryResponse:
+        """Get the version history for a specific fact."""
+        return FactHistoryResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history")
+        )

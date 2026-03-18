@@ -5,7 +5,15 @@ from __future__ import annotations
 from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
-from ..types import PersonalityResponse, PersonalityUpdateResponse
+from ..types import (
+    BatchPersonalityResponse,
+    PersonalityResponse,
+    PersonalityUpdateResponse,
+    RecentShiftsResponse,
+    SignificantMomentsResponse,
+    UserOverlayDetailResponse,
+    UserOverlaysListResponse,
+)
 
 
 class Personality:
@@ -51,6 +59,53 @@ class Personality:
         )
         return PersonalityUpdateResponse.model_validate(data)
 
+    def batch_get(self, agent_ids: list[str]) -> BatchPersonalityResponse:
+        """Get personality profiles for multiple agents at once."""
+        return BatchPersonalityResponse.model_validate(
+            self._http.post("/api/v1/agents/personalities/batch", json_data={"agent_ids": agent_ids})
+        )
+
+    def get_significant_moments(
+        self, agent_id: str, *, limit: int | None = None
+    ) -> SignificantMomentsResponse:
+        """Get significant moments for an agent's personality evolution."""
+        params: dict[str, str] = {}
+        if limit is not None:
+            params["limit"] = str(limit)
+        return SignificantMomentsResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/personality/significant-moments", params=params)
+        )
+
+    def get_recent_shifts(self, agent_id: str) -> RecentShiftsResponse:
+        """Get recent personality shifts for an agent."""
+        return RecentShiftsResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/personality/recent-shifts")
+        )
+
+    def list_user_overlays(self, agent_id: str) -> UserOverlaysListResponse:
+        """List all user-specific personality overlays for an agent."""
+        return UserOverlaysListResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/personality/users")
+        )
+
+    def get_user_overlay(
+        self,
+        agent_id: str,
+        user_id: str,
+        *,
+        instance_id: str | None = None,
+        since: str | None = None,
+    ) -> UserOverlayDetailResponse:
+        """Get a specific user's personality overlay for an agent."""
+        params: dict[str, str] = {}
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+        if since is not None:
+            params["since"] = since
+        return UserOverlayDetailResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/personality/users/{user_id}", params=params)
+        )
+
 
 class AsyncPersonality:
     """Async personality operations for an agent."""
@@ -93,3 +148,50 @@ class AsyncPersonality:
             f"/api/v1/agents/{agent_id}/personality", json_data=body
         )
         return PersonalityUpdateResponse.model_validate(data)
+
+    async def batch_get(self, agent_ids: list[str]) -> BatchPersonalityResponse:
+        """Get personality profiles for multiple agents at once."""
+        return BatchPersonalityResponse.model_validate(
+            await self._http.post("/api/v1/agents/personalities/batch", json_data={"agent_ids": agent_ids})
+        )
+
+    async def get_significant_moments(
+        self, agent_id: str, *, limit: int | None = None
+    ) -> SignificantMomentsResponse:
+        """Get significant moments for an agent's personality evolution."""
+        params: dict[str, str] = {}
+        if limit is not None:
+            params["limit"] = str(limit)
+        return SignificantMomentsResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/personality/significant-moments", params=params)
+        )
+
+    async def get_recent_shifts(self, agent_id: str) -> RecentShiftsResponse:
+        """Get recent personality shifts for an agent."""
+        return RecentShiftsResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/personality/recent-shifts")
+        )
+
+    async def list_user_overlays(self, agent_id: str) -> UserOverlaysListResponse:
+        """List all user-specific personality overlays for an agent."""
+        return UserOverlaysListResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/personality/users")
+        )
+
+    async def get_user_overlay(
+        self,
+        agent_id: str,
+        user_id: str,
+        *,
+        instance_id: str | None = None,
+        since: str | None = None,
+    ) -> UserOverlayDetailResponse:
+        """Get a specific user's personality overlay for an agent."""
+        params: dict[str, str] = {}
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+        if since is not None:
+            params["since"] = since
+        return UserOverlayDetailResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/personality/users/{user_id}", params=params)
+        )

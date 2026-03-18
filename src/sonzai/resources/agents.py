@@ -8,12 +8,17 @@ from typing import Any
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
     Agent,
+    AgentCapabilities,
+    AgentListResponse,
     BreakthroughsResponse,
     ChatMessage,
     ChatResponse,
     ChatStreamEvent,
     ChatUsage,
+    ConsolidateResponse,
     ConstellationResponse,
+    CustomToolDefinition,
+    CustomToolListResponse,
     DeleteResponse,
     DialogueResponse,
     DiaryResponse,
@@ -25,8 +30,12 @@ from ..types import (
     MoodResponse,
     RelationshipResponse,
     ScheduledWakeup,
+    SetStatusResponse,
     SimulationEvent,
+    SummariesResponse,
+    TimeMachineResponse,
     TriggerEventResponse,
+    UpdateProjectResponse,
     UsersResponse,
     WakeupsResponse,
 )
@@ -644,6 +653,174 @@ class Agents:
         data = self._http.get(f"/api/v1/agents/{agent_id}/wakeups", params=params)
         return WakeupsResponse.model_validate(data)
 
+    # -- Agent List --
+
+    def list(
+        self,
+        *,
+        page_size: int | None = None,
+        cursor: str | None = None,
+        search: str | None = None,
+        project_id: str | None = None,
+    ) -> AgentListResponse:
+        """List agents with optional pagination and filtering."""
+        params: dict[str, str] = {}
+        if page_size is not None:
+            params["page_size"] = str(page_size)
+        if cursor is not None:
+            params["cursor"] = cursor
+        if search is not None:
+            params["search"] = search
+        if project_id is not None:
+            params["project_id"] = project_id
+        return AgentListResponse.model_validate(
+            self._http.get("/api/v1/agents", params=params)
+        )
+
+    # -- Agent Status --
+
+    def set_status(self, agent_id: str, *, is_active: bool) -> SetStatusResponse:
+        """Set an agent's active status."""
+        return SetStatusResponse.model_validate(
+            self._http.patch(f"/api/v1/agents/{agent_id}/status", json_data={"is_active": is_active})
+        )
+
+    # -- Update Project --
+
+    def update_project(self, agent_id: str, *, project_id: str) -> UpdateProjectResponse:
+        """Update the project assignment for an agent."""
+        return UpdateProjectResponse.model_validate(
+            self._http.patch(f"/api/v1/agents/{agent_id}/project", json_data={"project_id": project_id})
+        )
+
+    # -- Capabilities --
+
+    def get_capabilities(self, agent_id: str) -> AgentCapabilities:
+        """Get an agent's capabilities."""
+        return AgentCapabilities.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/capabilities")
+        )
+
+    def update_capabilities(
+        self,
+        agent_id: str,
+        *,
+        web_search: bool | None = None,
+        remember_name: bool | None = None,
+        image_generation: bool | None = None,
+    ) -> AgentCapabilities:
+        """Update an agent's capabilities."""
+        body: dict[str, Any] = {}
+        if web_search is not None:
+            body["webSearch"] = web_search
+        if remember_name is not None:
+            body["rememberName"] = remember_name
+        if image_generation is not None:
+            body["imageGeneration"] = image_generation
+        return AgentCapabilities.model_validate(
+            self._http.patch(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
+        )
+
+    # -- Custom Tools --
+
+    def list_custom_tools(self, agent_id: str) -> CustomToolListResponse:
+        """List custom tools for an agent."""
+        return CustomToolListResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/tools")
+        )
+
+    def create_custom_tool(
+        self,
+        agent_id: str,
+        *,
+        name: str,
+        description: str,
+        parameters: dict[str, Any] | None = None,
+    ) -> CustomToolDefinition:
+        """Create a custom tool for an agent."""
+        body: dict[str, Any] = {"name": name, "description": description}
+        if parameters is not None:
+            body["parameters"] = parameters
+        return CustomToolDefinition.model_validate(
+            self._http.post(f"/api/v1/agents/{agent_id}/tools", json_data=body)
+        )
+
+    def update_custom_tool(
+        self,
+        agent_id: str,
+        tool_name: str,
+        *,
+        description: str | None = None,
+        parameters: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Update a custom tool for an agent."""
+        body: dict[str, Any] = {}
+        if description is not None:
+            body["description"] = description
+        if parameters is not None:
+            body["parameters"] = parameters
+        return self._http.put(f"/api/v1/agents/{agent_id}/tools/{tool_name}", json_data=body)
+
+    def delete_custom_tool(self, agent_id: str, tool_name: str) -> None:
+        """Delete a custom tool from an agent."""
+        self._http.delete(f"/api/v1/agents/{agent_id}/tools/{tool_name}")
+
+    # -- Consolidation --
+
+    def consolidate(
+        self,
+        agent_id: str,
+        *,
+        period: str = "daily",
+        user_id: str | None = None,
+    ) -> ConsolidateResponse:
+        """Trigger memory consolidation for an agent."""
+        body: dict[str, Any] = {"period": period}
+        if user_id is not None:
+            body["user_id"] = user_id
+        return ConsolidateResponse.model_validate(
+            self._http.post(f"/api/v1/agents/{agent_id}/consolidate", json_data=body)
+        )
+
+    # -- Summaries --
+
+    def get_summaries(
+        self,
+        agent_id: str,
+        *,
+        period: str | None = None,
+        limit: int | None = None,
+    ) -> SummariesResponse:
+        """Get memory summaries for an agent."""
+        params: dict[str, str] = {}
+        if period is not None:
+            params["period"] = period
+        if limit is not None:
+            params["limit"] = str(limit)
+        return SummariesResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/summaries", params=params)
+        )
+
+    # -- Time Machine --
+
+    def get_time_machine(
+        self,
+        agent_id: str,
+        *,
+        at: str,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> TimeMachineResponse:
+        """Get an agent's personality and mood state at a specific point in time."""
+        params: dict[str, str] = {"at": at}
+        if user_id is not None:
+            params["user_id"] = user_id
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+        return TimeMachineResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/timemachine", params=params)
+        )
+
 
 class AsyncAgents:
     """Async agent operations."""
@@ -1219,3 +1396,171 @@ class AsyncAgents:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/wakeups", params=params)
         return WakeupsResponse.model_validate(data)
+
+    # -- Agent List --
+
+    async def list(
+        self,
+        *,
+        page_size: int | None = None,
+        cursor: str | None = None,
+        search: str | None = None,
+        project_id: str | None = None,
+    ) -> AgentListResponse:
+        """List agents with optional pagination and filtering."""
+        params: dict[str, str] = {}
+        if page_size is not None:
+            params["page_size"] = str(page_size)
+        if cursor is not None:
+            params["cursor"] = cursor
+        if search is not None:
+            params["search"] = search
+        if project_id is not None:
+            params["project_id"] = project_id
+        return AgentListResponse.model_validate(
+            await self._http.get("/api/v1/agents", params=params)
+        )
+
+    # -- Agent Status --
+
+    async def set_status(self, agent_id: str, *, is_active: bool) -> SetStatusResponse:
+        """Set an agent's active status."""
+        return SetStatusResponse.model_validate(
+            await self._http.patch(f"/api/v1/agents/{agent_id}/status", json_data={"is_active": is_active})
+        )
+
+    # -- Update Project --
+
+    async def update_project(self, agent_id: str, *, project_id: str) -> UpdateProjectResponse:
+        """Update the project assignment for an agent."""
+        return UpdateProjectResponse.model_validate(
+            await self._http.patch(f"/api/v1/agents/{agent_id}/project", json_data={"project_id": project_id})
+        )
+
+    # -- Capabilities --
+
+    async def get_capabilities(self, agent_id: str) -> AgentCapabilities:
+        """Get an agent's capabilities."""
+        return AgentCapabilities.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/capabilities")
+        )
+
+    async def update_capabilities(
+        self,
+        agent_id: str,
+        *,
+        web_search: bool | None = None,
+        remember_name: bool | None = None,
+        image_generation: bool | None = None,
+    ) -> AgentCapabilities:
+        """Update an agent's capabilities."""
+        body: dict[str, Any] = {}
+        if web_search is not None:
+            body["webSearch"] = web_search
+        if remember_name is not None:
+            body["rememberName"] = remember_name
+        if image_generation is not None:
+            body["imageGeneration"] = image_generation
+        return AgentCapabilities.model_validate(
+            await self._http.patch(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
+        )
+
+    # -- Custom Tools --
+
+    async def list_custom_tools(self, agent_id: str) -> CustomToolListResponse:
+        """List custom tools for an agent."""
+        return CustomToolListResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/tools")
+        )
+
+    async def create_custom_tool(
+        self,
+        agent_id: str,
+        *,
+        name: str,
+        description: str,
+        parameters: dict[str, Any] | None = None,
+    ) -> CustomToolDefinition:
+        """Create a custom tool for an agent."""
+        body: dict[str, Any] = {"name": name, "description": description}
+        if parameters is not None:
+            body["parameters"] = parameters
+        return CustomToolDefinition.model_validate(
+            await self._http.post(f"/api/v1/agents/{agent_id}/tools", json_data=body)
+        )
+
+    async def update_custom_tool(
+        self,
+        agent_id: str,
+        tool_name: str,
+        *,
+        description: str | None = None,
+        parameters: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Update a custom tool for an agent."""
+        body: dict[str, Any] = {}
+        if description is not None:
+            body["description"] = description
+        if parameters is not None:
+            body["parameters"] = parameters
+        return await self._http.put(f"/api/v1/agents/{agent_id}/tools/{tool_name}", json_data=body)
+
+    async def delete_custom_tool(self, agent_id: str, tool_name: str) -> None:
+        """Delete a custom tool from an agent."""
+        await self._http.delete(f"/api/v1/agents/{agent_id}/tools/{tool_name}")
+
+    # -- Consolidation --
+
+    async def consolidate(
+        self,
+        agent_id: str,
+        *,
+        period: str = "daily",
+        user_id: str | None = None,
+    ) -> ConsolidateResponse:
+        """Trigger memory consolidation for an agent."""
+        body: dict[str, Any] = {"period": period}
+        if user_id is not None:
+            body["user_id"] = user_id
+        return ConsolidateResponse.model_validate(
+            await self._http.post(f"/api/v1/agents/{agent_id}/consolidate", json_data=body)
+        )
+
+    # -- Summaries --
+
+    async def get_summaries(
+        self,
+        agent_id: str,
+        *,
+        period: str | None = None,
+        limit: int | None = None,
+    ) -> SummariesResponse:
+        """Get memory summaries for an agent."""
+        params: dict[str, str] = {}
+        if period is not None:
+            params["period"] = period
+        if limit is not None:
+            params["limit"] = str(limit)
+        return SummariesResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/summaries", params=params)
+        )
+
+    # -- Time Machine --
+
+    async def get_time_machine(
+        self,
+        agent_id: str,
+        *,
+        at: str,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> TimeMachineResponse:
+        """Get an agent's personality and mood state at a specific point in time."""
+        params: dict[str, str] = {"at": at}
+        if user_id is not None:
+            params["user_id"] = user_id
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+        return TimeMachineResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/timemachine", params=params)
+        )

@@ -713,3 +713,204 @@ class ScheduledWakeup(BaseModel):
     created_at: str | None = None
 
     model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Agent List (paginated)
+# ---------------------------------------------------------------------------
+
+
+class AgentIndex(BaseModel):
+    model_config = {"extra": "allow"}
+    id: str = ""
+    name: str = ""
+    bio: str = ""
+    gender: str = ""
+    avatar_url: str = ""
+    status: str = ""
+    project_id: str = ""
+    created_at: str = ""
+
+
+class AgentListResponse(BaseModel):
+    items: list[AgentIndex] = Field(default_factory=list)
+    next_cursor: str | None = None
+    has_more: bool = False
+
+
+# ---------------------------------------------------------------------------
+# Batch Personality
+# ---------------------------------------------------------------------------
+
+
+class BatchPersonalityEntry(BaseModel):
+    model_config = {"extra": "allow"}
+    profile: PersonalityProfile = Field(default_factory=PersonalityProfile)
+    evolution_count: int = 0
+
+
+class BatchPersonalityResponse(BaseModel):
+    personalities: dict[str, BatchPersonalityEntry] = Field(default_factory=dict)
+
+
+# ---------------------------------------------------------------------------
+# Personality Extensions
+# ---------------------------------------------------------------------------
+
+
+class SignificantMoment(BaseModel):
+    model_config = {"extra": "allow"}
+    agent_id: str = ""
+    moment_id: str = ""
+    timestamp: str = ""
+    description: str = ""
+    significance_score: float = 0.0
+
+
+class SignificantMomentsResponse(BaseModel):
+    moments: list[SignificantMoment] = Field(default_factory=list)
+
+
+class PersonalityShift(BaseModel):
+    model_config = {"extra": "allow"}
+    agent_id: str = ""
+    trait_name: str = ""
+    trait_category: str = ""
+    old_value: float = 0.0
+    new_value: float = 0.0
+    delta: float = 0.0
+    timestamp: str = ""
+    reason: str = ""
+
+
+class RecentShiftsResponse(BaseModel):
+    shifts: list[PersonalityShift] = Field(default_factory=list)
+
+
+class UserPersonalityOverlay(BaseModel):
+    model_config = {"extra": "allow"}
+    agent_id: str = ""
+    user_id: str = ""
+    big5: Big5 | None = None
+    dimensions: PersonalityDimensions | None = None
+    preferences: PersonalityPreferences | None = None
+    behaviors: PersonalityBehaviors | None = None
+    primary_traits: list[str] = Field(default_factory=list)
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class UserOverlaysListResponse(BaseModel):
+    overlays: list[UserPersonalityOverlay] = Field(default_factory=list)
+
+
+class UserOverlayDetailResponse(BaseModel):
+    overlay: UserPersonalityOverlay = Field(default_factory=UserPersonalityOverlay)
+    base: PersonalityProfile = Field(default_factory=PersonalityProfile)
+    evolution: list[PersonalityShift] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Fact History
+# ---------------------------------------------------------------------------
+
+
+class FactHistoryResponse(BaseModel):
+    current: AtomicFact = Field(default_factory=AtomicFact)
+    previous_versions: list[AtomicFact] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Time Machine
+# ---------------------------------------------------------------------------
+
+
+class TimeMachineMoodSnapshot(BaseModel):
+    model_config = {"extra": "allow"}
+    valence: float = 0.0
+    arousal: float = 0.0
+    tension: float = 0.0
+    affiliation: float = 0.0
+    label: str = ""
+
+
+class TimeMachineResponse(BaseModel):
+    model_config = {"extra": "allow"}
+    personality_at: dict[str, Any] | None = None
+    current_personality: dict[str, Any] | None = None
+    evolution_events: list[PersonalityShift] = Field(default_factory=list)
+    mood_at: TimeMachineMoodSnapshot | None = None
+    requested_at: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Agent Status
+# ---------------------------------------------------------------------------
+
+
+class SetStatusResponse(BaseModel):
+    success: bool = False
+    agent_id: str = ""
+    is_active: bool = False
+
+
+# ---------------------------------------------------------------------------
+# Capabilities
+# ---------------------------------------------------------------------------
+
+
+class CustomToolDefinition(BaseModel):
+    name: str = ""
+    description: str = ""
+    parameters: dict[str, Any] | None = None
+
+
+class AgentCapabilities(BaseModel):
+    model_config = {"extra": "allow"}
+    webSearch: bool = False
+    rememberName: bool = False
+    imageGeneration: bool = False
+    customTools: list[CustomToolDefinition] = Field(default_factory=list)
+
+
+class CustomToolListResponse(BaseModel):
+    tools: list[CustomToolDefinition] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Consolidation
+# ---------------------------------------------------------------------------
+
+
+class ConsolidateResponse(BaseModel):
+    success: bool = False
+
+
+# ---------------------------------------------------------------------------
+# Summaries
+# ---------------------------------------------------------------------------
+
+
+class MemorySummary(BaseModel):
+    model_config = {"extra": "allow"}
+    agent_id: str = ""
+    stage: str = ""
+    summary_text: str = ""
+    timestamp: str = ""
+    fact_count: int = 0
+    confidence: float = 0.0
+
+
+class SummariesResponse(BaseModel):
+    summaries: list[MemorySummary] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Update Project
+# ---------------------------------------------------------------------------
+
+
+class UpdateProjectResponse(BaseModel):
+    success: bool = False
+    agent_id: str = ""
+    project_id: str = ""
