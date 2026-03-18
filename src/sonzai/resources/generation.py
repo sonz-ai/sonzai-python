@@ -27,7 +27,6 @@ class Generation:
         gender: str | None = None,
         description: str | None = None,
         user_id: str | None = None,
-        enriched_context_json: dict[str, Any] | None = None,
         current_bio: str | None = None,
         style: str | None = None,
         instance_id: str | None = None,
@@ -42,8 +41,6 @@ class Generation:
             body["description"] = description
         if user_id is not None:
             body["user_id"] = user_id
-        if enriched_context_json is not None:
-            body["enriched_context_json"] = enriched_context_json
         if current_bio is not None:
             body["current_bio"] = current_bio
         if style is not None:
@@ -64,8 +61,6 @@ class Generation:
         negative_prompt: str | None = None,
         model: str | None = None,
         provider: str | None = None,
-        output_bucket: str | None = None,
-        output_path: str | None = None,
     ) -> ImageGenerateResponse:
         """Generate an image using the agent's context."""
         body: dict[str, Any] = {"prompt": prompt}
@@ -75,10 +70,6 @@ class Generation:
             body["model"] = model
         if provider is not None:
             body["provider"] = provider
-        if output_bucket is not None:
-            body["output_bucket"] = output_bucket
-        if output_path is not None:
-            body["output_path"] = output_path
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/image/generate", json_data=body
@@ -125,7 +116,6 @@ class Generation:
         identity_memory_templates: list[dict[str, Any]] | None = None,
         generate_origin_story: bool | None = None,
         generate_personalized_memories: bool | None = None,
-        model_config_opts: dict[str, Any] | None = None,
         store_memories: bool | None = None,
     ) -> GenerateSeedMemoriesResponse:
         """Generate seed memories for an agent using AI."""
@@ -158,8 +148,6 @@ class Generation:
             body["generateOriginStory"] = generate_origin_story
         if generate_personalized_memories is not None:
             body["generatePersonalizedMemories"] = generate_personalized_memories
-        if model_config_opts is not None:
-            body["model_config"] = model_config_opts
         if store_memories is not None:
             body["store_memories"] = store_memories
 
@@ -183,7 +171,6 @@ class AsyncGeneration:
         gender: str | None = None,
         description: str | None = None,
         user_id: str | None = None,
-        enriched_context_json: dict[str, Any] | None = None,
         current_bio: str | None = None,
         style: str | None = None,
         instance_id: str | None = None,
@@ -198,8 +185,6 @@ class AsyncGeneration:
             body["description"] = description
         if user_id is not None:
             body["user_id"] = user_id
-        if enriched_context_json is not None:
-            body["enriched_context_json"] = enriched_context_json
         if current_bio is not None:
             body["current_bio"] = current_bio
         if style is not None:
@@ -220,8 +205,6 @@ class AsyncGeneration:
         negative_prompt: str | None = None,
         model: str | None = None,
         provider: str | None = None,
-        output_bucket: str | None = None,
-        output_path: str | None = None,
     ) -> ImageGenerateResponse:
         """Generate an image using the agent's context."""
         body: dict[str, Any] = {"prompt": prompt}
@@ -231,10 +214,6 @@ class AsyncGeneration:
             body["model"] = model
         if provider is not None:
             body["provider"] = provider
-        if output_bucket is not None:
-            body["output_bucket"] = output_bucket
-        if output_path is not None:
-            body["output_path"] = output_path
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/image/generate", json_data=body
@@ -281,7 +260,6 @@ class AsyncGeneration:
         identity_memory_templates: list[dict[str, Any]] | None = None,
         generate_origin_story: bool | None = None,
         generate_personalized_memories: bool | None = None,
-        model_config_opts: dict[str, Any] | None = None,
         store_memories: bool | None = None,
     ) -> GenerateSeedMemoriesResponse:
         """Generate seed memories for an agent using AI."""
@@ -314,8 +292,6 @@ class AsyncGeneration:
             body["generateOriginStory"] = generate_origin_story
         if generate_personalized_memories is not None:
             body["generatePersonalizedMemories"] = generate_personalized_memories
-        if model_config_opts is not None:
-            body["model_config"] = model_config_opts
         if store_memories is not None:
             body["store_memories"] = store_memories
 

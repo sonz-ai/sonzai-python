@@ -211,7 +211,6 @@ class Agents:
         provider: str | None = None,
         model: str | None = None,
         continuation_token: str | None = None,
-        ai_service_cookie: str | None = None,
         request_type: str | None = None,
         language: str | None = None,
         compiled_system_prompt: str | None = None,
@@ -233,7 +232,6 @@ class Agents:
             provider: Optional LLM provider override.
             model: Optional model override.
             continuation_token: Optional token for multi-turn continuation.
-            ai_service_cookie: Optional cookie for AI service affinity.
             request_type: Optional request type hint.
             language: Optional language code.
             compiled_system_prompt: Optional pre-compiled system prompt.
@@ -264,8 +262,6 @@ class Agents:
             body["model"] = model
         if continuation_token is not None:
             body["continuation_token"] = continuation_token
-        if ai_service_cookie is not None:
-            body["ai_service_cookie"] = ai_service_cookie
         if request_type is not None:
             body["request_type"] = request_type
         if language is not None:
@@ -320,7 +316,6 @@ class Agents:
         agent_id: str,
         *,
         user_id: str | None = None,
-        enriched_context: dict[str, Any] | None = None,
         messages: list[ChatMessage | dict[str, str]] | None = None,
         request_type: str | None = None,
         scene_guidance: str | None = None,
@@ -331,8 +326,6 @@ class Agents:
         body: dict[str, Any] = {}
         if user_id is not None:
             body["user_id"] = user_id
-        if enriched_context is not None:
-            body["enriched_context"] = enriched_context
         if messages is not None:
             body["messages"] = [
                 m.model_dump() if isinstance(m, ChatMessage) else m
@@ -984,7 +977,6 @@ class AsyncAgents:
         provider: str | None = None,
         model: str | None = None,
         continuation_token: str | None = None,
-        ai_service_cookie: str | None = None,
         request_type: str | None = None,
         language: str | None = None,
         compiled_system_prompt: str | None = None,
@@ -1016,8 +1008,6 @@ class AsyncAgents:
             body["model"] = model
         if continuation_token is not None:
             body["continuation_token"] = continuation_token
-        if ai_service_cookie is not None:
-            body["ai_service_cookie"] = ai_service_cookie
         if request_type is not None:
             body["request_type"] = request_type
         if language is not None:
@@ -1068,7 +1058,6 @@ class AsyncAgents:
         agent_id: str,
         *,
         user_id: str | None = None,
-        enriched_context: dict[str, Any] | None = None,
         messages: list[ChatMessage | dict[str, str]] | None = None,
         request_type: str | None = None,
         scene_guidance: str | None = None,
@@ -1079,8 +1068,6 @@ class AsyncAgents:
         body: dict[str, Any] = {}
         if user_id is not None:
             body["user_id"] = user_id
-        if enriched_context is not None:
-            body["enriched_context"] = enriched_context
         if messages is not None:
             body["messages"] = [
                 m.model_dump() if isinstance(m, ChatMessage) else m

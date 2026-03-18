@@ -47,12 +47,8 @@ class ChatStreamEvent(BaseModel):
     full_content: str = ""
     finish_reason: str = ""
     continuation_token: str = ""
-    response_cookie: str = ""
     message_count: int = 0
     side_effects: dict[str, Any] | None = None
-    enriched_context: dict[str, Any] | None = None
-    build_duration_ms: int = 0
-    used_fast_path: bool = False
     error_message: str = ""
     error_code: str = ""
     is_token_error: bool = False
