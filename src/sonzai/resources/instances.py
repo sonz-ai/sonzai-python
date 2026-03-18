@@ -57,6 +57,28 @@ class Instances:
         )
         return AgentInstance.model_validate(data)
 
+    def update(
+        self,
+        agent_id: str,
+        instance_id: str,
+        *,
+        name: str | None = None,
+        description: str | None = None,
+        status: str | None = None,
+    ) -> AgentInstance:
+        """Update an agent instance."""
+        body: dict[str, Any] = {}
+        if name is not None:
+            body["name"] = name
+        if description is not None:
+            body["description"] = description
+        if status is not None:
+            body["status"] = status
+        data = self._http.patch(
+            f"/api/v1/agents/{agent_id}/instances/{instance_id}", json_data=body
+        )
+        return AgentInstance.model_validate(data)
+
 
 class AsyncInstances:
     """Async instance operations for an agent."""
@@ -99,5 +121,27 @@ class AsyncInstances:
     async def reset(self, agent_id: str, instance_id: str) -> AgentInstance:
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/instances/{instance_id}/reset"
+        )
+        return AgentInstance.model_validate(data)
+
+    async def update(
+        self,
+        agent_id: str,
+        instance_id: str,
+        *,
+        name: str | None = None,
+        description: str | None = None,
+        status: str | None = None,
+    ) -> AgentInstance:
+        """Update an agent instance."""
+        body: dict[str, Any] = {}
+        if name is not None:
+            body["name"] = name
+        if description is not None:
+            body["description"] = description
+        if status is not None:
+            body["status"] = status
+        data = await self._http.patch(
+            f"/api/v1/agents/{agent_id}/instances/{instance_id}", json_data=body
         )
         return AgentInstance.model_validate(data)

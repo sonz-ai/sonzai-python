@@ -14,8 +14,13 @@ from ._exceptions import (
 )
 from .types import (
     Agent,
+    AgentCapabilities,
+    AgentIndex,
     AgentInstance,
+    AgentListResponse,
     AtomicFact,
+    BatchPersonalityEntry,
+    BatchPersonalityResponse,
     Big5,
     Big5Trait,
     BreakthroughsResponse,
@@ -23,9 +28,12 @@ from .types import (
     ChatResponse,
     ChatStreamEvent,
     ChatUsage,
+    ConsolidateResponse,
     ConstellationResponse,
     CustomState,
     CustomStateListResponse,
+    CustomToolDefinition,
+    CustomToolListResponse,
     DeleteResponse,
     DeliveryAttemptsResponse,
     DialogueResponse,
@@ -38,6 +46,7 @@ from .types import (
     EvalTemplateListResponse,
     EvaluationResult,
     Fact,
+    FactHistoryResponse,
     FactListResponse,
     GenerateBioResponse,
     GenerateCharacterResponse,
@@ -52,6 +61,7 @@ from .types import (
     MemoryResponse,
     MemorySearchResponse,
     MemorySearchResult,
+    MemorySummary,
     MemoryTimelineResponse,
     MoodAggregateResponse,
     MoodResponse,
@@ -63,16 +73,28 @@ from .types import (
     PersonalityPreferences,
     PersonalityProfile,
     PersonalityResponse,
+    PersonalityShift,
     PersonalityUpdateResponse,
+    RecentShiftsResponse,
     RelationshipResponse,
     ScheduledWakeup,
     SeedMemoriesResponse,
     SessionResponse,
+    SetStatusResponse,
+    SignificantMoment,
+    SignificantMomentsResponse,
     SimulationEvent,
+    SummariesResponse,
     TTSResponse,
+    TimeMachineMoodSnapshot,
+    TimeMachineResponse,
     TimelineSession,
     TriggerEventResponse,
+    UpdateProjectResponse,
+    UserOverlayDetailResponse,
+    UserOverlaysListResponse,
     UserPersona,
+    UserPersonalityOverlay,
     UsersResponse,
     Voice,
     VoiceChatResponse,
@@ -85,7 +107,7 @@ from .types import (
     WebhookRegisterResponse,
 )
 
-__version__ = "1.12.0"
+__version__ = "1.13.0"
 
 __all__ = [
     # Clients
@@ -103,7 +125,12 @@ __all__ = [
     "StreamError",
     # Types - Agent CRUD
     "Agent",
+    "AgentCapabilities",
+    "AgentIndex",
+    "AgentListResponse",
     "DeleteResponse",
+    "SetStatusResponse",
+    "UpdateProjectResponse",
     # Types - Chat
     "ChatMessage",
     "ChatResponse",
@@ -115,16 +142,20 @@ __all__ = [
     # Types - Memory
     "AtomicFact",
     "Fact",
+    "FactHistoryResponse",
     "FactListResponse",
     "MemoryNode",
     "MemoryResetResponse",
     "MemoryResponse",
     "MemorySearchResponse",
     "MemorySearchResult",
+    "MemorySummary",
     "MemoryTimelineResponse",
     "SeedMemoriesResponse",
     "TimelineSession",
     # Types - Personality
+    "BatchPersonalityEntry",
+    "BatchPersonalityResponse",
     "Big5",
     "Big5Trait",
     "PersonalityBehaviors",
@@ -133,7 +164,14 @@ __all__ = [
     "PersonalityPreferences",
     "PersonalityProfile",
     "PersonalityResponse",
+    "PersonalityShift",
     "PersonalityUpdateResponse",
+    "RecentShiftsResponse",
+    "SignificantMoment",
+    "SignificantMomentsResponse",
+    "UserOverlayDetailResponse",
+    "UserOverlaysListResponse",
+    "UserPersonalityOverlay",
     # Types - Context Engine
     "BreakthroughsResponse",
     "ConstellationResponse",
@@ -176,6 +214,15 @@ __all__ = [
     "WebhookRegisterResponse",
     # Types - Wakeups
     "ScheduledWakeup",
+    # Types - Capabilities
+    "CustomToolDefinition",
+    "CustomToolListResponse",
+    # Types - Consolidation / Summaries
+    "ConsolidateResponse",
+    "SummariesResponse",
+    # Types - Time Machine
+    "TimeMachineMoodSnapshot",
+    "TimeMachineResponse",
     # Types - Evaluation
     "EvalCategory",
     "EvalRun",

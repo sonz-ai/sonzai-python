@@ -65,6 +65,15 @@ class Sessions:
         )
         return SessionResponse.model_validate(data)
 
+    def set_tools(
+        self, agent_id: str, session_id: str, tools: list[dict[str, Any]]
+    ) -> SessionResponse:
+        """Set the tools available for a session."""
+        data = self._http.put(
+            f"/api/v1/agents/{agent_id}/sessions/{session_id}/tools", json_data=tools
+        )
+        return SessionResponse.model_validate(data)
+
 
 class AsyncSessions:
     """Async session lifecycle operations."""
@@ -118,5 +127,14 @@ class AsyncSessions:
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/sessions/end", json_data=body
+        )
+        return SessionResponse.model_validate(data)
+
+    async def set_tools(
+        self, agent_id: str, session_id: str, tools: list[dict[str, Any]]
+    ) -> SessionResponse:
+        """Set the tools available for a session."""
+        data = await self._http.put(
+            f"/api/v1/agents/{agent_id}/sessions/{session_id}/tools", json_data=tools
         )
         return SessionResponse.model_validate(data)
