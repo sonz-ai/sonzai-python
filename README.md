@@ -214,7 +214,7 @@ print(f"Feedback: {result.feedback}")
 ### Simulation
 
 ```python
-# Run a simulation (streaming)
+# Run a simulation (streaming — launches run, then streams events)
 for event in client.agents.simulate(
     "agent-id",
     user_persona={
@@ -229,6 +229,93 @@ for event in client.agents.simulate(
     },
 ):
     print(f"[{event.type}] {event.message}")
+
+# Fire-and-forget (returns RunRef immediately)
+ref = client.agents.simulate_async(
+    "agent-id",
+    user_persona={"name": "Alex", "background": "Student"},
+    config={"max_sessions": 2},
+)
+print(f"Run started: {ref.run_id}")
+
+# Reconnect to stream later (supports resuming via from_index)
+for event in client.eval_runs.stream_events(ref.run_id, from_index=0):
+    print(f"[{event.type}] {event.message}")
+```
+
+### Run Eval (Simulation + Evaluation)
+
+```python
+# Combined simulation + evaluation
+for event in client.agents.run_eval(
+    "agent-id",
+    template_id="template-uuid",
+    user_persona={"name": "Alex", "background": "Student"},
+    simulation_config={"max_sessions": 2, "max_turns_per_session": 5},
+):
+    print(f"[{event.type}] {event.message}")
+
+# Fire-and-forget
+ref = client.agents.run_eval_async(
+    "agent-id",
+    template_id="template-uuid",
+    simulation_config={"max_sessions": 2},
+)
+print(f"Run started: {ref.run_id}")
+```
+
+### Re-evaluate (Eval Only)
+
+```python
+# Re-evaluate an existing run with a different template
+for event in client.agents.eval_only(
+    "agent-id",
+    template_id="new-template-uuid",
+    source_run_id="existing-run-uuid",
+):
+    print(f"[{event.type}] {event.message}")
+```
+
+### Custom States
+
+```python
+# Create a custom state
+state = client.agents.custom_states.create(
+    "agent-id",
+    key="player_level",
+    value={"level": 15, "xp": 2400},
+    scope="user",
+    content_type="json",
+    user_id="user-123",
+)
+
+# List states
+states = client.agents.custom_states.list("agent-id", scope="global")
+
+# Upsert by composite key (create or update)
+state = client.agents.custom_states.upsert(
+    "agent-id",
+    key="player_level",
+    value={"level": 16, "xp": 3000},
+    scope="user",
+    user_id="user-123",
+)
+
+# Get by composite key
+state = client.agents.custom_states.get_by_key(
+    "agent-id",
+    key="player_level",
+    scope="user",
+    user_id="user-123",
+)
+
+# Delete by composite key
+client.agents.custom_states.delete_by_key(
+    "agent-id",
+    key="player_level",
+    scope="user",
+    user_id="user-123",
+)
 ```
 
 ### Eval Templates
@@ -263,6 +350,10 @@ runs = client.eval_runs.list(agent_id="agent-id")
 # Get a specific run
 run = client.eval_runs.get("run-id")
 print(f"Status: {run.status}, Turns: {run.total_turns}")
+
+# Stream events from a running eval (reconnectable)
+for event in client.eval_runs.stream_events("run-id"):
+    print(f"[{event.type}] {event.message}")
 
 # Delete a run
 client.eval_runs.delete("run-id")
