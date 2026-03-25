@@ -8,6 +8,7 @@ from ._http import AsyncHTTPClient, HTTPClient
 from .resources.agents import Agents, AsyncAgents
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
 from .resources.eval_templates import AsyncEvalTemplates, EvalTemplates
+from .resources.knowledge import AsyncKnowledge, Knowledge
 from .resources.voice import AsyncVoices, Voices
 from .resources.webhooks import AsyncWebhooks, Webhooks
 
@@ -45,6 +46,7 @@ class Sonzai:
     """
 
     agents: Agents
+    knowledge: Knowledge
     eval_templates: EvalTemplates
     eval_runs: EvalRuns
     voices: Voices
@@ -82,6 +84,7 @@ class Sonzai:
         )
 
         self.agents = Agents(self._http)
+        self.knowledge = Knowledge(self._http)
         self.eval_templates = EvalTemplates(self._http)
         self.eval_runs = EvalRuns(self._http)
         self.voices = Voices(self._http)
@@ -121,6 +124,7 @@ class AsyncSonzai:
     """
 
     agents: AsyncAgents
+    knowledge: AsyncKnowledge
     eval_templates: AsyncEvalTemplates
     eval_runs: AsyncEvalRuns
     voices: AsyncVoices
@@ -150,6 +154,7 @@ class AsyncSonzai:
         )
 
         self.agents = AsyncAgents(self._http)
+        self.knowledge = AsyncKnowledge(self._http)
         self.eval_templates = AsyncEvalTemplates(self._http)
         self.eval_runs = AsyncEvalRuns(self._http)
         self.voices = AsyncVoices(self._http)

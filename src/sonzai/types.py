@@ -47,12 +47,8 @@ class ChatStreamEvent(BaseModel):
     full_content: str = ""
     finish_reason: str = ""
     continuation_token: str = ""
-    response_cookie: str = ""
     message_count: int = 0
     side_effects: dict[str, Any] | None = None
-    enriched_context: dict[str, Any] | None = None
-    build_duration_ms: int = 0
-    used_fast_path: bool = False
     error_message: str = ""
     error_code: str = ""
     is_token_error: bool = False
@@ -914,3 +910,245 @@ class UpdateProjectResponse(BaseModel):
     success: bool = False
     agent_id: str = ""
     project_id: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Knowledge Base
+# ---------------------------------------------------------------------------
+
+
+class KBDocument(BaseModel):
+    project_id: str = ""
+    document_id: str = ""
+    file_name: str = ""
+    content_type: str = ""
+    file_size: int = 0
+    gcs_path: str = ""
+    checksum: str = ""
+    status: str = ""
+    uploaded_by: str = ""
+    extraction_tokens: int = 0
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class KBDocumentListResponse(BaseModel):
+    documents: list[KBDocument] = Field(default_factory=list)
+    total: int = 0
+
+
+class KBNode(BaseModel):
+    project_id: str = ""
+    node_id: str = ""
+    node_type: str = ""
+    label: str = ""
+    norm_label: str = ""
+    properties: dict[str, Any] = Field(default_factory=dict)
+    source_type: str = ""
+    version: int = 0
+    is_active: bool = True
+    confidence: float = 0.0
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class KBNodeListResponse(BaseModel):
+    nodes: list[KBNode] = Field(default_factory=list)
+    total: int = 0
+
+
+class KBEdge(BaseModel):
+    project_id: str = ""
+    edge_id: str = ""
+    from_node_id: str = ""
+    to_node_id: str = ""
+    edge_type: str = ""
+    confidence: float = 0.0
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class KBNodeHistory(BaseModel):
+    project_id: str = ""
+    node_id: str = ""
+    version: int = 0
+    properties: dict[str, Any] = Field(default_factory=dict)
+    changed_by: str = ""
+    change_type: str = ""
+    changed_at: str = ""
+
+
+class KBNodeDetailResponse(BaseModel):
+    node: KBNode | None = None
+    outgoing: list[KBEdge] = Field(default_factory=list)
+    incoming: list[KBEdge] = Field(default_factory=list)
+    history: list[KBNodeHistory] = Field(default_factory=list)
+
+
+class KBNodeHistoryResponse(BaseModel):
+    history: list[KBNodeHistory] = Field(default_factory=list)
+    total: int = 0
+
+
+class KBSearchResult(BaseModel):
+    node_id: str = ""
+    node_type: str = ""
+    label: str = ""
+    properties: dict[str, Any] = Field(default_factory=dict)
+    source: str = ""
+    updated_at: str = ""
+    score: float = 0.0
+    related: list[dict[str, Any]] = Field(default_factory=list)
+    history: list[KBNodeHistory] = Field(default_factory=list)
+
+
+class KBSearchResponse(BaseModel):
+    query: str = ""
+    results: list[KBSearchResult] = Field(default_factory=list)
+    total: int = 0
+
+
+class KBEntitySchema(BaseModel):
+    project_id: str = ""
+    schema_id: str = ""
+    entity_type: str = ""
+    fields: list[dict[str, Any]] = Field(default_factory=list)
+    description: str = ""
+    similarity_config: dict[str, Any] | None = None
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class KBSchemaListResponse(BaseModel):
+    schemas: list[KBEntitySchema] = Field(default_factory=list)
+    total: int = 0
+
+
+class KBStats(BaseModel):
+    documents: dict[str, int] = Field(default_factory=dict)
+    nodes: dict[str, int] = Field(default_factory=dict)
+    edges: int = 0
+    extraction_tokens: int = 0
+
+
+class InsertFactDetail(BaseModel):
+    label: str = ""
+    type: str = ""
+    action: str = ""
+    node_id: str = ""
+    version: int = 0
+
+
+class InsertFactsResponse(BaseModel):
+    processed: int = 0
+    created: int = 0
+    updated: int = 0
+    details: list[InsertFactDetail] = Field(default_factory=list)
+
+
+class KBAnalyticsRule(BaseModel):
+    project_id: str = ""
+    rule_id: str = ""
+    rule_type: str = ""
+    name: str = ""
+    config: Any = None
+    enabled: bool = False
+    schedule: str = ""
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class KBAnalyticsRuleListResponse(BaseModel):
+    rules: list[KBAnalyticsRule] = Field(default_factory=list)
+    total: int = 0
+
+
+class KBRecommendationScore(BaseModel):
+    project_id: str = ""
+    rule_id: str = ""
+    source_id: str = ""
+    target_id: str = ""
+    target_type: str = ""
+    score: float = 0.0
+
+
+class KBRecommendationsResponse(BaseModel):
+    recommendations: list[KBRecommendationScore] = Field(default_factory=list)
+    total: int = 0
+
+
+class KBTrendsResponse(BaseModel):
+    trends: list[dict[str, Any]] = Field(default_factory=list)
+    total: int = 0
+
+
+class KBTrendRankingsResponse(BaseModel):
+    rankings: list[dict[str, Any]] = Field(default_factory=list)
+    total: int = 0
+
+
+class KBConversionsResponse(BaseModel):
+    conversions: list[dict[str, Any]] = Field(default_factory=list)
+    total: int = 0
+
+
+# ---------------------------------------------------------------------------
+# User Priming
+# ---------------------------------------------------------------------------
+
+
+class PrimeUserResponse(BaseModel):
+    job_id: str = ""
+    status: str = ""
+    facts_created: int = 0
+
+
+class AddContentResponse(BaseModel):
+    job_id: str = ""
+    status: str = ""
+
+
+class UserPrimingMetadata(BaseModel):
+    agent_id: str = ""
+    user_id: str = ""
+    display_name: str = ""
+    company: str = ""
+    title: str = ""
+    email: str = ""
+    phone: str = ""
+    source_type: str = ""
+    custom_fields: dict[str, str] = Field(default_factory=dict)
+    primed_at: str = ""
+
+
+class UpdateMetadataResponse(BaseModel):
+    metadata: UserPrimingMetadata | None = None
+    facts_created: int = 0
+
+
+class BatchImportResponse(BaseModel):
+    job_id: str = ""
+    status: str = ""
+    total_users: int = 0
+    facts_created: int = 0
+
+
+class ImportJob(BaseModel):
+    job_id: str = ""
+    tenant_id: str = ""
+    agent_id: str = ""
+    job_type: str = ""
+    user_id: str = ""
+    source: str = ""
+    status: str = ""
+    total_users: int = 0
+    processed_users: int = 0
+    facts_created: int = 0
+    error_message: str = ""
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class ImportJobListResponse(BaseModel):
+    jobs: list[ImportJob] = Field(default_factory=list)
+    count: int = 0
