@@ -45,6 +45,7 @@ from .instances import AsyncInstances, Instances
 from .memory import AsyncMemory, Memory
 from .notifications import AsyncNotifications, Notifications
 from .personality import AsyncPersonality, Personality
+from .priming import AsyncPriming, Priming
 from .sessions import AsyncSessions, Sessions
 from .voice import AsyncVoiceResource, VoiceResource
 
@@ -62,6 +63,7 @@ class Agents:
         self.custom_states = CustomStates(http)
         self.generation = Generation(http)
         self.voice = VoiceResource(http)
+        self.priming = Priming(http)
 
     # -- Agent CRUD --
 
@@ -828,6 +830,7 @@ class AsyncAgents:
         self.custom_states = AsyncCustomStates(http)
         self.generation = AsyncGeneration(http)
         self.voice = AsyncVoiceResource(http)
+        self.priming = AsyncPriming(http)
 
     # -- Agent CRUD --
 
