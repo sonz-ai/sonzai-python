@@ -356,6 +356,11 @@ class EvalRun(BaseModel):
     total_turns: int = 0
     simulated_minutes: int = 0
     total_cost_usd: float = 0.0
+    error_reason: str = ""
+    simulation_cost_usd: float = 0.0
+    evaluation_cost_usd: float = 0.0
+    adaptation_template_id: str = ""
+    adaptation_template_snapshot: Any = None
     created_at: str | None = None
     completed_at: str | None = None
 
@@ -363,6 +368,19 @@ class EvalRun(BaseModel):
 class EvalRunListResponse(BaseModel):
     runs: list[EvalRun] = Field(default_factory=list)
     total_count: int = 0
+
+
+# ---------------------------------------------------------------------------
+# Run Reference (async run pattern)
+# ---------------------------------------------------------------------------
+
+
+class RunRef(BaseModel):
+    """Reference returned when starting an async simulation/eval run."""
+
+    run_id: str = ""
+    status: str = ""
+    model_config = {"extra": "allow"}
 
 
 # ---------------------------------------------------------------------------

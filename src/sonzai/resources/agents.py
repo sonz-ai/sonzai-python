@@ -29,6 +29,7 @@ from ..types import (
     MoodAggregateResponse,
     MoodResponse,
     RelationshipResponse,
+    RunRef,
     ScheduledWakeup,
     SetStatusResponse,
     SimulationEvent,
@@ -446,7 +447,7 @@ class Agents:
         model: str | None = None,
         config_override: dict[str, Any] | None = None,
     ) -> Iterator[SimulationEvent]:
-        """Run a simulation and stream events."""
+        """Run a simulation, then stream events until completion."""
         body: dict[str, Any] = {}
         if sessions is not None:
             body["sessions"] = sessions
@@ -459,10 +460,40 @@ class Agents:
         if config_override is not None:
             body["config_override"] = config_override
 
+        # Step 1: POST to start the run
+        data = self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=body)
+        ref = RunRef.model_validate(data)
+        # Step 2: Stream events from the run
         for event in self._http.stream_sse(
-            "POST", f"/api/v1/agents/{agent_id}/simulate", json_data=body
+            "GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"
         ):
             yield SimulationEvent.model_validate(event)
+
+    def simulate_async(
+        self,
+        agent_id: str,
+        *,
+        sessions: list[dict[str, Any]] | None = None,
+        user_persona: dict[str, Any] | None = None,
+        config: dict[str, Any] | None = None,
+        model: str | None = None,
+        config_override: dict[str, Any] | None = None,
+    ) -> RunRef:
+        """Start a simulation and return a RunRef without waiting for completion."""
+        body: dict[str, Any] = {}
+        if sessions is not None:
+            body["sessions"] = sessions
+        if user_persona is not None:
+            body["user_persona"] = user_persona
+        if config is not None:
+            body["config"] = config
+        if model is not None:
+            body["model"] = model
+        if config_override is not None:
+            body["config_override"] = config_override
+
+        data = self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=body)
+        return RunRef.model_validate(data)
 
     def run_eval(
         self,
@@ -475,8 +506,9 @@ class Agents:
         model: str | None = None,
         config_override: dict[str, Any] | None = None,
         adaptation_template_id: str | None = None,
+        quality_only: bool | None = None,
     ) -> Iterator[SimulationEvent]:
-        """Run simulation + evaluation combined."""
+        """Run simulation + evaluation combined, then stream events."""
         body: dict[str, Any] = {"template_id": template_id}
         if sessions is not None:
             body["sessions"] = sessions
@@ -490,11 +522,50 @@ class Agents:
             body["config_override"] = config_override
         if adaptation_template_id is not None:
             body["adaptation_template_id"] = adaptation_template_id
+        if quality_only is not None:
+            body["quality_only"] = quality_only
 
+        # Step 1: POST to start the run
+        data = self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=body)
+        ref = RunRef.model_validate(data)
+        # Step 2: Stream events from the run
         for event in self._http.stream_sse(
-            "POST", f"/api/v1/agents/{agent_id}/run-eval", json_data=body
+            "GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"
         ):
             yield SimulationEvent.model_validate(event)
+
+    def run_eval_async(
+        self,
+        agent_id: str,
+        *,
+        template_id: str,
+        sessions: list[dict[str, Any]] | None = None,
+        user_persona: dict[str, Any] | None = None,
+        simulation_config: dict[str, Any] | None = None,
+        model: str | None = None,
+        config_override: dict[str, Any] | None = None,
+        adaptation_template_id: str | None = None,
+        quality_only: bool | None = None,
+    ) -> RunRef:
+        """Start simulation + evaluation and return a RunRef without waiting."""
+        body: dict[str, Any] = {"template_id": template_id}
+        if sessions is not None:
+            body["sessions"] = sessions
+        if user_persona is not None:
+            body["user_persona"] = user_persona
+        if simulation_config is not None:
+            body["simulation_config"] = simulation_config
+        if model is not None:
+            body["model"] = model
+        if config_override is not None:
+            body["config_override"] = config_override
+        if adaptation_template_id is not None:
+            body["adaptation_template_id"] = adaptation_template_id
+        if quality_only is not None:
+            body["quality_only"] = quality_only
+
+        data = self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=body)
+        return RunRef.model_validate(data)
 
     def eval_only(
         self,
@@ -503,19 +574,48 @@ class Agents:
         template_id: str,
         source_run_id: str,
         adaptation_template_id: str | None = None,
+        quality_only: bool | None = None,
     ) -> Iterator[SimulationEvent]:
-        """Re-evaluate an existing run."""
+        """Re-evaluate an existing run, then stream events."""
         body: dict[str, Any] = {
             "template_id": template_id,
             "source_run_id": source_run_id,
         }
         if adaptation_template_id is not None:
             body["adaptation_template_id"] = adaptation_template_id
+        if quality_only is not None:
+            body["quality_only"] = quality_only
 
+        # Step 1: POST to start the eval
+        data = self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=body)
+        ref = RunRef.model_validate(data)
+        # Step 2: Stream events from the run
         for event in self._http.stream_sse(
-            "POST", f"/api/v1/agents/{agent_id}/eval-only", json_data=body
+            "GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"
         ):
             yield SimulationEvent.model_validate(event)
+
+    def eval_only_async(
+        self,
+        agent_id: str,
+        *,
+        template_id: str,
+        source_run_id: str,
+        adaptation_template_id: str | None = None,
+        quality_only: bool | None = None,
+    ) -> RunRef:
+        """Start re-evaluation and return a RunRef without waiting."""
+        body: dict[str, Any] = {
+            "template_id": template_id,
+            "source_run_id": source_run_id,
+        }
+        if adaptation_template_id is not None:
+            body["adaptation_template_id"] = adaptation_template_id
+        if quality_only is not None:
+            body["quality_only"] = quality_only
+
+        data = self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=body)
+        return RunRef.model_validate(data)
 
     # -- Context Engine convenience accessors --
 
@@ -1188,6 +1288,7 @@ class AsyncAgents:
         model: str | None = None,
         config_override: dict[str, Any] | None = None,
     ) -> AsyncIterator[SimulationEvent]:
+        """Run a simulation, then stream events until completion."""
         body: dict[str, Any] = {}
         if sessions is not None:
             body["sessions"] = sessions
@@ -1200,10 +1301,40 @@ class AsyncAgents:
         if config_override is not None:
             body["config_override"] = config_override
 
+        # Step 1: POST to start the run
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=body)
+        ref = RunRef.model_validate(data)
+        # Step 2: Stream events from the run
         async for event in self._http.stream_sse(
-            "POST", f"/api/v1/agents/{agent_id}/simulate", json_data=body
+            "GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"
         ):
             yield SimulationEvent.model_validate(event)
+
+    async def simulate_async(
+        self,
+        agent_id: str,
+        *,
+        sessions: list[dict[str, Any]] | None = None,
+        user_persona: dict[str, Any] | None = None,
+        config: dict[str, Any] | None = None,
+        model: str | None = None,
+        config_override: dict[str, Any] | None = None,
+    ) -> RunRef:
+        """Start a simulation and return a RunRef without waiting for completion."""
+        body: dict[str, Any] = {}
+        if sessions is not None:
+            body["sessions"] = sessions
+        if user_persona is not None:
+            body["user_persona"] = user_persona
+        if config is not None:
+            body["config"] = config
+        if model is not None:
+            body["model"] = model
+        if config_override is not None:
+            body["config_override"] = config_override
+
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=body)
+        return RunRef.model_validate(data)
 
     async def run_eval(
         self,
@@ -1216,7 +1347,9 @@ class AsyncAgents:
         model: str | None = None,
         config_override: dict[str, Any] | None = None,
         adaptation_template_id: str | None = None,
+        quality_only: bool | None = None,
     ) -> AsyncIterator[SimulationEvent]:
+        """Run simulation + evaluation combined, then stream events."""
         body: dict[str, Any] = {"template_id": template_id}
         if sessions is not None:
             body["sessions"] = sessions
@@ -1230,11 +1363,50 @@ class AsyncAgents:
             body["config_override"] = config_override
         if adaptation_template_id is not None:
             body["adaptation_template_id"] = adaptation_template_id
+        if quality_only is not None:
+            body["quality_only"] = quality_only
 
+        # Step 1: POST to start the run
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=body)
+        ref = RunRef.model_validate(data)
+        # Step 2: Stream events from the run
         async for event in self._http.stream_sse(
-            "POST", f"/api/v1/agents/{agent_id}/run-eval", json_data=body
+            "GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"
         ):
             yield SimulationEvent.model_validate(event)
+
+    async def run_eval_async(
+        self,
+        agent_id: str,
+        *,
+        template_id: str,
+        sessions: list[dict[str, Any]] | None = None,
+        user_persona: dict[str, Any] | None = None,
+        simulation_config: dict[str, Any] | None = None,
+        model: str | None = None,
+        config_override: dict[str, Any] | None = None,
+        adaptation_template_id: str | None = None,
+        quality_only: bool | None = None,
+    ) -> RunRef:
+        """Start simulation + evaluation and return a RunRef without waiting."""
+        body: dict[str, Any] = {"template_id": template_id}
+        if sessions is not None:
+            body["sessions"] = sessions
+        if user_persona is not None:
+            body["user_persona"] = user_persona
+        if simulation_config is not None:
+            body["simulation_config"] = simulation_config
+        if model is not None:
+            body["model"] = model
+        if config_override is not None:
+            body["config_override"] = config_override
+        if adaptation_template_id is not None:
+            body["adaptation_template_id"] = adaptation_template_id
+        if quality_only is not None:
+            body["quality_only"] = quality_only
+
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=body)
+        return RunRef.model_validate(data)
 
     async def eval_only(
         self,
@@ -1243,18 +1415,48 @@ class AsyncAgents:
         template_id: str,
         source_run_id: str,
         adaptation_template_id: str | None = None,
+        quality_only: bool | None = None,
     ) -> AsyncIterator[SimulationEvent]:
+        """Re-evaluate an existing run, then stream events."""
         body: dict[str, Any] = {
             "template_id": template_id,
             "source_run_id": source_run_id,
         }
         if adaptation_template_id is not None:
             body["adaptation_template_id"] = adaptation_template_id
+        if quality_only is not None:
+            body["quality_only"] = quality_only
 
+        # Step 1: POST to start the eval
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=body)
+        ref = RunRef.model_validate(data)
+        # Step 2: Stream events from the run
         async for event in self._http.stream_sse(
-            "POST", f"/api/v1/agents/{agent_id}/eval-only", json_data=body
+            "GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"
         ):
             yield SimulationEvent.model_validate(event)
+
+    async def eval_only_async(
+        self,
+        agent_id: str,
+        *,
+        template_id: str,
+        source_run_id: str,
+        adaptation_template_id: str | None = None,
+        quality_only: bool | None = None,
+    ) -> RunRef:
+        """Start re-evaluation and return a RunRef without waiting."""
+        body: dict[str, Any] = {
+            "template_id": template_id,
+            "source_run_id": source_run_id,
+        }
+        if adaptation_template_id is not None:
+            body["adaptation_template_id"] = adaptation_template_id
+        if quality_only is not None:
+            body["quality_only"] = quality_only
+
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=body)
+        return RunRef.model_validate(data)
 
     # -- Context Engine convenience accessors --
 
