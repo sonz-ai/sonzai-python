@@ -66,6 +66,7 @@ from .types import (
     MoodAggregateResponse,
     MoodResponse,
     Notification,
+    RunRef,
     NotificationListResponse,
     PersonalityBehaviors,
     PersonalityDelta,
@@ -231,6 +232,7 @@ __all__ = [
     "EvalTemplateCategory",
     "EvalTemplateListResponse",
     "EvaluationResult",
+    "RunRef",
     "SimulationEvent",
     # Types - User Persona
     "UserPersona",
