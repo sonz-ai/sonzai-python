@@ -3,10 +3,14 @@
 from __future__ import annotations
 
 import json
+import logging
+import time
 from collections.abc import AsyncIterator, Generator, Iterator
 from typing import Any
 
 import httpx
+
+logger = logging.getLogger(__name__)
 
 from ._exceptions import (
     APIError,
@@ -28,16 +32,18 @@ def _raise_for_status(response: httpx.Response) -> None:
     if not hasattr(response, "_content"):
         try:
             response.read()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug("Failed to read response: %s", e)
 
     try:
         body = response.json()
         message = body.get("error", response.text)
-    except Exception:
+    except Exception as e:
+        logger.debug("Failed to read response: %s", e)
         try:
             message = response.text
-        except Exception:
+        except Exception as e:
+            logger.debug("Failed to read response: %s", e)
             message = f"HTTP {response.status_code}"
 
     status = response.status_code
@@ -77,8 +83,11 @@ class HTTPClient:
             },
             timeout=httpx.Timeout(timeout, connect=10.0),
             follow_redirects=True,
+            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
         )
         self._max_retries = max_retries
+
+    _RETRYABLE_METHODS = frozenset({"GET", "DELETE"})
 
     def request(
         self,
@@ -92,17 +101,40 @@ class HTTPClient:
         if params:
             params = {k: v for k, v in params.items() if v is not None}
 
-        response = self._client.request(
-            method,
-            path,
-            json=json_data,
-            params=params,
-        )
-        _raise_for_status(response)
+        retries = self._max_retries if method.upper() in self._RETRYABLE_METHODS else 0
 
-        if response.headers.get("content-type", "").startswith("application/json"):
-            return response.json()
-        return response.text
+        for attempt in range(retries + 1):
+            try:
+                response = self._client.request(
+                    method,
+                    path,
+                    json=json_data,
+                    params=params,
+                )
+                if response.status_code >= 500 and attempt < retries:
+                    logger.debug(
+                        "Retrying %s %s (attempt %d/%d) after %d status",
+                        method, path, attempt + 1, retries, response.status_code,
+                    )
+                    time.sleep(0.5 * 2**attempt)
+                    continue
+                _raise_for_status(response)
+
+                if response.headers.get("content-type", "").startswith("application/json"):
+                    return response.json()
+                return response.text
+            except httpx.TransportError as exc:
+                if attempt < retries:
+                    logger.debug(
+                        "Retrying %s %s (attempt %d/%d) after transport error: %s",
+                        method, path, attempt + 1, retries, exc,
+                    )
+                    time.sleep(0.5 * 2**attempt)
+                    continue
+                raise
+
+        # Unreachable, but satisfies type checkers
+        raise InternalServerError("Max retries exceeded")  # pragma: no cover
 
     def get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return self.request("GET", path, params=params)
@@ -176,8 +208,11 @@ class AsyncHTTPClient:
             },
             timeout=httpx.Timeout(timeout, connect=10.0),
             follow_redirects=True,
+            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
         )
         self._max_retries = max_retries
+
+    _RETRYABLE_METHODS = frozenset({"GET", "DELETE"})
 
     async def request(
         self,
@@ -190,17 +225,41 @@ class AsyncHTTPClient:
         if params:
             params = {k: v for k, v in params.items() if v is not None}
 
-        response = await self._client.request(
-            method,
-            path,
-            json=json_data,
-            params=params,
-        )
-        _raise_for_status(response)
+        retries = self._max_retries if method.upper() in self._RETRYABLE_METHODS else 0
+        import asyncio
 
-        if response.headers.get("content-type", "").startswith("application/json"):
-            return response.json()
-        return response.text
+        for attempt in range(retries + 1):
+            try:
+                response = await self._client.request(
+                    method,
+                    path,
+                    json=json_data,
+                    params=params,
+                )
+                if response.status_code >= 500 and attempt < retries:
+                    logger.debug(
+                        "Retrying %s %s (attempt %d/%d) after %d status",
+                        method, path, attempt + 1, retries, response.status_code,
+                    )
+                    await asyncio.sleep(0.5 * 2**attempt)
+                    continue
+                _raise_for_status(response)
+
+                if response.headers.get("content-type", "").startswith("application/json"):
+                    return response.json()
+                return response.text
+            except httpx.TransportError as exc:
+                if attempt < retries:
+                    logger.debug(
+                        "Retrying %s %s (attempt %d/%d) after transport error: %s",
+                        method, path, attempt + 1, retries, exc,
+                    )
+                    await asyncio.sleep(0.5 * 2**attempt)
+                    continue
+                raise
+
+        # Unreachable, but satisfies type checkers
+        raise InternalServerError("Max retries exceeded")  # pragma: no cover
 
     async def get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return await self.request("GET", path, params=params)
@@ -252,7 +311,8 @@ class AsyncHTTPClient:
                     data = line[6:]
                     try:
                         yield json.loads(data)
-                    except json.JSONDecodeError:
+                    except json.JSONDecodeError as e:
+                        logger.warning("Malformed SSE event: %s", e)
                         continue
 
     async def close(self) -> None:
@@ -271,5 +331,6 @@ def _parse_sse_stream(lines: Iterator[str]) -> Generator[dict[str, Any], None, N
             data = line[6:]
             try:
                 yield json.loads(data)
-            except json.JSONDecodeError:
+            except json.JSONDecodeError as e:
+                logger.warning("Malformed SSE event: %s", e)
                 continue

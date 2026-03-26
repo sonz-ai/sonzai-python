@@ -1088,7 +1088,7 @@ class AsyncAgents:
         tool_capabilities: dict[str, bool] | None = None,
         tool_definitions: list[dict[str, Any]] | None = None,
         stream: bool = False,
-    ) -> Any:
+    ) -> ChatResponse | AsyncIterator[ChatStreamEvent]:
         """Send a chat message to an agent.
 
         Returns ChatResponse if stream=False, async iterator if stream=True.
