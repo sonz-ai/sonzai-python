@@ -91,6 +91,81 @@ class CustomStates:
             return DeleteResponse.model_validate(data)
         return DeleteResponse(success=True)
 
+    def upsert(
+        self,
+        agent_id: str,
+        *,
+        key: str,
+        value: Any,
+        scope: str | None = None,
+        content_type: str | None = None,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> CustomState:
+        """Create or update a custom state by composite key (key + scope + user_id + instance_id)."""
+        body: dict[str, Any] = {"key": key, "value": value}
+        if scope is not None:
+            body["scope"] = scope
+        if content_type is not None:
+            body["content_type"] = content_type
+        if user_id is not None:
+            body["user_id"] = user_id
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+
+        data = self._http.put(
+            f"/api/v1/agents/{agent_id}/custom-states/by-key", json_data=body
+        )
+        return CustomState.model_validate(data)
+
+    def get_by_key(
+        self,
+        agent_id: str,
+        *,
+        key: str,
+        scope: str | None = None,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> CustomState:
+        """Get a custom state by its composite key."""
+        params: dict[str, Any] = {"key": key}
+        if scope is not None:
+            params["scope"] = scope
+        if user_id is not None:
+            params["user_id"] = user_id
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+
+        data = self._http.get(
+            f"/api/v1/agents/{agent_id}/custom-states/by-key", params=params
+        )
+        return CustomState.model_validate(data)
+
+    def delete_by_key(
+        self,
+        agent_id: str,
+        *,
+        key: str,
+        scope: str | None = None,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> DeleteResponse:
+        """Delete a custom state by its composite key."""
+        params: dict[str, Any] = {"key": key}
+        if scope is not None:
+            params["scope"] = scope
+        if user_id is not None:
+            params["user_id"] = user_id
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+
+        data = self._http.delete(
+            f"/api/v1/agents/{agent_id}/custom-states/by-key", params=params
+        )
+        if isinstance(data, dict):
+            return DeleteResponse.model_validate(data)
+        return DeleteResponse(success=True)
+
 
 class AsyncCustomStates:
     """Async custom state operations for an agent."""
@@ -170,6 +245,81 @@ class AsyncCustomStates:
         """Delete a custom state."""
         data = await self._http.delete(
             f"/api/v1/agents/{agent_id}/custom-states/{state_id}"
+        )
+        if isinstance(data, dict):
+            return DeleteResponse.model_validate(data)
+        return DeleteResponse(success=True)
+
+    async def upsert(
+        self,
+        agent_id: str,
+        *,
+        key: str,
+        value: Any,
+        scope: str | None = None,
+        content_type: str | None = None,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> CustomState:
+        """Create or update a custom state by composite key (key + scope + user_id + instance_id)."""
+        body: dict[str, Any] = {"key": key, "value": value}
+        if scope is not None:
+            body["scope"] = scope
+        if content_type is not None:
+            body["content_type"] = content_type
+        if user_id is not None:
+            body["user_id"] = user_id
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+
+        data = await self._http.put(
+            f"/api/v1/agents/{agent_id}/custom-states/by-key", json_data=body
+        )
+        return CustomState.model_validate(data)
+
+    async def get_by_key(
+        self,
+        agent_id: str,
+        *,
+        key: str,
+        scope: str | None = None,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> CustomState:
+        """Get a custom state by its composite key."""
+        params: dict[str, Any] = {"key": key}
+        if scope is not None:
+            params["scope"] = scope
+        if user_id is not None:
+            params["user_id"] = user_id
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+
+        data = await self._http.get(
+            f"/api/v1/agents/{agent_id}/custom-states/by-key", params=params
+        )
+        return CustomState.model_validate(data)
+
+    async def delete_by_key(
+        self,
+        agent_id: str,
+        *,
+        key: str,
+        scope: str | None = None,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> DeleteResponse:
+        """Delete a custom state by its composite key."""
+        params: dict[str, Any] = {"key": key}
+        if scope is not None:
+            params["scope"] = scope
+        if user_id is not None:
+            params["user_id"] = user_id
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+
+        data = await self._http.delete(
+            f"/api/v1/agents/{agent_id}/custom-states/by-key", params=params
         )
         if isinstance(data, dict):
             return DeleteResponse.model_validate(data)
