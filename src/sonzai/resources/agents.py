@@ -14,7 +14,6 @@ from ..types import (
     ChatMessage,
     ChatResponse,
     ChatStreamEvent,
-    ChatUsage,
     ConsolidateResponse,
     ConstellationResponse,
     CustomToolDefinition,
@@ -23,6 +22,7 @@ from ..types import (
     DialogueResponse,
     DiaryResponse,
     EvaluationResult,
+    Goal,
     GoalsResponse,
     HabitsResponse,
     InterestsResponse,
@@ -43,12 +43,12 @@ from ..types import (
 from .custom_states import AsyncCustomStates, CustomStates
 from .generation import AsyncGeneration, Generation
 from .instances import AsyncInstances, Instances
+from .inventory import AsyncInventory, Inventory
 from .memory import AsyncMemory, Memory
 from .notifications import AsyncNotifications, Notifications
 from .personality import AsyncPersonality, Personality
 from .priming import AsyncPriming, Priming
 from .sessions import AsyncSessions, Sessions
-from .inventory import AsyncInventory, Inventory
 from .voice import AsyncVoiceResource, VoiceResource
 
 
@@ -96,6 +96,7 @@ class Agents:
         lore_generation_context: dict[str, Any] | None = None,
         generate_origin_story: bool | None = None,
         generate_personalized_memories: bool | None = None,
+        initial_goals: list[dict[str, Any]] | None = None,
     ) -> Agent:
         """Create a new agent."""
         body: dict[str, Any] = {"name": name}
@@ -143,6 +144,8 @@ class Agents:
             body["generate_origin_story"] = generate_origin_story
         if generate_personalized_memories is not None:
             body["generate_personalized_memories"] = generate_personalized_memories
+        if initial_goals is not None:
+            body["initial_goals"] = initial_goals
 
         data = self._http.post("/api/v1/agents", json_data=body)
         return Agent.model_validate(data)
@@ -688,6 +691,83 @@ class Agents:
         data = self._http.get(f"/api/v1/agents/{agent_id}/goals", params=params)
         return GoalsResponse.model_validate(data)
 
+    def create_goal(
+        self,
+        agent_id: str,
+        *,
+        title: str,
+        description: str,
+        user_id: str | None = None,
+        type: str | None = None,
+        priority: int | None = None,
+        related_traits: list[str] | None = None,
+    ) -> Goal:
+        """Create a goal for an agent. Set user_id to create a per-user goal."""
+        body: dict[str, Any] = {
+            "title": title,
+            "description": description,
+        }
+        if user_id is not None:
+            body["user_id"] = user_id
+        if type is not None:
+            body["type"] = type
+        if priority is not None:
+            body["priority"] = priority
+        if related_traits is not None:
+            body["related_traits"] = related_traits
+
+        data = self._http.post(
+            f"/api/v1/agents/{agent_id}/goals", json_data=body
+        )
+        return Goal.model_validate(data)
+
+    def update_goal(
+        self,
+        agent_id: str,
+        goal_id: str,
+        *,
+        user_id: str | None = None,
+        title: str | None = None,
+        description: str | None = None,
+        priority: int | None = None,
+        status: str | None = None,
+        related_traits: list[str] | None = None,
+    ) -> Goal:
+        """Update an existing goal. Set user_id for per-user goals."""
+        body: dict[str, Any] = {}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if title is not None:
+            body["title"] = title
+        if description is not None:
+            body["description"] = description
+        if priority is not None:
+            body["priority"] = priority
+        if status is not None:
+            body["status"] = status
+        if related_traits is not None:
+            body["related_traits"] = related_traits
+
+        data = self._http.put(
+            f"/api/v1/agents/{agent_id}/goals/{goal_id}", json_data=body
+        )
+        return Goal.model_validate(data)
+
+    def delete_goal(
+        self,
+        agent_id: str,
+        goal_id: str,
+        *,
+        user_id: str | None = None,
+    ) -> None:
+        """Delete (soft-abandon) a goal. Set user_id for per-user goals."""
+        params: dict[str, Any] = {}
+        if user_id is not None:
+            params["userId"] = user_id
+        self._http.delete(
+            f"/api/v1/agents/{agent_id}/goals/{goal_id}", params=params
+        )
+
     def get_interests(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> InterestsResponse:
@@ -966,6 +1046,7 @@ class AsyncAgents:
         lore_generation_context: dict[str, Any] | None = None,
         generate_origin_story: bool | None = None,
         generate_personalized_memories: bool | None = None,
+        initial_goals: list[dict[str, Any]] | None = None,
     ) -> Agent:
         """Create a new agent."""
         body: dict[str, Any] = {"name": name}
@@ -1013,6 +1094,8 @@ class AsyncAgents:
             body["generate_origin_story"] = generate_origin_story
         if generate_personalized_memories is not None:
             body["generate_personalized_memories"] = generate_personalized_memories
+        if initial_goals is not None:
+            body["initial_goals"] = initial_goals
 
         data = await self._http.post("/api/v1/agents", json_data=body)
         return Agent.model_validate(data)
@@ -1532,6 +1615,83 @@ class AsyncAgents:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/goals", params=params)
         return GoalsResponse.model_validate(data)
+
+    async def create_goal(
+        self,
+        agent_id: str,
+        *,
+        title: str,
+        description: str,
+        user_id: str | None = None,
+        type: str | None = None,
+        priority: int | None = None,
+        related_traits: list[str] | None = None,
+    ) -> Goal:
+        """Create a goal for an agent. Set user_id to create a per-user goal."""
+        body: dict[str, Any] = {
+            "title": title,
+            "description": description,
+        }
+        if user_id is not None:
+            body["user_id"] = user_id
+        if type is not None:
+            body["type"] = type
+        if priority is not None:
+            body["priority"] = priority
+        if related_traits is not None:
+            body["related_traits"] = related_traits
+
+        data = await self._http.post(
+            f"/api/v1/agents/{agent_id}/goals", json_data=body
+        )
+        return Goal.model_validate(data)
+
+    async def update_goal(
+        self,
+        agent_id: str,
+        goal_id: str,
+        *,
+        user_id: str | None = None,
+        title: str | None = None,
+        description: str | None = None,
+        priority: int | None = None,
+        status: str | None = None,
+        related_traits: list[str] | None = None,
+    ) -> Goal:
+        """Update an existing goal. Set user_id for per-user goals."""
+        body: dict[str, Any] = {}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if title is not None:
+            body["title"] = title
+        if description is not None:
+            body["description"] = description
+        if priority is not None:
+            body["priority"] = priority
+        if status is not None:
+            body["status"] = status
+        if related_traits is not None:
+            body["related_traits"] = related_traits
+
+        data = await self._http.put(
+            f"/api/v1/agents/{agent_id}/goals/{goal_id}", json_data=body
+        )
+        return Goal.model_validate(data)
+
+    async def delete_goal(
+        self,
+        agent_id: str,
+        goal_id: str,
+        *,
+        user_id: str | None = None,
+    ) -> None:
+        """Delete (soft-abandon) a goal. Set user_id for per-user goals."""
+        params: dict[str, Any] = {}
+        if user_id is not None:
+            params["userId"] = user_id
+        await self._http.delete(
+            f"/api/v1/agents/{agent_id}/goals/{goal_id}", params=params
+        )
 
     async def get_interests(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None

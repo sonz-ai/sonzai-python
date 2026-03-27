@@ -6,7 +6,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-
 # ---------------------------------------------------------------------------
 # Chat
 # ---------------------------------------------------------------------------
@@ -279,7 +278,48 @@ class HabitsResponse(BaseModel):
     model_config = {"extra": "allow"}
 
 
+GoalType = str
+"""One of: personal_growth, skill_mastery, relationship, learning_discovery."""
+
+GoalStatus = str
+"""One of: active, achieved, abandoned."""
+
+GoalPriority = int
+"""0 = low, 1 = medium, 2 = high."""
+
+
+class Goal(BaseModel):
+    goal_id: str = ""
+    agent_id: str = ""
+    user_id: str = ""
+    type: str = ""
+    title: str = ""
+    description: str = ""
+    priority: int = 0
+    status: str = ""
+    related_traits: list[str] = Field(default_factory=list)
+    created_at: str | None = None
+    achieved_at: str | None = None
+    updated_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
 class GoalsResponse(BaseModel):
+    goals: list[Goal] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class InitialGoal(BaseModel):
+    """Goal definition used when creating an agent with initial goals."""
+
+    type: str = ""
+    title: str = ""
+    description: str = ""
+    priority: int = 0
+    related_traits: list[str] = Field(default_factory=list)
+
     model_config = {"extra": "allow"}
 
 
@@ -647,6 +687,17 @@ class ImageGenerateResponse(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class GeneratedGoal(BaseModel):
+    """A goal generated as part of character generation."""
+
+    type: str = ""
+    title: str = ""
+    description: str = ""
+    priority: int = 0
+
+    model_config = {"extra": "allow"}
+
+
 class GenerateCharacterResponse(BaseModel):
     bio: str = ""
     personality_prompt: str = ""
@@ -658,6 +709,9 @@ class GenerateCharacterResponse(BaseModel):
     dimensions: dict[str, Any] = Field(default_factory=dict)
     preferences: dict[str, Any] = Field(default_factory=dict)
     behaviors: dict[str, Any] = Field(default_factory=dict)
+    initial_goals: list[GeneratedGoal] = Field(default_factory=list)
+    world_description: str = ""
+    origin_prompt_instructions: str = ""
 
     model_config = {"extra": "allow"}
 
