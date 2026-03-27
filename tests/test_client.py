@@ -71,7 +71,7 @@ class TestChat:
         )
 
         response = client.agents.chat(
-            "agent-1",
+            agent_id="agent-1",
             messages=[{"role": "user", "content": "Hi"}],
         )
         assert response.content == "Hello world"
@@ -95,7 +95,7 @@ class TestChat:
 
         events = list(
             client.agents.chat(
-                "agent-1",
+                agent_id="agent-1",
                 messages=[{"role": "user", "content": "Hi"}],
                 stream=True,
             )
@@ -380,4 +380,4 @@ class TestErrorHandling:
         )
 
         with pytest.raises(BadRequestError):
-            client.agents.chat("agent-1", messages=[])
+            client.agents.chat(agent_id="agent-1", messages=[])

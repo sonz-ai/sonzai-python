@@ -595,6 +595,35 @@ class VoiceChatResponse(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class VoiceStreamToken(BaseModel):
+    """Token for establishing a voice WebSocket connection."""
+
+    ws_url: str = Field(default="", alias="wsUrl")
+    auth_token: str = Field(default="", alias="authToken")
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+
+class VoiceStreamEvent(BaseModel):
+    """Server event from the voice WebSocket stream.
+
+    Event types: "ready", "vad", "transcript", "response_delta",
+    "turn_complete", "error", or "audio" (binary audio data).
+    """
+
+    type: str = ""
+    session_id: str = ""
+    speaking: bool | None = None
+    text: str = ""
+    continuation_token: str = ""
+    content_type: str = ""
+    error: str = ""
+    error_code: str = ""
+    audio: bytes = b""
+
+    model_config = {"extra": "allow"}
+
+
 # ---------------------------------------------------------------------------
 # Generation
 # ---------------------------------------------------------------------------

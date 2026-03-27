@@ -423,8 +423,199 @@ class AsyncKnowledge:
         )
         return KBSearchResponse.model_validate(data)
 
+    async def get_node_history(
+        self, project_id: str, node_id: str, *, limit: int | None = None
+    ) -> KBNodeHistoryResponse:
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        data = await self._http.get(
+            f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}/history",
+            params=params,
+        )
+        return KBNodeHistoryResponse.model_validate(data)
+
+    async def search(
+        self,
+        project_id: str,
+        *,
+        query: str,
+        limit: int | None = None,
+        include_history: bool = False,
+        entity_types: str | None = None,
+        filters: str | None = None,
+    ) -> KBSearchResponse:
+        params: dict[str, Any] = {"q": query}
+        if limit is not None:
+            params["limit"] = limit
+        if include_history:
+            params["history"] = "true"
+        if entity_types is not None:
+            params["type"] = entity_types
+        if filters is not None:
+            params["filters"] = filters
+        data = await self._http.get(
+            f"/api/v1/projects/{project_id}/knowledge/search", params=params
+        )
+        return KBSearchResponse.model_validate(data)
+
+    # -- Schemas --
+
+    async def create_schema(
+        self, project_id: str, *, entity_type: str, fields: list[dict[str, Any]], **kwargs: Any
+    ) -> KBEntitySchema:
+        body: dict[str, Any] = {"entity_type": entity_type, "fields": fields}
+        body.update(kwargs)
+        data = await self._http.post(
+            f"/api/v1/projects/{project_id}/knowledge/schemas", json_data=body
+        )
+        return KBEntitySchema.model_validate(data)
+
+    async def list_schemas(self, project_id: str) -> KBSchemaListResponse:
+        data = await self._http.get(
+            f"/api/v1/projects/{project_id}/knowledge/schemas"
+        )
+        return KBSchemaListResponse.model_validate(data)
+
+    async def update_schema(
+        self, project_id: str, schema_id: str, **kwargs: Any
+    ) -> KBEntitySchema:
+        data = await self._http.put(
+            f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}",
+            json_data=kwargs,
+        )
+        return KBEntitySchema.model_validate(data)
+
+    async def delete_schema(self, project_id: str, schema_id: str) -> None:
+        await self._http.delete(
+            f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}"
+        )
+
     async def get_stats(self, project_id: str) -> KBStats:
         data = await self._http.get(
             f"/api/v1/projects/{project_id}/knowledge/stats"
         )
         return KBStats.model_validate(data)
+
+    # -- Analytics Rules --
+
+    async def create_analytics_rule(
+        self, project_id: str, **kwargs: Any
+    ) -> KBAnalyticsRule:
+        data = await self._http.post(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/rules",
+            json_data=kwargs,
+        )
+        return KBAnalyticsRule.model_validate(data)
+
+    async def list_analytics_rules(
+        self, project_id: str
+    ) -> KBAnalyticsRuleListResponse:
+        data = await self._http.get(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/rules"
+        )
+        return KBAnalyticsRuleListResponse.model_validate(data)
+
+    async def get_analytics_rule(
+        self, project_id: str, rule_id: str
+    ) -> KBAnalyticsRule:
+        data = await self._http.get(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
+        )
+        return KBAnalyticsRule.model_validate(data)
+
+    async def update_analytics_rule(
+        self, project_id: str, rule_id: str, **kwargs: Any
+    ) -> KBAnalyticsRule:
+        data = await self._http.put(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}",
+            json_data=kwargs,
+        )
+        return KBAnalyticsRule.model_validate(data)
+
+    async def delete_analytics_rule(self, project_id: str, rule_id: str) -> None:
+        await self._http.delete(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
+        )
+
+    async def run_analytics_rule(self, project_id: str, rule_id: str) -> None:
+        await self._http.post(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}/run",
+            json_data={},
+        )
+
+    # -- Analytics Queries --
+
+    async def get_recommendations(
+        self, project_id: str, *, rule_id: str, source_id: str, limit: int | None = None
+    ) -> KBRecommendationsResponse:
+        params: dict[str, Any] = {"rule_id": rule_id, "source_id": source_id}
+        if limit is not None:
+            params["limit"] = limit
+        data = await self._http.get(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/recommendations",
+            params=params,
+        )
+        return KBRecommendationsResponse.model_validate(data)
+
+    async def get_trends(self, project_id: str, *, node_id: str) -> KBTrendsResponse:
+        data = await self._http.get(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/trends",
+            params={"node_id": node_id},
+        )
+        return KBTrendsResponse.model_validate(data)
+
+    async def get_trend_rankings(
+        self,
+        project_id: str,
+        *,
+        rule_id: str,
+        ranking_type: str,
+        window: str,
+        limit: int | None = None,
+    ) -> KBTrendRankingsResponse:
+        params: dict[str, Any] = {
+            "rule_id": rule_id,
+            "type": ranking_type,
+            "window": window,
+        }
+        if limit is not None:
+            params["limit"] = limit
+        data = await self._http.get(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/rankings",
+            params=params,
+        )
+        return KBTrendRankingsResponse.model_validate(data)
+
+    async def get_conversions(
+        self, project_id: str, *, rule_id: str, segment: str | None = None
+    ) -> KBConversionsResponse:
+        params: dict[str, Any] = {"rule_id": rule_id}
+        if segment is not None:
+            params["segment"] = segment
+        data = await self._http.get(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/conversions",
+            params=params,
+        )
+        return KBConversionsResponse.model_validate(data)
+
+    async def record_feedback(
+        self,
+        project_id: str,
+        *,
+        source_node_id: str,
+        target_node_id: str,
+        rule_id: str,
+        converted: bool,
+        score_at_time: float,
+    ) -> None:
+        await self._http.post(
+            f"/api/v1/projects/{project_id}/knowledge/analytics/feedback",
+            json_data={
+                "source_node_id": source_node_id,
+                "target_node_id": target_node_id,
+                "rule_id": rule_id,
+                "converted": converted,
+                "score_at_time": score_at_time,
+            },
+        )

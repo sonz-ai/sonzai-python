@@ -204,8 +204,8 @@ class Agents:
 
     def chat(
         self,
-        agent_id: str,
         *,
+        agent_id: str,
         messages: list[ChatMessage | dict[str, str]],
         user_id: str | None = None,
         user_display_name: str | None = None,

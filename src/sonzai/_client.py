@@ -29,14 +29,14 @@ class Sonzai:
 
         # Chat with an agent
         response = client.agents.chat(
-            "agent-id",
+            agent_id="agent-id",
             messages=[{"role": "user", "content": "Hello!"}],
         )
         print(response.content)
 
         # Stream chat
         for event in client.agents.chat(
-            "agent-id",
+            agent_id="agent-id",
             messages=[{"role": "user", "content": "Tell me a story"}],
             stream=True,
         ):
