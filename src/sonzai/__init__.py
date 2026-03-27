@@ -108,6 +108,22 @@ from .types import (
     WebhookEndpoint,
     WebhookListResponse,
     WebhookRegisterResponse,
+    # Inventory
+    InventoryUpdateResponse,
+    InventoryQueryResponse,
+    InventoryItem,
+    InventoryGroupResult,
+    InventoryBatchImportResponse,
+    InventoryDirectUpdateResponse,
+    KBResolutionInfo,
+    KBCandidate,
+    StoredFact,
+    ListAllFactsResponse,
+    StructuredColumnMapping,
+    StructuredImportSpec,
+    # KB Bulk Update
+    KBBulkUpdateEntry,
+    KBBulkUpdateResponse,
 )
 
 __version__ = "1.13.0"
@@ -240,4 +256,20 @@ __all__ = [
     "SimulationEvent",
     # Types - User Persona
     "UserPersona",
+    # Types - Inventory
+    "InventoryUpdateResponse",
+    "InventoryQueryResponse",
+    "InventoryItem",
+    "InventoryGroupResult",
+    "InventoryBatchImportResponse",
+    "InventoryDirectUpdateResponse",
+    "KBResolutionInfo",
+    "KBCandidate",
+    "StoredFact",
+    "ListAllFactsResponse",
+    "StructuredColumnMapping",
+    "StructuredImportSpec",
+    # Types - KB Bulk Update
+    "KBBulkUpdateEntry",
+    "KBBulkUpdateResponse",
 ]

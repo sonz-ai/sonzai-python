@@ -101,6 +101,7 @@ class AtomicFact(BaseModel):
     importance: float = 0.0
     supersedes_id: str = ""
     session_id: str = ""
+    metadata: dict[str, Any] | None = None
     created_at: str | None = None
 
 
@@ -913,6 +914,7 @@ class AgentCapabilities(BaseModel):
     webSearch: bool = False
     rememberName: bool = False
     imageGeneration: bool = False
+    inventory: bool = False
     customTools: list[CustomToolDefinition] = Field(default_factory=list)
 
 
@@ -1148,6 +1150,9 @@ class PrimeUserResponse(BaseModel):
     job_id: str = ""
     status: str = ""
     facts_created: int = 0
+    rows_parsed: int | None = None
+    kb_resolved: int | None = None
+    unresolved: int | None = None
 
 
 class AddContentResponse(BaseModel):
@@ -1198,4 +1203,122 @@ class ImportJob(BaseModel):
 
 class ImportJobListResponse(BaseModel):
     jobs: list[ImportJob] = Field(default_factory=list)
+    count: int = 0
+
+
+# ---------------------------------------------------------------------------
+# Structured Import (Priming)
+# ---------------------------------------------------------------------------
+
+
+class StructuredColumnMapping(BaseModel):
+    property: str = ""
+    is_label: bool = False
+    type: str = ""
+
+
+class StructuredImportSpec(BaseModel):
+    entity_type: str = ""
+    content_csv: str = ""
+    column_mapping: dict[str, StructuredColumnMapping] = Field(default_factory=dict)
+    project_id: str = ""
+
+
+# ---------------------------------------------------------------------------
+# Inventory
+# ---------------------------------------------------------------------------
+
+
+class KBResolutionInfo(BaseModel):
+    resolved: bool = False
+    kb_node_id: str = ""
+    kb_label: str = ""
+    kb_properties: dict[str, Any] = Field(default_factory=dict)
+
+
+class KBCandidate(BaseModel):
+    kb_node_id: str = ""
+    label: str = ""
+    properties: dict[str, Any] = Field(default_factory=dict)
+
+
+class InventoryUpdateResponse(BaseModel):
+    status: str = ""
+    fact_id: str = ""
+    kb_resolution: KBResolutionInfo | None = None
+    candidates: list[KBCandidate] = Field(default_factory=list)
+    error: str = ""
+
+
+class InventoryItem(BaseModel):
+    fact_id: str = ""
+    item_label: str = ""
+    kb_node_id: str = ""
+    user_properties: dict[str, Any] = Field(default_factory=dict)
+    market_properties: dict[str, Any] = Field(default_factory=dict)
+    gain_loss: float | None = None
+
+
+class InventoryGroupResult(BaseModel):
+    group: str = ""
+    values: dict[str, Any] = Field(default_factory=dict)
+
+
+class InventoryQueryResponse(BaseModel):
+    items: list[InventoryItem] = Field(default_factory=list)
+    total_items: int = 0
+    totals: dict[str, Any] = Field(default_factory=dict)
+    groups: list[InventoryGroupResult] = Field(default_factory=list)
+
+
+class InventoryBatchImportResponse(BaseModel):
+    status: str = ""
+    added: int = 0
+    failed: int = 0
+    total: int = 0
+    error: str = ""
+
+
+class InventoryDirectUpdateResponse(BaseModel):
+    status: str = ""
+    fact_id: str = ""
+    error: str = ""
+
+
+class StoredFact(BaseModel):
+    fact_id: str = ""
+    content: str = ""
+    fact_type: str = ""
+    importance: float = 0.0
+    confidence: float = 0.0
+    entity: str = ""
+    source_type: str = ""
+    mention_count: int = 0
+    metadata: dict[str, Any] | None = None
+    created_at: str = ""
+    updated_at: str = ""
+
+
+class ListAllFactsResponse(BaseModel):
+    facts: list[StoredFact] = Field(default_factory=list)
+    total: int = 0
+
+
+# ---------------------------------------------------------------------------
+# KB Bulk Update
+# ---------------------------------------------------------------------------
+
+
+class KBBulkUpdateEntry(BaseModel):
+    entity_type: str = ""
+    label: str = ""
+    properties: dict[str, Any] = Field(default_factory=dict)
+
+
+class KBBulkUpdateResponse(BaseModel):
+    processed: int = 0
+    updated: int = 0
+    not_found: int = 0
+    created: int = 0
+    status: str = ""
     count: int = 0

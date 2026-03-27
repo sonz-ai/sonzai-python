@@ -48,6 +48,7 @@ from .notifications import AsyncNotifications, Notifications
 from .personality import AsyncPersonality, Personality
 from .priming import AsyncPriming, Priming
 from .sessions import AsyncSessions, Sessions
+from .inventory import AsyncInventory, Inventory
 from .voice import AsyncVoiceResource, VoiceResource
 
 
@@ -65,6 +66,7 @@ class Agents:
         self.generation = Generation(http)
         self.voice = VoiceResource(http)
         self.priming = Priming(http)
+        self.inventory = Inventory(http)
 
     # -- Agent CRUD --
 
@@ -803,6 +805,7 @@ class Agents:
         web_search: bool | None = None,
         remember_name: bool | None = None,
         image_generation: bool | None = None,
+        inventory: bool | None = None,
     ) -> AgentCapabilities:
         """Update an agent's capabilities."""
         body: dict[str, Any] = {}
@@ -812,6 +815,8 @@ class Agents:
             body["rememberName"] = remember_name
         if image_generation is not None:
             body["imageGeneration"] = image_generation
+        if inventory is not None:
+            body["inventory"] = inventory
         return AgentCapabilities.model_validate(
             self._http.patch(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
         )
@@ -931,6 +936,7 @@ class AsyncAgents:
         self.generation = AsyncGeneration(http)
         self.voice = AsyncVoiceResource(http)
         self.priming = AsyncPriming(http)
+        self.inventory = AsyncInventory(http)
 
     # -- Agent CRUD --
 
@@ -1644,6 +1650,7 @@ class AsyncAgents:
         web_search: bool | None = None,
         remember_name: bool | None = None,
         image_generation: bool | None = None,
+        inventory: bool | None = None,
     ) -> AgentCapabilities:
         """Update an agent's capabilities."""
         body: dict[str, Any] = {}
@@ -1653,6 +1660,8 @@ class AsyncAgents:
             body["rememberName"] = remember_name
         if image_generation is not None:
             body["imageGeneration"] = image_generation
+        if inventory is not None:
+            body["inventory"] = inventory
         return AgentCapabilities.model_validate(
             await self._http.patch(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
         )

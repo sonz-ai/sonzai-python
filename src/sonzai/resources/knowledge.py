@@ -8,6 +8,7 @@ from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
     KBAnalyticsRule,
     KBAnalyticsRuleListResponse,
+    KBBulkUpdateResponse,
     KBConversionsResponse,
     KBDocument,
     KBDocumentListResponse,
@@ -335,6 +336,26 @@ class Knowledge:
             },
         )
 
+    # -- Bulk Update --
+
+    def bulk_update(
+        self,
+        project_id: str,
+        *,
+        updates: list[dict[str, Any]],
+        source: str | None = None,
+    ) -> KBBulkUpdateResponse:
+        """Batch-update KB node properties. Sync for <=100 items; async for larger."""
+        body: dict[str, Any] = {"updates": updates}
+        if source is not None:
+            body["source"] = source
+        return KBBulkUpdateResponse.model_validate(
+            self._http.patch(
+                f"/api/v1/projects/{project_id}/knowledge/bulk-update",
+                json_data=body,
+            )
+        )
+
 
 class AsyncKnowledge:
     """Async knowledge base operations (project-scoped)."""
@@ -618,4 +639,24 @@ class AsyncKnowledge:
                 "converted": converted,
                 "score_at_time": score_at_time,
             },
+        )
+
+    # -- Bulk Update --
+
+    async def bulk_update(
+        self,
+        project_id: str,
+        *,
+        updates: list[dict[str, Any]],
+        source: str | None = None,
+    ) -> KBBulkUpdateResponse:
+        """Batch-update KB node properties. Sync for <=100 items; async for larger."""
+        body: dict[str, Any] = {"updates": updates}
+        if source is not None:
+            body["source"] = source
+        return KBBulkUpdateResponse.model_validate(
+            await self._http.patch(
+                f"/api/v1/projects/{project_id}/knowledge/bulk-update",
+                json_data=body,
+            )
         )
