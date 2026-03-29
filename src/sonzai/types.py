@@ -699,6 +699,10 @@ class GeneratedGoal(BaseModel):
 
 
 class GenerateCharacterResponse(BaseModel):
+    agent_id: str = ""
+    """The resolved agent ID (provided or derived from name)."""
+    existing: bool = False
+    """True when the agent already existed and the LLM was not called."""
     bio: str = ""
     personality_prompt: str = ""
     big5: dict[str, Any] = Field(default_factory=dict)

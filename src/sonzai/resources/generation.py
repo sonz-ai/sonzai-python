@@ -80,12 +80,19 @@ class Generation:
         self,
         *,
         name: str,
+        agent_id: str | None = None,
         gender: str | None = None,
         description: str | None = None,
         fields: list[str] | None = None,
     ) -> GenerateCharacterResponse:
-        """Generate a full character profile from a description."""
+        """Generate a full character profile from a description.
+
+        If an agent with the resolved ID already exists, the LLM is skipped
+        and the existing profile is returned.
+        """
         body: dict[str, Any] = {"name": name}
+        if agent_id is not None:
+            body["agent_id"] = agent_id
         if gender is not None:
             body["gender"] = gender
         if description is not None:
@@ -224,12 +231,19 @@ class AsyncGeneration:
         self,
         *,
         name: str,
+        agent_id: str | None = None,
         gender: str | None = None,
         description: str | None = None,
         fields: list[str] | None = None,
     ) -> GenerateCharacterResponse:
-        """Generate a full character profile from a description."""
+        """Generate a full character profile from a description.
+
+        If an agent with the resolved ID already exists, the LLM is skipped
+        and the existing profile is returned.
+        """
         body: dict[str, Any] = {"name": name}
+        if agent_id is not None:
+            body["agent_id"] = agent_id
         if gender is not None:
             body["gender"] = gender
         if description is not None:

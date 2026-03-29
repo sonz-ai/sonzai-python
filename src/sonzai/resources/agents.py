@@ -210,7 +210,7 @@ class Agents:
     def chat(
         self,
         *,
-        agent_id: str,
+        agent_id: str,  # UUID or agent name (names resolved server-side)
         messages: list[ChatMessage | dict[str, str]],
         user_id: str | None = None,
         user_display_name: str | None = None,
@@ -1159,7 +1159,7 @@ class AsyncAgents:
 
     async def chat(
         self,
-        agent_id: str,
+        agent_id: str,  # UUID or agent name (names resolved server-side)
         *,
         messages: list[ChatMessage | dict[str, str]],
         user_id: str | None = None,
