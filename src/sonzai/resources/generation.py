@@ -105,6 +105,40 @@ class Generation:
         )
         return GenerateCharacterResponse.model_validate(data)
 
+    def generate_and_create(
+        self,
+        *,
+        name: str,
+        agent_id: str | None = None,
+        gender: str | None = None,
+        description: str | None = None,
+        fields: list[str] | None = None,
+        project_id: str | None = None,
+        language: str | None = None,
+    ) -> dict[str, Any]:
+        """Generate a character and create the agent in one idempotent call.
+
+        If the agent already exists, the LLM is skipped and the existing
+        agent is returned. Safe to call on every app startup.
+        """
+        body: dict[str, Any] = {"name": name}
+        if agent_id is not None:
+            body["agent_id"] = agent_id
+        if gender is not None:
+            body["gender"] = gender
+        if description is not None:
+            body["description"] = description
+        if fields is not None:
+            body["fields"] = fields
+        if project_id is not None:
+            body["project_id"] = project_id
+        if language is not None:
+            body["language"] = language
+
+        return self._http.post(
+            "/api/v1/agents/generate-and-create", json_data=body
+        )
+
     def generate_seed_memories(
         self,
         agent_id: str,
@@ -255,6 +289,40 @@ class AsyncGeneration:
             "/api/v1/agents/generate-character", json_data=body
         )
         return GenerateCharacterResponse.model_validate(data)
+
+    async def generate_and_create(
+        self,
+        *,
+        name: str,
+        agent_id: str | None = None,
+        gender: str | None = None,
+        description: str | None = None,
+        fields: list[str] | None = None,
+        project_id: str | None = None,
+        language: str | None = None,
+    ) -> dict[str, Any]:
+        """Generate a character and create the agent in one idempotent call.
+
+        If the agent already exists, the LLM is skipped and the existing
+        agent is returned. Safe to call on every app startup.
+        """
+        body: dict[str, Any] = {"name": name}
+        if agent_id is not None:
+            body["agent_id"] = agent_id
+        if gender is not None:
+            body["gender"] = gender
+        if description is not None:
+            body["description"] = description
+        if fields is not None:
+            body["fields"] = fields
+        if project_id is not None:
+            body["project_id"] = project_id
+        if language is not None:
+            body["language"] = language
+
+        return await self._http.post(
+            "/api/v1/agents/generate-and-create", json_data=body
+        )
 
     async def generate_seed_memories(
         self,
