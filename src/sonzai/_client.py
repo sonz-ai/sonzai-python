@@ -16,7 +16,7 @@ DEFAULT_BASE_URL = "https://api.sonz.ai"
 
 
 class Sonzai:
-    """Synchronous client for the Sonzai Character Engine API.
+    """Synchronous client for the Sonzai Mind Layer API.
 
     Usage::
 
@@ -102,7 +102,7 @@ class Sonzai:
 
 
 class AsyncSonzai:
-    """Asynchronous client for the Sonzai Character Engine API.
+    """Asynchronous client for the Sonzai Mind Layer API.
 
     Usage::
 

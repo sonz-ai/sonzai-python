@@ -1,4 +1,4 @@
-"""Sonzai Python SDK - Client for the Sonzai Character Engine API."""
+"""Sonzai Python SDK - Client for the Sonzai Mind Layer API."""
 
 from ._client import AsyncSonzai, Sonzai
 from ._exceptions import (
@@ -129,7 +129,7 @@ from .types import (
     WebhookRegisterResponse,
 )
 
-__version__ = "1.13.0"
+__version__ = "1.0.0"
 
 __all__ = [
     # Clients
