@@ -109,7 +109,6 @@ from .types import (
     TimeMachineMoodSnapshot,
     TimeMachineResponse,
     TriggerEventResponse,
-    TTSResponse,
     UpdateProjectResponse,
     UserOverlayDetailResponse,
     UserOverlaysListResponse,
@@ -117,11 +116,10 @@ from .types import (
     UserPersonalityOverlay,
     UsersResponse,
     Voice,
-    VoiceChatResponse,
     VoiceListResponse,
-    VoiceMatchResponse,
     VoiceStreamEvent,
     VoiceStreamToken,
+    VoiceUsage,
     WakeupsResponse,
     WebhookDeliveryAttempt,
     WebhookEndpoint,
@@ -129,7 +127,7 @@ from .types import (
     WebhookRegisterResponse,
 )
 
-__version__ = "1.0.0"
+__version__ = "1.0.2"
 
 __all__ = [
     # Clients
@@ -217,13 +215,11 @@ __all__ = [
     # Types - Sessions
     "SessionResponse",
     # Types - Voice
-    "TTSResponse",
     "Voice",
-    "VoiceChatResponse",
     "VoiceListResponse",
-    "VoiceMatchResponse",
     "VoiceStreamEvent",
     "VoiceStreamToken",
+    "VoiceUsage",
     # Types - Generation
     "GenerateBioResponse",
     "GenerateCharacterResponse",

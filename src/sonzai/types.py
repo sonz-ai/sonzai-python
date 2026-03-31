@@ -608,36 +608,8 @@ class VoiceListResponse(BaseModel):
     has_more: bool = False
 
 
-class VoiceMatchResponse(BaseModel):
-    voice_id: str = ""
-    voice_name: str = ""
-    match_score: float = 0.0
-    reasoning: str = ""
-
-    model_config = {"extra": "allow"}
-
-
-class TTSResponse(BaseModel):
-    audio: str = ""
-    content_type: str = ""
-    voice_name: str = ""
-    duration_ms: int = 0
-
-    model_config = {"extra": "allow"}
-
-
-class VoiceChatResponse(BaseModel):
-    transcript: str = ""
-    response: str = ""
-    audio: str = ""
-    content_type: str = ""
-    continuation_token: str = ""
-
-    model_config = {"extra": "allow"}
-
-
 class VoiceStreamToken(BaseModel):
-    """Token for establishing a voice WebSocket connection."""
+    """Token for establishing a voice live WebSocket connection."""
 
     ws_url: str = Field(default="", alias="wsUrl")
     auth_token: str = Field(default="", alias="authToken")
@@ -645,24 +617,54 @@ class VoiceStreamToken(BaseModel):
     model_config = {"populate_by_name": True, "extra": "allow"}
 
 
-class VoiceStreamEvent(BaseModel):
-    """Server event from the voice WebSocket stream.
+class VoiceUsage(BaseModel):
+    """Usage statistics from a voice session."""
 
-    Event types: "ready", "vad", "transcript", "response_delta",
-    "turn_complete", "error", or "audio" (binary audio data).
+    prompt_tokens: int = Field(default=0, alias="promptTokens")
+    completion_tokens: int = Field(default=0, alias="completionTokens")
+    total_tokens: int = Field(default=0, alias="totalTokens")
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+
+class VoiceStreamEvent(BaseModel):
+    """Server event from the voice live WebSocket stream.
+
+    Event types: "ready", "session_ready", "input_transcript",
+    "output_transcript", "agent_state", "turn_complete", "tool_activity",
+    "side_effects", "usage", "session_ended", "error", or "audio".
     """
 
     type: str = ""
-    session_id: str = ""
-    speaking: bool | None = None
+    session_id: str = Field(default="", alias="sessionId")
     text: str = ""
-    continuation_token: str = ""
-    content_type: str = ""
+    is_final: bool | None = Field(default=None, alias="isFinal")
+    speaking: bool | None = None
+    turn_index: int | None = Field(default=None, alias="turnIndex")
+    # tool_activity fields
+    name: str = ""
+    status: str = ""
+    # side_effects fields
+    facts: list | None = None
+    emotions: dict | None = None
+    relationship_delta: dict | None = Field(default=None, alias="relationshipDelta")
+    # usage fields
+    prompt_tokens: int = Field(default=0, alias="promptTokens")
+    completion_tokens: int = Field(default=0, alias="completionTokens")
+    total_tokens: int = Field(default=0, alias="totalTokens")
+    # session_ended fields
+    reason: str = ""
+    total_usage: VoiceUsage | None = Field(default=None, alias="totalUsage")
+    turn_count: int = Field(default=0, alias="turnCount")
+    # session_ready fields
+    voice_name: str = Field(default="", alias="voiceName")
+    # error fields
     error: str = ""
-    error_code: str = ""
+    error_code: str = Field(default="", alias="errorCode")
+    # audio (binary, set when type is "audio")
     audio: bytes = b""
 
-    model_config = {"extra": "allow"}
+    model_config = {"populate_by_name": True, "extra": "allow"}
 
 
 # ---------------------------------------------------------------------------

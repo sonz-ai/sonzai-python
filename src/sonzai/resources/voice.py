@@ -5,97 +5,21 @@ from __future__ import annotations
 import asyncio
 import json as _json
 import struct
-import threading
 from typing import Any, Iterator
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
-    TTSResponse,
-    Voice,
-    VoiceChatResponse,
     VoiceListResponse,
-    VoiceMatchResponse,
     VoiceStreamEvent,
     VoiceStreamToken,
 )
 
 
 class VoiceResource:
-    """Sync per-agent voice operations (TTS, match, chat)."""
+    """Sync per-agent voice live operations (duplex WebSocket streaming via Gemini Live)."""
 
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
-
-    def text_to_speech(
-        self,
-        agent_id: str,
-        *,
-        text: str,
-        voice_name: str | None = None,
-        language: str | None = None,
-        emotional_context: dict[str, Any] | None = None,
-    ) -> TTSResponse:
-        """Convert text to speech using the agent's voice."""
-        body: dict[str, Any] = {"text": text}
-        if voice_name is not None:
-            body["voice_name"] = voice_name
-        if language is not None:
-            body["language"] = language
-        if emotional_context is not None:
-            body["emotional_context"] = emotional_context
-
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/voice/tts", json_data=body
-        )
-        return TTSResponse.model_validate(data)
-
-    def voice_match(
-        self,
-        agent_id: str,
-        *,
-        big5: dict[str, Any] | None = None,
-        preferred_gender: str | None = None,
-    ) -> VoiceMatchResponse:
-        """Find the best matching voice for an agent based on personality."""
-        body: dict[str, Any] = {}
-        if big5 is not None:
-            body["big5"] = big5
-        if preferred_gender is not None:
-            body["preferred_gender"] = preferred_gender
-
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/voice/match", json_data=body
-        )
-        return VoiceMatchResponse.model_validate(data)
-
-    def voice_chat(
-        self,
-        agent_id: str,
-        *,
-        audio: str,
-        user_id: str | None = None,
-        audio_format: str | None = None,
-        voice_name: str | None = None,
-        continuation_token: str | None = None,
-        language: str | None = None,
-    ) -> VoiceChatResponse:
-        """Perform a single-turn voice chat: send audio, receive text + audio response."""
-        body: dict[str, Any] = {"audio": audio}
-        if user_id is not None:
-            body["user_id"] = user_id
-        if audio_format is not None:
-            body["audio_format"] = audio_format
-        if voice_name is not None:
-            body["voice_name"] = voice_name
-        if continuation_token is not None:
-            body["continuation_token"] = continuation_token
-        if language is not None:
-            body["language"] = language
-
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/voice/chat", json_data=body
-        )
-        return VoiceChatResponse.model_validate(data)
 
     def get_token(
         self,
@@ -103,9 +27,10 @@ class VoiceResource:
         *,
         voice_name: str | None = None,
         language: str | None = None,
-        entity_context: dict[str, str] | None = None,
+        user_id: str | None = None,
+        compiled_system_prompt: str | None = None,
     ) -> VoiceStreamToken:
-        """Get a short-lived token for WebSocket voice streaming.
+        """Get a short-lived token for voice live WebSocket streaming.
 
         The token expires in 60 seconds and is single-use.
         """
@@ -114,35 +39,38 @@ class VoiceResource:
             body["voiceName"] = voice_name
         if language is not None:
             body["language"] = language
-        if entity_context is not None:
-            body["entityContext"] = entity_context
+        if user_id is not None:
+            body["userId"] = user_id
+        if compiled_system_prompt is not None:
+            body["compiledSystemPrompt"] = compiled_system_prompt
 
         data = self._http.post(
-            f"/api/v1/agents/{agent_id}/voice/ws-token", json_data=body
+            f"/api/v1/agents/{agent_id}/voice/live-ws-token", json_data=body
         )
         return VoiceStreamToken.model_validate(data)
 
     def stream(self, token: VoiceStreamToken) -> VoiceStream:
-        """Open a bidirectional WebSocket for real-time voice chat.
+        """Open a bidirectional WebSocket for real-time voice chat via Gemini Live.
 
         Usage::
 
             token = client.agents.voice.get_token(agent_id)
             stream = client.agents.voice.stream(token)
 
-            # Send audio chunks
+            # Send PCM audio chunks (16kHz, 16-bit, mono)
             stream.send_audio(audio_bytes)
 
-            # Signal end of speech
-            stream.end_of_speech()
+            # Or send text input instead of audio
+            stream.send_text("Hello!")
 
-            # Receive events
             for event in stream:
-                if event.type == "transcript":
+                if event.type == "input_transcript":
                     print("User:", event.text)
+                elif event.type == "output_transcript":
+                    print("Agent:", event.text)
                 elif event.type == "audio":
-                    play_audio(event.audio)
-                elif event.type == "turn_complete":
+                    play_pcm_audio(event.audio)  # 24kHz PCM
+                elif event.type == "session_ended":
                     break
 
             stream.close()
@@ -278,7 +206,7 @@ class VoiceStream:
         """
         opcode, data = self._recv_frame()
 
-        # Binary frames are TTS audio
+        # Binary frames are PCM audio
         if opcode == 0x02:
             return VoiceStreamEvent(type="audio", audio=data)
 
@@ -289,25 +217,26 @@ class VoiceStream:
         """Send a binary audio chunk to the server."""
         self._send_frame(0x02, audio)
 
-    def end_of_speech(self) -> None:
-        """Signal the server that the user has finished speaking."""
-        self._send_text('{"type":"end_of_speech"}')
+    def send_text(self, text: str) -> None:
+        """Send a text message to the agent instead of audio."""
+        self._send_text(_json.dumps({"type": "text_input", "text": text}))
+
+    def end_session(self) -> None:
+        """Gracefully end the voice session."""
+        self._send_text('{"type":"end_session"}')
 
     def configure(
         self,
         *,
         audio_format: str | None = None,
-        voice_name: str | None = None,
-        language: str | None = None,
+        sample_rate: int | None = None,
     ) -> None:
-        """Change audio format, voice, or language mid-session."""
-        msg: dict[str, str] = {"type": "config"}
+        """Change audio format or sample rate mid-session."""
+        msg: dict[str, Any] = {"type": "config"}
         if audio_format is not None:
-            msg["audio_format"] = audio_format
-        if voice_name is not None:
-            msg["voice_name"] = voice_name
-        if language is not None:
-            msg["language"] = language
+            msg["audioFormat"] = audio_format
+        if sample_rate is not None:
+            msg["sampleRate"] = sample_rate
         self._send_text(_json.dumps(msg))
 
     def close(self) -> None:
@@ -465,25 +394,26 @@ class AsyncVoiceStream:
         """Send a binary audio chunk to the server."""
         await self._send_frame(0x02, audio)
 
-    async def end_of_speech(self) -> None:
-        """Signal the server that the user has finished speaking."""
-        await self._send_text('{"type":"end_of_speech"}')
+    async def send_text(self, text: str) -> None:
+        """Send a text message to the agent instead of audio."""
+        await self._send_text(_json.dumps({"type": "text_input", "text": text}))
+
+    async def end_session(self) -> None:
+        """Gracefully end the voice session."""
+        await self._send_text('{"type":"end_session"}')
 
     async def configure(
         self,
         *,
         audio_format: str | None = None,
-        voice_name: str | None = None,
-        language: str | None = None,
+        sample_rate: int | None = None,
     ) -> None:
-        """Change audio format, voice, or language mid-session."""
-        msg: dict[str, str] = {"type": "config"}
+        """Change audio format or sample rate mid-session."""
+        msg: dict[str, Any] = {"type": "config"}
         if audio_format is not None:
-            msg["audio_format"] = audio_format
-        if voice_name is not None:
-            msg["voice_name"] = voice_name
-        if language is not None:
-            msg["language"] = language
+            msg["audioFormat"] = audio_format
+        if sample_rate is not None:
+            msg["sampleRate"] = sample_rate
         await self._send_text(_json.dumps(msg))
 
     async def close(self) -> None:
@@ -543,81 +473,10 @@ class Voices:
 
 
 class AsyncVoiceResource:
-    """Async per-agent voice operations (TTS, match, chat)."""
+    """Async per-agent voice live operations (duplex WebSocket streaming via Gemini Live)."""
 
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
-
-    async def text_to_speech(
-        self,
-        agent_id: str,
-        *,
-        text: str,
-        voice_name: str | None = None,
-        language: str | None = None,
-        emotional_context: dict[str, Any] | None = None,
-    ) -> TTSResponse:
-        """Convert text to speech using the agent's voice."""
-        body: dict[str, Any] = {"text": text}
-        if voice_name is not None:
-            body["voice_name"] = voice_name
-        if language is not None:
-            body["language"] = language
-        if emotional_context is not None:
-            body["emotional_context"] = emotional_context
-
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/voice/tts", json_data=body
-        )
-        return TTSResponse.model_validate(data)
-
-    async def voice_match(
-        self,
-        agent_id: str,
-        *,
-        big5: dict[str, Any] | None = None,
-        preferred_gender: str | None = None,
-    ) -> VoiceMatchResponse:
-        """Find the best matching voice for an agent based on personality."""
-        body: dict[str, Any] = {}
-        if big5 is not None:
-            body["big5"] = big5
-        if preferred_gender is not None:
-            body["preferred_gender"] = preferred_gender
-
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/voice/match", json_data=body
-        )
-        return VoiceMatchResponse.model_validate(data)
-
-    async def voice_chat(
-        self,
-        agent_id: str,
-        *,
-        audio: str,
-        user_id: str | None = None,
-        audio_format: str | None = None,
-        voice_name: str | None = None,
-        continuation_token: str | None = None,
-        language: str | None = None,
-    ) -> VoiceChatResponse:
-        """Perform a single-turn voice chat: send audio, receive text + audio response."""
-        body: dict[str, Any] = {"audio": audio}
-        if user_id is not None:
-            body["user_id"] = user_id
-        if audio_format is not None:
-            body["audio_format"] = audio_format
-        if voice_name is not None:
-            body["voice_name"] = voice_name
-        if continuation_token is not None:
-            body["continuation_token"] = continuation_token
-        if language is not None:
-            body["language"] = language
-
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/voice/chat", json_data=body
-        )
-        return VoiceChatResponse.model_validate(data)
 
     async def get_token(
         self,
@@ -625,34 +484,36 @@ class AsyncVoiceResource:
         *,
         voice_name: str | None = None,
         language: str | None = None,
-        entity_context: dict[str, str] | None = None,
+        user_id: str | None = None,
+        compiled_system_prompt: str | None = None,
     ) -> VoiceStreamToken:
-        """Get a short-lived token for WebSocket voice streaming."""
+        """Get a short-lived token for voice live WebSocket streaming."""
         body: dict[str, Any] = {}
         if voice_name is not None:
             body["voiceName"] = voice_name
         if language is not None:
             body["language"] = language
-        if entity_context is not None:
-            body["entityContext"] = entity_context
+        if user_id is not None:
+            body["userId"] = user_id
+        if compiled_system_prompt is not None:
+            body["compiledSystemPrompt"] = compiled_system_prompt
 
         data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/voice/ws-token", json_data=body
+            f"/api/v1/agents/{agent_id}/voice/live-ws-token", json_data=body
         )
         return VoiceStreamToken.model_validate(data)
 
     async def stream(self, token: VoiceStreamToken) -> AsyncVoiceStream:
-        """Open a bidirectional WebSocket for real-time voice chat.
+        """Open a bidirectional WebSocket for real-time voice chat via Gemini Live.
 
         Usage::
 
             token = await client.agents.voice.get_token(agent_id)
             async with await client.agents.voice.stream(token) as stream:
                 await stream.send_audio(audio_bytes)
-                await stream.end_of_speech()
                 async for event in stream:
                     if event.type == "audio":
-                        play_audio(event.audio)
+                        play_pcm_audio(event.audio)
         """
         return await AsyncVoiceStream.connect(token)
 
