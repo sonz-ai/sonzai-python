@@ -13,6 +13,7 @@ from ._exceptions import (
     StreamError,
 )
 from .types import (
+    AcknowledgeResponse,
     Agent,
     AgentCapabilities,
     AgentIndex,
@@ -30,6 +31,7 @@ from .types import (
     ChatUsage,
     ConsolidateResponse,
     ConstellationResponse,
+    CustomLLMConfigResponse,
     CustomState,
     CustomStateListResponse,
     CustomToolDefinition,
@@ -91,6 +93,9 @@ from .types import (
     PersonalityResponse,
     PersonalityShift,
     PersonalityUpdateResponse,
+    ProjectConfigEntry,
+    ProjectConfigListResponse,
+    ProjectNotificationListResponse,
     RecentShiftsResponse,
     RelationshipResponse,
     RunRef,
@@ -235,6 +240,14 @@ __all__ = [
     "WebhookEndpoint",
     "WebhookListResponse",
     "WebhookRegisterResponse",
+    # Types - Project Config
+    "ProjectConfigEntry",
+    "ProjectConfigListResponse",
+    # Types - Custom LLM
+    "CustomLLMConfigResponse",
+    # Types - Project Notifications
+    "ProjectNotificationListResponse",
+    "AcknowledgeResponse",
     # Types - Wakeups
     "ScheduledWakeup",
     # Types - Capabilities

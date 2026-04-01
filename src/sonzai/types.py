@@ -797,6 +797,49 @@ class DeliveryAttemptsResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Project Config
+# ---------------------------------------------------------------------------
+
+
+class ProjectConfigEntry(BaseModel):
+    key: str
+    value: Any = None
+    updated_at: str | None = None
+
+
+class ProjectConfigListResponse(BaseModel):
+    configs: list[ProjectConfigEntry] = []
+
+
+# ---------------------------------------------------------------------------
+# Custom LLM
+# ---------------------------------------------------------------------------
+
+
+class CustomLLMConfigResponse(BaseModel):
+    endpoint: str = ""
+    api_key_prefix: str = ""
+    model: str = ""
+    display_name: str = ""
+    is_active: bool = False
+    configured: bool = False
+
+
+# ---------------------------------------------------------------------------
+# Project Notifications
+# ---------------------------------------------------------------------------
+
+
+class ProjectNotificationListResponse(BaseModel):
+    notifications: list[Notification] = []
+    count: int = 0
+
+
+class AcknowledgeResponse(BaseModel):
+    acknowledged: int = 0
+
+
+# ---------------------------------------------------------------------------
 # Wakeup Scheduling
 # ---------------------------------------------------------------------------
 

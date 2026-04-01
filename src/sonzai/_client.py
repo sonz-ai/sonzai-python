@@ -6,9 +6,15 @@ import os
 
 from ._http import AsyncHTTPClient, HTTPClient
 from .resources.agents import Agents, AsyncAgents
+from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
 from .resources.eval_templates import AsyncEvalTemplates, EvalTemplates
 from .resources.knowledge import AsyncKnowledge, Knowledge
+from .resources.project_config import AsyncProjectConfig, ProjectConfig
+from .resources.project_notifications import (
+    AsyncProjectNotifications,
+    ProjectNotifications,
+)
 from .resources.voice import AsyncVoices, Voices
 from .resources.webhooks import AsyncWebhooks, Webhooks
 
@@ -51,6 +57,9 @@ class Sonzai:
     eval_runs: EvalRuns
     voices: Voices
     webhooks: Webhooks
+    project_config: ProjectConfig
+    custom_llm: CustomLLM
+    project_notifications: ProjectNotifications
 
     def __init__(
         self,
@@ -89,6 +98,9 @@ class Sonzai:
         self.eval_runs = EvalRuns(self._http)
         self.voices = Voices(self._http)
         self.webhooks = Webhooks(self._http)
+        self.project_config = ProjectConfig(self._http)
+        self.custom_llm = CustomLLM(self._http)
+        self.project_notifications = ProjectNotifications(self._http)
 
     def close(self) -> None:
         """Close the underlying HTTP client."""
@@ -129,6 +141,9 @@ class AsyncSonzai:
     eval_runs: AsyncEvalRuns
     voices: AsyncVoices
     webhooks: AsyncWebhooks
+    project_config: AsyncProjectConfig
+    custom_llm: AsyncCustomLLM
+    project_notifications: AsyncProjectNotifications
 
     def __init__(
         self,
@@ -159,6 +174,9 @@ class AsyncSonzai:
         self.eval_runs = AsyncEvalRuns(self._http)
         self.voices = AsyncVoices(self._http)
         self.webhooks = AsyncWebhooks(self._http)
+        self.project_config = AsyncProjectConfig(self._http)
+        self.custom_llm = AsyncCustomLLM(self._http)
+        self.project_notifications = AsyncProjectNotifications(self._http)
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""
