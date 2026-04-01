@@ -668,6 +668,32 @@ class VoiceStreamEvent(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Voice TTS/STT
+# ---------------------------------------------------------------------------
+
+
+class TTSResponse(BaseModel):
+    """Response from text-to-speech synthesis."""
+
+    audio: str = ""
+    content_type: str = Field(default="", alias="contentType")
+    duration_ms: int = Field(default=0, alias="durationMs")
+    usage: dict = Field(default_factory=dict)
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+
+class STTResponse(BaseModel):
+    """Response from speech-to-text transcription."""
+
+    transcript: str = ""
+    confidence: float = 0.0
+    language_code: str = Field(default="", alias="languageCode")
+
+    model_config = {"populate_by_name": True, "extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
 # Generation
 # ---------------------------------------------------------------------------
 

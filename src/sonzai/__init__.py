@@ -125,6 +125,8 @@ from .types import (
     VoiceStreamEvent,
     VoiceStreamToken,
     VoiceUsage,
+    TTSResponse,
+    STTResponse,
     WakeupsResponse,
     WebhookDeliveryAttempt,
     WebhookEndpoint,
@@ -225,6 +227,8 @@ __all__ = [
     "VoiceStreamEvent",
     "VoiceStreamToken",
     "VoiceUsage",
+    "TTSResponse",
+    "STTResponse",
     # Types - Generation
     "GenerateBioResponse",
     "GenerateCharacterResponse",
