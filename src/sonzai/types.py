@@ -994,6 +994,95 @@ class FactHistoryResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Process (full pipeline)
+# ---------------------------------------------------------------------------
+
+class ProcessSideEffectsSummary(BaseModel):
+    model_config = {"extra": "allow"}
+    mood_updated: bool = False
+    personality_updated: bool = False
+    habits_observed: int = 0
+    interests_detected: int = 0
+
+class ProcessResponse(BaseModel):
+    model_config = {"extra": "allow"}
+    success: bool = False
+    memories_created: int = 0
+    facts_extracted: int = 0
+    side_effects: ProcessSideEffectsSummary = Field(default_factory=ProcessSideEffectsSummary)
+
+# ---------------------------------------------------------------------------
+# Models
+# ---------------------------------------------------------------------------
+
+class ModelsProviderEntry(BaseModel):
+    provider: str = ""
+    provider_name: str = ""
+    default_model: str = ""
+
+class ModelsResponse(BaseModel):
+    default_provider: str = ""
+    default_model: str = ""
+    providers: list[ModelsProviderEntry] = Field(default_factory=list)
+
+# ---------------------------------------------------------------------------
+# Context (single-call enriched context)
+# ---------------------------------------------------------------------------
+
+class EnrichedContextResponse(BaseModel):
+    model_config = {"extra": "allow"}
+    # Layer 1: Core Identity
+    bio: str | None = None
+    personality_prompt: str | None = None
+    speech_patterns: list[str] | None = None
+    true_interests: list[str] | None = None
+    true_dislikes: list[str] | None = None
+    primary_traits: list[str] | None = None
+    # Layer 2: Personality
+    big5: dict[str, Any] | None = None
+    dimensions: dict[str, Any] | None = None
+    preferences: dict[str, Any] | None = None
+    behaviors: dict[str, Any] | None = None
+    # Layer 3: Evolution
+    recent_personality_shifts: list[Any] | None = None
+    significant_moments: list[Any] | None = None
+    active_goals: list[Any] | None = None
+    habits: list[Any] | None = None
+    breakthrough_count: int | None = None
+    # Layer 4: Relationship
+    relationship_narrative: str | None = None
+    shared_memory_summary: str | None = None
+    chemistry_score: float | None = None
+    love_from_agent: float | None = None
+    love_from_user: float | None = None
+    relationship_status: str | None = None
+    days_since_last_chat: int | None = None
+    # Layer 5: Current State
+    current_mood: dict[str, Any] | None = None
+    emotional_state: str | None = None
+    capabilities: dict[str, Any] | None = None
+    # Layer 6: Memory
+    loaded_facts: list[dict[str, Any]] | None = None
+    long_term_summaries: list[Any] | None = None
+    # Layer 6b: Proactive
+    proactive_memories: list[Any] | None = None
+    # Layer 6c: Constellation
+    constellation_patterns: list[Any] | None = None
+    # Layer 7: Game Context
+    game_context: dict[str, Any] | None = None
+
+# ---------------------------------------------------------------------------
+# Avatar Generation
+# ---------------------------------------------------------------------------
+
+class GenerateAvatarResponse(BaseModel):
+    model_config = {"extra": "allow"}
+    success: bool = False
+    avatar_url: str = ""
+    prompt: str = ""
+    generation_time_ms: int = 0
+
+# ---------------------------------------------------------------------------
 # Time Machine
 # ---------------------------------------------------------------------------
 

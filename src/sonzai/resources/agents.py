@@ -21,13 +21,17 @@ from ..types import (
     DeleteResponse,
     DialogueResponse,
     DiaryResponse,
+    EnrichedContextResponse,
     EvaluationResult,
+    GenerateAvatarResponse,
     Goal,
     GoalsResponse,
     HabitsResponse,
     InterestsResponse,
+    ModelsResponse,
     MoodAggregateResponse,
     MoodResponse,
+    ProcessResponse,
     RelationshipResponse,
     RunRef,
     ScheduledWakeup,
@@ -981,6 +985,86 @@ class Agents:
             self._http.get(f"/api/v1/agents/{agent_id}/summaries", params=params)
         )
 
+    # -- Process --
+
+    def process(
+        self,
+        agent_id: str,
+        *,
+        user_id: str,
+        messages: list[dict[str, str]],
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+    ) -> ProcessResponse:
+        """Run the full Context Engine pipeline without generating a chat response."""
+        body: dict[str, Any] = {"userId": user_id, "messages": messages}
+        if session_id is not None:
+            body["sessionId"] = session_id
+        if instance_id is not None:
+            body["instanceId"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        return ProcessResponse.model_validate(
+            self._http.post(f"/api/v1/agents/{agent_id}/process", json_data=body)
+        )
+
+    # -- Models --
+
+    def get_models(self, agent_id: str) -> ModelsResponse:
+        """Get available LLM providers and models."""
+        return ModelsResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/models")
+        )
+
+    # -- Context --
+
+    def get_context(
+        self,
+        agent_id: str,
+        *,
+        user_id: str,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        query: str | None = None,
+        language: str | None = None,
+        timezone: str | None = None,
+    ) -> EnrichedContextResponse:
+        """Get the full enriched agent context in a single call."""
+        params: dict[str, str] = {"userId": user_id}
+        if session_id is not None:
+            params["sessionId"] = session_id
+        if instance_id is not None:
+            params["instanceId"] = instance_id
+        if query is not None:
+            params["query"] = query
+        if language is not None:
+            params["language"] = language
+        if timezone is not None:
+            params["timezone"] = timezone
+        return EnrichedContextResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/context", params=params)
+        )
+
+    # -- Avatar --
+
+    def generate_avatar(
+        self,
+        agent_id: str,
+        *,
+        style: str | None = None,
+    ) -> GenerateAvatarResponse:
+        """Trigger avatar generation for an agent."""
+        body: dict[str, Any] = {}
+        if style is not None:
+            body["style"] = style
+        return GenerateAvatarResponse.model_validate(
+            self._http.post(f"/api/v1/agents/{agent_id}/avatar/generate", json_data=body)
+        )
+
     # -- Time Machine --
 
     def get_time_machine(
@@ -1904,6 +1988,86 @@ class AsyncAgents:
             params["limit"] = str(limit)
         return SummariesResponse.model_validate(
             await self._http.get(f"/api/v1/agents/{agent_id}/summaries", params=params)
+        )
+
+    # -- Process --
+
+    async def process(
+        self,
+        agent_id: str,
+        *,
+        user_id: str,
+        messages: list[dict[str, str]],
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+    ) -> ProcessResponse:
+        """Run the full Context Engine pipeline without generating a chat response."""
+        body: dict[str, Any] = {"userId": user_id, "messages": messages}
+        if session_id is not None:
+            body["sessionId"] = session_id
+        if instance_id is not None:
+            body["instanceId"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        return ProcessResponse.model_validate(
+            await self._http.post(f"/api/v1/agents/{agent_id}/process", json_data=body)
+        )
+
+    # -- Models --
+
+    async def get_models(self, agent_id: str) -> ModelsResponse:
+        """Get available LLM providers and models."""
+        return ModelsResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/models")
+        )
+
+    # -- Context --
+
+    async def get_context(
+        self,
+        agent_id: str,
+        *,
+        user_id: str,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        query: str | None = None,
+        language: str | None = None,
+        timezone: str | None = None,
+    ) -> EnrichedContextResponse:
+        """Get the full enriched agent context in a single call."""
+        params: dict[str, str] = {"userId": user_id}
+        if session_id is not None:
+            params["sessionId"] = session_id
+        if instance_id is not None:
+            params["instanceId"] = instance_id
+        if query is not None:
+            params["query"] = query
+        if language is not None:
+            params["language"] = language
+        if timezone is not None:
+            params["timezone"] = timezone
+        return EnrichedContextResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/context", params=params)
+        )
+
+    # -- Avatar --
+
+    async def generate_avatar(
+        self,
+        agent_id: str,
+        *,
+        style: str | None = None,
+    ) -> GenerateAvatarResponse:
+        """Trigger avatar generation for an agent."""
+        body: dict[str, Any] = {}
+        if style is not None:
+            body["style"] = style
+        return GenerateAvatarResponse.model_validate(
+            await self._http.post(f"/api/v1/agents/{agent_id}/avatar/generate", json_data=body)
         )
 
     # -- Time Machine --
