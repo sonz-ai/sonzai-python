@@ -481,6 +481,15 @@ class Agent(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class RegenerateAvatarResponse(BaseModel):
+    success: bool = False
+    avatar_url: str = ""
+    prompt: str = ""
+    generation_time_ms: int = 0
+
+    model_config = {"extra": "allow"}
+
+
 class DeleteResponse(BaseModel):
     success: bool = False
 

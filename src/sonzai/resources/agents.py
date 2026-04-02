@@ -28,6 +28,7 @@ from ..types import (
     InterestsResponse,
     MoodAggregateResponse,
     MoodResponse,
+    RegenerateAvatarResponse,
     RelationshipResponse,
     RunRef,
     ScheduledWakeup,
@@ -1001,6 +1002,20 @@ class Agents:
             self._http.get(f"/api/v1/agents/{agent_id}/timemachine", params=params)
         )
 
+    # -- Avatar --
+
+    def regenerate_avatar(
+        self, agent_id: str, *, style: str | None = None
+    ) -> RegenerateAvatarResponse:
+        """Regenerate an agent's avatar image."""
+        body: dict[str, Any] = {}
+        if style is not None:
+            body["style"] = style
+        data = self._http.post(
+            f"/api/v1/agents/{agent_id}/avatar/generate", json_data=body
+        )
+        return RegenerateAvatarResponse.model_validate(data)
+
 
 class AsyncAgents:
     """Async agent operations."""
@@ -1925,3 +1940,17 @@ class AsyncAgents:
         return TimeMachineResponse.model_validate(
             await self._http.get(f"/api/v1/agents/{agent_id}/timemachine", params=params)
         )
+
+    # -- Avatar --
+
+    async def regenerate_avatar(
+        self, agent_id: str, *, style: str | None = None
+    ) -> RegenerateAvatarResponse:
+        """Regenerate an agent's avatar image."""
+        body: dict[str, Any] = {}
+        if style is not None:
+            body["style"] = style
+        data = await self._http.post(
+            f"/api/v1/agents/{agent_id}/avatar/generate", json_data=body
+        )
+        return RegenerateAvatarResponse.model_validate(data)

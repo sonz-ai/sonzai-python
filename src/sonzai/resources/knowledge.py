@@ -53,6 +53,18 @@ class Knowledge:
         )
         return KBDocument.model_validate(data)
 
+    def upload_document(
+        self, project_id: str, file_name: str, file_data: bytes
+    ) -> KBDocument:
+        """Upload a document via multipart file upload."""
+        data = self._http.upload_file(
+            f"/api/v1/projects/{project_id}/knowledge/documents",
+            "file",
+            file_name,
+            file_data,
+        )
+        return KBDocument.model_validate(data)
+
     def delete_document(self, project_id: str, doc_id: str) -> None:
         """Delete a document."""
         self._http.delete(
@@ -377,6 +389,18 @@ class AsyncKnowledge:
     async def get_document(self, project_id: str, doc_id: str) -> KBDocument:
         data = await self._http.get(
             f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}"
+        )
+        return KBDocument.model_validate(data)
+
+    async def upload_document(
+        self, project_id: str, file_name: str, file_data: bytes
+    ) -> KBDocument:
+        """Upload a document via multipart file upload."""
+        data = await self._http.upload_file(
+            f"/api/v1/projects/{project_id}/knowledge/documents",
+            "file",
+            file_name,
+            file_data,
         )
         return KBDocument.model_validate(data)
 

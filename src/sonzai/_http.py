@@ -167,6 +167,24 @@ class HTTPClient:
     def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return self.request("DELETE", path, params=params)
 
+    def upload_file(
+        self,
+        path: str,
+        field_name: str,
+        file_name: str,
+        file_data: bytes,
+    ) -> Any:
+        """Send a multipart file upload (no JSON content-type)."""
+        response = self._client.post(
+            path,
+            files={field_name: (file_name, file_data)},
+            headers={"Content-Type": None},  # let httpx set multipart boundary
+        )
+        _raise_for_status(response)
+        if response.headers.get("content-type", "").startswith("application/json"):
+            return response.json()
+        return response.text
+
     def stream_sse(
         self,
         method: str,
@@ -291,6 +309,24 @@ class AsyncHTTPClient:
 
     async def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return await self.request("DELETE", path, params=params)
+
+    async def upload_file(
+        self,
+        path: str,
+        field_name: str,
+        file_name: str,
+        file_data: bytes,
+    ) -> Any:
+        """Send a multipart file upload (no JSON content-type)."""
+        response = await self._client.post(
+            path,
+            files={field_name: (file_name, file_data)},
+            headers={"Content-Type": None},  # let httpx set multipart boundary
+        )
+        _raise_for_status(response)
+        if response.headers.get("content-type", "").startswith("application/json"):
+            return response.json()
+        return response.text
 
     async def stream_sse(self, method: str, path: str, *, json_data: dict[str, Any] | None = None) -> AsyncIterator[dict[str, Any]]:
         """Send a request and yield parsed SSE events asynchronously."""

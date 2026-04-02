@@ -56,6 +56,7 @@ from .types import (
     GoalsResponse,
     HabitsResponse,
     ImageGenerateResponse,
+    RegenerateAvatarResponse,
     InitialGoal,
     InstanceListResponse,
     InterestsResponse,
@@ -226,6 +227,7 @@ __all__ = [
     "GeneratedGoal",
     "GenerateSeedMemoriesResponse",
     "ImageGenerateResponse",
+    "RegenerateAvatarResponse",
     # Types - Custom States
     "CustomState",
     "CustomStateListResponse",
