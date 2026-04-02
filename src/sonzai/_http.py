@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
+import random
 import time
 from collections.abc import AsyncIterator, Generator, Iterator
 from typing import Any
@@ -56,7 +58,9 @@ def _raise_for_status(response: httpx.Response) -> None:
     elif status == 400:
         raise BadRequestError(message)
     elif status == 429:
-        raise RateLimitError(message)
+        retry_after_str = response.headers.get("retry-after")
+        retry_after = float(retry_after_str) if retry_after_str else None
+        raise RateLimitError(message, retry_after=retry_after)
     elif status >= 500:
         raise InternalServerError(message)
     else:
@@ -74,6 +78,7 @@ class HTTPClient:
         timeout: float = 30.0,
         max_retries: int = 2,
     ) -> None:
+        self._timeout = timeout
         self._client = httpx.Client(
             base_url=base_url,
             headers={
@@ -116,7 +121,8 @@ class HTTPClient:
                         "Retrying %s %s (attempt %d/%d) after %d status",
                         method, path, attempt + 1, retries, response.status_code,
                     )
-                    time.sleep(0.5 * 2**attempt)
+                    backoff = 0.5 * 2**attempt
+                    time.sleep(backoff + random.random() * backoff)
                     continue
                 _raise_for_status(response)
 
@@ -129,7 +135,8 @@ class HTTPClient:
                         "Retrying %s %s (attempt %d/%d) after transport error: %s",
                         method, path, attempt + 1, retries, exc,
                     )
-                    time.sleep(0.5 * 2**attempt)
+                    backoff = 0.5 * 2**attempt
+                    time.sleep(backoff + random.random() * backoff)
                     continue
                 raise
 
@@ -180,6 +187,7 @@ class HTTPClient:
             path,
             json=json_data,
             headers={"Accept": "text/event-stream"},
+            timeout=httpx.Timeout(self._timeout * 10, connect=10.0),
         ) as response:
             _raise_for_status(response)
             yield from _parse_sse_stream(response.iter_lines())
@@ -199,6 +207,7 @@ class AsyncHTTPClient:
         timeout: float = 30.0,
         max_retries: int = 2,
     ) -> None:
+        self._timeout = timeout
         self._client = httpx.AsyncClient(
             base_url=base_url,
             headers={
@@ -226,7 +235,6 @@ class AsyncHTTPClient:
             params = {k: v for k, v in params.items() if v is not None}
 
         retries = self._max_retries if method.upper() in self._RETRYABLE_METHODS else 0
-        import asyncio
 
         for attempt in range(retries + 1):
             try:
@@ -241,7 +249,8 @@ class AsyncHTTPClient:
                         "Retrying %s %s (attempt %d/%d) after %d status",
                         method, path, attempt + 1, retries, response.status_code,
                     )
-                    await asyncio.sleep(0.5 * 2**attempt)
+                    backoff = 0.5 * 2**attempt
+                    await asyncio.sleep(backoff + random.random() * backoff)
                     continue
                 _raise_for_status(response)
 
@@ -254,7 +263,8 @@ class AsyncHTTPClient:
                         "Retrying %s %s (attempt %d/%d) after transport error: %s",
                         method, path, attempt + 1, retries, exc,
                     )
-                    await asyncio.sleep(0.5 * 2**attempt)
+                    backoff = 0.5 * 2**attempt
+                    await asyncio.sleep(backoff + random.random() * backoff)
                     continue
                 raise
 
@@ -299,6 +309,7 @@ class AsyncHTTPClient:
             path,
             json=json_data,
             headers={"Accept": "text/event-stream"},
+            timeout=httpx.Timeout(self._timeout * 10, connect=10.0),
         ) as response:
             _raise_for_status(response)
             async for line in response.aiter_lines():

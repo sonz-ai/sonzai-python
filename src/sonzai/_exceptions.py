@@ -27,6 +27,10 @@ class PermissionDeniedError(SonzaiError):
 class RateLimitError(SonzaiError):
     """Raised when rate limit is exceeded."""
 
+    def __init__(self, message: str = "Rate limit exceeded", *, retry_after: float | None = None) -> None:
+        super().__init__(message)
+        self.retry_after: float | None = retry_after
+
 
 class InternalServerError(SonzaiError):
     """Raised when the server returns a 5xx error."""

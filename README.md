@@ -140,6 +140,25 @@ client.agents.sessions.end(
     total_messages=10,
     duration_seconds=300,
 )
+
+# Configure tools for an active session (OpenAI-compatible tool definitions)
+client.agents.sessions.set_tools(
+    "agent-id",
+    "session-456",
+    tools=[
+        {
+            "type": "function",
+            "function": {
+                "name": "get_weather",
+                "description": "Get current weather for a city",
+                "parameters": {
+                    "type": "object",
+                    "properties": {"city": {"type": "string"}},
+                },
+            },
+        }
+    ],
+)
 ```
 
 ### Agent Instances
@@ -179,13 +198,14 @@ history = client.agents.notifications.history("agent-id")
 ```python
 # Mood
 mood = client.agents.get_mood("agent-id", user_id="user-123")
+mood_history = client.agents.get_mood_history("agent-id", user_id="user-123")
+mood_aggregate = client.agents.get_mood_aggregate("agent-id", user_id="user-123")
 
 # Relationships
 relationships = client.agents.get_relationships("agent-id", user_id="user-123")
 
 # Habits, Goals, Interests
 habits = client.agents.get_habits("agent-id")
-goals = client.agents.get_goals("agent-id")
 interests = client.agents.get_interests("agent-id")
 
 # Diary
@@ -193,6 +213,55 @@ diary = client.agents.get_diary("agent-id")
 
 # Users
 users = client.agents.get_users("agent-id")
+```
+
+### Goals
+
+```python
+# List goals
+goals = client.agents.get_goals("agent-id")
+
+# Create a goal (omit user_id for agent-global, include for per-user)
+goal = client.agents.create_goal(
+    "agent-id",
+    title="Learn guitar",
+    description="Practice 30 minutes daily",
+    type="skill_mastery",
+    priority=1,
+    user_id="user-123",  # optional
+)
+
+# Update a goal
+client.agents.update_goal("agent-id", goal.id, status="completed")
+
+# Delete (soft-abandon) a goal
+client.agents.delete_goal("agent-id", goal.id, user_id="user-123")
+```
+
+### Wakeups
+
+```python
+# Schedule a proactive check-in
+wakeup = client.agents.schedule_wakeup(
+    "agent-id",
+    user_id="user-123",
+    scheduled_at="2026-06-01T09:00:00Z",
+    check_type="birthday",
+    occasion="User's birthday",
+)
+```
+
+### Image Generation
+
+```python
+# Generate an image using the agent's personality and context
+image = client.agents.generation.generate_image(
+    "agent-id",
+    prompt="A serene mountain lake at sunset",
+    style="photorealistic",  # optional
+    user_id="user-123",      # optional — personalises the image
+)
+print(image.url)
 ```
 
 ### Evaluation
@@ -417,8 +486,9 @@ except AuthenticationError:
     print("Invalid API key")
 except NotFoundError:
     print("Agent not found")
-except RateLimitError:
-    print("Rate limit exceeded, try again later")
+except RateLimitError as e:
+    wait = e.retry_after or 60
+    print(f"Rate limited. Retry in {wait}s")
 except SonzaiError as e:
     print(f"API error: {e}")
 ```
