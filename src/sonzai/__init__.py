@@ -1,6 +1,7 @@
 """Sonzai Python SDK - Client for the Sonzai Mind Layer API."""
 
 from ._client import AsyncSonzai, Sonzai
+from .webhook_verify import WebhookVerificationError, verify_webhook_signature, verify_webhook_signature_with_tolerance
 from ._exceptions import (
     APIError,
     AuthenticationError,
@@ -140,6 +141,10 @@ __all__ = [
     # Clients
     "Sonzai",
     "AsyncSonzai",
+    # Webhook verification
+    "WebhookVerificationError",
+    "verify_webhook_signature",
+    "verify_webhook_signature_with_tolerance",
     # Exceptions
     "SonzaiError",
     "APIError",

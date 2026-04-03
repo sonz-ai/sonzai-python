@@ -398,6 +398,7 @@ class Agents:
         user_id: str,
         check_type: str,
         intent: str,
+        scheduled_at: str | None = None,
         delay_hours: int = 0,
         occasion: str | None = None,
         interest_topic: str | None = None,
@@ -406,8 +407,10 @@ class Agents:
         """Schedule a wakeup for the agent.
 
         Args:
-            delay_hours: Hours from now to schedule the wakeup. Defaults to 0 (immediate).
             intent: Required — describes what the agent should check in on.
+            scheduled_at: ISO 8601 timestamp for when to trigger the wakeup.
+                Takes precedence over delay_hours if both are provided.
+            delay_hours: Hours from now to schedule the wakeup. Defaults to 0 (immediate).
         """
         body: dict[str, Any] = {
             "user_id": user_id,
@@ -415,6 +418,8 @@ class Agents:
             "intent": intent,
             "delay_hours": delay_hours,
         }
+        if scheduled_at is not None:
+            body["scheduled_at"] = scheduled_at
         if occasion is not None:
             body["occasion"] = occasion
         if interest_topic is not None:
@@ -1408,6 +1413,7 @@ class AsyncAgents:
         user_id: str,
         check_type: str,
         intent: str,
+        scheduled_at: str | None = None,
         delay_hours: int = 0,
         occasion: str | None = None,
         interest_topic: str | None = None,
@@ -1416,8 +1422,10 @@ class AsyncAgents:
         """Schedule a wakeup for the agent.
 
         Args:
-            delay_hours: Hours from now to schedule the wakeup. Defaults to 0 (immediate).
             intent: Required — describes what the agent should check in on.
+            scheduled_at: ISO 8601 timestamp for when to trigger the wakeup.
+                Takes precedence over delay_hours if both are provided.
+            delay_hours: Hours from now to schedule the wakeup. Defaults to 0 (immediate).
         """
         body: dict[str, Any] = {
             "user_id": user_id,
@@ -1425,6 +1433,8 @@ class AsyncAgents:
             "intent": intent,
             "delay_hours": delay_hours,
         }
+        if scheduled_at is not None:
+            body["scheduled_at"] = scheduled_at
         if occasion is not None:
             body["occasion"] = occasion
         if interest_topic is not None:
