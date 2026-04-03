@@ -396,21 +396,25 @@ class Agents:
         agent_id: str,
         *,
         user_id: str,
-        scheduled_at: str,
         check_type: str,
-        intent: str | None = None,
+        intent: str,
+        delay_hours: int = 0,
         occasion: str | None = None,
         interest_topic: str | None = None,
         event_description: str | None = None,
     ) -> ScheduledWakeup:
-        """Schedule a wakeup for the agent."""
+        """Schedule a wakeup for the agent.
+
+        Args:
+            delay_hours: Hours from now to schedule the wakeup. Defaults to 0 (immediate).
+            intent: Required — describes what the agent should check in on.
+        """
         body: dict[str, Any] = {
             "user_id": user_id,
-            "scheduled_at": scheduled_at,
             "check_type": check_type,
+            "intent": intent,
+            "delay_hours": delay_hours,
         }
-        if intent is not None:
-            body["intent"] = intent
         if occasion is not None:
             body["occasion"] = occasion
         if interest_topic is not None:
@@ -1402,21 +1406,25 @@ class AsyncAgents:
         agent_id: str,
         *,
         user_id: str,
-        scheduled_at: str,
         check_type: str,
-        intent: str | None = None,
+        intent: str,
+        delay_hours: int = 0,
         occasion: str | None = None,
         interest_topic: str | None = None,
         event_description: str | None = None,
     ) -> ScheduledWakeup:
-        """Schedule a wakeup for the agent."""
+        """Schedule a wakeup for the agent.
+
+        Args:
+            delay_hours: Hours from now to schedule the wakeup. Defaults to 0 (immediate).
+            intent: Required — describes what the agent should check in on.
+        """
         body: dict[str, Any] = {
             "user_id": user_id,
-            "scheduled_at": scheduled_at,
             "check_type": check_type,
+            "intent": intent,
+            "delay_hours": delay_hours,
         }
-        if intent is not None:
-            body["intent"] = intent
         if occasion is not None:
             body["occasion"] = occasion
         if interest_topic is not None:
