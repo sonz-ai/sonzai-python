@@ -997,6 +997,7 @@ class Agents:
         instance_id: str | None = None,
         provider: str | None = None,
         model: str | None = None,
+        include_extractions: bool | None = None,
     ) -> ProcessResponse:
         """Run the full Context Engine pipeline without generating a chat response."""
         body: dict[str, Any] = {"userId": user_id, "messages": messages}
@@ -1008,6 +1009,8 @@ class Agents:
             body["provider"] = provider
         if model is not None:
             body["model"] = model
+        if include_extractions is not None:
+            body["include_extractions"] = include_extractions
         return ProcessResponse.model_validate(
             self._http.post(f"/api/v1/agents/{agent_id}/process", json_data=body)
         )
@@ -2002,6 +2005,7 @@ class AsyncAgents:
         instance_id: str | None = None,
         provider: str | None = None,
         model: str | None = None,
+        include_extractions: bool | None = None,
     ) -> ProcessResponse:
         """Run the full Context Engine pipeline without generating a chat response."""
         body: dict[str, Any] = {"userId": user_id, "messages": messages}
@@ -2013,6 +2017,8 @@ class AsyncAgents:
             body["provider"] = provider
         if model is not None:
             body["model"] = model
+        if include_extractions is not None:
+            body["include_extractions"] = include_extractions
         return ProcessResponse.model_validate(
             await self._http.post(f"/api/v1/agents/{agent_id}/process", json_data=body)
         )

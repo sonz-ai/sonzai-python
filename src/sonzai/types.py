@@ -1004,12 +1004,94 @@ class ProcessSideEffectsSummary(BaseModel):
     habits_observed: int = 0
     interests_detected: int = 0
 
+
+class ExtractionFact(BaseModel):
+    text: str = ""
+    fact_type: str = ""
+    importance: float = 0.0
+    entities: list[str] = Field(default_factory=list)
+    sentiment: str = ""
+    topic_tags: list[str] = Field(default_factory=list)
+
+
+class ExtractionPersonalityDelta(BaseModel):
+    trait: str = ""
+    delta: float = 0.0
+    reason: str = ""
+
+
+class ExtractionDimensionDelta(BaseModel):
+    dimension: str = ""
+    delta: float = 0.0
+    reason: str = ""
+
+
+class ExtractionMoodDelta(BaseModel):
+    happiness: float = 0.0
+    energy: float = 0.0
+    calmness: float = 0.0
+    affection: float = 0.0
+    reason: str = ""
+
+
+class ExtractionHabit(BaseModel):
+    name: str = ""
+    category: str = ""
+    description: str = ""
+    is_reinforcement: bool = False
+
+
+class ExtractionInterest(BaseModel):
+    topic: str = ""
+    category: str = ""
+    confidence: float = 0.0
+    engagement_level: float = 0.0
+
+
+class ExtractionRelationshipDelta(BaseModel):
+    score_change: int = 0
+    reason: str = ""
+
+
+class ExtractionProactive(BaseModel):
+    type: str = ""
+    description: str = ""
+    delay_hours: int = 0
+    intent: str = ""
+
+
+class ExtractionRecurring(BaseModel):
+    description: str = ""
+    pattern: str = ""
+    confidence: float = 0.0
+
+
+class ExtractionInnerThoughts(BaseModel):
+    diary: str = ""
+    reflection: str = ""
+
+
+class SideEffectExtraction(BaseModel):
+    memory_facts: list[ExtractionFact] = Field(default_factory=list)
+    personality_deltas: list[ExtractionPersonalityDelta] = Field(default_factory=list)
+    dimension_deltas: list[ExtractionDimensionDelta] = Field(default_factory=list)
+    mood_delta: ExtractionMoodDelta | None = None
+    habit_observations: list[ExtractionHabit] = Field(default_factory=list)
+    interests_detected: list[ExtractionInterest] = Field(default_factory=list)
+    relationship_delta: ExtractionRelationshipDelta | None = None
+    proactive_suggestions: list[ExtractionProactive] = Field(default_factory=list)
+    recurring_events: list[ExtractionRecurring] = Field(default_factory=list)
+    inner_thoughts: ExtractionInnerThoughts | None = None
+    emotional_themes: list[str] = Field(default_factory=list)
+
+
 class ProcessResponse(BaseModel):
     model_config = {"extra": "allow"}
     success: bool = False
     memories_created: int = 0
     facts_extracted: int = 0
     side_effects: ProcessSideEffectsSummary = Field(default_factory=ProcessSideEffectsSummary)
+    extractions: SideEffectExtraction | None = None
 
 # ---------------------------------------------------------------------------
 # Models
