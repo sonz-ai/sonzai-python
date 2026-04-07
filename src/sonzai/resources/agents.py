@@ -11,6 +11,7 @@ from ..types import (
     AgentCapabilities,
     AgentKBSearchResponse,
     AgentListResponse,
+    ToolSchemasResponse,
     BreakthroughsResponse,
     ChatMessage,
     ChatResponse,
@@ -1109,6 +1110,14 @@ class Agents:
             )
         )
 
+    # -- Tool Schemas (BYO-LLM) --
+
+    def get_tools(self, agent_id: str) -> ToolSchemasResponse:
+        """Return tool schemas available for an agent (for BYO-LLM integrations)."""
+        return ToolSchemasResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/tools")
+        )
+
 
 class AsyncAgents:
     """Async agent operations."""
@@ -2135,4 +2144,12 @@ class AsyncAgents:
                 f"/api/v1/agents/{agent_id}/tools/knowledge-search",
                 json_data=body,
             )
+        )
+
+    # -- Tool Schemas (BYO-LLM) --
+
+    async def get_tools(self, agent_id: str) -> ToolSchemasResponse:
+        """Return tool schemas available for an agent (for BYO-LLM integrations)."""
+        return ToolSchemasResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/tools")
         )

@@ -125,6 +125,8 @@ from .types import (
     StructuredColumnMapping,
     StructuredImportSpec,
     SummariesResponse,
+    ToolSchema,
+    ToolSchemasResponse,
     TimelineSession,
     TimeMachineMoodSnapshot,
     TimeMachineResponse,
@@ -149,7 +151,7 @@ from .types import (
     WebhookRegisterResponse,
 )
 
-__version__ = "1.0.6"
+__version__ = "1.0.7"
 
 __all__ = [
     # Clients
@@ -323,4 +325,7 @@ __all__ = [
     # Types - Agent Knowledge Search
     "AgentKBSearchResult",
     "AgentKBSearchResponse",
+    # Types - Tool Schemas (BYO-LLM)
+    "ToolSchema",
+    "ToolSchemasResponse",
 ]

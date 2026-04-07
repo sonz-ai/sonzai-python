@@ -1635,3 +1635,23 @@ class KBBulkUpdateResponse(BaseModel):
     created: int = 0
     status: str = ""
     count: int = 0
+
+
+# ---------------------------------------------------------------------------
+# Tool Schemas (BYO-LLM)
+# ---------------------------------------------------------------------------
+
+
+class ToolSchema(BaseModel):
+    """Describes a single tool available for an agent (BYO-LLM integrations)."""
+
+    name: str = ""
+    description: str = ""
+    endpoint: str = ""
+    parameters: dict[str, Any] = Field(default_factory=dict)
+
+
+class ToolSchemasResponse(BaseModel):
+    """Response from the get_tools endpoint."""
+
+    tools: list[ToolSchema] = Field(default_factory=list)
