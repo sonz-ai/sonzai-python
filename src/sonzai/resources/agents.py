@@ -1105,7 +1105,7 @@ class Agents:
             body["limit"] = limit
         return AgentKBSearchResponse.model_validate(
             self._http.post(
-                f"/api/v1/agents/{agent_id}/tools/knowledge-search",
+                f"/api/v1/agents/{agent_id}/tools/kb-search",
                 json_data=body,
             )
         )
@@ -2141,7 +2141,7 @@ class AsyncAgents:
             body["limit"] = limit
         return AgentKBSearchResponse.model_validate(
             await self._http.post(
-                f"/api/v1/agents/{agent_id}/tools/knowledge-search",
+                f"/api/v1/agents/{agent_id}/tools/kb-search",
                 json_data=body,
             )
         )
