@@ -16,6 +16,8 @@ from .types import (
     AcknowledgeResponse,
     Agent,
     AgentCapabilities,
+    AgentKBSearchResponse,
+    AgentKBSearchResult,
     AgentIndex,
     AgentInstance,
     AgentListResponse,
@@ -147,7 +149,7 @@ from .types import (
     WebhookRegisterResponse,
 )
 
-__version__ = "1.0.5"
+__version__ = "1.0.6"
 
 __all__ = [
     # Clients
@@ -318,4 +320,7 @@ __all__ = [
     # Types - KB Bulk Update
     "KBBulkUpdateEntry",
     "KBBulkUpdateResponse",
+    # Types - Agent Knowledge Search
+    "AgentKBSearchResult",
+    "AgentKBSearchResponse",
 ]

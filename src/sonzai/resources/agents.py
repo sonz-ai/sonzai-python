@@ -9,6 +9,7 @@ from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
     Agent,
     AgentCapabilities,
+    AgentKBSearchResponse,
     AgentListResponse,
     BreakthroughsResponse,
     ChatMessage,
@@ -1088,6 +1089,26 @@ class Agents:
             self._http.get(f"/api/v1/agents/{agent_id}/timemachine", params=params)
         )
 
+    # -- Knowledge Search (tool endpoint) --
+
+    def knowledge_search(
+        self,
+        agent_id: str,
+        *,
+        query: str,
+        limit: int | None = None,
+    ) -> AgentKBSearchResponse:
+        """Search the knowledge base for an agent."""
+        body: dict[str, Any] = {"query": query}
+        if limit is not None:
+            body["limit"] = limit
+        return AgentKBSearchResponse.model_validate(
+            self._http.post(
+                f"/api/v1/agents/{agent_id}/tools/knowledge-search",
+                json_data=body,
+            )
+        )
+
 
 class AsyncAgents:
     """Async agent operations."""
@@ -2094,4 +2115,24 @@ class AsyncAgents:
             params["instance_id"] = instance_id
         return TimeMachineResponse.model_validate(
             await self._http.get(f"/api/v1/agents/{agent_id}/timemachine", params=params)
+        )
+
+    # -- Knowledge Search (tool endpoint) --
+
+    async def knowledge_search(
+        self,
+        agent_id: str,
+        *,
+        query: str,
+        limit: int | None = None,
+    ) -> AgentKBSearchResponse:
+        """Search the knowledge base for an agent."""
+        body: dict[str, Any] = {"query": query}
+        if limit is not None:
+            body["limit"] = limit
+        return AgentKBSearchResponse.model_validate(
+            await self._http.post(
+                f"/api/v1/agents/{agent_id}/tools/knowledge-search",
+                json_data=body,
+            )
         )

@@ -1609,6 +1609,19 @@ class ListAllFactsResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class AgentKBSearchResult(BaseModel):
+    content: str = ""
+    label: str = ""
+    type: str = ""
+    source: str = ""
+    score: float = 0.0
+
+
+class AgentKBSearchResponse(BaseModel):
+    query: str = ""
+    results: list[AgentKBSearchResult] = Field(default_factory=list)
+
+
 class KBBulkUpdateEntry(BaseModel):
     entity_type: str = ""
     label: str = ""
