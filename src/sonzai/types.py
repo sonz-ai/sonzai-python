@@ -1136,13 +1136,30 @@ class ProcessResponse(BaseModel):
 # Models
 # ---------------------------------------------------------------------------
 
+
+class ModelVariant(BaseModel):
+    """A single model variant offered by a provider."""
+
+    id: str = ""
+    display_name: str = ""
+
+
 class ModelsProviderEntry(BaseModel):
     provider: str = ""
     provider_name: str = ""
     default_model: str = ""
+    models: list[ModelVariant] = Field(default_factory=list)
+
 
 class ModelsResponse(BaseModel):
     default_provider: str = ""
+    default_model: str = ""
+    providers: list[ModelsProviderEntry] = Field(default_factory=list)
+
+
+class PlatformModelsResponse(BaseModel):
+    """Response from ``GET /api/v1/models``."""
+
     default_model: str = ""
     providers: list[ModelsProviderEntry] = Field(default_factory=list)
 

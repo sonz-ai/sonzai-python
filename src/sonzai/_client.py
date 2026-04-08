@@ -6,6 +6,7 @@ import os
 
 from ._http import AsyncHTTPClient, HTTPClient
 from .resources.agents import Agents, AsyncAgents
+from .types import PlatformModelsResponse
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
 from .resources.eval_templates import AsyncEvalTemplates, EvalTemplates
@@ -102,6 +103,21 @@ class Sonzai:
         self.custom_llm = CustomLLM(self._http)
         self.project_notifications = ProjectNotifications(self._http)
 
+    def list_models(self) -> PlatformModelsResponse:
+        """Return all LLM providers and model variants enabled on this deployment.
+
+        Platform-level call — does not require an agent ID. Use this to
+        populate model picker UIs or validate model IDs before a chat request.
+
+        Example::
+
+            result = client.list_models()
+            for p in result.providers:
+                print(p.provider_name, [m.id for m in p.models])
+        """
+        data = self._http.get("/api/v1/models")
+        return PlatformModelsResponse.model_validate(data)
+
     def close(self) -> None:
         """Close the underlying HTTP client."""
         self._http.close()
@@ -177,6 +193,21 @@ class AsyncSonzai:
         self.project_config = AsyncProjectConfig(self._http)
         self.custom_llm = AsyncCustomLLM(self._http)
         self.project_notifications = AsyncProjectNotifications(self._http)
+
+    async def list_models(self) -> PlatformModelsResponse:
+        """Return all LLM providers and model variants enabled on this deployment.
+
+        Platform-level call — does not require an agent ID. Use this to
+        populate model picker UIs or validate model IDs before a chat request.
+
+        Example::
+
+            result = await client.list_models()
+            for p in result.providers:
+                print(p.provider_name, [m.id for m in p.models])
+        """
+        data = await self._http.get("/api/v1/models")
+        return PlatformModelsResponse.model_validate(data)
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""

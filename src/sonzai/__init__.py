@@ -1,5 +1,6 @@
 """Sonzai Python SDK - Client for the Sonzai Mind Layer API."""
 
+from . import providers
 from ._client import AsyncSonzai, Sonzai
 from ._exceptions import (
     APIError,
@@ -95,6 +96,7 @@ from .types import (
     MemorySearchResult,
     MemorySummary,
     MemoryTimelineResponse,
+    ModelVariant,
     MoodAggregateResponse,
     MoodResponse,
     Notification,
@@ -107,6 +109,7 @@ from .types import (
     PersonalityResponse,
     PersonalityShift,
     PersonalityUpdateResponse,
+    PlatformModelsResponse,
     ProcessResponse,
     ProcessSideEffectsSummary,
     ProjectConfigEntry,
@@ -153,12 +156,14 @@ from .types import (
     WebhookRegisterResponse,
 )
 
-__version__ = "1.0.10"
+__version__ = "1.0.11"
 
 __all__ = [
     # Clients
     "Sonzai",
     "AsyncSonzai",
+    # Provider constants
+    "providers",
     # Exceptions
     "SonzaiError",
     "APIError",
@@ -332,4 +337,7 @@ __all__ = [
     # Types - Tool Schemas (BYO-LLM)
     "ToolSchema",
     "ToolSchemasResponse",
+    # Types - Platform models
+    "ModelVariant",
+    "PlatformModelsResponse",
 ]
