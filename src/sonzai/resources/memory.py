@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import builtins
 from typing import Any
+from urllib.parse import quote
 
 _list = builtins.list
 
@@ -222,13 +223,13 @@ class Memory:
         if metadata is not None:
             body["metadata"] = metadata
         data = self._http.put(
-            f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}", json_data=body
+            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}", json_data=body
         )
         return AtomicFact.model_validate(data)
 
     def delete_fact(self, agent_id: str, fact_id: str) -> None:
         """Delete a fact by ID."""
-        self._http.delete(f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}")
+        self._http.delete(f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}")
 
     def get_fact_history(self, agent_id: str, fact_id: str) -> FactHistoryResponse:
         """Get the version history for a specific fact."""
@@ -438,13 +439,13 @@ class AsyncMemory:
         if metadata is not None:
             body["metadata"] = metadata
         data = await self._http.put(
-            f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}", json_data=body
+            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}", json_data=body
         )
         return AtomicFact.model_validate(data)
 
     async def delete_fact(self, agent_id: str, fact_id: str) -> None:
         """Delete a fact by ID."""
-        await self._http.delete(f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}")
+        await self._http.delete(f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}")
 
     async def get_fact_history(self, agent_id: str, fact_id: str) -> FactHistoryResponse:
         """Get the version history for a specific fact."""

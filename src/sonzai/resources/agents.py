@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
+from urllib.parse import quote
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
@@ -738,7 +739,7 @@ class Agents:
         if strength is not None:
             body["strength"] = strength
         data = self._http.put(
-            f"/api/v1/agents/{agent_id}/habits/{habit_name}", json_data=body
+            f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", json_data=body
         )
         return Habit.model_validate(data)
 
@@ -754,7 +755,7 @@ class Agents:
         if user_id is not None:
             params["user_id"] = user_id
         self._http.delete(
-            f"/api/v1/agents/{agent_id}/habits/{habit_name}", params=params
+            f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", params=params
         )
 
     def get_goals(
@@ -1904,7 +1905,7 @@ class AsyncAgents:
         if strength is not None:
             body["strength"] = strength
         data = await self._http.put(
-            f"/api/v1/agents/{agent_id}/habits/{habit_name}", json_data=body
+            f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", json_data=body
         )
         return Habit.model_validate(data)
 
@@ -1920,7 +1921,7 @@ class AsyncAgents:
         if user_id is not None:
             params["user_id"] = user_id
         await self._http.delete(
-            f"/api/v1/agents/{agent_id}/habits/{habit_name}", params=params
+            f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", params=params
         )
 
     async def get_goals(
