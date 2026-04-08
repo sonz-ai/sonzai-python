@@ -1507,6 +1507,8 @@ class UserPrimingMetadata(BaseModel):
     title: str = ""
     email: str = ""
     phone: str = ""
+    timezone: str = ""
+    """IANA timezone (e.g., 'Asia/Singapore')."""
     source_type: str = ""
     custom_fields: dict[str, str] = Field(default_factory=dict)
     primed_at: str = ""
