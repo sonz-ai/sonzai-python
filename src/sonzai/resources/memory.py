@@ -9,6 +9,7 @@ _list = builtins.list
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
+    AtomicFact,
     FactHistoryResponse,
     FactListResponse,
     MemoryResetResponse,
@@ -160,6 +161,75 @@ class Memory:
             return MemoryResetResponse.model_validate(data)
         return MemoryResetResponse(agent_id=agent_id, status="reset")
 
+    def create_fact(
+        self,
+        agent_id: str,
+        *,
+        content: str,
+        user_id: str | None = None,
+        fact_type: str | None = None,
+        importance: float | None = None,
+        confidence: float | None = None,
+        entities: _list[str] | None = None,
+        node_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> AtomicFact:
+        """Create a new fact for an agent. Facts are tagged source_type='manual'."""
+        body: dict[str, Any] = {"content": content}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if fact_type is not None:
+            body["fact_type"] = fact_type
+        if importance is not None:
+            body["importance"] = importance
+        if confidence is not None:
+            body["confidence"] = confidence
+        if entities is not None:
+            body["entities"] = entities
+        if node_id is not None:
+            body["node_id"] = node_id
+        if metadata is not None:
+            body["metadata"] = metadata
+        data = self._http.post(
+            f"/api/v1/agents/{agent_id}/memory/facts", json_data=body
+        )
+        return AtomicFact.model_validate(data)
+
+    def update_fact(
+        self,
+        agent_id: str,
+        fact_id: str,
+        *,
+        content: str | None = None,
+        fact_type: str | None = None,
+        importance: float | None = None,
+        confidence: float | None = None,
+        entities: _list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> AtomicFact:
+        """Update an existing fact by ID."""
+        body: dict[str, Any] = {}
+        if content is not None:
+            body["content"] = content
+        if fact_type is not None:
+            body["fact_type"] = fact_type
+        if importance is not None:
+            body["importance"] = importance
+        if confidence is not None:
+            body["confidence"] = confidence
+        if entities is not None:
+            body["entities"] = entities
+        if metadata is not None:
+            body["metadata"] = metadata
+        data = self._http.put(
+            f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}", json_data=body
+        )
+        return AtomicFact.model_validate(data)
+
+    def delete_fact(self, agent_id: str, fact_id: str) -> None:
+        """Delete a fact by ID."""
+        self._http.delete(f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}")
+
     def get_fact_history(self, agent_id: str, fact_id: str) -> FactHistoryResponse:
         """Get the version history for a specific fact."""
         return FactHistoryResponse.model_validate(
@@ -306,6 +376,75 @@ class AsyncMemory:
         if isinstance(data, dict):
             return MemoryResetResponse.model_validate(data)
         return MemoryResetResponse(agent_id=agent_id, status="reset")
+
+    async def create_fact(
+        self,
+        agent_id: str,
+        *,
+        content: str,
+        user_id: str | None = None,
+        fact_type: str | None = None,
+        importance: float | None = None,
+        confidence: float | None = None,
+        entities: _list[str] | None = None,
+        node_id: str | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> AtomicFact:
+        """Create a new fact for an agent. Facts are tagged source_type='manual'."""
+        body: dict[str, Any] = {"content": content}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if fact_type is not None:
+            body["fact_type"] = fact_type
+        if importance is not None:
+            body["importance"] = importance
+        if confidence is not None:
+            body["confidence"] = confidence
+        if entities is not None:
+            body["entities"] = entities
+        if node_id is not None:
+            body["node_id"] = node_id
+        if metadata is not None:
+            body["metadata"] = metadata
+        data = await self._http.post(
+            f"/api/v1/agents/{agent_id}/memory/facts", json_data=body
+        )
+        return AtomicFact.model_validate(data)
+
+    async def update_fact(
+        self,
+        agent_id: str,
+        fact_id: str,
+        *,
+        content: str | None = None,
+        fact_type: str | None = None,
+        importance: float | None = None,
+        confidence: float | None = None,
+        entities: _list[str] | None = None,
+        metadata: dict[str, Any] | None = None,
+    ) -> AtomicFact:
+        """Update an existing fact by ID."""
+        body: dict[str, Any] = {}
+        if content is not None:
+            body["content"] = content
+        if fact_type is not None:
+            body["fact_type"] = fact_type
+        if importance is not None:
+            body["importance"] = importance
+        if confidence is not None:
+            body["confidence"] = confidence
+        if entities is not None:
+            body["entities"] = entities
+        if metadata is not None:
+            body["metadata"] = metadata
+        data = await self._http.put(
+            f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}", json_data=body
+        )
+        return AtomicFact.model_validate(data)
+
+    async def delete_fact(self, agent_id: str, fact_id: str) -> None:
+        """Delete a fact by ID."""
+        await self._http.delete(f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}")
 
     async def get_fact_history(self, agent_id: str, fact_id: str) -> FactHistoryResponse:
         """Get the version history for a specific fact."""

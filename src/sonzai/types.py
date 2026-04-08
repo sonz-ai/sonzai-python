@@ -278,6 +278,45 @@ class HabitsResponse(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class Habit(BaseModel):
+    """Full habit entity returned from create/update endpoints."""
+
+    id: str = ""
+    agent_id: str = ""
+    user_id: str = ""
+    name: str = ""
+    category: str = ""
+    description: str = ""
+    display_name: str = ""
+    strength: float = 0.0
+    formed: bool = False
+    observation_count: int = 0
+    last_reinforced_at: str | None = None
+    formed_at: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+    model_config = {"extra": "allow"}
+
+
+class ConstellationNode(BaseModel):
+    """Full constellation node entity returned from create/update endpoints."""
+
+    node_id: str = ""
+    agent_id: str = ""
+    user_id: str = ""
+    node_type: str = ""
+    label: str = ""
+    description: str = ""
+    significance: float = 0.0
+    mention_count: int = 0
+    brightness: float = 0.0
+    first_mentioned_at: str | None = None
+    last_mentioned_at: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+    model_config = {"extra": "allow"}
+
+
 GoalType = str
 """One of: personal_growth, skill_mastery, relationship, learning_discovery."""
 

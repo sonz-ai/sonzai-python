@@ -17,6 +17,7 @@ from ..types import (
     ChatResponse,
     ChatStreamEvent,
     ConsolidateResponse,
+    ConstellationNode,
     ConstellationResponse,
     CustomToolDefinition,
     CustomToolListResponse,
@@ -28,6 +29,7 @@ from ..types import (
     GenerateAvatarResponse,
     Goal,
     GoalsResponse,
+    Habit,
     HabitsResponse,
     InterestsResponse,
     ModelsResponse,
@@ -686,6 +688,75 @@ class Agents:
         data = self._http.get(f"/api/v1/agents/{agent_id}/habits", params=params)
         return HabitsResponse.model_validate(data)
 
+    def create_habit(
+        self,
+        agent_id: str,
+        *,
+        name: str,
+        user_id: str | None = None,
+        category: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        strength: float | None = None,
+    ) -> Habit:
+        """Create a habit for an agent. Set user_id for a per-user habit."""
+        body: dict[str, Any] = {"name": name}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if category is not None:
+            body["category"] = category
+        if description is not None:
+            body["description"] = description
+        if display_name is not None:
+            body["display_name"] = display_name
+        if strength is not None:
+            body["strength"] = strength
+        data = self._http.post(f"/api/v1/agents/{agent_id}/habits", json_data=body)
+        return Habit.model_validate(data)
+
+    def update_habit(
+        self,
+        agent_id: str,
+        habit_name: str,
+        *,
+        user_id: str | None = None,
+        category: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        strength: float | None = None,
+    ) -> Habit:
+        """Update an existing habit by name."""
+        body: dict[str, Any] = {}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if category is not None:
+            body["category"] = category
+        if description is not None:
+            body["description"] = description
+        if display_name is not None:
+            body["display_name"] = display_name
+        if strength is not None:
+            body["strength"] = strength
+        data = self._http.put(
+            f"/api/v1/agents/{agent_id}/habits/{habit_name}", json_data=body
+        )
+        return Habit.model_validate(data)
+
+    def delete_habit(
+        self,
+        agent_id: str,
+        habit_name: str,
+        *,
+        user_id: str | None = None,
+    ) -> None:
+        """Delete a habit. Set user_id for per-user habits."""
+        params: dict[str, Any] = {}
+        if user_id is not None:
+            params["user_id"] = user_id
+        self._http.delete(
+            f"/api/v1/agents/{agent_id}/habits/{habit_name}", params=params
+        )
+
     def get_goals(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> GoalsResponse:
@@ -811,6 +882,67 @@ class Agents:
             params["instance_id"] = instance_id
         data = self._http.get(f"/api/v1/agents/{agent_id}/constellation", params=params)
         return ConstellationResponse.model_validate(data)
+
+    def create_constellation_node(
+        self,
+        agent_id: str,
+        *,
+        label: str,
+        user_id: str | None = None,
+        node_type: str | None = None,
+        description: str | None = None,
+        significance: float | None = None,
+    ) -> ConstellationNode:
+        """Create a constellation node (lore) for an agent."""
+        body: dict[str, Any] = {"label": label}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if node_type is not None:
+            body["node_type"] = node_type
+        if description is not None:
+            body["description"] = description
+        if significance is not None:
+            body["significance"] = significance
+        data = self._http.post(
+            f"/api/v1/agents/{agent_id}/constellation/nodes", json_data=body
+        )
+        return ConstellationNode.model_validate(data)
+
+    def update_constellation_node(
+        self,
+        agent_id: str,
+        node_id: str,
+        *,
+        label: str | None = None,
+        description: str | None = None,
+        significance: float | None = None,
+        node_type: str | None = None,
+    ) -> ConstellationNode:
+        """Update an existing constellation node."""
+        body: dict[str, Any] = {}
+        if label is not None:
+            body["label"] = label
+        if description is not None:
+            body["description"] = description
+        if significance is not None:
+            body["significance"] = significance
+        if node_type is not None:
+            body["node_type"] = node_type
+        data = self._http.put(
+            f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}",
+            json_data=body,
+        )
+        return ConstellationNode.model_validate(data)
+
+    def delete_constellation_node(
+        self,
+        agent_id: str,
+        node_id: str,
+    ) -> None:
+        """Delete a constellation node."""
+        self._http.delete(
+            f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
+        )
 
     def get_breakthroughs(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -1722,6 +1854,75 @@ class AsyncAgents:
         data = await self._http.get(f"/api/v1/agents/{agent_id}/habits", params=params)
         return HabitsResponse.model_validate(data)
 
+    async def create_habit(
+        self,
+        agent_id: str,
+        *,
+        name: str,
+        user_id: str | None = None,
+        category: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        strength: float | None = None,
+    ) -> Habit:
+        """Create a habit for an agent. Set user_id for a per-user habit."""
+        body: dict[str, Any] = {"name": name}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if category is not None:
+            body["category"] = category
+        if description is not None:
+            body["description"] = description
+        if display_name is not None:
+            body["display_name"] = display_name
+        if strength is not None:
+            body["strength"] = strength
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/habits", json_data=body)
+        return Habit.model_validate(data)
+
+    async def update_habit(
+        self,
+        agent_id: str,
+        habit_name: str,
+        *,
+        user_id: str | None = None,
+        category: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        strength: float | None = None,
+    ) -> Habit:
+        """Update an existing habit by name."""
+        body: dict[str, Any] = {}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if category is not None:
+            body["category"] = category
+        if description is not None:
+            body["description"] = description
+        if display_name is not None:
+            body["display_name"] = display_name
+        if strength is not None:
+            body["strength"] = strength
+        data = await self._http.put(
+            f"/api/v1/agents/{agent_id}/habits/{habit_name}", json_data=body
+        )
+        return Habit.model_validate(data)
+
+    async def delete_habit(
+        self,
+        agent_id: str,
+        habit_name: str,
+        *,
+        user_id: str | None = None,
+    ) -> None:
+        """Delete a habit. Set user_id for per-user habits."""
+        params: dict[str, Any] = {}
+        if user_id is not None:
+            params["user_id"] = user_id
+        await self._http.delete(
+            f"/api/v1/agents/{agent_id}/habits/{habit_name}", params=params
+        )
+
     async def get_goals(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> GoalsResponse:
@@ -1847,6 +2048,67 @@ class AsyncAgents:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/constellation", params=params)
         return ConstellationResponse.model_validate(data)
+
+    async def create_constellation_node(
+        self,
+        agent_id: str,
+        *,
+        label: str,
+        user_id: str | None = None,
+        node_type: str | None = None,
+        description: str | None = None,
+        significance: float | None = None,
+    ) -> ConstellationNode:
+        """Create a constellation node (lore) for an agent."""
+        body: dict[str, Any] = {"label": label}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if node_type is not None:
+            body["node_type"] = node_type
+        if description is not None:
+            body["description"] = description
+        if significance is not None:
+            body["significance"] = significance
+        data = await self._http.post(
+            f"/api/v1/agents/{agent_id}/constellation/nodes", json_data=body
+        )
+        return ConstellationNode.model_validate(data)
+
+    async def update_constellation_node(
+        self,
+        agent_id: str,
+        node_id: str,
+        *,
+        label: str | None = None,
+        description: str | None = None,
+        significance: float | None = None,
+        node_type: str | None = None,
+    ) -> ConstellationNode:
+        """Update an existing constellation node."""
+        body: dict[str, Any] = {}
+        if label is not None:
+            body["label"] = label
+        if description is not None:
+            body["description"] = description
+        if significance is not None:
+            body["significance"] = significance
+        if node_type is not None:
+            body["node_type"] = node_type
+        data = await self._http.put(
+            f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}",
+            json_data=body,
+        )
+        return ConstellationNode.model_validate(data)
+
+    async def delete_constellation_node(
+        self,
+        agent_id: str,
+        node_id: str,
+    ) -> None:
+        """Delete a constellation node."""
+        await self._http.delete(
+            f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
+        )
 
     async def get_breakthroughs(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None

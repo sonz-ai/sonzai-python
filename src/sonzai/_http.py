@@ -182,6 +182,10 @@ class HTTPClient:
             headers={"Accept": "text/event-stream"},
         ) as response:
             _raise_for_status(response)
+            # httpx's iter_lines() / aiter_lines() accumulate chunks via LineDecoder
+            # without a hard per-line size limit, so large SSE events such as
+            # context_ready (which embeds the full enriched context JSON in a single
+            # data: line and can exceed 64 KB) are handled correctly.
             yield from _parse_sse_stream(response.iter_lines())
 
     def close(self) -> None:
@@ -301,6 +305,10 @@ class AsyncHTTPClient:
             headers={"Accept": "text/event-stream"},
         ) as response:
             _raise_for_status(response)
+            # httpx's aiter_lines() accumulates chunks via LineDecoder without a hard
+            # per-line size limit, so large SSE events such as context_ready (which
+            # embeds the full enriched context JSON in a single data: line and can
+            # exceed 64 KB) are handled correctly.
             async for line in response.aiter_lines():
                 line = line.strip()
                 if not line:
