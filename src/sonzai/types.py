@@ -48,6 +48,7 @@ class ChatStreamEvent(BaseModel):
     continuation_token: str = ""
     message_count: int = 0
     side_effects: dict[str, Any] | None = None
+    external_tool_calls: list[ExternalToolCall] = Field(default_factory=list)
     error_message: str = ""
     error_code: str = ""
     is_token_error: bool = False
@@ -71,6 +72,19 @@ class ChatResponse(BaseModel):
     content: str
     session_id: str
     usage: ChatUsage | None = None
+
+
+class ExternalToolCall(BaseModel):
+    id: str = ""
+    name: str = ""
+    parameters: dict[str, Any] = Field(default_factory=dict)
+
+
+class ToolCallResponseOptions(BaseModel):
+    session_id: str = ""
+    user_id: str = ""
+    tool_call_id: str = ""
+    result: Any = None
 
 
 # ---------------------------------------------------------------------------
@@ -1036,6 +1050,7 @@ class FactHistoryResponse(BaseModel):
 # Process (full pipeline)
 # ---------------------------------------------------------------------------
 
+
 class ProcessSideEffectsSummary(BaseModel):
     model_config = {"extra": "allow"}
     mood_updated: bool = False
@@ -1132,6 +1147,7 @@ class ProcessResponse(BaseModel):
     side_effects: ProcessSideEffectsSummary = Field(default_factory=ProcessSideEffectsSummary)
     extractions: SideEffectExtraction | None = None
 
+
 # ---------------------------------------------------------------------------
 # Models
 # ---------------------------------------------------------------------------
@@ -1163,9 +1179,11 @@ class PlatformModelsResponse(BaseModel):
     default_model: str = ""
     providers: list[ModelsProviderEntry] = Field(default_factory=list)
 
+
 # ---------------------------------------------------------------------------
 # Context (single-call enriched context)
 # ---------------------------------------------------------------------------
+
 
 class EnrichedContextResponse(BaseModel):
     model_config = {"extra": "allow"}
@@ -1209,9 +1227,11 @@ class EnrichedContextResponse(BaseModel):
     # Layer 7: Game Context
     game_context: dict[str, Any] | None = None
 
+
 # ---------------------------------------------------------------------------
 # Avatar Generation
 # ---------------------------------------------------------------------------
+
 
 class GenerateAvatarResponse(BaseModel):
     model_config = {"extra": "allow"}
@@ -1219,6 +1239,7 @@ class GenerateAvatarResponse(BaseModel):
     avatar_url: str = ""
     prompt: str = ""
     generation_time_ms: int = 0
+
 
 # ---------------------------------------------------------------------------
 # Time Machine
@@ -1360,6 +1381,7 @@ class KBNode(BaseModel):
 class KBNodeListResponse(BaseModel):
     nodes: list[KBNode] = Field(default_factory=list)
     total: int = 0
+    next_cursor: str = ""
 
 
 class KBEdge(BaseModel):
@@ -1444,11 +1466,19 @@ class InsertFactDetail(BaseModel):
     version: int = 0
 
 
+class InsertFactEdgeDetail(BaseModel):
+    edge_id: str = ""
+    from_node: str = ""
+    to_node: str = ""
+    relation: str = ""
+
+
 class InsertFactsResponse(BaseModel):
     processed: int = 0
     created: int = 0
     updated: int = 0
     details: list[InsertFactDetail] = Field(default_factory=list)
+    edges: list[InsertFactEdgeDetail] = Field(default_factory=list)
 
 
 class KBAnalyticsRule(BaseModel):

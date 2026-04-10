@@ -78,7 +78,7 @@ class HTTPClient:
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "sonzai-python/1.0.9",
+                "User-Agent": "sonzai-python/1.0.12",
             },
             timeout=httpx.Timeout(timeout, connect=10.0),
             follow_redirects=True,
@@ -113,7 +113,11 @@ class HTTPClient:
                 if response.status_code >= 500 and attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after %d status",
-                        method, path, attempt + 1, retries, response.status_code,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        response.status_code,
                     )
                     time.sleep(0.5 * 2**attempt)
                     continue
@@ -126,7 +130,11 @@ class HTTPClient:
                 if attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after transport error: %s",
-                        method, path, attempt + 1, retries, exc,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        exc,
                     )
                     time.sleep(0.5 * 2**attempt)
                     continue
@@ -165,6 +173,29 @@ class HTTPClient:
 
     def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return self.request("DELETE", path, params=params)
+
+    def upload_file(
+        self,
+        path: str,
+        *,
+        file_name: str,
+        file_data: bytes,
+        content_type: str = "application/octet-stream",
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        import io
+
+        files = {"file": (file_name, io.BytesIO(file_data), content_type)}
+        response = self._client.request(
+            "POST",
+            path,
+            files=files,
+            params=params,
+        )
+        _raise_for_status(response)
+        if response.headers.get("content-type", "").startswith("application/json"):
+            return response.json()
+        return response.text
 
     def stream_sse(
         self,
@@ -207,7 +238,7 @@ class AsyncHTTPClient:
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "sonzai-python/1.0.9",
+                "User-Agent": "sonzai-python/1.0.12",
             },
             timeout=httpx.Timeout(timeout, connect=10.0),
             follow_redirects=True,
@@ -242,7 +273,11 @@ class AsyncHTTPClient:
                 if response.status_code >= 500 and attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after %d status",
-                        method, path, attempt + 1, retries, response.status_code,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        response.status_code,
                     )
                     await asyncio.sleep(0.5 * 2**attempt)
                     continue
@@ -255,7 +290,11 @@ class AsyncHTTPClient:
                 if attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after transport error: %s",
-                        method, path, attempt + 1, retries, exc,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        exc,
                     )
                     await asyncio.sleep(0.5 * 2**attempt)
                     continue
@@ -295,7 +334,32 @@ class AsyncHTTPClient:
     async def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return await self.request("DELETE", path, params=params)
 
-    async def stream_sse(self, method: str, path: str, *, json_data: dict[str, Any] | None = None) -> AsyncIterator[dict[str, Any]]:
+    async def upload_file(
+        self,
+        path: str,
+        *,
+        file_name: str,
+        file_data: bytes,
+        content_type: str = "application/octet-stream",
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        import io
+
+        files = {"file": (file_name, io.BytesIO(file_data), content_type)}
+        response = await self._client.request(
+            "POST",
+            path,
+            files=files,
+            params=params,
+        )
+        _raise_for_status(response)
+        if response.headers.get("content-type", "").startswith("application/json"):
+            return response.json()
+        return response.text
+
+    async def stream_sse(
+        self, method: str, path: str, *, json_data: dict[str, Any] | None = None
+    ) -> AsyncIterator[dict[str, Any]]:
         """Send a request and yield parsed SSE events asynchronously."""
         async with self._client.stream(
             method,

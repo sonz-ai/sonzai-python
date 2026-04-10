@@ -202,9 +202,7 @@ class Agents:
         if tool_capabilities is not None:
             body["tool_capabilities"] = tool_capabilities
 
-        data = self._http.patch(
-            f"/api/v1/agents/{agent_id}/profile", json_data=body
-        )
+        data = self._http.patch(f"/api/v1/agents/{agent_id}/profile", json_data=body)
         return Agent.model_validate(data)
 
     def delete(self, agent_id: str) -> DeleteResponse:
@@ -261,9 +259,7 @@ class Agents:
         Returns:
             ChatResponse if stream=False, Iterator[ChatStreamEvent] if stream=True.
         """
-        msgs = [
-            m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
-        ]
+        msgs = [m.model_dump() if isinstance(m, ChatMessage) else m for m in messages]
         body: dict[str, Any] = {"messages": msgs}
         if user_id is not None:
             body["user_id"] = user_id
@@ -320,9 +316,7 @@ class Agents:
             usage=usage,
         )
 
-    def _stream_chat(
-        self, path: str, body: dict[str, Any]
-    ) -> Iterator[ChatStreamEvent]:
+    def _stream_chat(self, path: str, body: dict[str, Any]) -> Iterator[ChatStreamEvent]:
         for event in self._http.stream_sse("POST", path, json_data=body):
             yield ChatStreamEvent.model_validate(event)
 
@@ -345,8 +339,7 @@ class Agents:
             body["user_id"] = user_id
         if messages is not None:
             body["messages"] = [
-                m.model_dump() if isinstance(m, ChatMessage) else m
-                for m in messages
+                m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
             ]
         if request_type is not None:
             body["request_type"] = request_type
@@ -357,9 +350,7 @@ class Agents:
         if instance_id is not None:
             body["instance_id"] = instance_id
 
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/dialogue", json_data=body
-        )
+        data = self._http.post(f"/api/v1/agents/{agent_id}/dialogue", json_data=body)
         return DialogueResponse.model_validate(data)
 
     # -- Events --
@@ -389,9 +380,7 @@ class Agents:
         if instance_id is not None:
             body["instance_id"] = instance_id
 
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/events", json_data=body
-        )
+        data = self._http.post(f"/api/v1/agents/{agent_id}/events", json_data=body)
         return TriggerEventResponse.model_validate(data)
 
     # -- Wakeup Scheduling --
@@ -423,9 +412,7 @@ class Agents:
         if event_description is not None:
             body["event_description"] = event_description
 
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/wakeups", json_data=body
-        )
+        data = self._http.post(f"/api/v1/agents/{agent_id}/wakeups", json_data=body)
         return ScheduledWakeup.model_validate(data)
 
     # -- Evaluate / Simulate --
@@ -439,16 +426,12 @@ class Agents:
         config_override: dict[str, Any] | None = None,
     ) -> EvaluationResult:
         """Evaluate an agent against a template."""
-        msgs = [
-            m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
-        ]
+        msgs = [m.model_dump() if isinstance(m, ChatMessage) else m for m in messages]
         body: dict[str, Any] = {"messages": msgs, "template_id": template_id}
         if config_override:
             body["config_override"] = config_override
 
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/evaluate", json_data=body
-        )
+        data = self._http.post(f"/api/v1/agents/{agent_id}/evaluate", json_data=body)
         return EvaluationResult.model_validate(data)
 
     def simulate(
@@ -478,9 +461,7 @@ class Agents:
         data = self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=body)
         ref = RunRef.model_validate(data)
         # Step 2: Stream events from the run
-        for event in self._http.stream_sse(
-            "GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"
-        ):
+        for event in self._http.stream_sse("GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"):
             yield SimulationEvent.model_validate(event)
 
     def simulate_async(
@@ -543,9 +524,7 @@ class Agents:
         data = self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=body)
         ref = RunRef.model_validate(data)
         # Step 2: Stream events from the run
-        for event in self._http.stream_sse(
-            "GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"
-        ):
+        for event in self._http.stream_sse("GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"):
             yield SimulationEvent.model_validate(event)
 
     def run_eval_async(
@@ -604,9 +583,7 @@ class Agents:
         data = self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=body)
         ref = RunRef.model_validate(data)
         # Step 2: Stream events from the run
-        for event in self._http.stream_sse(
-            "GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"
-        ):
+        for event in self._http.stream_sse("GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"):
             yield SimulationEvent.model_validate(event)
 
     def eval_only_async(
@@ -794,9 +771,7 @@ class Agents:
         if related_traits is not None:
             body["related_traits"] = related_traits
 
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/goals", json_data=body
-        )
+        data = self._http.post(f"/api/v1/agents/{agent_id}/goals", json_data=body)
         return Goal.model_validate(data)
 
     def update_goal(
@@ -826,9 +801,7 @@ class Agents:
         if related_traits is not None:
             body["related_traits"] = related_traits
 
-        data = self._http.put(
-            f"/api/v1/agents/{agent_id}/goals/{goal_id}", json_data=body
-        )
+        data = self._http.put(f"/api/v1/agents/{agent_id}/goals/{goal_id}", json_data=body)
         return Goal.model_validate(data)
 
     def delete_goal(
@@ -842,9 +815,7 @@ class Agents:
         params: dict[str, Any] = {}
         if user_id is not None:
             params["userId"] = user_id
-        self._http.delete(
-            f"/api/v1/agents/{agent_id}/goals/{goal_id}", params=params
-        )
+        self._http.delete(f"/api/v1/agents/{agent_id}/goals/{goal_id}", params=params)
 
     def get_interests(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -871,6 +842,25 @@ class Agents:
     def get_users(self, agent_id: str) -> UsersResponse:
         data = self._http.get(f"/api/v1/agents/{agent_id}/users")
         return UsersResponse.model_validate(data)
+
+    def respond_to_tool_call(
+        self,
+        agent_id: str,
+        *,
+        session_id: str,
+        tool_call_id: str,
+        result: Any,
+        user_id: str | None = None,
+    ) -> ChatResponse:
+        body: dict[str, Any] = {
+            "session_id": session_id,
+            "tool_call_id": tool_call_id,
+            "result": result,
+        }
+        if user_id is not None:
+            body["user_id"] = user_id
+        data = self._http.post(f"/api/v1/agents/{agent_id}/tools/respond", json_data=body)
+        return ChatResponse.model_validate(data)
 
     def get_constellation(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -904,9 +894,7 @@ class Agents:
             body["description"] = description
         if significance is not None:
             body["significance"] = significance
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/constellation/nodes", json_data=body
-        )
+        data = self._http.post(f"/api/v1/agents/{agent_id}/constellation/nodes", json_data=body)
         return ConstellationNode.model_validate(data)
 
     def update_constellation_node(
@@ -941,9 +929,7 @@ class Agents:
         node_id: str,
     ) -> None:
         """Delete a constellation node."""
-        self._http.delete(
-            f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
-        )
+        self._http.delete(f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}")
 
     def get_breakthroughs(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -989,16 +975,16 @@ class Agents:
             params["search"] = search
         if project_id is not None:
             params["project_id"] = project_id
-        return AgentListResponse.model_validate(
-            self._http.get("/api/v1/agents", params=params)
-        )
+        return AgentListResponse.model_validate(self._http.get("/api/v1/agents", params=params))
 
     # -- Agent Status --
 
     def set_status(self, agent_id: str, *, is_active: bool) -> SetStatusResponse:
         """Set an agent's active status."""
         return SetStatusResponse.model_validate(
-            self._http.patch(f"/api/v1/agents/{agent_id}/status", json_data={"is_active": is_active})
+            self._http.patch(
+                f"/api/v1/agents/{agent_id}/status", json_data={"is_active": is_active}
+            )
         )
 
     # -- Update Project --
@@ -1006,7 +992,9 @@ class Agents:
     def update_project(self, agent_id: str, *, project_id: str) -> UpdateProjectResponse:
         """Update the project assignment for an agent."""
         return UpdateProjectResponse.model_validate(
-            self._http.patch(f"/api/v1/agents/{agent_id}/project", json_data={"project_id": project_id})
+            self._http.patch(
+                f"/api/v1/agents/{agent_id}/project", json_data={"project_id": project_id}
+            )
         )
 
     # -- Capabilities --
@@ -1154,9 +1142,7 @@ class Agents:
 
     def get_models(self, agent_id: str) -> ModelsResponse:
         """Get available LLM providers and models."""
-        return ModelsResponse.model_validate(
-            self._http.get(f"/api/v1/agents/{agent_id}/models")
-        )
+        return ModelsResponse.model_validate(self._http.get(f"/api/v1/agents/{agent_id}/models"))
 
     # -- Context --
 
@@ -1393,9 +1379,7 @@ class AsyncAgents:
         if tool_capabilities is not None:
             body["tool_capabilities"] = tool_capabilities
 
-        data = await self._http.patch(
-            f"/api/v1/agents/{agent_id}/profile", json_data=body
-        )
+        data = await self._http.patch(f"/api/v1/agents/{agent_id}/profile", json_data=body)
         return Agent.model_validate(data)
 
     async def delete(self, agent_id: str) -> DeleteResponse:
@@ -1432,9 +1416,7 @@ class AsyncAgents:
 
         Returns ChatResponse if stream=False, async iterator if stream=True.
         """
-        msgs = [
-            m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
-        ]
+        msgs = [m.model_dump() if isinstance(m, ChatMessage) else m for m in messages]
         body: dict[str, Any] = {"messages": msgs}
         if user_id is not None:
             body["user_id"] = user_id
@@ -1512,8 +1494,7 @@ class AsyncAgents:
             body["user_id"] = user_id
         if messages is not None:
             body["messages"] = [
-                m.model_dump() if isinstance(m, ChatMessage) else m
-                for m in messages
+                m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
             ]
         if request_type is not None:
             body["request_type"] = request_type
@@ -1524,9 +1505,7 @@ class AsyncAgents:
         if instance_id is not None:
             body["instance_id"] = instance_id
 
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/dialogue", json_data=body
-        )
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/dialogue", json_data=body)
         return DialogueResponse.model_validate(data)
 
     # -- Events --
@@ -1556,9 +1535,7 @@ class AsyncAgents:
         if instance_id is not None:
             body["instance_id"] = instance_id
 
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/events", json_data=body
-        )
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/events", json_data=body)
         return TriggerEventResponse.model_validate(data)
 
     # -- Wakeup Scheduling --
@@ -1590,9 +1567,7 @@ class AsyncAgents:
         if event_description is not None:
             body["event_description"] = event_description
 
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/wakeups", json_data=body
-        )
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/wakeups", json_data=body)
         return ScheduledWakeup.model_validate(data)
 
     # -- Evaluate / Simulate --
@@ -1605,16 +1580,12 @@ class AsyncAgents:
         template_id: str,
         config_override: dict[str, Any] | None = None,
     ) -> EvaluationResult:
-        msgs = [
-            m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
-        ]
+        msgs = [m.model_dump() if isinstance(m, ChatMessage) else m for m in messages]
         body: dict[str, Any] = {"messages": msgs, "template_id": template_id}
         if config_override:
             body["config_override"] = config_override
 
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/evaluate", json_data=body
-        )
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/evaluate", json_data=body)
         return EvaluationResult.model_validate(data)
 
     async def simulate(
@@ -1960,9 +1931,7 @@ class AsyncAgents:
         if related_traits is not None:
             body["related_traits"] = related_traits
 
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/goals", json_data=body
-        )
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/goals", json_data=body)
         return Goal.model_validate(data)
 
     async def update_goal(
@@ -1992,9 +1961,7 @@ class AsyncAgents:
         if related_traits is not None:
             body["related_traits"] = related_traits
 
-        data = await self._http.put(
-            f"/api/v1/agents/{agent_id}/goals/{goal_id}", json_data=body
-        )
+        data = await self._http.put(f"/api/v1/agents/{agent_id}/goals/{goal_id}", json_data=body)
         return Goal.model_validate(data)
 
     async def delete_goal(
@@ -2008,9 +1975,7 @@ class AsyncAgents:
         params: dict[str, Any] = {}
         if user_id is not None:
             params["userId"] = user_id
-        await self._http.delete(
-            f"/api/v1/agents/{agent_id}/goals/{goal_id}", params=params
-        )
+        await self._http.delete(f"/api/v1/agents/{agent_id}/goals/{goal_id}", params=params)
 
     async def get_interests(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -2037,6 +2002,25 @@ class AsyncAgents:
     async def get_users(self, agent_id: str) -> UsersResponse:
         data = await self._http.get(f"/api/v1/agents/{agent_id}/users")
         return UsersResponse.model_validate(data)
+
+    async def respond_to_tool_call(
+        self,
+        agent_id: str,
+        *,
+        session_id: str,
+        tool_call_id: str,
+        result: Any,
+        user_id: str | None = None,
+    ) -> ChatResponse:
+        body: dict[str, Any] = {
+            "session_id": session_id,
+            "tool_call_id": tool_call_id,
+            "result": result,
+        }
+        if user_id is not None:
+            body["user_id"] = user_id
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/tools/respond", json_data=body)
+        return ChatResponse.model_validate(data)
 
     async def get_constellation(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -2107,9 +2091,7 @@ class AsyncAgents:
         node_id: str,
     ) -> None:
         """Delete a constellation node."""
-        await self._http.delete(
-            f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
-        )
+        await self._http.delete(f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}")
 
     async def get_breakthroughs(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -2164,7 +2146,9 @@ class AsyncAgents:
     async def set_status(self, agent_id: str, *, is_active: bool) -> SetStatusResponse:
         """Set an agent's active status."""
         return SetStatusResponse.model_validate(
-            await self._http.patch(f"/api/v1/agents/{agent_id}/status", json_data={"is_active": is_active})
+            await self._http.patch(
+                f"/api/v1/agents/{agent_id}/status", json_data={"is_active": is_active}
+            )
         )
 
     # -- Update Project --
@@ -2172,7 +2156,9 @@ class AsyncAgents:
     async def update_project(self, agent_id: str, *, project_id: str) -> UpdateProjectResponse:
         """Update the project assignment for an agent."""
         return UpdateProjectResponse.model_validate(
-            await self._http.patch(f"/api/v1/agents/{agent_id}/project", json_data={"project_id": project_id})
+            await self._http.patch(
+                f"/api/v1/agents/{agent_id}/project", json_data={"project_id": project_id}
+            )
         )
 
     # -- Capabilities --

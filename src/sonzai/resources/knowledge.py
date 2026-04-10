@@ -41,22 +41,33 @@ class Knowledge:
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
-        data = self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/documents", params=params
-        )
+        data = self._http.get(f"/api/v1/projects/{project_id}/knowledge/documents", params=params)
         return KBDocumentListResponse.model_validate(data)
 
     def get_document(self, project_id: str, doc_id: str) -> KBDocument:
         """Get a single document."""
-        data = self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}"
-        )
+        data = self._http.get(f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}")
         return KBDocument.model_validate(data)
 
     def delete_document(self, project_id: str, doc_id: str) -> None:
         """Delete a document."""
-        self._http.delete(
-            f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}"
+        self._http.delete(f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}")
+
+    def upload_document(
+        self,
+        project_id: str,
+        *,
+        file_name: str,
+        file_data: bytes,
+        content_type: str = "application/octet-stream",
+    ) -> KBDocument:
+        return KBDocument.model_validate(
+            self._http.upload_file(
+                f"/api/v1/projects/{project_id}/knowledge/documents",
+                file_name=file_name,
+                file_data=file_data,
+                content_type=content_type,
+            )
         )
 
     # -- Facts / Graph --
@@ -75,9 +86,7 @@ class Knowledge:
             body["relationships"] = relationships
         if source is not None:
             body["source"] = source
-        data = self._http.post(
-            f"/api/v1/projects/{project_id}/knowledge/facts", json_data=body
-        )
+        data = self._http.post(f"/api/v1/projects/{project_id}/knowledge/facts", json_data=body)
         return InsertFactsResponse.model_validate(data)
 
     def list_nodes(
@@ -86,16 +95,27 @@ class Knowledge:
         *,
         node_type: str | None = None,
         limit: int | None = None,
+        offset: int | None = None,
+        sort_by: str | None = None,
+        sort_order: str | None = None,
+        properties: dict[str, str] | None = None,
     ) -> KBNodeListResponse:
-        """List knowledge graph nodes."""
+        """List knowledge graph nodes with filtering, pagination, and sorting."""
         params: dict[str, Any] = {}
         if node_type is not None:
             params["type"] = node_type
         if limit is not None:
             params["limit"] = limit
-        data = self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/nodes", params=params
-        )
+        if offset is not None:
+            params["offset"] = offset
+        if sort_by is not None:
+            params["sort_by"] = sort_by
+        if sort_order is not None:
+            params["sort_order"] = sort_order
+        if properties is not None:
+            for k, v in properties.items():
+                params[f"properties.{k}"] = v
+        data = self._http.get(f"/api/v1/projects/{project_id}/knowledge/nodes", params=params)
         return KBNodeListResponse.model_validate(data)
 
     def get_node(
@@ -113,9 +133,7 @@ class Knowledge:
 
     def delete_node(self, project_id: str, node_id: str) -> None:
         """Soft-delete a node."""
-        self._http.delete(
-            f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}"
-        )
+        self._http.delete(f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}")
 
     def get_node_history(
         self, project_id: str, node_id: str, *, limit: int | None = None
@@ -141,8 +159,9 @@ class Knowledge:
         include_history: bool = False,
         entity_types: str | None = None,
         filters: str | None = None,
+        hops: int | None = None,
     ) -> KBSearchResponse:
-        """BM25 search with 1-hop graph traversal."""
+        """BM25 search with graph traversal."""
         params: dict[str, Any] = {"q": query}
         if limit is not None:
             params["limit"] = limit
@@ -152,9 +171,9 @@ class Knowledge:
             params["type"] = entity_types
         if filters is not None:
             params["filters"] = filters
-        data = self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/search", params=params
-        )
+        if hops is not None:
+            params["hops"] = hops
+        data = self._http.get(f"/api/v1/projects/{project_id}/knowledge/search", params=params)
         return KBSearchResponse.model_validate(data)
 
     # -- Schemas --
@@ -165,21 +184,15 @@ class Knowledge:
         """Create an entity type schema."""
         body: dict[str, Any] = {"entity_type": entity_type, "fields": fields}
         body.update(kwargs)
-        data = self._http.post(
-            f"/api/v1/projects/{project_id}/knowledge/schemas", json_data=body
-        )
+        data = self._http.post(f"/api/v1/projects/{project_id}/knowledge/schemas", json_data=body)
         return KBEntitySchema.model_validate(data)
 
     def list_schemas(self, project_id: str) -> KBSchemaListResponse:
         """List entity schemas."""
-        data = self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/schemas"
-        )
+        data = self._http.get(f"/api/v1/projects/{project_id}/knowledge/schemas")
         return KBSchemaListResponse.model_validate(data)
 
-    def update_schema(
-        self, project_id: str, schema_id: str, **kwargs: Any
-    ) -> KBEntitySchema:
+    def update_schema(self, project_id: str, schema_id: str, **kwargs: Any) -> KBEntitySchema:
         """Update an entity schema."""
         data = self._http.put(
             f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}",
@@ -189,24 +202,18 @@ class Knowledge:
 
     def delete_schema(self, project_id: str, schema_id: str) -> None:
         """Delete an entity schema."""
-        self._http.delete(
-            f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}"
-        )
+        self._http.delete(f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}")
 
     # -- Stats --
 
     def get_stats(self, project_id: str) -> KBStats:
         """Get knowledge base statistics."""
-        data = self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/stats"
-        )
+        data = self._http.get(f"/api/v1/projects/{project_id}/knowledge/stats")
         return KBStats.model_validate(data)
 
     # -- Analytics Rules --
 
-    def create_analytics_rule(
-        self, project_id: str, **kwargs: Any
-    ) -> KBAnalyticsRule:
+    def create_analytics_rule(self, project_id: str, **kwargs: Any) -> KBAnalyticsRule:
         """Create an analytics rule."""
         data = self._http.post(
             f"/api/v1/projects/{project_id}/knowledge/analytics/rules",
@@ -214,22 +221,14 @@ class Knowledge:
         )
         return KBAnalyticsRule.model_validate(data)
 
-    def list_analytics_rules(
-        self, project_id: str
-    ) -> KBAnalyticsRuleListResponse:
+    def list_analytics_rules(self, project_id: str) -> KBAnalyticsRuleListResponse:
         """List analytics rules."""
-        data = self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/analytics/rules"
-        )
+        data = self._http.get(f"/api/v1/projects/{project_id}/knowledge/analytics/rules")
         return KBAnalyticsRuleListResponse.model_validate(data)
 
-    def get_analytics_rule(
-        self, project_id: str, rule_id: str
-    ) -> KBAnalyticsRule:
+    def get_analytics_rule(self, project_id: str, rule_id: str) -> KBAnalyticsRule:
         """Get a single analytics rule."""
-        data = self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
-        )
+        data = self._http.get(f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}")
         return KBAnalyticsRule.model_validate(data)
 
     def update_analytics_rule(
@@ -244,9 +243,7 @@ class Knowledge:
 
     def delete_analytics_rule(self, project_id: str, rule_id: str) -> None:
         """Delete an analytics rule."""
-        self._http.delete(
-            f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
-        )
+        self._http.delete(f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}")
 
     def run_analytics_rule(self, project_id: str, rule_id: str) -> None:
         """Trigger a manual run of an analytics rule."""
@@ -375,15 +372,27 @@ class AsyncKnowledge:
         return KBDocumentListResponse.model_validate(data)
 
     async def get_document(self, project_id: str, doc_id: str) -> KBDocument:
-        data = await self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}"
-        )
+        data = await self._http.get(f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}")
         return KBDocument.model_validate(data)
 
     async def delete_document(self, project_id: str, doc_id: str) -> None:
-        await self._http.delete(
-            f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}"
+        await self._http.delete(f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}")
+
+    async def upload_document(
+        self,
+        project_id: str,
+        *,
+        file_name: str,
+        file_data: bytes,
+        content_type: str = "application/octet-stream",
+    ) -> KBDocument:
+        data = await self._http.upload_file(
+            f"/api/v1/projects/{project_id}/knowledge/documents",
+            file_name=file_name,
+            file_data=file_data,
+            content_type=content_type,
         )
+        return KBDocument.model_validate(data)
 
     async def insert_facts(
         self,
@@ -404,16 +413,31 @@ class AsyncKnowledge:
         return InsertFactsResponse.model_validate(data)
 
     async def list_nodes(
-        self, project_id: str, *, node_type: str | None = None, limit: int | None = None
+        self,
+        project_id: str,
+        *,
+        node_type: str | None = None,
+        limit: int | None = None,
+        offset: int | None = None,
+        sort_by: str | None = None,
+        sort_order: str | None = None,
+        properties: dict[str, str] | None = None,
     ) -> KBNodeListResponse:
         params: dict[str, Any] = {}
         if node_type is not None:
             params["type"] = node_type
         if limit is not None:
             params["limit"] = limit
-        data = await self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/nodes", params=params
-        )
+        if offset is not None:
+            params["offset"] = offset
+        if sort_by is not None:
+            params["sort_by"] = sort_by
+        if sort_order is not None:
+            params["sort_order"] = sort_order
+        if properties is not None:
+            for k, v in properties.items():
+                params[f"properties.{k}"] = v
+        data = await self._http.get(f"/api/v1/projects/{project_id}/knowledge/nodes", params=params)
         return KBNodeListResponse.model_validate(data)
 
     async def get_node(
@@ -428,21 +452,7 @@ class AsyncKnowledge:
         return KBNodeDetailResponse.model_validate(data)
 
     async def delete_node(self, project_id: str, node_id: str) -> None:
-        await self._http.delete(
-            f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}"
-        )
-
-    async def search(
-        self, project_id: str, *, query: str, limit: int | None = None, **kwargs: Any
-    ) -> KBSearchResponse:
-        params: dict[str, Any] = {"q": query}
-        if limit is not None:
-            params["limit"] = limit
-        params.update(kwargs)
-        data = await self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/search", params=params
-        )
-        return KBSearchResponse.model_validate(data)
+        await self._http.delete(f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}")
 
     async def get_node_history(
         self, project_id: str, node_id: str, *, limit: int | None = None
@@ -465,6 +475,7 @@ class AsyncKnowledge:
         include_history: bool = False,
         entity_types: str | None = None,
         filters: str | None = None,
+        hops: int | None = None,
     ) -> KBSearchResponse:
         params: dict[str, Any] = {"q": query}
         if limit is not None:
@@ -475,6 +486,8 @@ class AsyncKnowledge:
             params["type"] = entity_types
         if filters is not None:
             params["filters"] = filters
+        if hops is not None:
+            params["hops"] = hops
         data = await self._http.get(
             f"/api/v1/projects/{project_id}/knowledge/search", params=params
         )
@@ -493,14 +506,10 @@ class AsyncKnowledge:
         return KBEntitySchema.model_validate(data)
 
     async def list_schemas(self, project_id: str) -> KBSchemaListResponse:
-        data = await self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/schemas"
-        )
+        data = await self._http.get(f"/api/v1/projects/{project_id}/knowledge/schemas")
         return KBSchemaListResponse.model_validate(data)
 
-    async def update_schema(
-        self, project_id: str, schema_id: str, **kwargs: Any
-    ) -> KBEntitySchema:
+    async def update_schema(self, project_id: str, schema_id: str, **kwargs: Any) -> KBEntitySchema:
         data = await self._http.put(
             f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}",
             json_data=kwargs,
@@ -508,38 +517,26 @@ class AsyncKnowledge:
         return KBEntitySchema.model_validate(data)
 
     async def delete_schema(self, project_id: str, schema_id: str) -> None:
-        await self._http.delete(
-            f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}"
-        )
+        await self._http.delete(f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}")
 
     async def get_stats(self, project_id: str) -> KBStats:
-        data = await self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/stats"
-        )
+        data = await self._http.get(f"/api/v1/projects/{project_id}/knowledge/stats")
         return KBStats.model_validate(data)
 
     # -- Analytics Rules --
 
-    async def create_analytics_rule(
-        self, project_id: str, **kwargs: Any
-    ) -> KBAnalyticsRule:
+    async def create_analytics_rule(self, project_id: str, **kwargs: Any) -> KBAnalyticsRule:
         data = await self._http.post(
             f"/api/v1/projects/{project_id}/knowledge/analytics/rules",
             json_data=kwargs,
         )
         return KBAnalyticsRule.model_validate(data)
 
-    async def list_analytics_rules(
-        self, project_id: str
-    ) -> KBAnalyticsRuleListResponse:
-        data = await self._http.get(
-            f"/api/v1/projects/{project_id}/knowledge/analytics/rules"
-        )
+    async def list_analytics_rules(self, project_id: str) -> KBAnalyticsRuleListResponse:
+        data = await self._http.get(f"/api/v1/projects/{project_id}/knowledge/analytics/rules")
         return KBAnalyticsRuleListResponse.model_validate(data)
 
-    async def get_analytics_rule(
-        self, project_id: str, rule_id: str
-    ) -> KBAnalyticsRule:
+    async def get_analytics_rule(self, project_id: str, rule_id: str) -> KBAnalyticsRule:
         data = await self._http.get(
             f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
         )
