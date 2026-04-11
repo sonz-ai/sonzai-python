@@ -78,7 +78,7 @@ class HTTPClient:
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "sonzai-python/1.0.12",
+                "User-Agent": "sonzai-python/1.0.13",
             },
             timeout=httpx.Timeout(timeout, connect=10.0),
             follow_redirects=True,
@@ -238,7 +238,7 @@ class AsyncHTTPClient:
             headers={
                 "Authorization": f"Bearer {api_key}",
                 "Content-Type": "application/json",
-                "User-Agent": "sonzai-python/1.0.12",
+                "User-Agent": "sonzai-python/1.0.13",
             },
             timeout=httpx.Timeout(timeout, connect=10.0),
             follow_redirects=True,

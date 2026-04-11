@@ -62,12 +62,26 @@ class Inventory:
         item_type: str | None = None,
         query: str | None = None,
         project_id: str | None = None,
+        filters: str | None = None,
+        sort_by: str | None = None,
+        sort_order: str | None = None,
         aggregations: str | None = None,
         group_by: str | None = None,
         limit: int | None = None,
+        offset: int | None = None,
+        cursor: str | None = None,
         instance_id: str | None = None,
     ) -> InventoryQueryResponse:
-        """Query a user's inventory with optional valuations and aggregation."""
+        """Query a user's inventory with optional valuations and aggregation.
+
+        Args:
+            filters: Structured metadata filtering, e.g. "grade:eq:mint,market_price:gte:100".
+                     Operators: eq, neq, gt, gte, lt, lte, in (pipe-separated), contains.
+            sort_by: Metadata field to sort by.
+            sort_order: "asc" or "desc".
+            offset: Offset for pagination (0-based). Ignored if cursor is set.
+            cursor: Base64-encoded pagination cursor (takes precedence over offset).
+        """
         params: dict[str, str] = {}
         if mode is not None:
             params["mode"] = mode
@@ -77,12 +91,22 @@ class Inventory:
             params["query"] = query
         if project_id is not None:
             params["project_id"] = project_id
+        if filters is not None:
+            params["filters"] = filters
+        if sort_by is not None:
+            params["sort_by"] = sort_by
+        if sort_order is not None:
+            params["sort_order"] = sort_order
         if aggregations is not None:
             params["aggregations"] = aggregations
         if group_by is not None:
             params["group_by"] = group_by
         if limit is not None:
             params["limit"] = str(limit)
+        if offset is not None:
+            params["offset"] = str(offset)
+        if cursor is not None:
+            params["cursor"] = cursor
         if instance_id is not None:
             params["instance_id"] = instance_id
         return InventoryQueryResponse.model_validate(
@@ -229,12 +253,26 @@ class AsyncInventory:
         item_type: str | None = None,
         query: str | None = None,
         project_id: str | None = None,
+        filters: str | None = None,
+        sort_by: str | None = None,
+        sort_order: str | None = None,
         aggregations: str | None = None,
         group_by: str | None = None,
         limit: int | None = None,
+        offset: int | None = None,
+        cursor: str | None = None,
         instance_id: str | None = None,
     ) -> InventoryQueryResponse:
-        """Query a user's inventory with optional valuations and aggregation."""
+        """Query a user's inventory with optional valuations and aggregation.
+
+        Args:
+            filters: Structured metadata filtering, e.g. "grade:eq:mint,market_price:gte:100".
+                     Operators: eq, neq, gt, gte, lt, lte, in (pipe-separated), contains.
+            sort_by: Metadata field to sort by.
+            sort_order: "asc" or "desc".
+            offset: Offset for pagination (0-based). Ignored if cursor is set.
+            cursor: Base64-encoded pagination cursor (takes precedence over offset).
+        """
         params: dict[str, str] = {}
         if mode is not None:
             params["mode"] = mode
@@ -244,12 +282,22 @@ class AsyncInventory:
             params["query"] = query
         if project_id is not None:
             params["project_id"] = project_id
+        if filters is not None:
+            params["filters"] = filters
+        if sort_by is not None:
+            params["sort_by"] = sort_by
+        if sort_order is not None:
+            params["sort_order"] = sort_order
         if aggregations is not None:
             params["aggregations"] = aggregations
         if group_by is not None:
             params["group_by"] = group_by
         if limit is not None:
             params["limit"] = str(limit)
+        if offset is not None:
+            params["offset"] = str(offset)
+        if cursor is not None:
+            params["cursor"] = cursor
         if instance_id is not None:
             params["instance_id"] = instance_id
         return InventoryQueryResponse.model_validate(

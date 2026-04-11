@@ -1655,6 +1655,7 @@ class InventoryGroupResult(BaseModel):
 class InventoryQueryResponse(BaseModel):
     items: list[InventoryItem] = Field(default_factory=list)
     total_items: int = 0
+    next_cursor: str = ""
     totals: dict[str, Any] = Field(default_factory=dict)
     groups: list[InventoryGroupResult] = Field(default_factory=list)
 
