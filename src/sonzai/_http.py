@@ -72,18 +72,22 @@ class HTTPClient:
         api_key: str,
         timeout: float = 30.0,
         max_retries: int = 2,
+        httpx_client: httpx.Client | None = None,
     ) -> None:
-        self._client = httpx.Client(
-            base_url=base_url,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-                "User-Agent": "sonzai-python/1.0.13",
-            },
-            timeout=httpx.Timeout(timeout, connect=10.0),
-            follow_redirects=True,
-            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
-        )
+        if httpx_client is not None:
+            self._client = httpx_client
+        else:
+            self._client = httpx.Client(
+                base_url=base_url,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "sonzai-python/1.1.0",
+                },
+                timeout=httpx.Timeout(timeout, connect=10.0),
+                follow_redirects=True,
+                limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+            )
         self._max_retries = max_retries
 
     _RETRYABLE_METHODS = frozenset({"GET", "DELETE"})
@@ -232,18 +236,22 @@ class AsyncHTTPClient:
         api_key: str,
         timeout: float = 30.0,
         max_retries: int = 2,
+        httpx_client: httpx.AsyncClient | None = None,
     ) -> None:
-        self._client = httpx.AsyncClient(
-            base_url=base_url,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-                "User-Agent": "sonzai-python/1.0.13",
-            },
-            timeout=httpx.Timeout(timeout, connect=10.0),
-            follow_redirects=True,
-            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
-        )
+        if httpx_client is not None:
+            self._client = httpx_client
+        else:
+            self._client = httpx.AsyncClient(
+                base_url=base_url,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "sonzai-python/1.1.0",
+                },
+                timeout=httpx.Timeout(timeout, connect=10.0),
+                follow_redirects=True,
+                limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+            )
         self._max_retries = max_retries
 
     _RETRYABLE_METHODS = frozenset({"GET", "DELETE"})

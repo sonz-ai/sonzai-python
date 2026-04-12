@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import os
 
+import httpx
+
 from ._http import AsyncHTTPClient, HTTPClient
 from .resources.agents import Agents, AsyncAgents
 from .types import PlatformModelsResponse
@@ -69,6 +71,7 @@ class Sonzai:
         base_url: str | None = None,
         timeout: float = 30.0,
         max_retries: int = 2,
+        http_client: httpx.Client | None = None,
     ) -> None:
         """Initialize the Sonzai client.
 
@@ -77,6 +80,8 @@ class Sonzai:
             base_url: API base URL. Falls back to ``SONZAI_BASE_URL`` or the default.
             timeout: Request timeout in seconds.
             max_retries: Maximum number of retries for failed requests.
+            http_client: Custom ``httpx.Client`` instance. When provided, the SDK
+                uses this client directly instead of creating a new one.
         """
         resolved_key = api_key or os.environ.get("SONZAI_API_KEY", "")
         if not resolved_key:
@@ -86,12 +91,21 @@ class Sonzai:
 
         resolved_url = base_url or os.environ.get("SONZAI_BASE_URL", DEFAULT_BASE_URL)
 
-        self._http = HTTPClient(
-            base_url=resolved_url,
-            api_key=resolved_key,
-            timeout=timeout,
-            max_retries=max_retries,
-        )
+        if http_client is not None:
+            self._http = HTTPClient(
+                base_url=resolved_url,
+                api_key=resolved_key,
+                timeout=timeout,
+                max_retries=max_retries,
+                httpx_client=http_client,
+            )
+        else:
+            self._http = HTTPClient(
+                base_url=resolved_url,
+                api_key=resolved_key,
+                timeout=timeout,
+                max_retries=max_retries,
+            )
 
         self.agents = Agents(self._http)
         self.knowledge = Knowledge(self._http)
@@ -168,6 +182,7 @@ class AsyncSonzai:
         base_url: str | None = None,
         timeout: float = 30.0,
         max_retries: int = 2,
+        http_client: httpx.AsyncClient | None = None,
     ) -> None:
         resolved_key = api_key or os.environ.get("SONZAI_API_KEY", "")
         if not resolved_key:
@@ -177,12 +192,21 @@ class AsyncSonzai:
 
         resolved_url = base_url or os.environ.get("SONZAI_BASE_URL", DEFAULT_BASE_URL)
 
-        self._http = AsyncHTTPClient(
-            base_url=resolved_url,
-            api_key=resolved_key,
-            timeout=timeout,
-            max_retries=max_retries,
-        )
+        if http_client is not None:
+            self._http = AsyncHTTPClient(
+                base_url=resolved_url,
+                api_key=resolved_key,
+                timeout=timeout,
+                max_retries=max_retries,
+                httpx_client=http_client,
+            )
+        else:
+            self._http = AsyncHTTPClient(
+                base_url=resolved_url,
+                api_key=resolved_key,
+                timeout=timeout,
+                max_retries=max_retries,
+            )
 
         self.agents = AsyncAgents(self._http)
         self.knowledge = AsyncKnowledge(self._http)
