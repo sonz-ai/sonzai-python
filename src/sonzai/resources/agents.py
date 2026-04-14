@@ -365,8 +365,17 @@ class Agents:
         metadata: dict[str, str] | None = None,
         language: str | None = None,
         instance_id: str | None = None,
+        messages: list[ChatMessage | dict[str, str]] | None = None,
     ) -> TriggerEventResponse:
-        """Trigger a game event / activity for an agent."""
+        """Trigger a game event / activity for an agent.
+
+        Args:
+            messages: Optional recent conversation messages passed alongside
+                the event. When provided, the Platform API uses them directly
+                as conversation history (e.g. for daily_summary / diary
+                generation) instead of reconstructing from consolidation
+                summaries. Older Platform servers ignore the field.
+        """
         body: dict[str, Any] = {
             "user_id": user_id,
             "event_type": event_type,
@@ -379,6 +388,10 @@ class Agents:
             body["language"] = language
         if instance_id is not None:
             body["instance_id"] = instance_id
+        if messages is not None:
+            body["messages"] = [
+                m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
+            ]
 
         data = self._http.post(f"/api/v1/agents/{agent_id}/events", json_data=body)
         return TriggerEventResponse.model_validate(data)
@@ -1520,8 +1533,17 @@ class AsyncAgents:
         metadata: dict[str, str] | None = None,
         language: str | None = None,
         instance_id: str | None = None,
+        messages: list[ChatMessage | dict[str, str]] | None = None,
     ) -> TriggerEventResponse:
-        """Trigger a game event / activity for an agent."""
+        """Trigger a game event / activity for an agent.
+
+        Args:
+            messages: Optional recent conversation messages passed alongside
+                the event. When provided, the Platform API uses them directly
+                as conversation history (e.g. for daily_summary / diary
+                generation) instead of reconstructing from consolidation
+                summaries. Older Platform servers ignore the field.
+        """
         body: dict[str, Any] = {
             "user_id": user_id,
             "event_type": event_type,
@@ -1534,6 +1556,10 @@ class AsyncAgents:
             body["language"] = language
         if instance_id is not None:
             body["instance_id"] = instance_id
+        if messages is not None:
+            body["messages"] = [
+                m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
+            ]
 
         data = await self._http.post(f"/api/v1/agents/{agent_id}/events", json_data=body)
         return TriggerEventResponse.model_validate(data)
