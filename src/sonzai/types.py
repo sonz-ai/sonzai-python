@@ -1186,7 +1186,7 @@ class PlatformModelsResponse(BaseModel):
 
 
 class EnrichedContextResponse(BaseModel):
-    model_config = {"extra": "allow"}
+    model_config = {"extra": "allow", "populate_by_name": True}
     # Layer 1: Core Identity
     bio: str | None = None
     personality_prompt: str | None = None
@@ -1224,8 +1224,8 @@ class EnrichedContextResponse(BaseModel):
     proactive_memories: list[Any] | None = None
     # Layer 6c: Constellation
     constellation_patterns: list[Any] | None = None
-    # Layer 7: Game Context
-    game_context: dict[str, Any] | None = None
+    # Layer 7: Backend Context
+    backend_context: dict[str, Any] | None = Field(default=None, alias="game_context")
 
 
 # ---------------------------------------------------------------------------
