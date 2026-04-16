@@ -279,7 +279,27 @@ class NotificationListResponse(BaseModel):
 
 
 class MoodResponse(BaseModel):
-    """Raw mood data from the API."""
+    """Current mood snapshot for an agent."""
+
+    # Forward reference — MoodState is defined later in this module.
+    mood: "MoodState" = Field(default_factory=lambda: MoodState())
+    updated_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class MoodHistoryEntry(BaseModel):
+    """A single mood snapshot at a point in time."""
+
+    # Forward reference — MoodState is defined later in this module.
+    mood: "MoodState" = Field(default_factory=lambda: MoodState())
+    timestamp: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class MoodHistoryResponse(BaseModel):
+    history: list[MoodHistoryEntry] = Field(default_factory=list)
 
     model_config = {"extra": "allow"}
 

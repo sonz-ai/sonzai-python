@@ -35,6 +35,7 @@ from ..types import (
     InterestsResponse,
     ModelsResponse,
     MoodAggregateResponse,
+    MoodHistoryResponse,
     MoodResponse,
     ProcessResponse,
     RelationshipResponse,
@@ -623,14 +624,14 @@ class Agents:
 
     def get_mood_history(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
-    ) -> MoodResponse:
+    ) -> MoodHistoryResponse:
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
             params["instance_id"] = instance_id
         data = self._http.get(f"/api/v1/agents/{agent_id}/mood-history", params=params)
-        return MoodResponse.model_validate(data)
+        return MoodHistoryResponse.model_validate(data)
 
     def get_mood_aggregate(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -1783,14 +1784,14 @@ class AsyncAgents:
 
     async def get_mood_history(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
-    ) -> MoodResponse:
+    ) -> MoodHistoryResponse:
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/mood-history", params=params)
-        return MoodResponse.model_validate(data)
+        return MoodHistoryResponse.model_validate(data)
 
     async def get_mood_aggregate(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
