@@ -376,11 +376,37 @@ class InitialGoal(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class InterestData(BaseModel):
+    """A single agent interest with score."""
+
+    topic: str = ""
+    score: float = 0.0
+    category: str = ""
+
+    model_config = {"extra": "allow"}
+
+
 class InterestsResponse(BaseModel):
+    interests: list[InterestData] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class DiaryEntry(BaseModel):
+    """A single diary entry."""
+
+    entry_id: str = ""
+    title: str = ""
+    body: str = ""
+    tags: list[str] = Field(default_factory=list)
+    created_at: str = ""
+
     model_config = {"extra": "allow"}
 
 
 class DiaryResponse(BaseModel):
+    entries: list[DiaryEntry] = Field(default_factory=list)
+
     model_config = {"extra": "allow"}
 
 
@@ -564,7 +590,40 @@ class DialogueResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+class ConstellationEdge(BaseModel):
+    """An edge between two constellation nodes."""
+
+    edge_id: str = ""
+    agent_id: str = ""
+    source_id: str = ""
+    target_id: str = ""
+    relation: str = ""
+    weight: float = 0.0
+    metadata: dict = Field(default_factory=dict)
+
+    model_config = {"extra": "allow"}
+
+
+class ConstellationInsight(BaseModel):
+    """An insight derived from the knowledge graph."""
+
+    insight_id: str = ""
+    agent_id: str = ""
+    user_id: str = ""
+    content: str = ""
+    type: str = ""
+    surfaced: bool = False
+    metadata: dict = Field(default_factory=dict)
+    created_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
 class ConstellationResponse(BaseModel):
+    nodes: list[ConstellationNode] = Field(default_factory=list)
+    edges: list[ConstellationEdge] = Field(default_factory=list)
+    insights: list[ConstellationInsight] = Field(default_factory=list)
+
     model_config = {"extra": "allow"}
 
 
