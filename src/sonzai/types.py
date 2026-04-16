@@ -949,6 +949,7 @@ class ScheduledWakeup(BaseModel):
 class AgentIndex(BaseModel):
     model_config = {"extra": "allow"}
     id: str = ""
+    tenant_id: str = ""
     name: str = ""
     bio: str = ""
     gender: str = ""
