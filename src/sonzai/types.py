@@ -1897,3 +1897,555 @@ class ToolSchemasResponse(BaseModel):
     """Response from the get_tools endpoint."""
 
     tools: list[ToolSchema] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Input option models (Wave 3 — Python parity with TS/Go)
+# These models let Python callers pass typed structures instead of bare dicts.
+# All models use `extra=allow` to stay forward-compatible with server fields.
+# Resource methods continue to accept both these models and **kwargs.
+# ---------------------------------------------------------------------------
+
+
+class SeedMemory(BaseModel):
+    """A pre-written lore memory to seed verbatim into the agent's memory."""
+
+    content: str = ""
+    fact_type: str | None = None
+    importance: float | None = None
+    entities: list[str] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class LoreGenerationContext(BaseModel):
+    """World-building context for LLM-generated origin stories and personalized memories."""
+
+    world_description: str = ""
+    entity_terminology: dict[str, str] = Field(default_factory=dict)
+    origin_prompt_instructions: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class IdentityMemory(BaseModel):
+    """Template string for an identity memory with {{agentName}} and {{creatorName}} placeholders."""
+
+    template: str = ""
+    fact_type: str | None = None
+    importance: float | None = None
+    entities: list[str] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class ModelConfig(BaseModel):
+    """LLM provider/model configuration for seed memory generation."""
+
+    provider: str = ""
+    model: str = ""
+    temperature: float | None = None
+    max_tokens: int | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class Big5Scores(BaseModel):
+    openness: float = 0.0
+    conscientiousness: float = 0.0
+    extraversion: float = 0.0
+    agreeableness: float = 0.0
+    neuroticism: float = 0.0
+    confidence: float | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class SDKPersonalityDimensions(BaseModel):
+    warmth: float = 0.0
+    energy: float = 0.0
+    openness: float = 0.0
+    emotional_depth: float = 0.0
+    playfulness: float = 0.0
+    supportiveness: float = 0.0
+    curiosity: float = 0.0
+    wisdom: float = 0.0
+
+    model_config = {"extra": "allow"}
+
+
+class SDKInteractionPreferences(BaseModel):
+    pace: str = ""
+    formality: str = ""
+    humor_style: str = ""
+    emotional_expression: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class SDKBehavioralTraits(BaseModel):
+    proactivity: str = ""
+    reliability: str = ""
+    humor: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class AgentToolCapabilities(BaseModel):
+    web_search: bool = False
+    remember_name: bool = False
+    image_generation: bool = False
+    inventory: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+class InitialGoal(BaseModel):
+    type: str | None = None
+    title: str = ""
+    description: str = ""
+    priority: int | None = None
+    related_traits: list[str] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class CreateAgentOptions(BaseModel):
+    agent_id: str | None = None
+    user_id: str | None = None
+    user_display_name: str | None = None
+    name: str = ""
+    gender: str | None = None
+    bio: str | None = None
+    avatar_url: str | None = None
+    project_id: str | None = None
+    personality_prompt: str | None = None
+    speech_patterns: list[str] = Field(default_factory=list)
+    true_interests: list[str] = Field(default_factory=list)
+    true_dislikes: list[str] = Field(default_factory=list)
+    primary_traits: list[str] = Field(default_factory=list)
+    big5: Big5Scores | None = None
+    dimensions: SDKPersonalityDimensions | None = None
+    preferences: dict[str, str] = Field(default_factory=dict)
+    behaviors: dict[str, str] = Field(default_factory=dict)
+    tool_capabilities: AgentToolCapabilities | None = None
+    language: str | None = None
+    seed_memories: list[SeedMemory] = Field(default_factory=list)
+    lore_context: dict[str, Any] = Field(default_factory=dict)
+    generate_origin_story: bool | None = None
+    generate_personalized_memories: bool | None = None
+    initial_goals: list[InitialGoal] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class UpdateAgentOptions(BaseModel):
+    name: str | None = None
+    bio: str | None = None
+    avatar_url: str | None = None
+    personality_prompt: str | None = None
+    speech_patterns: list[str] | None = None
+    true_interests: list[str] | None = None
+    true_dislikes: list[str] | None = None
+    big5: Big5Scores | None = None
+    dimensions: SDKPersonalityDimensions | None = None
+    tool_capabilities: AgentToolCapabilities | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class AgentListOptions(BaseModel):
+    page_size: int | None = None
+    cursor: str | None = None
+    search: str | None = None
+    project_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class ChatOptions(BaseModel):
+    """Input model for chat. `agent` accepts UUID or agent name."""
+
+    agent: str = ""
+    messages: list[ChatMessage] = Field(default_factory=list)
+    user_id: str | None = None
+    user_display_name: str | None = None
+    session_id: str | None = None
+    instance_id: str | None = None
+    provider: str | None = None
+    model: str | None = None
+    continuation_token: str | None = None
+    request_type: str | None = None
+    language: str | None = None
+    compiled_system_prompt: str | None = None
+    interaction_role: str | None = None
+    timezone: str | None = None
+    tool_capabilities: AgentToolCapabilities | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class SessionStartOptions(BaseModel):
+    user_id: str = ""
+    session_id: str = ""
+    instance_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class SessionEndOptions(BaseModel):
+    user_id: str = ""
+    session_id: str = ""
+    instance_id: str | None = None
+    total_messages: int | None = None
+    duration_seconds: float | None = None
+    messages: list[ChatMessage] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class MemoryListOptions(BaseModel):
+    user_id: str | None = None
+    instance_id: str | None = None
+    parent_id: str | None = None
+    include_contents: bool | None = None
+    limit: int | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class MemorySearchOptions(BaseModel):
+    query: str = ""
+    instance_id: str | None = None
+    limit: int | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class MemoryTimelineOptions(BaseModel):
+    user_id: str | None = None
+    instance_id: str | None = None
+    start: str | None = None
+    end: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class MemoryResetOptions(BaseModel):
+    user_id: str | None = None
+    instance_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class FactListOptions(BaseModel):
+    user_id: str | None = None
+    category: str | None = None
+    limit: int | None = None
+    offset: int | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CreateFactOptions(BaseModel):
+    content: str = ""
+    user_id: str | None = None
+    fact_type: str | None = None
+    importance: float | None = None
+    confidence: float | None = None
+    entities: list[str] = Field(default_factory=list)
+    node_id: str | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = {"extra": "allow"}
+
+
+class UpdateFactOptions(BaseModel):
+    content: str | None = None
+    fact_type: str | None = None
+    importance: float | None = None
+    confidence: float | None = None
+    entities: list[str] | None = None
+    metadata: dict[str, Any] | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CreateHabitOptions(BaseModel):
+    user_id: str | None = None
+    name: str = ""
+    category: str | None = None
+    description: str | None = None
+    display_name: str | None = None
+    strength: float | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class UpdateHabitOptions(BaseModel):
+    user_id: str | None = None
+    category: str | None = None
+    description: str | None = None
+    display_name: str | None = None
+    strength: float | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class DeleteHabitOptions(BaseModel):
+    user_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CreateGoalOptions(BaseModel):
+    user_id: str | None = None
+    type: str | None = None
+    title: str = ""
+    description: str = ""
+    priority: int | None = None
+    related_traits: list[str] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class UpdateGoalOptions(BaseModel):
+    user_id: str | None = None
+    title: str | None = None
+    description: str | None = None
+    priority: int | None = None
+    status: str | None = None
+    related_traits: list[str] | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class DeleteGoalOptions(BaseModel):
+    user_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CreateConstellationNodeOptions(BaseModel):
+    user_id: str | None = None
+    node_type: str | None = None
+    label: str = ""
+    description: str | None = None
+    significance: float | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class UpdateConstellationNodeOptions(BaseModel):
+    label: str | None = None
+    description: str | None = None
+    significance: float | None = None
+    node_type: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class ScheduleWakeupOptions(BaseModel):
+    user_id: str = ""
+    scheduled_at: str = ""
+    check_type: str = ""
+    intent: str | None = None
+    occasion: str | None = None
+    interest_topic: str | None = None
+    event_description: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class TriggerEventOptions(BaseModel):
+    user_id: str = ""
+    event_type: str = ""
+    event_description: str | None = None
+    metadata: dict[str, str] = Field(default_factory=dict)
+    language: str | None = None
+    instance_id: str | None = None
+    messages: list[ChatMessage] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class DialogueOptions(BaseModel):
+    user_id: str | None = None
+    messages: list[ChatMessage] = Field(default_factory=list)
+    request_type: str | None = None
+    scene_guidance: str | None = None
+    tool_config: dict[str, Any] = Field(default_factory=dict)
+    instance_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class GenerateBioOptions(BaseModel):
+    name: str | None = None
+    gender: str | None = None
+    description: str | None = None
+    user_id: str | None = None
+    enriched_context_json: dict[str, Any] | None = None
+    current_bio: str | None = None
+    style: str | None = None
+    instance_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class GenerateCharacterOptions(BaseModel):
+    agent_id: str | None = None
+    name: str = ""
+    gender: str | None = None
+    description: str | None = None
+    fields: list[str] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class GenerateAndCreateOptions(BaseModel):
+    agent_id: str | None = None
+    name: str = ""
+    gender: str | None = None
+    description: str | None = None
+    fields: list[str] = Field(default_factory=list)
+    project_id: str | None = None
+    language: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class GenerateAvatarOptions(BaseModel):
+    style: str | None = None
+    gender: str | None = None
+    description: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class ImageGenerateOptions(BaseModel):
+    prompt: str = ""
+    negative_prompt: str | None = None
+    model: str | None = None
+    provider: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CustomStateListOptions(BaseModel):
+    scope: str | None = None
+    user_id: str | None = None
+    instance_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CustomStateCreateOptions(BaseModel):
+    key: str = ""
+    value: Any = None
+    scope: str | None = None
+    content_type: str | None = None
+    user_id: str | None = None
+    instance_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CustomStateUpdateOptions(BaseModel):
+    value: Any = None
+    content_type: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CustomStateUpsertOptions(BaseModel):
+    key: str = ""
+    value: Any = None
+    scope: str | None = None
+    content_type: str | None = None
+    user_id: str | None = None
+    instance_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CustomStateGetByKeyOptions(BaseModel):
+    key: str = ""
+    scope: str | None = None
+    user_id: str | None = None
+    instance_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CustomStateDeleteByKeyOptions(BaseModel):
+    key: str = ""
+    scope: str | None = None
+    user_id: str | None = None
+    instance_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class WebhookRegisterOptions(BaseModel):
+    webhook_url: str = ""
+    auth_header: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class TTSOptions(BaseModel):
+    text: str = ""
+    voice: str | None = None
+    voice_id: str | None = None
+    model: str | None = None
+    provider: str | None = None
+    output_format: str | None = None
+    language: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class STTOptions(BaseModel):
+    audio: Any = None
+    audio_url: str | None = None
+    model: str | None = None
+    provider: str | None = None
+    language: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class VoiceTokenOptions(BaseModel):
+    provider: str | None = None
+    voice: str | None = None
+    voice_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class VoiceListOptions(BaseModel):
+    provider: str | None = None
+    language: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class AgentKBSearchOptions(BaseModel):
+    query: str = ""
+    limit: int | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class SetStatusOptions(BaseModel):
+    status: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class UpdateProjectOptions(BaseModel):
+    name: str | None = None
+    description: str | None = None
+
+    model_config = {"extra": "allow"}
