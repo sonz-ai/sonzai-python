@@ -841,6 +841,8 @@ class WebhookEndpoint(BaseModel):
     event_type: str = ""
     webhook_url: str = ""
     auth_header: str = ""
+    is_active: bool = True
+    created_at: str = ""
 
     model_config = {"extra": "allow"}
 
