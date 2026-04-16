@@ -284,11 +284,37 @@ class MoodResponse(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class RelationshipData(BaseModel):
+    """A relationship between an agent and a user."""
+
+    user_id: str = ""
+    love_score: float = 0.0
+    narrative: str = ""
+    last_update: str = ""
+
+    model_config = {"extra": "allow"}
+
+
 class RelationshipResponse(BaseModel):
+    relationships: list[RelationshipData] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class HabitData(BaseModel):
+    """A behavioral habit with a strength score."""
+
+    name: str = ""
+    strength: float = 0.0
+    category: str = ""
+    last_update: str = ""
+
     model_config = {"extra": "allow"}
 
 
 class HabitsResponse(BaseModel):
+    habits: list[HabitData] = Field(default_factory=list)
+
     model_config = {"extra": "allow"}
 
 
@@ -411,6 +437,10 @@ class DiaryResponse(BaseModel):
 
 
 class UsersResponse(BaseModel):
+    # Users are returned as open-shaped dicts by the API today;
+    # keep them flexible here rather than forcing a schema.
+    users: list[dict] = Field(default_factory=list)
+
     model_config = {"extra": "allow"}
 
 
