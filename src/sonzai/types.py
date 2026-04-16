@@ -568,15 +568,56 @@ class ConstellationResponse(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class Breakthrough(BaseModel):
+    """A personality breakthrough moment for an agent."""
+
+    breakthrough_id: str = ""
+    agent_id: str = ""
+    user_id: str = ""
+    breakthrough_number: int = 0
+    level_at_breakthrough: int = 0
+    narrative: str = ""
+    personality_shifts: list[str] = Field(default_factory=list)
+    trait_evolved: str = ""
+    new_goals: list[str] = Field(default_factory=list)
+    achieved_goals: list[str] = Field(default_factory=list)
+    skill_points_awarded: int = 0
+    acknowledged: bool = False
+    created_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
 class BreakthroughsResponse(BaseModel):
+    breakthroughs: list[Breakthrough] = Field(default_factory=list)
+
     model_config = {"extra": "allow"}
 
 
 class WakeupsResponse(BaseModel):
+    # Forward reference: ScheduledWakeup is defined later in this module.
+    wakeups: list["ScheduledWakeup"] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class MoodState(BaseModel):
+    """Snapshot of an agent's four-dimensional mood vector."""
+
+    happiness: float = 0.0
+    energy: float = 0.0
+    calmness: float = 0.0
+    affection: float = 0.0
+
     model_config = {"extra": "allow"}
 
 
 class MoodAggregateResponse(BaseModel):
+    average: MoodState = Field(default_factory=MoodState)
+    min: MoodState = Field(default_factory=MoodState)
+    max: MoodState = Field(default_factory=MoodState)
+    data_count: int = 0
+
     model_config = {"extra": "allow"}
 
 
