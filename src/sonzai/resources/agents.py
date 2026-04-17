@@ -1029,6 +1029,50 @@ class Agents:
             self._http.patch(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
         )
 
+    # -- Post-processing model override (layer 1 of cascade) --
+
+    def update_post_processing_model(
+        self,
+        agent_id: str,
+        *,
+        provider: str,
+        model: str,
+    ) -> dict[str, Any]:
+        """Set the agent-level post-processing model override.
+
+        Short-circuits the cascade — when set, project / account /
+        system-default layers are not consulted. Both ``provider`` and
+        ``model`` must be non-empty for the override to take effect.
+        """
+        return self._http.patch(  # type: ignore[return-value]
+            f"/api/v1/agents/{agent_id}/post-processing-model",
+            json_data={
+                "post_processing_provider": provider,
+                "post_processing_model": model,
+            },
+        )
+
+    def clear_post_processing_model(self, agent_id: str) -> dict[str, Any]:
+        """Remove the agent-level override so the cascade falls through
+        to project / account / system-default layers."""
+        return self.update_post_processing_model(agent_id, provider="", model="")
+
+    def effective_post_processing_model(
+        self, agent_id: str, chat_model: str
+    ) -> dict[str, Any]:
+        """Run the cascade server-side for ``chat_model`` on this agent,
+        without firing inference. Returns ``{provider, model,
+        temperature?, max_tokens?}`` — the full resolved config the
+        resolver would hand to the Provider.
+
+        When the server has ``ENABLE_POST_PROCESSING_MODEL_MAP=false``,
+        the response echoes the chat model itself.
+        """
+        return self._http.get(  # type: ignore[return-value]
+            f"/api/v1/agents/{agent_id}/effective-post-processing-model",
+            params={"chat_model": chat_model},
+        )
+
     # -- Custom Tools --
 
     def list_custom_tools(self, agent_id: str) -> CustomToolListResponse:
@@ -2191,6 +2235,43 @@ class AsyncAgents:
             body["inventory"] = inventory
         return AgentCapabilities.model_validate(
             await self._http.patch(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
+        )
+
+    # -- Post-processing model override (layer 1 of cascade) --
+
+    async def update_post_processing_model(
+        self,
+        agent_id: str,
+        *,
+        provider: str,
+        model: str,
+    ) -> dict[str, Any]:
+        """Set the agent-level post-processing model override. Async.
+
+        See :meth:`Agents.update_post_processing_model` for semantics.
+        """
+        return await self._http.patch(  # type: ignore[return-value]
+            f"/api/v1/agents/{agent_id}/post-processing-model",
+            json_data={
+                "post_processing_provider": provider,
+                "post_processing_model": model,
+            },
+        )
+
+    async def clear_post_processing_model(self, agent_id: str) -> dict[str, Any]:
+        """Remove the agent-level override. Async."""
+        return await self.update_post_processing_model(
+            agent_id, provider="", model=""
+        )
+
+    async def effective_post_processing_model(
+        self, agent_id: str, chat_model: str
+    ) -> dict[str, Any]:
+        """Run the cascade server-side for ``chat_model`` on this agent,
+        without firing inference. Async."""
+        return await self._http.get(  # type: ignore[return-value]
+            f"/api/v1/agents/{agent_id}/effective-post-processing-model",
+            params={"chat_model": chat_model},
         )
 
     # -- Custom Tools --
