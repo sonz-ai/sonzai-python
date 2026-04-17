@@ -122,16 +122,16 @@ class Memory:
         agent_id: str,
         *,
         user_id: str | None = None,
-        category: str | None = None,
+        fact_type: str | None = None,
         limit: int | None = None,
         offset: int | None = None,
     ) -> FactListResponse:
-        """List atomic facts for an agent, optionally filtered by category."""
+        """List atomic facts for an agent, optionally filtered by fact type."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
-        if category:
-            params["category"] = category
+        if fact_type:
+            params["fact_type"] = fact_type
         if limit is not None:
             params["limit"] = limit
         if offset is not None:
@@ -355,16 +355,16 @@ class AsyncMemory:
         agent_id: str,
         *,
         user_id: str | None = None,
-        category: str | None = None,
+        fact_type: str | None = None,
         limit: int | None = None,
         offset: int | None = None,
     ) -> FactListResponse:
-        """List atomic facts for an agent, optionally filtered by category."""
+        """List atomic facts for an agent, optionally filtered by fact type."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
-        if category:
-            params["category"] = category
+        if fact_type:
+            params["fact_type"] = fact_type
         if limit is not None:
             params["limit"] = limit
         if offset is not None:

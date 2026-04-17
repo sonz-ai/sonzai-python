@@ -660,9 +660,10 @@ class Agents:
         data = self._http.get(f"/api/v1/agents/{agent_id}/relationships", params=params)
         return RelationshipResponse.model_validate(data)
 
-    def get_habits(
+    def list_habits(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> HabitsResponse:
+        """List habits for an agent."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -670,6 +671,12 @@ class Agents:
             params["instance_id"] = instance_id
         data = self._http.get(f"/api/v1/agents/{agent_id}/habits", params=params)
         return HabitsResponse.model_validate(data)
+
+    def get_habits(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> HabitsResponse:
+        """.. deprecated:: Use :meth:`list_habits` instead."""
+        return self.list_habits(agent_id, user_id=user_id, instance_id=instance_id)
 
     def create_habit(
         self,
@@ -740,9 +747,10 @@ class Agents:
             f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", params=params
         )
 
-    def get_goals(
+    def list_goals(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> GoalsResponse:
+        """List goals for an agent. Pass user_id to get combined agent-global + per-user goals."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -750,6 +758,12 @@ class Agents:
             params["instance_id"] = instance_id
         data = self._http.get(f"/api/v1/agents/{agent_id}/goals", params=params)
         return GoalsResponse.model_validate(data)
+
+    def get_goals(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> GoalsResponse:
+        """.. deprecated:: Use :meth:`list_goals` instead."""
+        return self.list_goals(agent_id, user_id=user_id, instance_id=instance_id)
 
     def create_goal(
         self,
@@ -936,10 +950,10 @@ class Agents:
         """Delete a constellation node."""
         self._http.delete(f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}")
 
-    def get_breakthroughs(
+    def list_breakthroughs(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> BreakthroughsResponse:
-        """Get breakthroughs for an agent."""
+        """List breakthroughs for an agent."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -947,6 +961,12 @@ class Agents:
             params["instance_id"] = instance_id
         data = self._http.get(f"/api/v1/agents/{agent_id}/breakthroughs", params=params)
         return BreakthroughsResponse.model_validate(data)
+
+    def get_breakthroughs(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> BreakthroughsResponse:
+        """.. deprecated:: Use :meth:`list_breakthroughs` instead."""
+        return self.list_breakthroughs(agent_id, user_id=user_id, instance_id=instance_id)
 
     def get_wakeups(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -1932,9 +1952,10 @@ class AsyncAgents:
         data = await self._http.get(f"/api/v1/agents/{agent_id}/relationships", params=params)
         return RelationshipResponse.model_validate(data)
 
-    async def get_habits(
+    async def list_habits(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> HabitsResponse:
+        """List habits for an agent."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -1942,6 +1963,12 @@ class AsyncAgents:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/habits", params=params)
         return HabitsResponse.model_validate(data)
+
+    async def get_habits(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> HabitsResponse:
+        """.. deprecated:: Use :meth:`list_habits` instead."""
+        return await self.list_habits(agent_id, user_id=user_id, instance_id=instance_id)
 
     async def create_habit(
         self,
@@ -2012,9 +2039,10 @@ class AsyncAgents:
             f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", params=params
         )
 
-    async def get_goals(
+    async def list_goals(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> GoalsResponse:
+        """List goals for an agent. Pass user_id to get combined agent-global + per-user goals."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -2022,6 +2050,12 @@ class AsyncAgents:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/goals", params=params)
         return GoalsResponse.model_validate(data)
+
+    async def get_goals(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> GoalsResponse:
+        """.. deprecated:: Use :meth:`list_goals` instead."""
+        return await self.list_goals(agent_id, user_id=user_id, instance_id=instance_id)
 
     async def create_goal(
         self,
@@ -2210,10 +2244,10 @@ class AsyncAgents:
         """Delete a constellation node."""
         await self._http.delete(f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}")
 
-    async def get_breakthroughs(
+    async def list_breakthroughs(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> BreakthroughsResponse:
-        """Get breakthroughs for an agent."""
+        """List breakthroughs for an agent."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -2221,6 +2255,12 @@ class AsyncAgents:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/breakthroughs", params=params)
         return BreakthroughsResponse.model_validate(data)
+
+    async def get_breakthroughs(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> BreakthroughsResponse:
+        """.. deprecated:: Use :meth:`list_breakthroughs` instead."""
+        return await self.list_breakthroughs(agent_id, user_id=user_id, instance_id=instance_id)
 
     async def get_wakeups(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
