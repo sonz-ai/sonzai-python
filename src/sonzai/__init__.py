@@ -88,6 +88,10 @@ from .types import (
     KBBulkUpdateResponse,
     KBCandidate,
     KBResolutionInfo,
+    # KB — organization-global scope
+    KBScope,
+    KBNodeWithScope,
+    CreateOrgNodeOptions,
     ListAllFactsResponse,
     MemoryNode,
     MemoryResetResponse,
@@ -331,6 +335,10 @@ __all__ = [
     # Types - KB Bulk Update
     "KBBulkUpdateEntry",
     "KBBulkUpdateResponse",
+    # Types - Organization-global KB
+    "KBScope",
+    "KBNodeWithScope",
+    "CreateOrgNodeOptions",
     # Types - Agent Knowledge Search
     "AgentKBSearchResult",
     "AgentKBSearchResponse",

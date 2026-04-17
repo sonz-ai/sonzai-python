@@ -6,6 +6,7 @@ from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
+    CreateOrgNodeOptions,
     KBAnalyticsRule,
     KBAnalyticsRuleListResponse,
     KBBulkUpdateResponse,
@@ -13,9 +14,11 @@ from ..types import (
     KBDocument,
     KBDocumentListResponse,
     KBEntitySchema,
+    KBNode,
     KBNodeDetailResponse,
     KBNodeHistoryResponse,
     KBNodeListResponse,
+    KBNodeWithScope,
     KBRecommendationsResponse,
     KBSchemaListResponse,
     KBSearchResponse,
@@ -353,6 +356,49 @@ class Knowledge:
             )
         )
 
+    # -- Organization-global scope (docs/ORGANIZATION_GLOBAL_KB.md) --
+
+    def create_org_node(
+        self,
+        tenant_id: str,
+        options: CreateOrgNodeOptions | dict[str, Any],
+    ) -> KBNode:
+        """Create a KB node directly in the organization-global scope.
+
+        Every project under the tenant can read it via cascade / union /
+        org_only scope modes. Idempotency is the caller's responsibility —
+        look up by label first if duplicates matter.
+        """
+        if isinstance(options, CreateOrgNodeOptions):
+            body = options.model_dump(exclude_defaults=True)
+        else:
+            body = dict(options)
+        return KBNode.model_validate(
+            self._http.post(
+                f"/api/v1/tenants/{tenant_id}/knowledge/org-nodes",
+                json_data=body,
+            )
+        )
+
+    def promote_node_to_org(
+        self,
+        project_id: str,
+        node_id: str,
+        tenant_id: str,
+    ) -> KBNodeWithScope:
+        """Promote a project-scoped node into the organization-global scope.
+
+        The project copy is preserved — promotion is additive. If an org
+        node with the same (node_type, norm_label) already exists, the
+        server returns it instead of writing a duplicate.
+        """
+        return KBNodeWithScope.model_validate(
+            self._http.post(
+                f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}/promote-to-org",
+                json_data={"tenant_id": tenant_id},
+            )
+        )
+
 
 class AsyncKnowledge:
     """Async knowledge base operations (project-scoped)."""
@@ -655,5 +701,38 @@ class AsyncKnowledge:
             await self._http.patch(
                 f"/api/v1/projects/{project_id}/knowledge/bulk-update",
                 json_data=body,
+            )
+        )
+
+    # -- Organization-global scope (docs/ORGANIZATION_GLOBAL_KB.md) --
+
+    async def create_org_node(
+        self,
+        tenant_id: str,
+        options: CreateOrgNodeOptions | dict[str, Any],
+    ) -> KBNode:
+        """Create a KB node directly in the organization-global scope."""
+        if isinstance(options, CreateOrgNodeOptions):
+            body = options.model_dump(exclude_defaults=True)
+        else:
+            body = dict(options)
+        return KBNode.model_validate(
+            await self._http.post(
+                f"/api/v1/tenants/{tenant_id}/knowledge/org-nodes",
+                json_data=body,
+            )
+        )
+
+    async def promote_node_to_org(
+        self,
+        project_id: str,
+        node_id: str,
+        tenant_id: str,
+    ) -> KBNodeWithScope:
+        """Promote a project-scoped node into the organization-global scope."""
+        return KBNodeWithScope.model_validate(
+            await self._http.post(
+                f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}/promote-to-org",
+                json_data={"tenant_id": tenant_id},
             )
         )

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -1549,6 +1550,41 @@ class KBEdge(BaseModel):
     confidence: float = 0.0
     created_at: str = ""
     updated_at: str = ""
+
+
+# ----------------------------------------------------------------------------
+# Organization-global KB (see docs/ORGANIZATION_GLOBAL_KB.md)
+# ----------------------------------------------------------------------------
+
+
+class KBScope(str, Enum):
+    """Scope mode for agent knowledge_search reads.
+
+    Wire values match sonzai-go + sonzai-typescript SDKs so the same enum
+    round-trips cleanly through the platform API.
+    """
+
+    PROJECT_ONLY = "project_only"
+    ORG_ONLY = "org_only"
+    CASCADE = "cascade"
+    UNION = "union"
+
+
+class CreateOrgNodeOptions(BaseModel):
+    """Request body for Knowledge.create_org_node."""
+
+    node_type: str
+    label: str
+    properties: dict[str, Any] = Field(default_factory=dict)
+    # Defaults to 1.0 server-side for hand-authored org knowledge.
+    confidence: float = 0.0
+
+
+class KBNodeWithScope(KBNode):
+    """KBNode with scope provenance — returned by cascade reads + promote."""
+
+    scope_type: str = ""  # "project" | "organization"
+    relevance: float = 0.0
 
 
 class KBNodeHistory(BaseModel):
