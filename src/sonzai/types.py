@@ -46,9 +46,13 @@ class ChatStreamEvent(BaseModel):
     full_content: str = ""
     finish_reason: str = ""
     continuation_token: str = ""
+    response_cookie: str = ""
     message_count: int = 0
     side_effects: dict[str, Any] | None = None
     external_tool_calls: list[ExternalToolCall] = Field(default_factory=list)
+    enriched_context: dict[str, Any] | None = None
+    build_duration_ms: int = 0
+    used_fast_path: bool = False
     error_message: str = ""
     error_code: str = ""
     is_token_error: bool = False
@@ -112,10 +116,34 @@ class AtomicFact(BaseModel):
     atomic_text: str = ""
     fact_type: str = ""
     importance: float = 0.0
+    confidence: float = 0.0
     supersedes_id: str = ""
     session_id: str = ""
+    source_id: str = ""
+    source_type: str = ""
+    sentiment: str = ""
+    entities: list[str] = Field(default_factory=list)
+    inferred_entities: list[str] = Field(default_factory=list)
+    topic_tags: list[str] = Field(default_factory=list)
+    agent_framing: str = ""
+    character_salience: float = 0.0
+    emotional_intensity: float = 0.0
+    relationship_relevance: float = 0.0
+    retention_strength: float = 0.0
+    temporal_relevance: str = ""
+    time_sensitive_at: str = ""
+    episode_id: str = ""
+    event_time: str = ""
+    evidence_message_ids: list[str] = Field(default_factory=list)
+    polarity_group_id: str = ""
+    hit_count: int = 0
+    miss_count: int = 0
+    mention_count: int = 0
+    last_confirmed: str = ""
+    last_retrieved_at: str = ""
     metadata: dict[str, Any] | None = None
     created_at: str | None = None
+    updated_at: str | None = None
 
 
 class MemoryResponse(BaseModel):
@@ -193,6 +221,12 @@ class PersonalityBehaviors(BaseModel):
     conflict_approach: str = ""
 
 
+class TraitPrecision(BaseModel):
+    precision: float = 0.0
+    observation_count: int = 0
+    last_updated_at: str | None = None
+
+
 class PersonalityProfile(BaseModel):
     agent_id: str = ""
     name: str = ""
@@ -210,6 +244,7 @@ class PersonalityProfile(BaseModel):
     preferences: PersonalityPreferences = Field(default_factory=PersonalityPreferences)
     behaviors: PersonalityBehaviors = Field(default_factory=PersonalityBehaviors)
     emotional_tendencies: dict[str, float] = Field(default_factory=dict)
+    trait_precisions: dict[str, TraitPrecision] = Field(default_factory=dict)
     created_at: str | None = None
 
 
@@ -286,23 +321,31 @@ class MoodResponse(BaseModel):
 
     # Forward reference — MoodState is defined later in this module.
     mood: "MoodState" = Field(default_factory=lambda: MoodState())
-    updated_at: str = ""
 
     model_config = {"extra": "allow"}
 
 
 class MoodHistoryEntry(BaseModel):
-    """A single mood snapshot at a point in time."""
+    """A single mood history data point with flat dimensions and deltas."""
 
-    # Forward reference — MoodState is defined later in this module.
-    mood: "MoodState" = Field(default_factory=lambda: MoodState())
+    valence: float = 0.0
+    arousal: float = 0.0
+    tension: float = 0.0
+    affiliation: float = 0.0
+    label: str = ""
+    trigger_type: str = ""
+    trigger_reason: str = ""
+    delta_valence: float = 0.0
+    delta_arousal: float = 0.0
+    delta_tension: float = 0.0
+    delta_affiliation: float = 0.0
     timestamp: str = ""
 
     model_config = {"extra": "allow"}
 
 
 class MoodHistoryResponse(BaseModel):
-    history: list[MoodHistoryEntry] = Field(default_factory=list)
+    entries: list[MoodHistoryEntry] = Field(default_factory=list)
 
     model_config = {"extra": "allow"}
 
@@ -312,8 +355,10 @@ class RelationshipData(BaseModel):
 
     user_id: str = ""
     love_score: float = 0.0
+    chemistry_score: float = 0.0
     narrative: str = ""
     last_update: str = ""
+    updated_at: str = ""
 
     model_config = {"extra": "allow"}
 
@@ -433,8 +478,18 @@ class InterestData(BaseModel):
     """A single agent interest with score."""
 
     topic: str = ""
-    score: float = 0.0
+    score: float = 0.0  # Deprecated: use confidence instead.
     category: str = ""
+    agent_id: str = ""
+    user_id: str = ""
+    confidence: float = 0.0
+    engagement_level: float = 0.0
+    mention_count: int = 0
+    research_status: str = ""
+    research_findings: str = ""
+    last_mentioned_at: str = ""
+    created_at: str = ""
+    updated_at: str = ""
 
     model_config = {"extra": "allow"}
 
@@ -449,9 +504,17 @@ class DiaryEntry(BaseModel):
     """A single diary entry."""
 
     entry_id: str = ""
+    agent_id: str = ""
+    user_id: str = ""
+    date: str = ""
+    content: str = ""
     title: str = ""
-    body: str = ""
+    body_lines: list[str] = Field(default_factory=list)
+    body: str = ""  # Deprecated: use content instead.
+    mood: str = ""
+    topics: list[str] = Field(default_factory=list)
     tags: list[str] = Field(default_factory=list)
+    trigger_type: str = ""
     created_at: str = ""
 
     model_config = {"extra": "allow"}
@@ -515,7 +578,10 @@ class EvalTemplateListResponse(BaseModel):
 
 class EvalRun(BaseModel):
     id: str = ""
+    """SDK alias. The spec wire name is run_id."""
+    run_id: str = ""
     tenant_id: str = ""
+    project_id: str = ""
     agent_id: str = ""
     agent_name: str = ""
     status: str = ""
@@ -538,6 +604,7 @@ class EvalRun(BaseModel):
     evaluation_cost_usd: float = 0.0
     adaptation_template_id: str = ""
     adaptation_template_snapshot: Any = None
+    started_at: str | None = None
     created_at: str | None = None
     completed_at: str | None = None
 
@@ -718,21 +785,25 @@ class WakeupsResponse(BaseModel):
 
 
 class MoodState(BaseModel):
-    """Snapshot of an agent's four-dimensional mood vector."""
+    """Snapshot of an agent's four-dimensional mood vector (valence-arousal-tension-affiliation)."""
 
-    happiness: float = 0.0
-    energy: float = 0.0
-    calmness: float = 0.0
-    affection: float = 0.0
+    valence: float = 0.0
+    arousal: float = 0.0
+    tension: float = 0.0
+    affiliation: float = 0.0
+    label: str = ""
 
     model_config = {"extra": "allow"}
 
 
 class MoodAggregateResponse(BaseModel):
-    average: MoodState = Field(default_factory=MoodState)
-    min: MoodState = Field(default_factory=MoodState)
-    max: MoodState = Field(default_factory=MoodState)
-    data_count: int = 0
+    valence: float = 0.0
+    arousal: float = 0.0
+    tension: float = 0.0
+    affiliation: float = 0.0
+    label: str = ""
+    user_count: int = 0
+    days_window: int = 0
 
     model_config = {"extra": "allow"}
 
@@ -1094,6 +1165,7 @@ class ScheduledWakeup(BaseModel):
     event_description: str = ""
     occasion: str = ""
     interest_topic: str = ""
+    research_summary: str = ""
     executed_at: str | None = None
     created_at: str | None = None
 
@@ -1108,13 +1180,20 @@ class ScheduledWakeup(BaseModel):
 class AgentIndex(BaseModel):
     model_config = {"extra": "allow"}
     id: str = ""
+    agent_id: str = ""
     tenant_id: str = ""
     name: str = ""
     bio: str = ""
     gender: str = ""
     avatar_url: str = ""
     status: str = ""
+    is_active: bool = False
     project_id: str = ""
+    instance_count: int = 0
+    last_seen_at: str = ""
+    owner_user_id: str = ""
+    owner_display_name: str = ""
+    owner_email: str = ""
     created_at: str = ""
 
 
@@ -1122,6 +1201,7 @@ class AgentListResponse(BaseModel):
     items: list[AgentIndex] = Field(default_factory=list)
     next_cursor: str | None = None
     has_more: bool = False
+    total_count: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -1446,12 +1526,30 @@ class CustomToolDefinition(BaseModel):
     parameters: dict[str, Any] | None = None
 
 
+class PendingCapability(BaseModel):
+    capability: str = ""
+    context: str = ""
+    model_config = {"extra": "allow"}
+
+
 class AgentCapabilities(BaseModel):
     model_config = {"extra": "allow"}
     webSearch: bool = False
     rememberName: bool = False
     imageGeneration: bool = False
     inventory: bool = False
+    knowledgeBase: bool = False
+    knowledgeBaseProjectId: str = ""
+    voiceGeneration: bool = False
+    voiceId: str = ""
+    voiceTier: int = 0
+    voiceUnlockedAt: str | None = None
+    imageUnlockedAt: str | None = None
+    musicGeneration: bool = False
+    musicUnlockedAt: str | None = None
+    videoGeneration: bool = False
+    videoUnlockedAt: str | None = None
+    pendingCapabilities: list[PendingCapability] = Field(default_factory=list)
     customTools: list[CustomToolDefinition] = Field(default_factory=list)
 
 
@@ -1649,6 +1747,9 @@ class KBAnalyticsRule(BaseModel):
     config: Any = None
     enabled: bool = False
     schedule: str = ""
+    last_run_at: str = ""
+    last_run_status: str = ""
+    last_run_duration_ms: int = 0
     created_at: str = ""
     updated_at: str = ""
 
@@ -2991,6 +3092,7 @@ class UpdateCapabilitiesOptions(BaseModel):
     remember_name: bool | None = None
     image_generation: bool | None = None
     inventory: bool | None = None
+    knowledge_base: bool | None = None
 
     model_config = {"extra": "allow"}
 
