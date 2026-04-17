@@ -87,14 +87,16 @@ class TestPersonalityResponse:
                     "neuroticism": {"score": 0.25, "percentile": 20},
                 },
                 "dimensions": {
-                    "warmth": 8,
-                    "energy": 7,
-                    "openness": 9,
-                    "emotional_depth": 8,
-                    "playfulness": 7,
-                    "supportiveness": 9,
-                    "curiosity": 10,
-                    "wisdom": 6,
+                    "intellect": 9.0,
+                    "aesthetic": 7.0,
+                    "industriousness": 6.0,
+                    "orderliness": 5.0,
+                    "enthusiasm": 7.0,
+                    "assertiveness": 6.0,
+                    "compassion": 9.0,
+                    "politeness": 8.0,
+                    "withdrawal": 3.0,
+                    "volatility": 2.0,
                 },
                 "speech_patterns": ["uses ellipses...", "asks questions"],
                 "true_interests": ["astronomy", "cooking"],
@@ -110,7 +112,7 @@ class TestPersonalityResponse:
         result = PersonalityResponse.model_validate(data)
         assert result.profile.name == "Luna"
         assert result.profile.big5.openness.score == 0.85
-        assert result.profile.dimensions.curiosity == 10
+        assert result.profile.dimensions.intellect == 9.0
         assert len(result.evolution) == 1
 
 

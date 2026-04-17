@@ -167,27 +167,30 @@ class Big5(BaseModel):
 
 
 class PersonalityDimensions(BaseModel):
-    warmth: int = 5
-    energy: int = 5
-    openness: int = 5
-    emotional_depth: int = 5
-    playfulness: int = 5
-    supportiveness: int = 5
-    curiosity: int = 5
-    wisdom: int = 5
+    intellect: float = 0.0
+    aesthetic: float = 0.0
+    industriousness: float = 0.0
+    orderliness: float = 0.0
+    enthusiasm: float = 0.0
+    assertiveness: float = 0.0
+    compassion: float = 0.0
+    politeness: float = 0.0
+    withdrawal: float = 0.0
+    volatility: float = 0.0
 
 
 class PersonalityPreferences(BaseModel):
-    pace: str = ""
+    conversation_pace: str = ""
     formality: str = ""
     humor_style: str = ""
     emotional_expression: str = ""
 
 
 class PersonalityBehaviors(BaseModel):
-    proactivity: str = ""
-    reliability: str = ""
-    humor: str = ""
+    response_length: str = ""
+    question_frequency: str = ""
+    empathy_style: str = ""
+    conflict_approach: str = ""
 
 
 class PersonalityProfile(BaseModel):
@@ -1962,20 +1965,22 @@ class Big5Scores(BaseModel):
 
 
 class SDKPersonalityDimensions(BaseModel):
-    warmth: float = 0.0
-    energy: float = 0.0
-    openness: float = 0.0
-    emotional_depth: float = 0.0
-    playfulness: float = 0.0
-    supportiveness: float = 0.0
-    curiosity: float = 0.0
-    wisdom: float = 0.0
+    intellect: float = 0.0
+    aesthetic: float = 0.0
+    industriousness: float = 0.0
+    orderliness: float = 0.0
+    enthusiasm: float = 0.0
+    assertiveness: float = 0.0
+    compassion: float = 0.0
+    politeness: float = 0.0
+    withdrawal: float = 0.0
+    volatility: float = 0.0
 
     model_config = {"extra": "allow"}
 
 
 class SDKInteractionPreferences(BaseModel):
-    pace: str = ""
+    conversation_pace: str = ""
     formality: str = ""
     humor_style: str = ""
     emotional_expression: str = ""
@@ -1984,9 +1989,10 @@ class SDKInteractionPreferences(BaseModel):
 
 
 class SDKBehavioralTraits(BaseModel):
-    proactivity: str = ""
-    reliability: str = ""
-    humor: str = ""
+    response_length: str = ""
+    question_frequency: str = ""
+    empathy_style: str = ""
+    conflict_approach: str = ""
 
     model_config = {"extra": "allow"}
 
