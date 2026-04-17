@@ -85,6 +85,7 @@ _bump VERSION:
     perl -pi -e 's/^version = "[^"]+"/version = "{{VERSION}}"/' pyproject.toml
     perl -pi -e 's/^__version__ = "[^"]+"/__version__ = "{{VERSION}}"/' src/sonzai/__init__.py
     perl -pi -e 's{"User-Agent": "sonzai-python/[0-9]+\.[0-9]+\.[0-9]+"}{"User-Agent": "sonzai-python/{{VERSION}}"}g' src/sonzai/_http.py
+    uv lock --quiet
     echo "bumped to {{VERSION}}"
 
 _build:
@@ -92,7 +93,7 @@ _build:
     uv build
 
 _commit VERSION:
-    git add pyproject.toml src/sonzai/__init__.py src/sonzai/_http.py
+    git add pyproject.toml uv.lock src/sonzai/__init__.py src/sonzai/_http.py
     git commit -m "release: v{{VERSION}}"
 
 _publish VERSION:
