@@ -5,7 +5,7 @@ default:
     @just --list
 
 # Full release: bump versions, test, build, commit, publish to PyPI, tag, gh release.
-# Requires: uv, gh (authenticated), and UV_PUBLISH_TOKEN (or ~/.pypirc) for publish.
+# Requires: uv (build), twine (publish — reads ~/.pypirc), gh (authenticated).
 # Usage: just deploy 1.2.3
 deploy VERSION:
     @just _preflight {{VERSION}}
@@ -84,7 +84,7 @@ _commit VERSION:
     git commit -m "release: v{{VERSION}}"
 
 _publish VERSION:
-    uv publish
+    twine upload --non-interactive dist/sonzai-{{VERSION}}*
 
 _tag VERSION:
     git tag -a v{{VERSION}} -m "Release v{{VERSION}}"
