@@ -330,6 +330,10 @@ class HabitData(BaseModel):
     name: str = ""
     strength: float = 0.0
     category: str = ""
+    description: str = ""
+    display_name: str = ""
+    formed: bool = False
+    daily_reinforced: float = 0.0
     last_update: str = ""
 
     model_config = {"extra": "allow"}
@@ -2016,6 +2020,15 @@ class InitialGoal(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class AgentFeatureCapabilities(BaseModel):
+    """Feature capabilities for an agent (image generation, inventory, etc.)."""
+
+    image_generation: bool = False
+    inventory: bool = False
+
+    model_config = {"extra": "allow"}
+
+
 class CreateAgentOptions(BaseModel):
     agent_id: str | None = None
     user_id: str | None = None
@@ -2034,7 +2047,9 @@ class CreateAgentOptions(BaseModel):
     dimensions: SDKPersonalityDimensions | None = None
     preferences: dict[str, str] = Field(default_factory=dict)
     behaviors: dict[str, str] = Field(default_factory=dict)
+    capabilities: AgentFeatureCapabilities | None = None
     tool_capabilities: AgentToolCapabilities | None = None
+    generate_avatar: bool | None = None
     language: str | None = None
     seed_memories: list[SeedMemory] = Field(default_factory=list)
     lore_context: dict[str, Any] = Field(default_factory=dict)
@@ -2069,6 +2084,15 @@ class AgentListOptions(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class GameContext(BaseModel):
+    """Game-specific context for chat requests."""
+
+    custom_fields: dict[str, str] = Field(default_factory=dict)
+    game_state_json: Any = None
+
+    model_config = {"extra": "allow"}
+
+
 class ChatOptions(BaseModel):
     """Input model for chat. `agent` accepts UUID or agent name."""
 
@@ -2087,14 +2111,20 @@ class ChatOptions(BaseModel):
     interaction_role: str | None = None
     timezone: str | None = None
     tool_capabilities: AgentToolCapabilities | None = None
+    tool_definitions: list[dict[str, Any]] = Field(default_factory=list)
+    max_turns: int | None = None
+    skip_context_build: bool | None = None
+    game_context: GameContext | None = None
 
     model_config = {"extra": "allow"}
 
 
 class SessionStartOptions(BaseModel):
     user_id: str = ""
+    user_display_name: str | None = None
     session_id: str = ""
     instance_id: str | None = None
+    tool_definitions: list[dict[str, Any]] = Field(default_factory=list)
 
     model_config = {"extra": "allow"}
 
