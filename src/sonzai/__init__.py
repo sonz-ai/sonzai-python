@@ -156,7 +156,7 @@ from .types import (
     WebhookRegisterResponse,
 )
 
-__version__ = "1.1.0"
+__version__ = "1.1.4"
 
 __all__ = [
     # Clients
