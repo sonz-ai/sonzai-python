@@ -356,7 +356,7 @@ class Agents:
 
     # -- Events --
 
-    def trigger_backend_event(
+    def trigger_developer_event(
         self,
         agent_id: str,
         *,
@@ -367,7 +367,7 @@ class Agents:
         language: str | None = None,
         instance_id: str | None = None,
     ) -> TriggerEventResponse:
-        """Trigger a backend event / activity for an agent."""
+        """Trigger a developer event / activity for an agent."""
         body: dict[str, Any] = {
             "user_id": user_id,
             "event_type": event_type,
@@ -1511,7 +1511,7 @@ class AsyncAgents:
 
     # -- Events --
 
-    async def trigger_backend_event(
+    async def trigger_developer_event(
         self,
         agent_id: str,
         *,
@@ -1522,7 +1522,7 @@ class AsyncAgents:
         language: str | None = None,
         instance_id: str | None = None,
     ) -> TriggerEventResponse:
-        """Trigger a backend event / activity for an agent."""
+        """Trigger a developer event / activity for an agent."""
         body: dict[str, Any] = {
             "user_id": user_id,
             "event_type": event_type,
