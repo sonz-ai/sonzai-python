@@ -2437,6 +2437,46 @@ class VoiceListOptions(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class ForkResponse(BaseModel):
+    agent_id: str = ""
+    source_agent_id: str = ""
+    status: str = ""
+    name: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class ForkStatusResponse(BaseModel):
+    status: str = ""
+    source_agent_id: str = ""
+    started_at: str | None = None
+    completed_at: str | None = None
+    tables_copied: int = 0
+    tables_total: int = 0
+    error_message: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class DeleteWisdomResponse(BaseModel):
+    success: bool = False
+    fact_id: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class WisdomAuditResponse(BaseModel):
+    fact_id: str = ""
+    content: str = ""
+    target_path: str | None = None
+    derived_from_hashes: list[str] = Field(default_factory=list)
+    source_user_count: int = 0
+    promotion_confidence: float = 0.0
+    promoted_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
 class AgentKBSearchOptions(BaseModel):
     query: str = ""
     limit: int | None = None

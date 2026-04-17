@@ -11,6 +11,7 @@ _list = builtins.list
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
     AtomicFact,
+    DeleteWisdomResponse,
     FactHistoryResponse,
     FactListResponse,
     MemoryResetResponse,
@@ -18,6 +19,7 @@ from ..types import (
     MemorySearchResponse,
     MemoryTimelineResponse,
     SeedMemoriesResponse,
+    WisdomAuditResponse,
 )
 
 
@@ -237,6 +239,23 @@ class Memory:
             self._http.get(f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history")
         )
 
+    def delete_wisdom_fact(self, agent_id: str, fact_id: str) -> DeleteWisdomResponse:
+        """Delete a wisdom fact by ID."""
+        data = self._http.delete(
+            f"/api/v1/agents/{agent_id}/memory/wisdom/{quote(fact_id, safe='')}"
+        )
+        if isinstance(data, dict):
+            return DeleteWisdomResponse.model_validate(data)
+        return DeleteWisdomResponse(success=True, fact_id=fact_id)
+
+    def get_wisdom_audit(self, agent_id: str, fact_id: str) -> WisdomAuditResponse:
+        """Get the audit trail for a wisdom fact."""
+        return WisdomAuditResponse.model_validate(
+            self._http.get(
+                f"/api/v1/agents/{agent_id}/memory/wisdom/audit/{quote(fact_id, safe='')}"
+            )
+        )
+
 
 class AsyncMemory:
     """Async memory operations for an agent."""
@@ -451,4 +470,21 @@ class AsyncMemory:
         """Get the version history for a specific fact."""
         return FactHistoryResponse.model_validate(
             await self._http.get(f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history")
+        )
+
+    async def delete_wisdom_fact(self, agent_id: str, fact_id: str) -> DeleteWisdomResponse:
+        """Delete a wisdom fact by ID."""
+        data = await self._http.delete(
+            f"/api/v1/agents/{agent_id}/memory/wisdom/{quote(fact_id, safe='')}"
+        )
+        if isinstance(data, dict):
+            return DeleteWisdomResponse.model_validate(data)
+        return DeleteWisdomResponse(success=True, fact_id=fact_id)
+
+    async def get_wisdom_audit(self, agent_id: str, fact_id: str) -> WisdomAuditResponse:
+        """Get the audit trail for a wisdom fact."""
+        return WisdomAuditResponse.model_validate(
+            await self._http.get(
+                f"/api/v1/agents/{agent_id}/memory/wisdom/audit/{quote(fact_id, safe='')}"
+            )
         )

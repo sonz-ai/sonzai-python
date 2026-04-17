@@ -23,10 +23,13 @@ from ..types import (
     CustomToolDefinition,
     CustomToolListResponse,
     DeleteResponse,
+    DeleteWisdomResponse,
     DialogueResponse,
     DiaryResponse,
     EnrichedContextResponse,
     EvaluationResult,
+    ForkResponse,
+    ForkStatusResponse,
     GenerateAvatarResponse,
     Goal,
     GoalsResponse,
@@ -49,6 +52,7 @@ from ..types import (
     UpdateProjectResponse,
     UsersResponse,
     WakeupsResponse,
+    WisdomAuditResponse,
 )
 from .custom_states import AsyncCustomStates, CustomStates
 from .generation import AsyncGeneration, Generation
@@ -1238,6 +1242,118 @@ class Agents:
             self._http.get(f"/api/v1/agents/{agent_id}/tools")
         )
 
+    # -- Fork --
+
+    def fork(
+        self,
+        agent_id: str,
+        *,
+        name: str | None = None,
+    ) -> ForkResponse:
+        """Fork an agent (create a copy with a new ID)."""
+        body: dict[str, Any] = {}
+        if name is not None:
+            body["name"] = name
+        return ForkResponse.model_validate(
+            self._http.post(f"/api/v1/agents/{agent_id}/fork", json_data=body)
+        )
+
+    def get_fork_status(self, agent_id: str) -> ForkStatusResponse:
+        """Check the status of a fork operation."""
+        return ForkStatusResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/fork/status")
+        )
+
+    # -- Playground Chat --
+
+    def playground_chat(
+        self,
+        agent_id: str,
+        *,
+        messages: list[dict[str, str]],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        language: str | None = None,
+    ) -> ChatResponse:
+        """Send a playground chat message (non-streaming). Same as chat but via the playground endpoint."""
+        body: dict[str, Any] = {"messages": messages}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if session_id is not None:
+            body["session_id"] = session_id
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        if language is not None:
+            body["language"] = language
+
+        parts: list[str] = []
+        for event in self._http.stream_sse(
+            "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
+        ):
+            parsed = ChatStreamEvent.model_validate(event)
+            if parsed.choices and parsed.choices[0].delta.get("content"):
+                parts.append(parsed.choices[0].delta["content"])
+        return ChatResponse(content="".join(parts))
+
+    def playground_chat_stream(
+        self,
+        agent_id: str,
+        *,
+        messages: list[dict[str, str]],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        language: str | None = None,
+    ) -> Iterator[ChatStreamEvent]:
+        """Send a playground chat message and stream events."""
+        body: dict[str, Any] = {"messages": messages}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if session_id is not None:
+            body["session_id"] = session_id
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        if language is not None:
+            body["language"] = language
+
+        for event in self._http.stream_sse(
+            "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
+        ):
+            yield ChatStreamEvent.model_validate(event)
+
+    # -- Knowledge Search GET --
+
+    def knowledge_search_get(
+        self,
+        agent_id: str,
+        *,
+        query: str,
+        limit: int | None = None,
+    ) -> AgentKBSearchResponse:
+        """Search the knowledge base using a GET request with query parameters."""
+        params: dict[str, Any] = {"q": query}
+        if limit is not None:
+            params["limit"] = limit
+        return AgentKBSearchResponse.model_validate(
+            self._http.get(
+                f"/api/v1/agents/{agent_id}/tools/kb-search",
+                params=params,
+            )
+        )
+
 
 class AsyncAgents:
     """Async agent operations."""
@@ -2402,4 +2518,116 @@ class AsyncAgents:
         """Return tool schemas available for an agent (for BYO-LLM integrations)."""
         return ToolSchemasResponse.model_validate(
             await self._http.get(f"/api/v1/agents/{agent_id}/tools")
+        )
+
+    # -- Fork --
+
+    async def fork(
+        self,
+        agent_id: str,
+        *,
+        name: str | None = None,
+    ) -> ForkResponse:
+        """Fork an agent (create a copy with a new ID)."""
+        body: dict[str, Any] = {}
+        if name is not None:
+            body["name"] = name
+        return ForkResponse.model_validate(
+            await self._http.post(f"/api/v1/agents/{agent_id}/fork", json_data=body)
+        )
+
+    async def get_fork_status(self, agent_id: str) -> ForkStatusResponse:
+        """Check the status of a fork operation."""
+        return ForkStatusResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/fork/status")
+        )
+
+    # -- Playground Chat --
+
+    async def playground_chat(
+        self,
+        agent_id: str,
+        *,
+        messages: list[dict[str, str]],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        language: str | None = None,
+    ) -> ChatResponse:
+        """Send a playground chat message (non-streaming). Same as chat but via the playground endpoint."""
+        body: dict[str, Any] = {"messages": messages}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if session_id is not None:
+            body["session_id"] = session_id
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        if language is not None:
+            body["language"] = language
+
+        parts: list[str] = []
+        async for event in self._http.stream_sse(
+            "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
+        ):
+            parsed = ChatStreamEvent.model_validate(event)
+            if parsed.choices and parsed.choices[0].delta.get("content"):
+                parts.append(parsed.choices[0].delta["content"])
+        return ChatResponse(content="".join(parts))
+
+    async def playground_chat_stream(
+        self,
+        agent_id: str,
+        *,
+        messages: list[dict[str, str]],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        language: str | None = None,
+    ) -> AsyncIterator[ChatStreamEvent]:
+        """Send a playground chat message and stream events."""
+        body: dict[str, Any] = {"messages": messages}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if session_id is not None:
+            body["session_id"] = session_id
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        if language is not None:
+            body["language"] = language
+
+        async for event in self._http.stream_sse(
+            "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
+        ):
+            yield ChatStreamEvent.model_validate(event)
+
+    # -- Knowledge Search GET --
+
+    async def knowledge_search_get(
+        self,
+        agent_id: str,
+        *,
+        query: str,
+        limit: int | None = None,
+    ) -> AgentKBSearchResponse:
+        """Search the knowledge base using a GET request with query parameters."""
+        params: dict[str, Any] = {"q": query}
+        if limit is not None:
+            params["limit"] = limit
+        return AgentKBSearchResponse.model_validate(
+            await self._http.get(
+                f"/api/v1/agents/{agent_id}/tools/kb-search",
+                params=params,
+            )
         )
