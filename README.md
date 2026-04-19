@@ -12,6 +12,12 @@ The official Python SDK for the [Sonzai Mind Layer API](https://sonz.ai). Build 
 pip install sonzai
 ```
 
+## Staying in sync with the production API
+
+This SDK tracks `https://api.sonz.ai/docs/openapi.json`. A git pre-push hook
+checks for drift; run `just install-hooks` once after cloning. To refresh the
+committed spec snapshot, run `just sync-spec` and commit the diff.
+
 ## Quick Start
 
 ```python

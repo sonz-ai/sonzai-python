@@ -4,6 +4,18 @@ set shell := ["bash", "-cu"]
 default:
     @just --list
 
+# Fetch the live OpenAPI spec and overwrite the committed snapshot.
+sync-spec:
+    @echo "Fetching OpenAPI spec from https://api.sonz.ai/docs/openapi.json ..."
+    @curl -sfL https://api.sonz.ai/docs/openapi.json -o openapi.json
+    @echo "✓ Spec updated. Review diff:"
+    @git diff --stat openapi.json || true
+
+# Point git at .githooks/ for this repo. Run once per clone.
+install-hooks:
+    git config core.hooksPath .githooks
+    @echo "✓ Hooks enabled: .githooks/pre-push will run on git push."
+
 # Bump patch (x.y.Z+1) from pyproject.toml and deploy.
 patch:
     just deploy $(just _next patch)
