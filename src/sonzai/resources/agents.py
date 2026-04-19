@@ -111,6 +111,8 @@ class Agents:
         generate_origin_story: bool | None = None,
         generate_personalized_memories: bool | None = None,
         initial_goals: list[dict[str, Any]] | None = None,
+        generate_avatar: bool | None = None,
+        capabilities: dict[str, Any] | None = None,
     ) -> Agent:
         """Create a new agent."""
         body: dict[str, Any] = {"name": name}
@@ -160,6 +162,10 @@ class Agents:
             body["generate_personalized_memories"] = generate_personalized_memories
         if initial_goals is not None:
             body["initial_goals"] = initial_goals
+        if generate_avatar is not None:
+            body["generate_avatar"] = generate_avatar
+        if capabilities is not None:
+            body["capabilities"] = capabilities
 
         data = self._http.post("/api/v1/agents", json_data=body)
         return Agent.model_validate(data)
@@ -1420,6 +1426,8 @@ class AsyncAgents:
         generate_origin_story: bool | None = None,
         generate_personalized_memories: bool | None = None,
         initial_goals: list[dict[str, Any]] | None = None,
+        generate_avatar: bool | None = None,
+        capabilities: dict[str, Any] | None = None,
     ) -> Agent:
         """Create a new agent."""
         body: dict[str, Any] = {"name": name}
@@ -1469,6 +1477,10 @@ class AsyncAgents:
             body["generate_personalized_memories"] = generate_personalized_memories
         if initial_goals is not None:
             body["initial_goals"] = initial_goals
+        if generate_avatar is not None:
+            body["generate_avatar"] = generate_avatar
+        if capabilities is not None:
+            body["capabilities"] = capabilities
 
         data = await self._http.post("/api/v1/agents", json_data=body)
         return Agent.model_validate(data)
