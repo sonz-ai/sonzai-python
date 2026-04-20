@@ -352,6 +352,73 @@ class TestEvalRuns:
         assert result.runs[0].status == "completed"
 
 
+class TestTriggerGameEvent:
+    """TD-SDK-009: trigger_backend_event should accept an optional `messages` list
+    and forward it in the JSON body. When omitted, the field must NOT appear
+    in the payload (back-compat with older Platform servers)."""
+
+    @respx.mock
+    def test_trigger_event_with_messages(self, client, base_url):
+        route = respx.post(f"{base_url}/api/v1/agents/agent-1/events").mock(
+            return_value=httpx.Response(200, json={"success": True})
+        )
+
+        from sonzai.types import ChatMessage
+
+        client.agents.trigger_backend_event(
+            "agent-1",
+            user_id="user-1",
+            event_type="daily_summary",
+            messages=[
+                ChatMessage(role="user", content="hi"),
+                {"role": "assistant", "content": "hello"},
+            ],
+        )
+
+        assert route.called
+        sent = json.loads(route.calls.last.request.content)
+        assert sent["messages"] == [
+            {"role": "user", "content": "hi"},
+            {"role": "assistant", "content": "hello"},
+        ]
+        assert sent["event_type"] == "daily_summary"
+        assert sent["user_id"] == "user-1"
+
+    @respx.mock
+    def test_trigger_event_without_messages_omits_field(self, client, base_url):
+        route = respx.post(f"{base_url}/api/v1/agents/agent-1/events").mock(
+            return_value=httpx.Response(200, json={"success": True})
+        )
+
+        client.agents.trigger_backend_event(
+            "agent-1",
+            user_id="user-1",
+            event_type="daily_summary",
+        )
+
+        assert route.called
+        sent = json.loads(route.calls.last.request.content)
+        assert "messages" not in sent
+
+    @respx.mock
+    async def test_trigger_event_async_with_messages(self, async_client, base_url):
+        route = respx.post(f"{base_url}/api/v1/agents/agent-1/events").mock(
+            return_value=httpx.Response(200, json={"success": True})
+        )
+
+        await async_client.agents.trigger_backend_event(
+            "agent-1",
+            user_id="user-1",
+            event_type="daily_summary",
+            messages=[{"role": "user", "content": "hi"}],
+        )
+
+        assert route.called
+        sent = json.loads(route.calls.last.request.content)
+        assert sent["messages"] == [{"role": "user", "content": "hi"}]
+        await async_client.close()
+
+
 class TestErrorHandling:
     @respx.mock
     def test_401_raises_auth_error(self, client, base_url):
