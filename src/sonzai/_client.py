@@ -7,6 +7,7 @@ import os
 import httpx
 
 from ._http import AsyncHTTPClient, HTTPClient
+from .resources.account_config import AccountConfig, AsyncAccountConfig
 from .resources.agents import Agents, AsyncAgents
 from .types import PlatformModelsResponse
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
@@ -61,6 +62,7 @@ class Sonzai:
     voices: Voices
     webhooks: Webhooks
     project_config: ProjectConfig
+    account_config: AccountConfig
     custom_llm: CustomLLM
     project_notifications: ProjectNotifications
 
@@ -114,6 +116,7 @@ class Sonzai:
         self.voices = Voices(self._http)
         self.webhooks = Webhooks(self._http)
         self.project_config = ProjectConfig(self._http)
+        self.account_config = AccountConfig(self._http)
         self.custom_llm = CustomLLM(self._http)
         self.project_notifications = ProjectNotifications(self._http)
 
@@ -172,6 +175,7 @@ class AsyncSonzai:
     voices: AsyncVoices
     webhooks: AsyncWebhooks
     project_config: AsyncProjectConfig
+    account_config: AsyncAccountConfig
     custom_llm: AsyncCustomLLM
     project_notifications: AsyncProjectNotifications
 
@@ -215,6 +219,7 @@ class AsyncSonzai:
         self.voices = AsyncVoices(self._http)
         self.webhooks = AsyncWebhooks(self._http)
         self.project_config = AsyncProjectConfig(self._http)
+        self.account_config = AsyncAccountConfig(self._http)
         self.custom_llm = AsyncCustomLLM(self._http)
         self.project_notifications = AsyncProjectNotifications(self._http)
 

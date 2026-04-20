@@ -1122,6 +1122,25 @@ class ProjectConfigListResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Account Config (tenant-scoped)
+# ---------------------------------------------------------------------------
+
+
+class AccountConfigEntry(BaseModel):
+    """Tenant-scoped config entry. Shape mirrors ``ProjectConfigEntry`` so
+    callers that already handle project config can reuse their serialisation.
+    """
+
+    key: str
+    value: Any = None
+    updated_at: str | None = None
+
+
+class AccountConfigListResponse(BaseModel):
+    configs: list[AccountConfigEntry] = []
+
+
+# ---------------------------------------------------------------------------
 # Custom LLM
 # ---------------------------------------------------------------------------
 
