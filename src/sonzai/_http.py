@@ -189,13 +189,18 @@ class HTTPClient:
     ) -> Any:
         import io
 
-        files = {"file": (file_name, io.BytesIO(file_data), content_type)}
-        response = self._client.request(
-            "POST",
-            path,
-            files=files,
-            params=params,
-        )
+        # Close the BytesIO explicitly. httpx does not guarantee it closes
+        # file-like objects it reads from, so without this the underlying
+        # buffer sits around until the GC runs. Using `with` ensures the
+        # handle is released even if request() raises.
+        with io.BytesIO(file_data) as buf:
+            files = {"file": (file_name, buf, content_type)}
+            response = self._client.request(
+                "POST",
+                path,
+                files=files,
+                params=params,
+            )
         _raise_for_status(response)
         if response.headers.get("content-type", "").startswith("application/json"):
             return response.json()
@@ -353,13 +358,16 @@ class AsyncHTTPClient:
     ) -> Any:
         import io
 
-        files = {"file": (file_name, io.BytesIO(file_data), content_type)}
-        response = await self._client.request(
-            "POST",
-            path,
-            files=files,
-            params=params,
-        )
+        # See sync upload_file — explicitly close the BytesIO so we don't
+        # rely on GC timing for buffer release.
+        with io.BytesIO(file_data) as buf:
+            files = {"file": (file_name, buf, content_type)}
+            response = await self._client.request(
+                "POST",
+                path,
+                files=files,
+                params=params,
+            )
         _raise_for_status(response)
         if response.headers.get("content-type", "").startswith("application/json"):
             return response.json()

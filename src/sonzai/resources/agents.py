@@ -320,6 +320,12 @@ class Agents:
                 content_parts.append(parsed.content)
             if parsed.usage:
                 usage = parsed.usage
+            # Capture session_id from whichever event supplies it; the server
+            # sets it on the session-start frame but also echoes it on later
+            # events. Without this the aggregated ChatResponse always had
+            # session_id="" even when the caller needed it for follow-ups.
+            if parsed.session_id:
+                session_id = parsed.session_id
 
         return ChatResponse(
             content="".join(content_parts),
@@ -1606,6 +1612,7 @@ class AsyncAgents:
     async def _chat_aggregate(self, path: str, body: dict[str, Any]) -> ChatResponse:
         content_parts: list[str] = []
         usage = None
+        session_id = ""
 
         async for event in self._http.stream_sse("POST", path, json_data=body):
             parsed = ChatStreamEvent.model_validate(event)
@@ -1613,10 +1620,14 @@ class AsyncAgents:
                 content_parts.append(parsed.content)
             if parsed.usage:
                 usage = parsed.usage
+            # See _chat_sync — capture session_id from whichever event carries
+            # it so callers can resume the session in a follow-up call.
+            if parsed.session_id:
+                session_id = parsed.session_id
 
         return ChatResponse(
             content="".join(content_parts),
-            session_id="",
+            session_id=session_id,
             usage=usage,
         )
 
