@@ -320,6 +320,15 @@ class Agents:
                 content_parts.append(parsed.content)
             if parsed.usage:
                 usage = parsed.usage
+            # Capture session_id from whichever event supplies it; the server
+            # sets it on the session-start frame but also echoes it on later
+            # events. Read from the raw event dict because ChatStreamEvent
+            # doesn't define a typed session_id field (extras flow through
+            # model_config={"extra": "allow"}) and the server emits the key
+            # as either session_id (snake_case) or sessionId (camelCase).
+            sid = event.get("session_id") or event.get("sessionId") or ""
+            if sid:
+                session_id = sid
 
         return ChatResponse(
             content="".join(content_parts),
@@ -1606,6 +1615,7 @@ class AsyncAgents:
     async def _chat_aggregate(self, path: str, body: dict[str, Any]) -> ChatResponse:
         content_parts: list[str] = []
         usage = None
+        session_id = ""
 
         async for event in self._http.stream_sse("POST", path, json_data=body):
             parsed = ChatStreamEvent.model_validate(event)
@@ -1613,10 +1623,16 @@ class AsyncAgents:
                 content_parts.append(parsed.content)
             if parsed.usage:
                 usage = parsed.usage
+            # See _chat_sync — read session_id directly from the raw event
+            # dict (ChatStreamEvent has no typed session_id field; the server
+            # emits the key as session_id or sessionId).
+            sid = event.get("session_id") or event.get("sessionId") or ""
+            if sid:
+                session_id = sid
 
         return ChatResponse(
             content="".join(content_parts),
-            session_id="",
+            session_id=session_id,
             usage=usage,
         )
 
