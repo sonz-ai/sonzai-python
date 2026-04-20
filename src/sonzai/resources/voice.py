@@ -12,6 +12,8 @@ from ..types import (
     VoiceListResponse,
     VoiceStreamEvent,
     VoiceStreamToken,
+    TTSResponse,
+    STTResponse,
 )
 
 
@@ -76,6 +78,53 @@ class VoiceResource:
             stream.close()
         """
         return VoiceStream(token)
+
+    def tts(
+        self,
+        agent_id: str,
+        *,
+        text: str,
+        voice_name: str | None = None,
+        language: str | None = None,
+        output_format: str | None = None,
+    ) -> TTSResponse:
+        """Convert text to speech audio.
+
+        Returns a :class:`TTSResponse` with base64-encoded audio data.
+        """
+        body: dict[str, Any] = {"text": text}
+        if voice_name is not None:
+            body["voiceName"] = voice_name
+        if language is not None:
+            body["language"] = language
+        if output_format is not None:
+            body["outputFormat"] = output_format
+
+        data = self._http.post(
+            f"/api/v1/agents/{agent_id}/voice/tts", json_data=body
+        )
+        return TTSResponse.model_validate(data)
+
+    def stt(
+        self,
+        agent_id: str,
+        *,
+        audio: str,
+        audio_format: str,
+        language: str | None = None,
+    ) -> STTResponse:
+        """Transcribe audio to text.
+
+        Returns a :class:`STTResponse` with the transcript.
+        """
+        body: dict[str, Any] = {"audio": audio, "audioFormat": audio_format}
+        if language is not None:
+            body["language"] = language
+
+        data = self._http.post(
+            f"/api/v1/agents/{agent_id}/voice/stt", json_data=body
+        )
+        return STTResponse.model_validate(data)
 
 
 class VoiceStream:
@@ -516,6 +565,47 @@ class AsyncVoiceResource:
                         play_pcm_audio(event.audio)
         """
         return await AsyncVoiceStream.connect(token)
+
+    async def tts(
+        self,
+        agent_id: str,
+        *,
+        text: str,
+        voice_name: str | None = None,
+        language: str | None = None,
+        output_format: str | None = None,
+    ) -> TTSResponse:
+        """Convert text to speech audio."""
+        body: dict[str, Any] = {"text": text}
+        if voice_name is not None:
+            body["voiceName"] = voice_name
+        if language is not None:
+            body["language"] = language
+        if output_format is not None:
+            body["outputFormat"] = output_format
+
+        data = await self._http.post(
+            f"/api/v1/agents/{agent_id}/voice/tts", json_data=body
+        )
+        return TTSResponse.model_validate(data)
+
+    async def stt(
+        self,
+        agent_id: str,
+        *,
+        audio: str,
+        audio_format: str,
+        language: str | None = None,
+    ) -> STTResponse:
+        """Transcribe audio to text."""
+        body: dict[str, Any] = {"audio": audio, "audioFormat": audio_format}
+        if language is not None:
+            body["language"] = language
+
+        data = await self._http.post(
+            f"/api/v1/agents/{agent_id}/voice/stt", json_data=body
+        )
+        return STTResponse.model_validate(data)
 
 
 class AsyncVoices:

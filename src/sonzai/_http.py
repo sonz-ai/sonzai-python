@@ -20,7 +20,6 @@ from ._exceptions import (
     NotFoundError,
     PermissionDeniedError,
     RateLimitError,
-    StreamError,
 )
 
 
@@ -73,18 +72,22 @@ class HTTPClient:
         api_key: str,
         timeout: float = 30.0,
         max_retries: int = 2,
+        httpx_client: httpx.Client | None = None,
     ) -> None:
-        self._client = httpx.Client(
-            base_url=base_url,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-                "User-Agent": "sonzai-python/1.13.0",
-            },
-            timeout=httpx.Timeout(timeout, connect=10.0),
-            follow_redirects=True,
-            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
-        )
+        if httpx_client is not None:
+            self._client = httpx_client
+        else:
+            self._client = httpx.Client(
+                base_url=base_url,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "sonzai-python/1.2.1",
+                },
+                timeout=httpx.Timeout(timeout, connect=10.0),
+                follow_redirects=True,
+                limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+            )
         self._max_retries = max_retries
 
     _RETRYABLE_METHODS = frozenset({"GET", "DELETE"})
@@ -114,7 +117,11 @@ class HTTPClient:
                 if response.status_code >= 500 and attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after %d status",
-                        method, path, attempt + 1, retries, response.status_code,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        response.status_code,
                     )
                     time.sleep(0.5 * 2**attempt)
                     continue
@@ -127,7 +134,11 @@ class HTTPClient:
                 if attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after transport error: %s",
-                        method, path, attempt + 1, retries, exc,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        exc,
                     )
                     time.sleep(0.5 * 2**attempt)
                     continue
@@ -170,15 +181,20 @@ class HTTPClient:
     def upload_file(
         self,
         path: str,
-        field_name: str,
+        *,
         file_name: str,
         file_data: bytes,
+        content_type: str = "application/octet-stream",
+        params: dict[str, Any] | None = None,
     ) -> Any:
-        """Send a multipart file upload (no JSON content-type)."""
-        response = self._client.post(
+        import io
+
+        files = {"file": (file_name, io.BytesIO(file_data), content_type)}
+        response = self._client.request(
+            "POST",
             path,
-            files={field_name: (file_name, file_data)},
-            headers={"Content-Type": None},  # let httpx set multipart boundary
+            files=files,
+            params=params,
         )
         _raise_for_status(response)
         if response.headers.get("content-type", "").startswith("application/json"):
@@ -200,6 +216,10 @@ class HTTPClient:
             headers={"Accept": "text/event-stream"},
         ) as response:
             _raise_for_status(response)
+            # httpx's iter_lines() / aiter_lines() accumulate chunks via LineDecoder
+            # without a hard per-line size limit, so large SSE events such as
+            # context_ready (which embeds the full enriched context JSON in a single
+            # data: line and can exceed 64 KB) are handled correctly.
             yield from _parse_sse_stream(response.iter_lines())
 
     def close(self) -> None:
@@ -216,18 +236,22 @@ class AsyncHTTPClient:
         api_key: str,
         timeout: float = 30.0,
         max_retries: int = 2,
+        httpx_client: httpx.AsyncClient | None = None,
     ) -> None:
-        self._client = httpx.AsyncClient(
-            base_url=base_url,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-                "User-Agent": "sonzai-python/1.13.0",
-            },
-            timeout=httpx.Timeout(timeout, connect=10.0),
-            follow_redirects=True,
-            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
-        )
+        if httpx_client is not None:
+            self._client = httpx_client
+        else:
+            self._client = httpx.AsyncClient(
+                base_url=base_url,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "sonzai-python/1.2.1",
+                },
+                timeout=httpx.Timeout(timeout, connect=10.0),
+                follow_redirects=True,
+                limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+            )
         self._max_retries = max_retries
 
     _RETRYABLE_METHODS = frozenset({"GET", "DELETE"})
@@ -257,7 +281,11 @@ class AsyncHTTPClient:
                 if response.status_code >= 500 and attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after %d status",
-                        method, path, attempt + 1, retries, response.status_code,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        response.status_code,
                     )
                     await asyncio.sleep(0.5 * 2**attempt)
                     continue
@@ -270,7 +298,11 @@ class AsyncHTTPClient:
                 if attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after transport error: %s",
-                        method, path, attempt + 1, retries, exc,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        exc,
                     )
                     await asyncio.sleep(0.5 * 2**attempt)
                     continue
@@ -313,22 +345,29 @@ class AsyncHTTPClient:
     async def upload_file(
         self,
         path: str,
-        field_name: str,
+        *,
         file_name: str,
         file_data: bytes,
+        content_type: str = "application/octet-stream",
+        params: dict[str, Any] | None = None,
     ) -> Any:
-        """Send a multipart file upload (no JSON content-type)."""
-        response = await self._client.post(
+        import io
+
+        files = {"file": (file_name, io.BytesIO(file_data), content_type)}
+        response = await self._client.request(
+            "POST",
             path,
-            files={field_name: (file_name, file_data)},
-            headers={"Content-Type": None},  # let httpx set multipart boundary
+            files=files,
+            params=params,
         )
         _raise_for_status(response)
         if response.headers.get("content-type", "").startswith("application/json"):
             return response.json()
         return response.text
 
-    async def stream_sse(self, method: str, path: str, *, json_data: dict[str, Any] | None = None) -> AsyncIterator[dict[str, Any]]:
+    async def stream_sse(
+        self, method: str, path: str, *, json_data: dict[str, Any] | None = None
+    ) -> AsyncIterator[dict[str, Any]]:
         """Send a request and yield parsed SSE events asynchronously."""
         async with self._client.stream(
             method,
@@ -337,6 +376,10 @@ class AsyncHTTPClient:
             headers={"Accept": "text/event-stream"},
         ) as response:
             _raise_for_status(response)
+            # httpx's aiter_lines() accumulates chunks via LineDecoder without a hard
+            # per-line size limit, so large SSE events such as context_ready (which
+            # embeds the full enriched context JSON in a single data: line and can
+            # exceed 64 KB) are handled correctly.
             async for line in response.aiter_lines():
                 line = line.strip()
                 if not line:

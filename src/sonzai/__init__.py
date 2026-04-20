@@ -1,5 +1,6 @@
 """Sonzai Python SDK - Client for the Sonzai Mind Layer API."""
 
+from . import providers
 from ._client import AsyncSonzai, Sonzai
 from ._exceptions import (
     APIError,
@@ -13,8 +14,11 @@ from ._exceptions import (
     StreamError,
 )
 from .types import (
+    AcknowledgeResponse,
     Agent,
     AgentCapabilities,
+    AgentKBSearchResponse,
+    AgentKBSearchResult,
     AgentIndex,
     AgentInstance,
     AgentListResponse,
@@ -29,15 +33,28 @@ from .types import (
     ChatStreamEvent,
     ChatUsage,
     ConsolidateResponse,
+    ConstellationNode,
     ConstellationResponse,
+    CustomLLMConfigResponse,
     CustomState,
     CustomStateListResponse,
     CustomToolDefinition,
     CustomToolListResponse,
     DeleteResponse,
+    DeleteWisdomResponse,
     DeliveryAttemptsResponse,
     DialogueResponse,
     DiaryResponse,
+    ExtractionDimensionDelta,
+    ExtractionFact,
+    ExtractionHabit,
+    ExtractionInnerThoughts,
+    ExtractionInterest,
+    ExtractionMoodDelta,
+    ExtractionPersonalityDelta,
+    ExtractionProactive,
+    ExtractionRecurring,
+    ExtractionRelationshipDelta,
     EvalCategory,
     EvalRun,
     EvalRunListResponse,
@@ -48,12 +65,15 @@ from .types import (
     Fact,
     FactHistoryResponse,
     FactListResponse,
+    ForkResponse,
+    ForkStatusResponse,
     GenerateBioResponse,
     GenerateCharacterResponse,
     GeneratedGoal,
     GenerateSeedMemoriesResponse,
     Goal,
     GoalsResponse,
+    Habit,
     HabitsResponse,
     ImageGenerateResponse,
     RegenerateAvatarResponse,
@@ -80,6 +100,7 @@ from .types import (
     MemorySearchResult,
     MemorySummary,
     MemoryTimelineResponse,
+    ModelVariant,
     MoodAggregateResponse,
     MoodResponse,
     Notification,
@@ -92,6 +113,12 @@ from .types import (
     PersonalityResponse,
     PersonalityShift,
     PersonalityUpdateResponse,
+    PlatformModelsResponse,
+    ProcessResponse,
+    ProcessSideEffectsSummary,
+    ProjectConfigEntry,
+    ProjectConfigListResponse,
+    ProjectNotificationListResponse,
     RecentShiftsResponse,
     RelationshipResponse,
     RunRef,
@@ -99,6 +126,7 @@ from .types import (
     SeedMemoriesResponse,
     SessionResponse,
     SetStatusResponse,
+    SideEffectExtraction,
     SignificantMoment,
     SignificantMomentsResponse,
     SimulationEvent,
@@ -106,6 +134,8 @@ from .types import (
     StructuredColumnMapping,
     StructuredImportSpec,
     SummariesResponse,
+    ToolSchema,
+    ToolSchemasResponse,
     TimelineSession,
     TimeMachineMoodSnapshot,
     TimeMachineResponse,
@@ -121,19 +151,24 @@ from .types import (
     VoiceStreamEvent,
     VoiceStreamToken,
     VoiceUsage,
+    TTSResponse,
+    STTResponse,
     WakeupsResponse,
     WebhookDeliveryAttempt,
+    WisdomAuditResponse,
     WebhookEndpoint,
     WebhookListResponse,
     WebhookRegisterResponse,
 )
 
-__version__ = "1.0.2"
+__version__ = "1.2.1"
 
 __all__ = [
     # Clients
     "Sonzai",
     "AsyncSonzai",
+    # Provider constants
+    "providers",
     # Exceptions
     "SonzaiError",
     "APIError",
@@ -150,6 +185,7 @@ __all__ = [
     "AgentIndex",
     "AgentListResponse",
     "DeleteResponse",
+    "DeleteWisdomResponse",
     "SetStatusResponse",
     "UpdateProjectResponse",
     # Types - Chat
@@ -165,6 +201,8 @@ __all__ = [
     "Fact",
     "FactHistoryResponse",
     "FactListResponse",
+    "ForkResponse",
+    "ForkStatusResponse",
     "MemoryNode",
     "MemoryResetResponse",
     "MemoryResponse",
@@ -195,10 +233,12 @@ __all__ = [
     "UserPersonalityOverlay",
     # Types - Context Engine
     "BreakthroughsResponse",
+    "ConstellationNode",
     "ConstellationResponse",
     "DiaryResponse",
     "Goal",
     "GoalsResponse",
+    "Habit",
     "InitialGoal",
     "HabitsResponse",
     "InterestsResponse",
@@ -207,6 +247,7 @@ __all__ = [
     "RelationshipResponse",
     "UsersResponse",
     "WakeupsResponse",
+    "WisdomAuditResponse",
     # Types - Instances
     "AgentInstance",
     "InstanceListResponse",
@@ -221,6 +262,8 @@ __all__ = [
     "VoiceStreamEvent",
     "VoiceStreamToken",
     "VoiceUsage",
+    "TTSResponse",
+    "STTResponse",
     # Types - Generation
     "GenerateBioResponse",
     "GenerateCharacterResponse",
@@ -237,11 +280,33 @@ __all__ = [
     "WebhookEndpoint",
     "WebhookListResponse",
     "WebhookRegisterResponse",
+    # Types - Project Config
+    "ProjectConfigEntry",
+    "ProjectConfigListResponse",
+    # Types - Custom LLM
+    "CustomLLMConfigResponse",
+    # Types - Project Notifications
+    "ProjectNotificationListResponse",
+    "AcknowledgeResponse",
     # Types - Wakeups
     "ScheduledWakeup",
     # Types - Capabilities
     "CustomToolDefinition",
     "CustomToolListResponse",
+    # Types - Process / Extractions
+    "ProcessResponse",
+    "ProcessSideEffectsSummary",
+    "SideEffectExtraction",
+    "ExtractionFact",
+    "ExtractionPersonalityDelta",
+    "ExtractionDimensionDelta",
+    "ExtractionMoodDelta",
+    "ExtractionHabit",
+    "ExtractionInterest",
+    "ExtractionRelationshipDelta",
+    "ExtractionProactive",
+    "ExtractionRecurring",
+    "ExtractionInnerThoughts",
     # Types - Consolidation / Summaries
     "ConsolidateResponse",
     "SummariesResponse",
@@ -276,4 +341,13 @@ __all__ = [
     # Types - KB Bulk Update
     "KBBulkUpdateEntry",
     "KBBulkUpdateResponse",
+    # Types - Agent Knowledge Search
+    "AgentKBSearchResult",
+    "AgentKBSearchResponse",
+    # Types - Tool Schemas (BYO-LLM)
+    "ToolSchema",
+    "ToolSchemasResponse",
+    # Types - Platform models
+    "ModelVariant",
+    "PlatformModelsResponse",
 ]
