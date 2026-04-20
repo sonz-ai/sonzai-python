@@ -353,7 +353,7 @@ class TestEvalRuns:
 
 
 class TestTriggerGameEvent:
-    """TD-SDK-009: trigger_game_event should accept an optional `messages` list
+    """TD-SDK-009: trigger_backend_event should accept an optional `messages` list
     and forward it in the JSON body. When omitted, the field must NOT appear
     in the payload (back-compat with older Platform servers)."""
 
@@ -365,7 +365,7 @@ class TestTriggerGameEvent:
 
         from sonzai.types import ChatMessage
 
-        client.agents.trigger_game_event(
+        client.agents.trigger_backend_event(
             "agent-1",
             user_id="user-1",
             event_type="daily_summary",
@@ -390,7 +390,7 @@ class TestTriggerGameEvent:
             return_value=httpx.Response(200, json={"success": True})
         )
 
-        client.agents.trigger_game_event(
+        client.agents.trigger_backend_event(
             "agent-1",
             user_id="user-1",
             event_type="daily_summary",
@@ -406,7 +406,7 @@ class TestTriggerGameEvent:
             return_value=httpx.Response(200, json={"success": True})
         )
 
-        await async_client.agents.trigger_game_event(
+        await async_client.agents.trigger_backend_event(
             "agent-1",
             user_id="user-1",
             event_type="daily_summary",

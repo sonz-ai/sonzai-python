@@ -23,10 +23,13 @@ from ..types import (
     CustomToolDefinition,
     CustomToolListResponse,
     DeleteResponse,
+    DeleteWisdomResponse,
     DialogueResponse,
     DiaryResponse,
     EnrichedContextResponse,
     EvaluationResult,
+    ForkResponse,
+    ForkStatusResponse,
     GenerateAvatarResponse,
     Goal,
     GoalsResponse,
@@ -35,6 +38,7 @@ from ..types import (
     InterestsResponse,
     ModelsResponse,
     MoodAggregateResponse,
+    MoodHistoryResponse,
     MoodResponse,
     ProcessResponse,
     RelationshipResponse,
@@ -48,6 +52,7 @@ from ..types import (
     UpdateProjectResponse,
     UsersResponse,
     WakeupsResponse,
+    WisdomAuditResponse,
 )
 from .custom_states import AsyncCustomStates, CustomStates
 from .generation import AsyncGeneration, Generation
@@ -106,6 +111,8 @@ class Agents:
         generate_origin_story: bool | None = None,
         generate_personalized_memories: bool | None = None,
         initial_goals: list[dict[str, Any]] | None = None,
+        generate_avatar: bool | None = None,
+        capabilities: dict[str, Any] | None = None,
     ) -> Agent:
         """Create a new agent."""
         body: dict[str, Any] = {"name": name}
@@ -155,6 +162,10 @@ class Agents:
             body["generate_personalized_memories"] = generate_personalized_memories
         if initial_goals is not None:
             body["initial_goals"] = initial_goals
+        if generate_avatar is not None:
+            body["generate_avatar"] = generate_avatar
+        if capabilities is not None:
+            body["capabilities"] = capabilities
 
         data = self._http.post("/api/v1/agents", json_data=body)
         return Agent.model_validate(data)
@@ -355,7 +366,7 @@ class Agents:
 
     # -- Events --
 
-    def trigger_game_event(
+    def trigger_backend_event(
         self,
         agent_id: str,
         *,
@@ -367,7 +378,7 @@ class Agents:
         instance_id: str | None = None,
         messages: list[ChatMessage | dict[str, str]] | None = None,
     ) -> TriggerEventResponse:
-        """Trigger a game event / activity for an agent.
+        """Trigger a backend event / activity for an agent.
 
         Args:
             messages: Optional recent conversation messages passed alongside
@@ -636,14 +647,14 @@ class Agents:
 
     def get_mood_history(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
-    ) -> MoodResponse:
+    ) -> MoodHistoryResponse:
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
             params["instance_id"] = instance_id
         data = self._http.get(f"/api/v1/agents/{agent_id}/mood-history", params=params)
-        return MoodResponse.model_validate(data)
+        return MoodHistoryResponse.model_validate(data)
 
     def get_mood_aggregate(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -668,9 +679,10 @@ class Agents:
         data = self._http.get(f"/api/v1/agents/{agent_id}/relationships", params=params)
         return RelationshipResponse.model_validate(data)
 
-    def get_habits(
+    def list_habits(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> HabitsResponse:
+        """List habits for an agent."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -678,6 +690,12 @@ class Agents:
             params["instance_id"] = instance_id
         data = self._http.get(f"/api/v1/agents/{agent_id}/habits", params=params)
         return HabitsResponse.model_validate(data)
+
+    def get_habits(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> HabitsResponse:
+        """.. deprecated:: Use :meth:`list_habits` instead."""
+        return self.list_habits(agent_id, user_id=user_id, instance_id=instance_id)
 
     def create_habit(
         self,
@@ -748,9 +766,10 @@ class Agents:
             f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", params=params
         )
 
-    def get_goals(
+    def list_goals(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> GoalsResponse:
+        """List goals for an agent. Pass user_id to get combined agent-global + per-user goals."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -758,6 +777,12 @@ class Agents:
             params["instance_id"] = instance_id
         data = self._http.get(f"/api/v1/agents/{agent_id}/goals", params=params)
         return GoalsResponse.model_validate(data)
+
+    def get_goals(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> GoalsResponse:
+        """.. deprecated:: Use :meth:`list_goals` instead."""
+        return self.list_goals(agent_id, user_id=user_id, instance_id=instance_id)
 
     def create_goal(
         self,
@@ -944,10 +969,10 @@ class Agents:
         """Delete a constellation node."""
         self._http.delete(f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}")
 
-    def get_breakthroughs(
+    def list_breakthroughs(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> BreakthroughsResponse:
-        """Get breakthroughs for an agent."""
+        """List breakthroughs for an agent."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -955,6 +980,12 @@ class Agents:
             params["instance_id"] = instance_id
         data = self._http.get(f"/api/v1/agents/{agent_id}/breakthroughs", params=params)
         return BreakthroughsResponse.model_validate(data)
+
+    def get_breakthroughs(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> BreakthroughsResponse:
+        """.. deprecated:: Use :meth:`list_breakthroughs` instead."""
+        return self.list_breakthroughs(agent_id, user_id=user_id, instance_id=instance_id)
 
     def get_wakeups(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -1250,6 +1281,118 @@ class Agents:
             self._http.get(f"/api/v1/agents/{agent_id}/tools")
         )
 
+    # -- Fork --
+
+    def fork(
+        self,
+        agent_id: str,
+        *,
+        name: str | None = None,
+    ) -> ForkResponse:
+        """Fork an agent (create a copy with a new ID)."""
+        body: dict[str, Any] = {}
+        if name is not None:
+            body["name"] = name
+        return ForkResponse.model_validate(
+            self._http.post(f"/api/v1/agents/{agent_id}/fork", json_data=body)
+        )
+
+    def get_fork_status(self, agent_id: str) -> ForkStatusResponse:
+        """Check the status of a fork operation."""
+        return ForkStatusResponse.model_validate(
+            self._http.get(f"/api/v1/agents/{agent_id}/fork/status")
+        )
+
+    # -- Playground Chat --
+
+    def playground_chat(
+        self,
+        agent_id: str,
+        *,
+        messages: list[dict[str, str]],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        language: str | None = None,
+    ) -> ChatResponse:
+        """Send a playground chat message (non-streaming). Same as chat but via the playground endpoint."""
+        body: dict[str, Any] = {"messages": messages}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if session_id is not None:
+            body["session_id"] = session_id
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        if language is not None:
+            body["language"] = language
+
+        parts: list[str] = []
+        for event in self._http.stream_sse(
+            "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
+        ):
+            parsed = ChatStreamEvent.model_validate(event)
+            if parsed.choices and parsed.choices[0].delta.get("content"):
+                parts.append(parsed.choices[0].delta["content"])
+        return ChatResponse(content="".join(parts))
+
+    def playground_chat_stream(
+        self,
+        agent_id: str,
+        *,
+        messages: list[dict[str, str]],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        language: str | None = None,
+    ) -> Iterator[ChatStreamEvent]:
+        """Send a playground chat message and stream events."""
+        body: dict[str, Any] = {"messages": messages}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if session_id is not None:
+            body["session_id"] = session_id
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        if language is not None:
+            body["language"] = language
+
+        for event in self._http.stream_sse(
+            "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
+        ):
+            yield ChatStreamEvent.model_validate(event)
+
+    # -- Knowledge Search GET --
+
+    def knowledge_search_get(
+        self,
+        agent_id: str,
+        *,
+        query: str,
+        limit: int | None = None,
+    ) -> AgentKBSearchResponse:
+        """Search the knowledge base using a GET request with query parameters."""
+        params: dict[str, Any] = {"q": query}
+        if limit is not None:
+            params["limit"] = limit
+        return AgentKBSearchResponse.model_validate(
+            self._http.get(
+                f"/api/v1/agents/{agent_id}/tools/kb-search",
+                params=params,
+            )
+        )
+
 
 class AsyncAgents:
     """Async agent operations."""
@@ -1296,6 +1439,8 @@ class AsyncAgents:
         generate_origin_story: bool | None = None,
         generate_personalized_memories: bool | None = None,
         initial_goals: list[dict[str, Any]] | None = None,
+        generate_avatar: bool | None = None,
+        capabilities: dict[str, Any] | None = None,
     ) -> Agent:
         """Create a new agent."""
         body: dict[str, Any] = {"name": name}
@@ -1345,6 +1490,10 @@ class AsyncAgents:
             body["generate_personalized_memories"] = generate_personalized_memories
         if initial_goals is not None:
             body["initial_goals"] = initial_goals
+        if generate_avatar is not None:
+            body["generate_avatar"] = generate_avatar
+        if capabilities is not None:
+            body["capabilities"] = capabilities
 
         data = await self._http.post("/api/v1/agents", json_data=body)
         return Agent.model_validate(data)
@@ -1523,7 +1672,7 @@ class AsyncAgents:
 
     # -- Events --
 
-    async def trigger_game_event(
+    async def trigger_backend_event(
         self,
         agent_id: str,
         *,
@@ -1535,7 +1684,7 @@ class AsyncAgents:
         instance_id: str | None = None,
         messages: list[ChatMessage | dict[str, str]] | None = None,
     ) -> TriggerEventResponse:
-        """Trigger a game event / activity for an agent.
+        """Trigger a backend event / activity for an agent.
 
         Args:
             messages: Optional recent conversation messages passed alongside
@@ -1809,14 +1958,14 @@ class AsyncAgents:
 
     async def get_mood_history(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
-    ) -> MoodResponse:
+    ) -> MoodHistoryResponse:
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
         if instance_id:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/mood-history", params=params)
-        return MoodResponse.model_validate(data)
+        return MoodHistoryResponse.model_validate(data)
 
     async def get_mood_aggregate(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -1841,9 +1990,10 @@ class AsyncAgents:
         data = await self._http.get(f"/api/v1/agents/{agent_id}/relationships", params=params)
         return RelationshipResponse.model_validate(data)
 
-    async def get_habits(
+    async def list_habits(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> HabitsResponse:
+        """List habits for an agent."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -1851,6 +2001,12 @@ class AsyncAgents:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/habits", params=params)
         return HabitsResponse.model_validate(data)
+
+    async def get_habits(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> HabitsResponse:
+        """.. deprecated:: Use :meth:`list_habits` instead."""
+        return await self.list_habits(agent_id, user_id=user_id, instance_id=instance_id)
 
     async def create_habit(
         self,
@@ -1921,9 +2077,10 @@ class AsyncAgents:
             f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", params=params
         )
 
-    async def get_goals(
+    async def list_goals(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> GoalsResponse:
+        """List goals for an agent. Pass user_id to get combined agent-global + per-user goals."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -1931,6 +2088,12 @@ class AsyncAgents:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/goals", params=params)
         return GoalsResponse.model_validate(data)
+
+    async def get_goals(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> GoalsResponse:
+        """.. deprecated:: Use :meth:`list_goals` instead."""
+        return await self.list_goals(agent_id, user_id=user_id, instance_id=instance_id)
 
     async def create_goal(
         self,
@@ -2119,10 +2282,10 @@ class AsyncAgents:
         """Delete a constellation node."""
         await self._http.delete(f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}")
 
-    async def get_breakthroughs(
+    async def list_breakthroughs(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> BreakthroughsResponse:
-        """Get breakthroughs for an agent."""
+        """List breakthroughs for an agent."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
@@ -2130,6 +2293,12 @@ class AsyncAgents:
             params["instance_id"] = instance_id
         data = await self._http.get(f"/api/v1/agents/{agent_id}/breakthroughs", params=params)
         return BreakthroughsResponse.model_validate(data)
+
+    async def get_breakthroughs(
+        self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
+    ) -> BreakthroughsResponse:
+        """.. deprecated:: Use :meth:`list_breakthroughs` instead."""
+        return await self.list_breakthroughs(agent_id, user_id=user_id, instance_id=instance_id)
 
     async def get_wakeups(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -2427,4 +2596,116 @@ class AsyncAgents:
         """Return tool schemas available for an agent (for BYO-LLM integrations)."""
         return ToolSchemasResponse.model_validate(
             await self._http.get(f"/api/v1/agents/{agent_id}/tools")
+        )
+
+    # -- Fork --
+
+    async def fork(
+        self,
+        agent_id: str,
+        *,
+        name: str | None = None,
+    ) -> ForkResponse:
+        """Fork an agent (create a copy with a new ID)."""
+        body: dict[str, Any] = {}
+        if name is not None:
+            body["name"] = name
+        return ForkResponse.model_validate(
+            await self._http.post(f"/api/v1/agents/{agent_id}/fork", json_data=body)
+        )
+
+    async def get_fork_status(self, agent_id: str) -> ForkStatusResponse:
+        """Check the status of a fork operation."""
+        return ForkStatusResponse.model_validate(
+            await self._http.get(f"/api/v1/agents/{agent_id}/fork/status")
+        )
+
+    # -- Playground Chat --
+
+    async def playground_chat(
+        self,
+        agent_id: str,
+        *,
+        messages: list[dict[str, str]],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        language: str | None = None,
+    ) -> ChatResponse:
+        """Send a playground chat message (non-streaming). Same as chat but via the playground endpoint."""
+        body: dict[str, Any] = {"messages": messages}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if session_id is not None:
+            body["session_id"] = session_id
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        if language is not None:
+            body["language"] = language
+
+        parts: list[str] = []
+        async for event in self._http.stream_sse(
+            "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
+        ):
+            parsed = ChatStreamEvent.model_validate(event)
+            if parsed.choices and parsed.choices[0].delta.get("content"):
+                parts.append(parsed.choices[0].delta["content"])
+        return ChatResponse(content="".join(parts))
+
+    async def playground_chat_stream(
+        self,
+        agent_id: str,
+        *,
+        messages: list[dict[str, str]],
+        user_id: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        language: str | None = None,
+    ) -> AsyncIterator[ChatStreamEvent]:
+        """Send a playground chat message and stream events."""
+        body: dict[str, Any] = {"messages": messages}
+        if user_id is not None:
+            body["user_id"] = user_id
+        if session_id is not None:
+            body["session_id"] = session_id
+        if instance_id is not None:
+            body["instance_id"] = instance_id
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
+        if language is not None:
+            body["language"] = language
+
+        async for event in self._http.stream_sse(
+            "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
+        ):
+            yield ChatStreamEvent.model_validate(event)
+
+    # -- Knowledge Search GET --
+
+    async def knowledge_search_get(
+        self,
+        agent_id: str,
+        *,
+        query: str,
+        limit: int | None = None,
+    ) -> AgentKBSearchResponse:
+        """Search the knowledge base using a GET request with query parameters."""
+        params: dict[str, Any] = {"q": query}
+        if limit is not None:
+            params["limit"] = limit
+        return AgentKBSearchResponse.model_validate(
+            await self._http.get(
+                f"/api/v1/agents/{agent_id}/tools/kb-search",
+                params=params,
+            )
         )

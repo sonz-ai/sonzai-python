@@ -41,6 +41,7 @@ from .types import (
     CustomToolDefinition,
     CustomToolListResponse,
     DeleteResponse,
+    DeleteWisdomResponse,
     DeliveryAttemptsResponse,
     DialogueResponse,
     DiaryResponse,
@@ -64,6 +65,8 @@ from .types import (
     Fact,
     FactHistoryResponse,
     FactListResponse,
+    ForkResponse,
+    ForkStatusResponse,
     GenerateBioResponse,
     GenerateCharacterResponse,
     GeneratedGoal,
@@ -151,12 +154,13 @@ from .types import (
     STTResponse,
     WakeupsResponse,
     WebhookDeliveryAttempt,
+    WisdomAuditResponse,
     WebhookEndpoint,
     WebhookListResponse,
     WebhookRegisterResponse,
 )
 
-__version__ = "1.1.0"
+__version__ = "1.2.1"
 
 __all__ = [
     # Clients
@@ -180,6 +184,7 @@ __all__ = [
     "AgentIndex",
     "AgentListResponse",
     "DeleteResponse",
+    "DeleteWisdomResponse",
     "SetStatusResponse",
     "UpdateProjectResponse",
     # Types - Chat
@@ -195,6 +200,8 @@ __all__ = [
     "Fact",
     "FactHistoryResponse",
     "FactListResponse",
+    "ForkResponse",
+    "ForkStatusResponse",
     "MemoryNode",
     "MemoryResetResponse",
     "MemoryResponse",
@@ -239,6 +246,7 @@ __all__ = [
     "RelationshipResponse",
     "UsersResponse",
     "WakeupsResponse",
+    "WisdomAuditResponse",
     # Types - Instances
     "AgentInstance",
     "InstanceListResponse",

@@ -21,6 +21,8 @@ class Sessions:
         user_id: str,
         session_id: str,
         instance_id: str | None = None,
+        user_display_name: str | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
     ) -> SessionResponse:
         """Start a chat session."""
         body: dict[str, Any] = {
@@ -29,6 +31,10 @@ class Sessions:
         }
         if instance_id:
             body["instance_id"] = instance_id
+        if user_display_name:
+            body["user_display_name"] = user_display_name
+        if tool_definitions:
+            body["tool_definitions"] = tool_definitions
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/sessions/start", json_data=body
@@ -88,6 +94,8 @@ class AsyncSessions:
         user_id: str,
         session_id: str,
         instance_id: str | None = None,
+        user_display_name: str | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
     ) -> SessionResponse:
         body: dict[str, Any] = {
             "user_id": user_id,
@@ -95,6 +103,10 @@ class AsyncSessions:
         }
         if instance_id:
             body["instance_id"] = instance_id
+        if user_display_name:
+            body["user_display_name"] = user_display_name
+        if tool_definitions:
+            body["tool_definitions"] = tool_definitions
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/sessions/start", json_data=body

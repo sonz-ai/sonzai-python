@@ -11,6 +11,7 @@ _list = builtins.list
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
     AtomicFact,
+    DeleteWisdomResponse,
     FactHistoryResponse,
     FactListResponse,
     MemoryResetResponse,
@@ -18,6 +19,7 @@ from ..types import (
     MemorySearchResponse,
     MemoryTimelineResponse,
     SeedMemoriesResponse,
+    WisdomAuditResponse,
 )
 
 
@@ -36,6 +38,7 @@ class Memory:
         parent_id: str | None = None,
         include_contents: bool = False,
         limit: int = 50,
+        scope: str | None = None,
     ) -> MemoryResponse:
         """Get the memory tree for an agent."""
         params: dict[str, Any] = {"limit": limit}
@@ -47,6 +50,8 @@ class Memory:
             params["parent_id"] = parent_id
         if include_contents:
             params["include_contents"] = "true"
+        if scope is not None:
+            params["scope"] = scope
 
         data = self._http.get(f"/api/v1/agents/{agent_id}/memory", params=params)
         return MemoryResponse.model_validate(data)
@@ -120,16 +125,16 @@ class Memory:
         agent_id: str,
         *,
         user_id: str | None = None,
-        category: str | None = None,
+        fact_type: str | None = None,
         limit: int | None = None,
         offset: int | None = None,
     ) -> FactListResponse:
-        """List atomic facts for an agent, optionally filtered by category."""
+        """List atomic facts for an agent, optionally filtered by fact type."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
-        if category:
-            params["category"] = category
+        if fact_type:
+            params["fact_type"] = fact_type
         if limit is not None:
             params["limit"] = limit
         if offset is not None:
@@ -237,6 +242,23 @@ class Memory:
             self._http.get(f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history")
         )
 
+    def delete_wisdom_fact(self, agent_id: str, fact_id: str) -> DeleteWisdomResponse:
+        """Delete a wisdom fact by ID."""
+        data = self._http.delete(
+            f"/api/v1/agents/{agent_id}/memory/wisdom/{quote(fact_id, safe='')}"
+        )
+        if isinstance(data, dict):
+            return DeleteWisdomResponse.model_validate(data)
+        return DeleteWisdomResponse(success=True, fact_id=fact_id)
+
+    def get_wisdom_audit(self, agent_id: str, fact_id: str) -> WisdomAuditResponse:
+        """Get the audit trail for a wisdom fact."""
+        return WisdomAuditResponse.model_validate(
+            self._http.get(
+                f"/api/v1/agents/{agent_id}/memory/wisdom/audit/{quote(fact_id, safe='')}"
+            )
+        )
+
 
 class AsyncMemory:
     """Async memory operations for an agent."""
@@ -253,6 +275,7 @@ class AsyncMemory:
         parent_id: str | None = None,
         include_contents: bool = False,
         limit: int = 50,
+        scope: str | None = None,
     ) -> MemoryResponse:
         params: dict[str, Any] = {"limit": limit}
         if user_id:
@@ -263,6 +286,8 @@ class AsyncMemory:
             params["parent_id"] = parent_id
         if include_contents:
             params["include_contents"] = "true"
+        if scope is not None:
+            params["scope"] = scope
 
         data = await self._http.get(
             f"/api/v1/agents/{agent_id}/memory", params=params
@@ -336,16 +361,16 @@ class AsyncMemory:
         agent_id: str,
         *,
         user_id: str | None = None,
-        category: str | None = None,
+        fact_type: str | None = None,
         limit: int | None = None,
         offset: int | None = None,
     ) -> FactListResponse:
-        """List atomic facts for an agent, optionally filtered by category."""
+        """List atomic facts for an agent, optionally filtered by fact type."""
         params: dict[str, Any] = {}
         if user_id:
             params["user_id"] = user_id
-        if category:
-            params["category"] = category
+        if fact_type:
+            params["fact_type"] = fact_type
         if limit is not None:
             params["limit"] = limit
         if offset is not None:
@@ -451,4 +476,21 @@ class AsyncMemory:
         """Get the version history for a specific fact."""
         return FactHistoryResponse.model_validate(
             await self._http.get(f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history")
+        )
+
+    async def delete_wisdom_fact(self, agent_id: str, fact_id: str) -> DeleteWisdomResponse:
+        """Delete a wisdom fact by ID."""
+        data = await self._http.delete(
+            f"/api/v1/agents/{agent_id}/memory/wisdom/{quote(fact_id, safe='')}"
+        )
+        if isinstance(data, dict):
+            return DeleteWisdomResponse.model_validate(data)
+        return DeleteWisdomResponse(success=True, fact_id=fact_id)
+
+    async def get_wisdom_audit(self, agent_id: str, fact_id: str) -> WisdomAuditResponse:
+        """Get the audit trail for a wisdom fact."""
+        return WisdomAuditResponse.model_validate(
+            await self._http.get(
+                f"/api/v1/agents/{agent_id}/memory/wisdom/audit/{quote(fact_id, safe='')}"
+            )
         )
