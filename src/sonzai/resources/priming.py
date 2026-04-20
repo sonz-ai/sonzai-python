@@ -49,9 +49,7 @@ class Priming:
         )
         return PrimeUserResponse.model_validate(data)
 
-    def get_prime_status(
-        self, agent_id: str, user_id: str, job_id: str
-    ) -> ImportJob:
+    def get_prime_status(self, agent_id: str, user_id: str, job_id: str) -> ImportJob:
         """Get the status of a priming job."""
         data = self._http.get(
             f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/prime/{job_id}"
@@ -76,19 +74,17 @@ class Priming:
         )
         return AddContentResponse.model_validate(data)
 
-    def get_metadata(
-        self, agent_id: str, user_id: str
-    ) -> UserPrimingMetadata:
+    def get_metadata(self, agent_id: str, user_id: str) -> UserPrimingMetadata:
         """Get priming metadata for a user."""
-        data = self._http.get(
-            f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/metadata"
-        )
+        data = self._http.get(f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/metadata")
         return UserPrimingMetadata.model_validate(data)
 
-    def update_metadata(
-        self, agent_id: str, user_id: str, **kwargs: Any
-    ) -> UpdateMetadataResponse:
-        """Partially update priming metadata."""
+    def update_metadata(self, agent_id: str, user_id: str, **kwargs: Any) -> UpdateMetadataResponse:
+        """Partially update priming metadata.
+
+        Custom fields in the ``custom`` dict are merged with existing values,
+        not replaced. Omit ``custom`` to leave it unchanged.
+        """
         data = self._http.patch(
             f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/metadata",
             json_data=kwargs,
@@ -106,28 +102,20 @@ class Priming:
         body: dict[str, Any] = {"users": users}
         if source is not None:
             body["source"] = source
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/users/import", json_data=body
-        )
+        data = self._http.post(f"/api/v1/agents/{agent_id}/users/import", json_data=body)
         return BatchImportResponse.model_validate(data)
 
     def get_import_status(self, agent_id: str, job_id: str) -> ImportJob:
         """Get the status of a batch import job."""
-        data = self._http.get(
-            f"/api/v1/agents/{agent_id}/users/import/{job_id}"
-        )
+        data = self._http.get(f"/api/v1/agents/{agent_id}/users/import/{job_id}")
         return ImportJob.model_validate(data)
 
-    def list_import_jobs(
-        self, agent_id: str, *, limit: int | None = None
-    ) -> ImportJobListResponse:
+    def list_import_jobs(self, agent_id: str, *, limit: int | None = None) -> ImportJobListResponse:
         """List recent import jobs."""
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
-        data = self._http.get(
-            f"/api/v1/agents/{agent_id}/users/imports", params=params
-        )
+        data = self._http.get(f"/api/v1/agents/{agent_id}/users/imports", params=params)
         return ImportJobListResponse.model_validate(data)
 
 
@@ -137,35 +125,27 @@ class AsyncPriming:
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 
-    async def prime_user(
-        self, agent_id: str, user_id: str, **kwargs: Any
-    ) -> PrimeUserResponse:
+    async def prime_user(self, agent_id: str, user_id: str, **kwargs: Any) -> PrimeUserResponse:
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/prime",
             json_data=kwargs,
         )
         return PrimeUserResponse.model_validate(data)
 
-    async def get_prime_status(
-        self, agent_id: str, user_id: str, job_id: str
-    ) -> ImportJob:
+    async def get_prime_status(self, agent_id: str, user_id: str, job_id: str) -> ImportJob:
         data = await self._http.get(
             f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/prime/{job_id}"
         )
         return ImportJob.model_validate(data)
 
-    async def add_content(
-        self, agent_id: str, user_id: str, **kwargs: Any
-    ) -> AddContentResponse:
+    async def add_content(self, agent_id: str, user_id: str, **kwargs: Any) -> AddContentResponse:
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/content",
             json_data=kwargs,
         )
         return AddContentResponse.model_validate(data)
 
-    async def get_metadata(
-        self, agent_id: str, user_id: str
-    ) -> UserPrimingMetadata:
+    async def get_metadata(self, agent_id: str, user_id: str) -> UserPrimingMetadata:
         data = await self._http.get(
             f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/metadata"
         )
@@ -180,20 +160,12 @@ class AsyncPriming:
         )
         return UpdateMetadataResponse.model_validate(data)
 
-    async def batch_import(
-        self, agent_id: str, **kwargs: Any
-    ) -> BatchImportResponse:
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/users/import", json_data=kwargs
-        )
+    async def batch_import(self, agent_id: str, **kwargs: Any) -> BatchImportResponse:
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/users/import", json_data=kwargs)
         return BatchImportResponse.model_validate(data)
 
-    async def get_import_status(
-        self, agent_id: str, job_id: str
-    ) -> ImportJob:
-        data = await self._http.get(
-            f"/api/v1/agents/{agent_id}/users/import/{job_id}"
-        )
+    async def get_import_status(self, agent_id: str, job_id: str) -> ImportJob:
+        data = await self._http.get(f"/api/v1/agents/{agent_id}/users/import/{job_id}")
         return ImportJob.model_validate(data)
 
     async def list_import_jobs(
@@ -202,7 +174,5 @@ class AsyncPriming:
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
-        data = await self._http.get(
-            f"/api/v1/agents/{agent_id}/users/imports", params=params
-        )
+        data = await self._http.get(f"/api/v1/agents/{agent_id}/users/imports", params=params)
         return ImportJobListResponse.model_validate(data)

@@ -22,7 +22,6 @@ from ._exceptions import (
     NotFoundError,
     PermissionDeniedError,
     RateLimitError,
-    StreamError,
 )
 
 
@@ -77,19 +76,23 @@ class HTTPClient:
         api_key: str,
         timeout: float = 30.0,
         max_retries: int = 2,
+        httpx_client: httpx.Client | None = None,
     ) -> None:
         self._timeout = timeout
-        self._client = httpx.Client(
-            base_url=base_url,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-                "User-Agent": "sonzai-python/1.0.3",
-            },
-            timeout=httpx.Timeout(timeout, connect=10.0),
-            follow_redirects=True,
-            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
-        )
+        if httpx_client is not None:
+            self._client = httpx_client
+        else:
+            self._client = httpx.Client(
+                base_url=base_url,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "sonzai-python/1.2.1",
+                },
+                timeout=httpx.Timeout(timeout, connect=10.0),
+                follow_redirects=True,
+                limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+            )
         self._max_retries = max_retries
 
     _RETRYABLE_METHODS = frozenset({"GET", "DELETE"})
@@ -119,7 +122,11 @@ class HTTPClient:
                 if response.status_code >= 500 and attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after %d status",
-                        method, path, attempt + 1, retries, response.status_code,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        response.status_code,
                     )
                     backoff = 0.5 * 2**attempt
                     time.sleep(backoff + random.random() * backoff)
@@ -133,7 +140,11 @@ class HTTPClient:
                 if attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after transport error: %s",
-                        method, path, attempt + 1, retries, exc,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        exc,
                     )
                     backoff = 0.5 * 2**attempt
                     time.sleep(backoff + random.random() * backoff)
@@ -174,6 +185,29 @@ class HTTPClient:
     def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return self.request("DELETE", path, params=params)
 
+    def upload_file(
+        self,
+        path: str,
+        *,
+        file_name: str,
+        file_data: bytes,
+        content_type: str = "application/octet-stream",
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        import io
+
+        files = {"file": (file_name, io.BytesIO(file_data), content_type)}
+        response = self._client.request(
+            "POST",
+            path,
+            files=files,
+            params=params,
+        )
+        _raise_for_status(response)
+        if response.headers.get("content-type", "").startswith("application/json"):
+            return response.json()
+        return response.text
+
     def stream_sse(
         self,
         method: str,
@@ -190,6 +224,10 @@ class HTTPClient:
             timeout=httpx.Timeout(self._timeout * 10, connect=10.0),
         ) as response:
             _raise_for_status(response)
+            # httpx's iter_lines() / aiter_lines() accumulate chunks via LineDecoder
+            # without a hard per-line size limit, so large SSE events such as
+            # context_ready (which embeds the full enriched context JSON in a single
+            # data: line and can exceed 64 KB) are handled correctly.
             yield from _parse_sse_stream(response.iter_lines())
 
     def close(self) -> None:
@@ -206,19 +244,23 @@ class AsyncHTTPClient:
         api_key: str,
         timeout: float = 30.0,
         max_retries: int = 2,
+        httpx_client: httpx.AsyncClient | None = None,
     ) -> None:
         self._timeout = timeout
-        self._client = httpx.AsyncClient(
-            base_url=base_url,
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-                "User-Agent": "sonzai-python/1.0.3",
-            },
-            timeout=httpx.Timeout(timeout, connect=10.0),
-            follow_redirects=True,
-            limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
-        )
+        if httpx_client is not None:
+            self._client = httpx_client
+        else:
+            self._client = httpx.AsyncClient(
+                base_url=base_url,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "sonzai-python/1.2.1",
+                },
+                timeout=httpx.Timeout(timeout, connect=10.0),
+                follow_redirects=True,
+                limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
+            )
         self._max_retries = max_retries
 
     _RETRYABLE_METHODS = frozenset({"GET", "DELETE"})
@@ -247,7 +289,11 @@ class AsyncHTTPClient:
                 if response.status_code >= 500 and attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after %d status",
-                        method, path, attempt + 1, retries, response.status_code,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        response.status_code,
                     )
                     backoff = 0.5 * 2**attempt
                     await asyncio.sleep(backoff + random.random() * backoff)
@@ -261,7 +307,11 @@ class AsyncHTTPClient:
                 if attempt < retries:
                     logger.debug(
                         "Retrying %s %s (attempt %d/%d) after transport error: %s",
-                        method, path, attempt + 1, retries, exc,
+                        method,
+                        path,
+                        attempt + 1,
+                        retries,
+                        exc,
                     )
                     backoff = 0.5 * 2**attempt
                     await asyncio.sleep(backoff + random.random() * backoff)
@@ -302,7 +352,32 @@ class AsyncHTTPClient:
     async def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return await self.request("DELETE", path, params=params)
 
-    async def stream_sse(self, method: str, path: str, *, json_data: dict[str, Any] | None = None) -> AsyncIterator[dict[str, Any]]:
+    async def upload_file(
+        self,
+        path: str,
+        *,
+        file_name: str,
+        file_data: bytes,
+        content_type: str = "application/octet-stream",
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        import io
+
+        files = {"file": (file_name, io.BytesIO(file_data), content_type)}
+        response = await self._client.request(
+            "POST",
+            path,
+            files=files,
+            params=params,
+        )
+        _raise_for_status(response)
+        if response.headers.get("content-type", "").startswith("application/json"):
+            return response.json()
+        return response.text
+
+    async def stream_sse(
+        self, method: str, path: str, *, json_data: dict[str, Any] | None = None
+    ) -> AsyncIterator[dict[str, Any]]:
         """Send a request and yield parsed SSE events asynchronously."""
         async with self._client.stream(
             method,
@@ -312,6 +387,10 @@ class AsyncHTTPClient:
             timeout=httpx.Timeout(self._timeout * 10, connect=10.0),
         ) as response:
             _raise_for_status(response)
+            # httpx's aiter_lines() accumulates chunks via LineDecoder without a hard
+            # per-line size limit, so large SSE events such as context_ready (which
+            # embeds the full enriched context JSON in a single data: line and can
+            # exceed 64 KB) are handled correctly.
             async for line in response.aiter_lines():
                 line = line.strip()
                 if not line:
