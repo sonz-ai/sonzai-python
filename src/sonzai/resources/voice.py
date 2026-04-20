@@ -148,43 +148,58 @@ class VoiceStream:
             path = f"{path}?{parsed.query}"
 
         raw = _socket.create_connection((host, port), timeout=10)
-        if parsed.scheme == "wss":
-            ctx = _ssl.create_default_context()
-            self._sock: _socket.socket = ctx.wrap_socket(raw, server_hostname=host)
-        else:
-            self._sock = raw
+        # Any failure below must close the socket (or the TLS wrapper around it)
+        # — otherwise a raised ConnectionError leaks an open file descriptor, and
+        # long-running callers eventually exhaust the process's fd limit.
+        sock: _socket.socket | None = None
+        try:
+            if parsed.scheme == "wss":
+                ctx = _ssl.create_default_context()
+                sock = ctx.wrap_socket(raw, server_hostname=host)
+            else:
+                sock = raw
+            self._sock: _socket.socket = sock
 
-        # WebSocket handshake
-        import base64
-        import os
+            # WebSocket handshake
+            import base64
+            import os
 
-        key = base64.b64encode(os.urandom(16)).decode()
-        handshake = (
-            f"GET {path} HTTP/1.1\r\n"
-            f"Host: {host}\r\n"
-            f"Upgrade: websocket\r\n"
-            f"Connection: Upgrade\r\n"
-            f"Sec-WebSocket-Key: {key}\r\n"
-            f"Sec-WebSocket-Version: 13\r\n"
-            f"\r\n"
-        )
-        self._sock.sendall(handshake.encode())
+            key = base64.b64encode(os.urandom(16)).decode()
+            handshake = (
+                f"GET {path} HTTP/1.1\r\n"
+                f"Host: {host}\r\n"
+                f"Upgrade: websocket\r\n"
+                f"Connection: Upgrade\r\n"
+                f"Sec-WebSocket-Key: {key}\r\n"
+                f"Sec-WebSocket-Version: 13\r\n"
+                f"\r\n"
+            )
+            self._sock.sendall(handshake.encode())
 
-        # Read handshake response
-        response = b""
-        while b"\r\n\r\n" not in response:
-            chunk = self._sock.recv(4096)
-            if not chunk:
-                raise ConnectionError("WebSocket handshake failed: connection closed")
-            response += chunk
+            # Read handshake response
+            response = b""
+            while b"\r\n\r\n" not in response:
+                chunk = self._sock.recv(4096)
+                if not chunk:
+                    raise ConnectionError("WebSocket handshake failed: connection closed")
+                response += chunk
 
-        if b"101" not in response.split(b"\r\n")[0]:
-            raise ConnectionError(f"WebSocket handshake failed: {response.split(b'\r\n')[0]!r}")
+            if b"101" not in response.split(b"\r\n")[0]:
+                raise ConnectionError(f"WebSocket handshake failed: {response.split(b'\r\n')[0]!r}")
 
-        self._closed = False
+            self._closed = False
 
-        # Send auth token as first text message
-        self._send_text(token.auth_token)
+            # Send auth token as first text message
+            self._send_text(token.auth_token)
+        except BaseException:
+            # Close whichever socket we ended up holding. If ssl.wrap_socket
+            # itself raised, `sock` is None — fall back to the raw socket.
+            target = sock if sock is not None else raw
+            try:
+                target.close()
+            except Exception:
+                pass
+            raise
 
     def _send_frame(self, opcode: int, payload: bytes) -> None:
         """Send a WebSocket frame (client-to-server, masked)."""
