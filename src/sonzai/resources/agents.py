@@ -322,10 +322,13 @@ class Agents:
                 usage = parsed.usage
             # Capture session_id from whichever event supplies it; the server
             # sets it on the session-start frame but also echoes it on later
-            # events. Without this the aggregated ChatResponse always had
-            # session_id="" even when the caller needed it for follow-ups.
-            if parsed.session_id:
-                session_id = parsed.session_id
+            # events. Read from the raw event dict because ChatStreamEvent
+            # doesn't define a typed session_id field (extras flow through
+            # model_config={"extra": "allow"}) and the server emits the key
+            # as either session_id (snake_case) or sessionId (camelCase).
+            sid = event.get("session_id") or event.get("sessionId") or ""
+            if sid:
+                session_id = sid
 
         return ChatResponse(
             content="".join(content_parts),
@@ -1620,10 +1623,12 @@ class AsyncAgents:
                 content_parts.append(parsed.content)
             if parsed.usage:
                 usage = parsed.usage
-            # See _chat_sync — capture session_id from whichever event carries
-            # it so callers can resume the session in a follow-up call.
-            if parsed.session_id:
-                session_id = parsed.session_id
+            # See _chat_sync — read session_id directly from the raw event
+            # dict (ChatStreamEvent has no typed session_id field; the server
+            # emits the key as session_id or sessionId).
+            sid = event.get("session_id") or event.get("sessionId") or ""
+            if sid:
+                session_id = sid
 
         return ChatResponse(
             content="".join(content_parts),
