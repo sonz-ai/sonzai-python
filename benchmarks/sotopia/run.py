@@ -168,27 +168,31 @@ async def _run_scenario(
     if reuse:
         agent_id = str(existing_agent_id)
     else:
-        # Stable agent name so operators see one recognizable entry per
-        # scenario in the platform's agent list rather than a UUID-hex
-        # salad. Pinned agent manifest (sotopia/results/pinned_agents.json)
-        # remembers the agent_id for next run.
+        # Stable agent name + ``generate-and-create`` for a rich,
+        # production-representative profile (Big5, traits, speech patterns,
+        # preferences). Idempotent on name — first call spends one LLM
+        # call, subsequent calls reuse. Matches the monolith SOTOPIA
+        # benchmark's CE harness path.
         agent_name = f"sonzai-bench-sotopia-{scenario.scenario_id[:20]}"
-        agent = await client.agents.create(
-            name=agent_name,
-            personality_prompt=(
-                f"You are {scenario.agent.name}. {scenario.agent.background} "
-                f"Your goal in interactions with {scenario.partner.name}: "
-                f"{scenario.agent.goal}"
-            ),
-            true_interests=[],
-            true_dislikes=[],
+        description = (
+            f"You are {scenario.agent.name}. {scenario.agent.background} "
+            f"Your goal in interactions with {scenario.partner.name}: "
+            f"{scenario.agent.goal}"
         )
-        agent_id = agent.agent_id
+        from ...common.sdk_extras import ensure_bench_agent_async
+
+        agent_id, existed = await ensure_bench_agent_async(
+            client, name=agent_name, description=description
+        )
+        logger.info(
+            "sotopia: scenario %s agent %s (name=%s, existed=%s)",
+            scenario.scenario_id, agent_id, agent_name, existed,
+        )
 
         # Pin the newly-created agent so next run reuses it. The callback
         # owns the persistence (file path, concurrency lock); this
         # function just surfaces the identity.
-        if on_agent_created is not None:
+        if on_agent_created is not None and not existed:
             try:
                 maybe = on_agent_created(scenario.scenario_id, agent_id, agent_name)
                 if hasattr(maybe, "__await__"):

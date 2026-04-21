@@ -274,23 +274,45 @@ async def _run_sonzai_backend(
                 pinned.agent_id, pinned.name, pinned.created_at,
             )
 
-    if not shared_agent_id:
-        # First-ever run for this bench installation: create once, pin
-        # forever. The "shared" name is deterministic so operators can
-        # spot it in the platform's agent list.
-        agent_name = "sonzai-bench-longmemeval"
-        shared = await client.agents.create(name=agent_name)
-        shared_agent_id = shared.agent_id
+    # Always call generate-and-create on bootstrap — it's idempotent on the
+    # ``name`` key. First invocation expands the description into a full CE
+    # profile (Big5, traits, speech, preferences) and returns the new
+    # agent_id. Every subsequent call returns the existing agent with no
+    # LLM cost. This gives the bench a production-representative agent
+    # rather than the thin "create with raw prompt" path we used before.
+    #
+    # We still write ``shared_agent.json`` after first create so we can
+    # surface the pinned ID in reports/logs without a round-trip, but the
+    # server is the source of truth.
+    agent_name = "sonzai-bench-longmemeval"
+    agent_description = (
+        "A helpful AI assistant that maintains a rich long-term memory of "
+        "the user. Remembers specific personal details (routines, "
+        "preferences, places, people, milestones, plans) and recalls them "
+        "accurately when asked. Warm, attentive, conversational. Responds "
+        "in natural prose, not bullet points."
+    )
+    from ..common.sdk_extras import ensure_bench_agent_async
+
+    resolved_agent_id, agent_existed = await ensure_bench_agent_async(
+        client, name=agent_name, description=agent_description
+    )
+    if shared_agent_id and shared_agent_id != resolved_agent_id:
         logger.info(
-            "reuse-agents: created NEW shared agent %s (name=%s) — pinning",
-            shared_agent_id, agent_name,
+            "reuse-agents: pinned agent_id %s differs from server-resolved %s — "
+            "updating pin", shared_agent_id, resolved_agent_id,
         )
-        save_pinned_agent(
-            bench_results_dir,
-            benchmark="longmemeval",
-            agent_id=shared_agent_id,
-            name=agent_name,
-        )
+    shared_agent_id = resolved_agent_id
+    logger.info(
+        "reuse-agents: shared agent %s (name=%s, existed=%s)",
+        shared_agent_id, agent_name, agent_existed,
+    )
+    save_pinned_agent(
+        bench_results_dir,
+        benchmark="longmemeval",
+        agent_id=shared_agent_id,
+        name=agent_name,
+    )
 
     # Also stamp the shared agent into the slice-specific snapshot so
     # reuse-snapshot loads can verify the shared-agent identity matches.
