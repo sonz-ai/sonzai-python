@@ -365,6 +365,86 @@ for event in client.eval_runs.stream_events("run-id"):
 client.eval_runs.delete("run-id")
 ```
 
+### Platform, Tenants & Me
+
+```python
+# Get the caller's user + all orgs they belong to (GET /me)
+me = client.get_my_org()
+print(me.email, [org.name for org in me.orgs])
+
+# List/get tenants (platform-admin scope)
+tenants = client.tenants.list()
+tenant = client.tenants.get("tenant-id")
+```
+
+### Org Billing
+
+Stripe checkout/portal sessions, credit ledger, usage summaries, and
+enterprise contracts for the authenticated tenant.
+
+```python
+profile = client.org_billing.get_billing()
+usage = client.org_billing.get_usage_summary(days=30)
+ledger = client.org_billing.get_ledger(days=30)
+pricing = client.org_billing.get_model_pricing()
+
+# Stripe
+session = client.org_billing.create_checkout(amount=5000, currency="USD")  # cents
+portal = client.org_billing.create_portal()
+
+# Contracts / vouchers
+contract = client.org_billing.get_contract()
+client.org_billing.subscribe_to_contract(contract_id="contract-uuid")
+client.org_billing.redeem_voucher(code="PROMO2026")
+```
+
+### Storefront (Agent Marketplace)
+
+Publish a tenant-branded storefront with a curated list of agents.
+
+```python
+sf = client.storefront.get()
+client.storefront.update(slug="my-studio", display_name="My Studio", access_type="open")
+client.storefront.publish()
+
+# Agents on the storefront
+client.storefront.list_agents()
+client.storefront.upsert_agent("agent-id", display_name="Luna", featured=True)
+client.storefront.remove_agent("agent-id")
+```
+
+### Workbench (Interactive Testing)
+
+A scratch environment for iterating on an agent: advance simulated time,
+run chat turns, reset, regenerate character. Bodies/responses are plain
+dicts while the server schemas stabilize.
+
+```python
+client.workbench.prepare({"agent_id": "agent-id"})
+state = client.workbench.get_state()
+client.workbench.chat({"messages": [{"role": "user", "content": "hi"}]})
+client.workbench.simulate_user({"turns": 3})
+client.workbench.advance_time({"hours": 24})
+client.workbench.reset_agent({"agent_id": "agent-id"})
+```
+
+### Support Tickets
+
+```python
+from sonzai import TicketListResponse, SupportTicket
+
+tickets: TicketListResponse = client.support.list_tickets(status="open")
+new: SupportTicket = client.support.create_ticket(
+    title="Streaming chat drops mid-response",
+    description="...",
+    type="bug",
+    priority="high",
+)
+detail = client.support.get_ticket(new.ticket_id)
+client.support.add_comment(new.ticket_id, content="Reproduced on Python 3.12.")
+client.support.close_ticket(new.ticket_id)
+```
+
 ## Async Support
 
 Every method is also available as an async variant:
