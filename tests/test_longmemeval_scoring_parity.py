@@ -287,3 +287,39 @@ def test_recall_at_g_fractional() -> None:
     assert recall_at_g(["gt", "z", "x"], ["gt", "z"]) == pytest.approx(1.0)
     assert recall_at_g(["a", "b", "c"], ["gt"]) == pytest.approx(0.0)
     assert recall_at_g(["a", "b"], []) == pytest.approx(0.0)
+
+
+def test_metrics_from_row_backfills_legacy_schema() -> None:
+    """Old result JSONLs (pre-parity rewrite) stored flat ``session_recall_at_5``
+    and ``ranked_session_ids`` without ``retrieval_results.metrics``. The
+    summarizer must back-fill the full MemPalace grid from the ranked list so
+    ``--compare`` across mixed-schema files gives consistent numbers."""
+    from benchmarks.longmemeval.run import _metrics_from_row
+
+    # Legacy shape: answer session at rank 1 in ranked_session_ids, no
+    # retrieval_results.metrics block.
+    legacy_row = {
+        "question_id": "legacy-1",
+        "answer_session_ids": ["answer_abc"],
+        "ranked_session_ids": ["answer_abc", "x", "y", "z"],
+        "session_recall_at_5": 1.0,
+        "session_ndcg_at_5": 1.0,
+    }
+    m = _metrics_from_row(legacy_row)
+    assert m["session"]["recall_at_g"] == pytest.approx(1.0)
+    assert m["session"]["recall_any@10"] == pytest.approx(1.0)
+    assert m["session"]["ndcg_any@1"] == pytest.approx(1.0)
+
+    # New-schema row with populated metrics must pass through unchanged.
+    new_row = {
+        "retrieval_results": {
+            "metrics": {
+                "session": {"recall_any@10": 0.5, "recall_at_g": 0.25},
+                "turn": {"recall_any@5": 1.0},
+            }
+        }
+    }
+    m = _metrics_from_row(new_row)
+    assert m["session"]["recall_any@10"] == pytest.approx(0.5)
+    assert m["session"]["recall_at_g"] == pytest.approx(0.25)
+    assert m["turn"]["recall_any@5"] == pytest.approx(1.0)

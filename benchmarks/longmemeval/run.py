@@ -434,6 +434,56 @@ def _write_jsonl(path: Path, rows: Iterable[dict]) -> None:
             f.write(json.dumps(row) + "\n")
 
 
+def _metrics_from_row(r: dict) -> dict[str, dict[str, float]]:
+    """Extract session/turn metric grids for a row, back-filling from the
+    legacy flat schema when the new ``retrieval_results.metrics`` block is
+    absent.
+
+    Older result files (pre-parity rewrite) stored only flat top-level keys
+    like ``session_recall_at_5`` / ``session_ndcg_at_5`` plus
+    ``ranked_session_ids``. We reconstruct the full MemPalace k-grid from
+    ``ranked_session_ids`` + ``answer_session_ids`` on the fly so a summary /
+    ``--compare`` across mixed-schema files stays consistent.
+    """
+    metrics = (r.get("retrieval_results") or {}).get("metrics") or {}
+    session = metrics.get("session") or {}
+    turn = metrics.get("turn") or {}
+
+    # Fast path: new schema already has the grid.
+    if session:
+        return {"session": dict(session), "turn": dict(turn)}
+
+    # Back-fill: compute from ranked_session_ids + answer_session_ids.
+    answer_sids = list(r.get("answer_session_ids") or [])
+    ranked_sids = list(r.get("ranked_session_ids") or [])
+    if not ranked_sids:
+        # Last-ditch: try the ranked_items if populated but metrics weren't.
+        items = (r.get("retrieval_results") or {}).get("ranked_items") or []
+        ranked_sids = [
+            session_id_from_corpus_id(str(it.get("corpus_id") or "")) for it in items
+        ]
+        ranked_sids = [s for s in ranked_sids if s]
+
+    if not ranked_sids:
+        # Preserve any legacy flat keys so they still show up somewhere.
+        legacy = {}
+        for flat, grid_key in [
+            ("session_recall_at_5", "recall_any@5"),
+            ("session_ndcg_at_5", "ndcg_any@5"),
+        ]:
+            if flat in r:
+                legacy[grid_key] = float(r[flat])
+        return {"session": legacy, "turn": dict(turn)}
+
+    backfilled = {}
+    for k in KS:
+        backfilled[f"recall_any@{k}"] = recall_any_at_k(ranked_sids, answer_sids, k)
+        backfilled[f"recall_all@{k}"] = recall_all_at_k(ranked_sids, answer_sids, k)
+        backfilled[f"ndcg_any@{k}"] = ndcg_at_k(ranked_sids, answer_sids, k)
+    backfilled["recall_at_g"] = recall_at_g(ranked_sids, answer_sids)
+    return {"session": backfilled, "turn": dict(turn)}
+
+
 def _summarize(rows: list[dict]) -> dict:
     if not rows:
         return {}
@@ -442,11 +492,14 @@ def _summarize(rows: list[dict]) -> dict:
 
     summary: dict = {"n": n}
 
-    # Aggregate retrieval metrics across the full k-grid.
+    # Aggregate retrieval metrics across the full k-grid. ``_metrics_from_row``
+    # back-fills the legacy flat-key schema so old result files score the
+    # same way as new ones — important for side-by-side against MemPalace
+    # baselines that predate the rewrite.
     sums: dict[str, dict[str, float]] = {"session": defaultdict(float), "turn": defaultdict(float)}
     counts: dict[str, dict[str, int]] = {"session": defaultdict(int), "turn": defaultdict(int)}
     for r in rows:
-        metrics = (r.get("retrieval_results") or {}).get("metrics") or {}
+        metrics = _metrics_from_row(r)
         for gran in ("session", "turn"):
             for key, val in (metrics.get(gran) or {}).items():
                 sums[gran][key] += float(val)
@@ -480,7 +533,7 @@ def _summarize(rows: list[dict]) -> dict:
         bucket["n"] += 1
         if r.get("qa_correct") is True:
             bucket["qa_correct_sum"] += 1
-        session_metrics = ((r.get("retrieval_results") or {}).get("metrics") or {}).get("session") or {}
+        session_metrics = _metrics_from_row(r).get("session") or {}
         bucket["rg_sum"] += float(session_metrics.get("recall_at_g", 0.0))
         bucket["r10_sum"] += float(session_metrics.get("recall_any@10", 0.0))
         bucket["r30_sum"] += float(session_metrics.get("recall_any@30", 0.0))
