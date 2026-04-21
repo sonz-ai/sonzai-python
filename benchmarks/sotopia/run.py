@@ -145,6 +145,7 @@ async def _run_scenario(
     resume_from_session: int = 0,
     keep_agent_alive: bool = False,
     on_session_complete=None,
+    on_agent_created=None,
 ) -> list[SessionRun]:
     """Run N sessions for one scenario, score each, advance time between.
 
@@ -160,12 +161,18 @@ async def _run_scenario(
     """
     reuse = existing_agent_id is not None and existing_user_id is not None
 
+    # Deterministic user_id per scenario. Used both on the reuse path and
+    # when we're about to create a fresh agent.
+    user_id = existing_user_id or f"sotopia-user-{scenario.scenario_id[:16]}"
+
     if reuse:
         agent_id = str(existing_agent_id)
-        user_id = str(existing_user_id)
     else:
-        agent_name = f"sotopia-{scenario.scenario_id[:16]}-{uuid.uuid4().hex[:6]}"
-        user_id = f"sotopia-user-{scenario.scenario_id[:16]}"
+        # Stable agent name so operators see one recognizable entry per
+        # scenario in the platform's agent list rather than a UUID-hex
+        # salad. Pinned agent manifest (sotopia/results/pinned_agents.json)
+        # remembers the agent_id for next run.
+        agent_name = f"sonzai-bench-sotopia-{scenario.scenario_id[:20]}"
         agent = await client.agents.create(
             name=agent_name,
             personality_prompt=(
@@ -177,6 +184,17 @@ async def _run_scenario(
             true_dislikes=[],
         )
         agent_id = agent.agent_id
+
+        # Pin the newly-created agent so next run reuses it. The callback
+        # owns the persistence (file path, concurrency lock); this
+        # function just surfaces the identity.
+        if on_agent_created is not None:
+            try:
+                maybe = on_agent_created(scenario.scenario_id, agent_id, agent_name)
+                if hasattr(maybe, "__await__"):
+                    await maybe
+            except Exception as e:
+                logger.debug("on_agent_created callback failed: %s", e)
 
     runs: list[SessionRun] = []
     start_idx = max(1, int(resume_from_session) + 1)
@@ -421,17 +439,35 @@ async def _amain(args: argparse.Namespace) -> int:
     snapshot = None
     current_slice = None
     snapshot_lock: asyncio.Lock | None = None
-    if args.reuse_agents:
-        from ..common.agent_reuse import (
-            SliceKey,
-            load_snapshot,
-            new_snapshot,
-            save_snapshot,
-            should_reuse,
-            upsert_agent,
-        )
-        from ..common.sdk_extras import clear_agent_memory_async
+    pinned_lock: asyncio.Lock | None = None
 
+    # Pinned agents are slice-INDEPENDENT — agent identity per scenario
+    # survives ``--sessions-per-scenario`` bumps (which only change resume
+    # semantics, not who the agent is). The sliced snapshot still tracks
+    # last_session_index so crashed 20×90 runs resume cleanly.
+    from ..common.agent_reuse import (
+        PinnedAgent,
+        SliceKey,
+        load_pinned_agents,
+        load_snapshot,
+        new_snapshot,
+        save_pinned_agents,
+        save_snapshot,
+        should_reuse,
+        upsert_agent,
+    )
+    from ..common.sdk_extras import clear_agent_memory_async
+
+    bench_results_dir = Path(__file__).parent / "results"
+    pinned: dict[str, PinnedAgent] = load_pinned_agents(bench_results_dir, benchmark="sotopia")
+    pinned_lock = asyncio.Lock()
+    if pinned:
+        logger.info(
+            "pinned-agents: loaded %d scenario agents (cross-slice persistence)",
+            len(pinned),
+        )
+
+    if args.reuse_agents:
         current_slice = SliceKey(
             benchmark="sotopia",
             limit=len(scenarios),
@@ -471,20 +507,47 @@ async def _amain(args: argparse.Namespace) -> int:
 
     async def one(sc: Scenario) -> list[SessionRun]:
         async with sem:
+            # Cross-slice pinned agent — use the persistent (agent_id, name)
+            # if we've created one before for this scenario. Avoids spawning
+            # fresh agents on the platform every run.
+            ex_agent = ex_user = None
+            pa = pinned.get(sc.scenario_id)
+            if pa and pa.agent_id:
+                ex_agent = pa.agent_id
+                ex_user = f"sotopia-user-{sc.scenario_id[:16]}"
+
+            # Slice-scoped snapshot — only governs resume-from-session.
             reused = None
             if snapshot is not None and current_slice is not None:
                 reused = should_reuse(snapshot, current_slice, sc.scenario_id)
             resume_from = 0
-            ex_agent = ex_user = None
             if reused:
-                ex_agent = reused.agent_id
-                ex_user = reused.user_id
+                # If pinned agent differs from snapshot, trust the pin
+                # (it's the authoritative cross-slice identity).
+                if not ex_agent:
+                    ex_agent = reused.agent_id
+                    ex_user = reused.user_id
                 resume_from = int(reused.meta.get("last_session_index", 0) or 0)
-                if args.clear_reused_memory:
+                if args.clear_reused_memory and ex_agent and ex_user:
                     await clear_agent_memory_async(
                         client, agent_id=ex_agent, user_id=ex_user
                     )
                     resume_from = 0  # clean slate → start over
+            async def _pin_agent(
+                scenario_id: str, agent_id: str, agent_name: str
+            ) -> None:
+                """Persist the scenario→(agent_id, name) pin after creation."""
+                assert pinned_lock is not None
+                async with pinned_lock:
+                    pinned[scenario_id] = PinnedAgent(
+                        benchmark="sotopia",
+                        agent_id=agent_id,
+                        name=agent_name,
+                    )
+                    save_pinned_agents(
+                        bench_results_dir, benchmark="sotopia", pins=pinned
+                    )
+
             try:
                 return await _run_scenario(
                     client,
@@ -495,8 +558,9 @@ async def _amain(args: argparse.Namespace) -> int:
                     existing_agent_id=ex_agent,
                     existing_user_id=ex_user,
                     resume_from_session=resume_from,
-                    keep_agent_alive=snapshot is not None,
+                    keep_agent_alive=True,  # pinned agents are long-lived
                     on_session_complete=_persist_session if snapshot is not None else None,
+                    on_agent_created=_pin_agent,
                 )
             except Exception:
                 logger.exception("scenario %s failed", sc.scenario_id)

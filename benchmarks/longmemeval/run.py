@@ -251,21 +251,58 @@ async def _run_sonzai_backend(
             snapshot = new_snapshot(current_slice)
         snapshot_lock = asyncio.Lock()
 
-    # Bootstrap the shared agent if we don't already have one. One agent,
-    # many users — mirrors how Sonzai is deployed in production.
+    # Bootstrap the shared agent. Prefer a pinned agent_id from disk
+    # (``shared_agent.json``) — it survives slice changes (different
+    # --limit / --max-sessions-per-question) that would invalidate the
+    # per-user ingest snapshot. Without this pin, every slice change
+    # leaks a fresh agent on the server and leaves orphaned state.
+    #
+    # Precedence:
+    #   1. Snapshot's __shared_agent__ (same slice, already picked one)
+    #   2. Pinned agent manifest (cross-slice persistence)
+    #   3. Create a new agent with a stable name and pin it
+    from ..common.agent_reuse import load_pinned_agent, save_pinned_agent
+
+    bench_results_dir = Path(__file__).parent / "results"
+
     if not shared_agent_id:
-        import uuid as _uuid
-        agent_name = f"lme-shared-{_uuid.uuid4().hex[:8]}"
+        pinned = load_pinned_agent(bench_results_dir, benchmark="longmemeval")
+        if pinned and pinned.agent_id:
+            shared_agent_id = pinned.agent_id
+            logger.info(
+                "reuse-agents: using pinned agent %s (name=%s, created=%s)",
+                pinned.agent_id, pinned.name, pinned.created_at,
+            )
+
+    if not shared_agent_id:
+        # First-ever run for this bench installation: create once, pin
+        # forever. The "shared" name is deterministic so operators can
+        # spot it in the platform's agent list.
+        agent_name = "sonzai-bench-longmemeval"
         shared = await client.agents.create(name=agent_name)
         shared_agent_id = shared.agent_id
-        logger.info("reuse-agents: created shared agent %s (name=%s)", shared_agent_id, agent_name)
-        if snapshot is not None and snapshot_lock is not None:
+        logger.info(
+            "reuse-agents: created NEW shared agent %s (name=%s) — pinning",
+            shared_agent_id, agent_name,
+        )
+        save_pinned_agent(
+            bench_results_dir,
+            benchmark="longmemeval",
+            agent_id=shared_agent_id,
+            name=agent_name,
+        )
+
+    # Also stamp the shared agent into the slice-specific snapshot so
+    # reuse-snapshot loads can verify the shared-agent identity matches.
+    if snapshot is not None and snapshot_lock is not None and shared_agent_id:
+        meta = snapshot.agents.get(SHARED_META_KEY)
+        if meta is None or meta.agent_id != shared_agent_id:
             async with snapshot_lock:
                 upsert_agent(
                     snapshot,
                     key=SHARED_META_KEY,
                     agent_id=shared_agent_id,
-                    user_id="",  # not a real user; just a container entry
+                    user_id="",
                     meta={"role": "shared_agent"},
                 )
                 save_snapshot(reuse_agents_path, snapshot)

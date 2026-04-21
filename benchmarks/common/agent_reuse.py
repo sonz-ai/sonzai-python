@@ -215,3 +215,135 @@ def dataset_tag(path: str | Path | None) -> str:
     import hashlib
 
     return hashlib.sha1(str(path).encode("utf-8")).hexdigest()[:8]
+
+
+# ---------------------------------------------------------------------------
+# Persistent shared-agent pinning — separate file from the sliced snapshot
+# so the agent_id survives changes to --limit / --max-sessions-per-question
+# that invalidate the per-user ingest snapshot. Avoids leaking fresh agents
+# on the platform every time we tweak the bench slice.
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class PinnedAgent:
+    """A long-lived (agent_id, name) pinned to disk for cross-slice reuse."""
+
+    benchmark: str  # "longmemeval" | "sotopia"
+    agent_id: str
+    name: str
+    created_at: str = ""
+
+
+def _pinned_path(bench_dir: str | Path) -> Path:
+    """Where the pinned-agent manifest lives for a given bench results dir."""
+    return Path(bench_dir) / "shared_agent.json"
+
+
+def load_pinned_agent(bench_dir: str | Path, benchmark: str) -> PinnedAgent | None:
+    """Return the pinned agent for this benchmark, or None if unset."""
+    p = _pinned_path(bench_dir)
+    if not p.exists():
+        return None
+    try:
+        with open(p) as f:
+            raw = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return None
+    if not isinstance(raw, dict):
+        return None
+    if str(raw.get("benchmark") or "") != benchmark:
+        # The file exists but names a different benchmark — caller should
+        # treat as unset and write its own. Shouldn't normally happen since
+        # each bench keeps its manifest in its own results dir.
+        return None
+    return PinnedAgent(
+        benchmark=str(raw.get("benchmark") or ""),
+        agent_id=str(raw.get("agent_id") or ""),
+        name=str(raw.get("name") or ""),
+        created_at=str(raw.get("created_at") or ""),
+    )
+
+
+def save_pinned_agent(
+    bench_dir: str | Path, *, benchmark: str, agent_id: str, name: str
+) -> PinnedAgent:
+    """Persist the shared agent's identity atomically."""
+    p = _pinned_path(bench_dir)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    pa = PinnedAgent(
+        benchmark=benchmark,
+        agent_id=agent_id,
+        name=name,
+        created_at=datetime.now(timezone.utc).isoformat(),
+    )
+    tmp = p.with_suffix(p.suffix + ".tmp")
+    with open(tmp, "w") as f:
+        json.dump(asdict(pa), f, indent=2)
+    os.replace(tmp, p)
+    return pa
+
+
+# ---------------------------------------------------------------------------
+# Multi-entry pinned store — for benches with many long-lived agents (SOTOPIA
+# pins one agent per scenario). Separate file from the sliced snapshot so
+# agent identity survives changes to ``--sessions-per-scenario`` that only
+# affect resume-from-session semantics, not the agent themselves.
+# ---------------------------------------------------------------------------
+
+
+def _multi_pinned_path(bench_dir: str | Path) -> Path:
+    return Path(bench_dir) / "pinned_agents.json"
+
+
+def load_pinned_agents(
+    bench_dir: str | Path, benchmark: str
+) -> dict[str, PinnedAgent]:
+    """Return ``{scenario_id/key: PinnedAgent}`` for this benchmark (possibly empty)."""
+    p = _multi_pinned_path(bench_dir)
+    if not p.exists():
+        return {}
+    try:
+        with open(p) as f:
+            raw = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(raw, dict):
+        return {}
+    out: dict[str, PinnedAgent] = {}
+    for key, entry in (raw.get("agents") or {}).items():
+        if not isinstance(entry, dict):
+            continue
+        if str(entry.get("benchmark") or "") != benchmark:
+            continue
+        out[str(key)] = PinnedAgent(
+            benchmark=str(entry.get("benchmark") or ""),
+            agent_id=str(entry.get("agent_id") or ""),
+            name=str(entry.get("name") or ""),
+            created_at=str(entry.get("created_at") or ""),
+        )
+    return out
+
+
+def save_pinned_agents(
+    bench_dir: str | Path, *, benchmark: str, pins: dict[str, PinnedAgent]
+) -> None:
+    """Persist the full multi-entry pinned map atomically."""
+    p = _multi_pinned_path(bench_dir)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "saved_at": datetime.now(timezone.utc).isoformat(),
+        "agents": {
+            k: {
+                "benchmark": v.benchmark or benchmark,
+                "agent_id": v.agent_id,
+                "name": v.name,
+                "created_at": v.created_at or datetime.now(timezone.utc).isoformat(),
+            }
+            for k, v in pins.items()
+        },
+    }
+    tmp = p.with_suffix(p.suffix + ".tmp")
+    with open(tmp, "w") as f:
+        json.dump(payload, f, indent=2)
+    os.replace(tmp, p)
