@@ -3365,4 +3365,125 @@ class ToolDefinition(BaseModel):
     description: str = ""
     parameters: dict[str, Any] = Field(default_factory=dict)
 
+
+# ---------------------------------------------------------------------------
+# Projects
+# ---------------------------------------------------------------------------
+
+class Project(BaseModel):
+    project_id: str = ""
+    tenant_id: str = ""
+    name: str = ""
+    game_name: str = ""
+    environment: str = ""
+    created_at: str = ""
+    is_active: bool = True
+
+    model_config = {"extra": "allow"}
+
+
+class ProjectList(BaseModel):
+    projects: list[Project] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class ProjectAPIKey(BaseModel):
+    key_id: str = ""
+    project_id: str = ""
+    tenant_id: str = ""
+    name: str = ""
+    key_prefix: str = ""
+    created_by: str = ""
+    created_at: str = ""
+    expires_at: str | None = None
+    last_used_at: str | None = None
+    is_active: bool = True
+    is_admin_managed: bool = False
+    scopes: list[str] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class ProjectAPIKeyList(BaseModel):
+    keys: list[ProjectAPIKey] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class CreateAPIKeyResponse(BaseModel):
+    key_id: str = ""
+    project_id: str = ""
+    tenant_id: str = ""
+    name: str = ""
+    key_prefix: str = ""
+    key: str = ""
+    is_active: bool = True
+    scopes: list[str] = Field(default_factory=list)
+    created_at: str = ""
+    created_by: str = ""
+    expires_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class RevokeAPIKeyResponse(BaseModel):
+    success: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+class DeleteProjectResponse(BaseModel):
+    status: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# User Personas (API resource — distinct from simulation UserPersona)
+# ---------------------------------------------------------------------------
+
+class UserPersonaRecord(BaseModel):
+    persona_id: str = ""
+    name: str = ""
+    description: str = ""
+    style: str = ""
+    is_default: bool = False
+    created_at: str = ""
+    updated_at: str = ""
+    tenant_id: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class UserPersonaList(BaseModel):
+    personas: list[UserPersonaRecord] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class DeleteUserPersonaResponse(BaseModel):
+    success: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Tool Schemas (distinct from custom tool list)
+# ---------------------------------------------------------------------------
+
+class ToolSchemaEntry(BaseModel):
+    name: str = ""
+    description: str = ""
+    endpoint: str = ""
+    parameters: dict[str, Any] = Field(default_factory=dict)
+
+    model_config = {"extra": "allow"}
+
+
+class GetToolSchemasResponse(BaseModel):
+    tools: list[ToolSchemaEntry] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
     model_config = {"extra": "allow"}

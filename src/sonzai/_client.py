@@ -9,6 +9,7 @@ import httpx
 from ._http import AsyncHTTPClient, HTTPClient
 from .resources.account_config import AccountConfig, AsyncAccountConfig
 from .resources.agents import Agents, AsyncAgents
+from .resources.analytics import Analytics, AsyncAnalytics
 from .types import PlatformModelsResponse
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
@@ -19,6 +20,8 @@ from .resources.project_notifications import (
     AsyncProjectNotifications,
     ProjectNotifications,
 )
+from .resources.projects import AsyncProjects, Projects
+from .resources.user_personas import AsyncUserPersonas, UserPersonas
 from .resources.voice import AsyncVoices, Voices
 from .resources.webhooks import AsyncWebhooks, Webhooks
 
@@ -56,9 +59,12 @@ class Sonzai:
     """
 
     agents: Agents
+    analytics: Analytics
     knowledge: Knowledge
     eval_templates: EvalTemplates
     eval_runs: EvalRuns
+    projects: Projects
+    user_personas: UserPersonas
     voices: Voices
     webhooks: Webhooks
     project_config: ProjectConfig
@@ -110,9 +116,12 @@ class Sonzai:
             )
 
         self.agents = Agents(self._http)
+        self.analytics = Analytics(self._http)
         self.knowledge = Knowledge(self._http)
         self.eval_templates = EvalTemplates(self._http)
         self.eval_runs = EvalRuns(self._http)
+        self.projects = Projects(self._http)
+        self.user_personas = UserPersonas(self._http)
         self.voices = Voices(self._http)
         self.webhooks = Webhooks(self._http)
         self.project_config = ProjectConfig(self._http)
@@ -169,9 +178,12 @@ class AsyncSonzai:
     """
 
     agents: AsyncAgents
+    analytics: AsyncAnalytics
     knowledge: AsyncKnowledge
     eval_templates: AsyncEvalTemplates
     eval_runs: AsyncEvalRuns
+    projects: AsyncProjects
+    user_personas: AsyncUserPersonas
     voices: AsyncVoices
     webhooks: AsyncWebhooks
     project_config: AsyncProjectConfig
@@ -213,9 +225,12 @@ class AsyncSonzai:
             )
 
         self.agents = AsyncAgents(self._http)
+        self.analytics = AsyncAnalytics(self._http)
         self.knowledge = AsyncKnowledge(self._http)
         self.eval_templates = AsyncEvalTemplates(self._http)
         self.eval_runs = AsyncEvalRuns(self._http)
+        self.projects = AsyncProjects(self._http)
+        self.user_personas = AsyncUserPersonas(self._http)
         self.voices = AsyncVoices(self._http)
         self.webhooks = AsyncWebhooks(self._http)
         self.project_config = AsyncProjectConfig(self._http)
