@@ -1070,7 +1070,7 @@ class Agents:
         if inventory is not None:
             body["inventory"] = inventory
         return AgentCapabilities.model_validate(
-            self._http.patch(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
+            self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
         )
 
     # -- Post-processing model override (layer 1 of cascade) --
@@ -1175,7 +1175,7 @@ class Agents:
         if user_id is not None:
             body["user_id"] = user_id
         return ConsolidateResponse.model_validate(
-            self._http.post(f"/api/v1/agents/{agent_id}/consolidate", json_data=body)
+            self._http.post(f"/api/v1/agents/{agent_id}/memory/consolidate", json_data=body)
         )
 
     # -- Summaries --
@@ -1194,7 +1194,7 @@ class Agents:
         if limit is not None:
             params["limit"] = str(limit)
         return SummariesResponse.model_validate(
-            self._http.get(f"/api/v1/agents/{agent_id}/summaries", params=params)
+            self._http.get(f"/api/v1/agents/{agent_id}/memory/summaries", params=params)
         )
 
     # -- Process --
@@ -2433,7 +2433,7 @@ class AsyncAgents:
         if inventory is not None:
             body["inventory"] = inventory
         return AgentCapabilities.model_validate(
-            await self._http.patch(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
+            await self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
         )
 
     # -- Post-processing model override (layer 1 of cascade) --
@@ -2531,7 +2531,7 @@ class AsyncAgents:
         if user_id is not None:
             body["user_id"] = user_id
         return ConsolidateResponse.model_validate(
-            await self._http.post(f"/api/v1/agents/{agent_id}/consolidate", json_data=body)
+            await self._http.post(f"/api/v1/agents/{agent_id}/memory/consolidate", json_data=body)
         )
 
     # -- Summaries --
@@ -2550,7 +2550,7 @@ class AsyncAgents:
         if limit is not None:
             params["limit"] = str(limit)
         return SummariesResponse.model_validate(
-            await self._http.get(f"/api/v1/agents/{agent_id}/summaries", params=params)
+            await self._http.get(f"/api/v1/agents/{agent_id}/memory/summaries", params=params)
         )
 
     # -- Process --
