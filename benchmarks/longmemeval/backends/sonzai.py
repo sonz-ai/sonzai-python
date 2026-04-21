@@ -175,14 +175,88 @@ async def _retrieve(
 
 async def _ask_question(
     client: AsyncSonzai, *, agent_id: str, user_id: str, question: str
-) -> str:
-    resp = await client.agents.chat(
-        agent_id=agent_id,
-        user_id=user_id,
-        messages=[{"role": "user", "content": question}],
-    )
-    # ``agents.chat`` returns ChatResponse in non-streaming mode.
-    return getattr(resp, "content", "") or ""
+) -> tuple[str, dict]:
+    """Send the question and return ``(agent_answer, diagnostic)``.
+
+    We consume the SSE stream directly rather than go through the SDK's
+    ``_chat_aggregate`` so we can capture the ``context_ready`` event's
+    ``enriched_context`` payload — the authoritative view of what reached
+    the prompt builder. Lets the benchmark's per-question diagnostics show
+    the exact ``LoadedFacts`` count and preview, proving whether a fact the
+    bench *retrieved* actually reaches the LLM's system prompt.
+
+    Diagnostic dict shape::
+
+        {
+          "loaded_facts_count": int,
+          "loaded_facts_preview": [first few fact texts],
+          "build_duration_ms": int,
+        }
+    """
+    from sonzai.types import ChatStreamEvent
+
+    content_parts: list[str] = []
+    diag: dict = {}
+    # ``answer`` is what the bench calls the ground-truth for per-question
+    # hit-detection in the diag. Populated from the caller's closure when
+    # available — we keep it optional so callsites without an answer hint
+    # still work.
+    answer_text: str = ""
+    try:
+        async for event in client._http.stream_sse(  # type: ignore[attr-defined]
+            "POST",
+            f"/api/v1/agents/{agent_id}/chat",
+            json_data={
+                "messages": [{"role": "user", "content": question}],
+                "user_id": user_id,
+            },
+        ):
+            etype = str(event.get("type") or "")
+            if etype == "context_ready":
+                enriched = event.get("enriched_context") or {}
+                loaded = list(enriched.get("loaded_facts") or enriched.get("LoadedFacts") or [])
+                diag["loaded_facts_count"] = len(loaded)
+                # Keep a short preview for at-a-glance inspection, but ALSO
+                # scan every loaded fact for the answer text if we have it,
+                # so the diag reports "answer present somewhere in
+                # LoadedFacts" vs "answer absent". That's the signal that
+                # separates "retrieval/injection broken" from "facts there
+                # but render-sort demoting them".
+                texts = [
+                    str(f.get("atomic_text") or f.get("AtomicText") or "")
+                    for f in loaded
+                    if isinstance(f, dict)
+                ]
+                diag["loaded_facts_preview"] = [t[:200] for t in texts[:5]]
+                # Keep the full text list too (capped) so downstream diag
+                # scripts can do arbitrary analysis without another deploy.
+                diag["loaded_facts_texts"] = [t[:300] for t in texts]
+                if "build_duration_ms" in event:
+                    diag["build_duration_ms"] = int(event["build_duration_ms"])
+            else:
+                # Content chunks arrive in OpenAI-compat form:
+                #   {"choices":[{"delta":{"content":"..."}, ...}], ...}
+                # Use the SDK's ChatStreamEvent validator so our parser
+                # matches what client.agents.chat(stream=False) sees —
+                # otherwise the raw ``event.get("content")`` misses
+                # delta-style content and agent_answer comes back empty.
+                try:
+                    parsed = ChatStreamEvent.model_validate(event)
+                except Exception:
+                    parsed = None
+                if parsed and parsed.content:
+                    content_parts.append(str(parsed.content))
+    except Exception as e:
+        logger.debug("_ask_question stream failed, falling back to non-stream: %s", e)
+        # Fallback — never let instrumentation break the bench.
+        resp = await client.agents.chat(
+            agent_id=agent_id,
+            user_id=user_id,
+            messages=[{"role": "user", "content": question}],
+        )
+        return getattr(resp, "content", "") or "", diag
+
+    return "".join(content_parts), diag
 
 
 async def run_question(
@@ -196,6 +270,7 @@ async def run_question(
     max_sessions: int = 0,
     existing_agent_id: str | None = None,
     existing_user_id: str | None = None,
+    skip_ingest: bool = False,
     clear_memory_before_reuse: bool = False,
     keep_agent_alive: bool = False,
 ) -> BackendResult:
@@ -220,17 +295,28 @@ async def run_question(
     ``keep_agent_alive`` suppresses the ``agents.delete`` cleanup so future
     reuse runs can pick the agent back up. Automatically true when an
     existing agent is passed in (never delete what we didn't create).
-    """
-    reuse = existing_agent_id is not None and existing_user_id is not None
 
-    if reuse:
-        agent_id = str(existing_agent_id)
+    Shared-agent model note: ``existing_agent_id`` can be the run-level
+    shared agent while ``skip_ingest=False`` means "this user hasn't been
+    populated yet, do the ingest under the shared agent". That's the
+    difference between "agent exists" and "data for THIS user exists."
+    """
+    reuse = bool(skip_ingest) and existing_agent_id is not None
+
+    # Model: Sonzai is multi-tenant by (agent_id, user_id). An agent in
+    # production serves many users, each with their own memory scope. The
+    # bench should reflect that: ONE shared agent answers all questions,
+    # while each question gets its own user_id so memory stays isolated.
+    # Caller passes ``existing_agent_id`` (the shared agent) and we
+    # deterministically derive a per-question ``user_id`` from
+    # ``question.question_id``. If no shared agent is provided the backend
+    # falls back to the legacy per-question-agent path for backward-compat.
+    user_id = f"lme-user-{question.question_id[:12]}"
+    if existing_user_id:  # explicit override wins (rarely needed)
         user_id = str(existing_user_id)
-        haystack = question.sessions  # session metadata still needed for session_dates
-    else:
-        agent_name = f"lme-{question.question_id[:12]}-{uuid.uuid4().hex[:6]}"
-        user_id = f"lme-user-{question.question_id[:12]}"
-        # Optionally trim haystack for smoke runs — keep answer-bearing sessions.
+
+    if existing_agent_id:
+        agent_id = str(existing_agent_id)
         haystack = question.sessions
         if max_sessions and len(haystack) > max_sessions:
             answer_set = set(question.answer_session_ids)
@@ -245,7 +331,24 @@ async def run_question(
                 (s for s in haystack if s.session_id in keep),
                 key=lambda s: s.parsed_date,
             )
-
+    else:
+        # Legacy path: per-question agent. Kept for callers that haven't
+        # moved to the shared-agent bench model.
+        agent_name = f"lme-{question.question_id[:12]}-{uuid.uuid4().hex[:6]}"
+        haystack = question.sessions
+        if max_sessions and len(haystack) > max_sessions:
+            answer_set = set(question.answer_session_ids)
+            keep_ids = {s.session_id for s in haystack if s.session_id in answer_set}
+            filler_budget = max(max_sessions - len(keep_ids), 0)
+            filler_ids = {
+                s.session_id
+                for s in [s for s in haystack if s.session_id not in keep_ids][-filler_budget:]
+            } if filler_budget else set()
+            keep = keep_ids | filler_ids
+            haystack = sorted(
+                (s for s in haystack if s.session_id in keep),
+                key=lambda s: s.parsed_date,
+            )
         agent = await client.agents.create(name=agent_name)
         agent_id = agent.agent_id
 
@@ -319,8 +422,9 @@ async def run_question(
         )
 
         agent_answer = ""
+        chat_diag: dict = {}
         if include_qa:
-            agent_answer = await _ask_question(
+            agent_answer, chat_diag = await _ask_question(
                 client, agent_id=agent_id, user_id=user_id, question=question.question
             )
 
@@ -357,6 +461,11 @@ async def run_question(
                 "facts_retrieved": len(ranked_facts),
                 "facts_stored": facts_stored,
                 "facts_sample": facts_sample,
+                # Chat-path diagnostics captured from the SSE context_ready
+                # event. ``loaded_facts_count`` + ``loaded_facts_preview``
+                # show the exact fact set the prompt compiler saw — proves
+                # whether a retrieved fact actually reaches the LLM.
+                **({f"chat_{k}": v for k, v in chat_diag.items()} if chat_diag else {}),
             },
         )
     finally:

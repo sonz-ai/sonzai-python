@@ -202,9 +202,19 @@ async def _run_sonzai_backend(
     sem = asyncio.Semaphore(concurrency)
 
     # --- Snapshot setup for --reuse-agents ---------------------------------
+    # Model: ONE shared agent serves every question (the benchmark's
+    # persistent AI persona). Each question gets its own user_id so memory
+    # stays isolated per question — matching Sonzai's production (agent_id,
+    # user_id) scoping semantics. The snapshot stores the shared agent_id
+    # under a reserved ``__shared_agent__`` meta entry plus per-question
+    # entries flagged with ``ingested=true`` so we know which users have
+    # been populated.
     snapshot = None
     current_slice = None
     snapshot_lock: asyncio.Lock | None = None
+    shared_agent_id: str = ""
+    SHARED_META_KEY = "__shared_agent__"
+
     if reuse_agents_path:
         from ..common.agent_reuse import (
             SliceKey,
@@ -225,9 +235,12 @@ async def _run_sonzai_backend(
         loaded = load_snapshot(reuse_agents_path)
         if loaded and loaded.slice.matches(current_slice):
             snapshot = loaded
+            meta = loaded.agents.get(SHARED_META_KEY)
+            if meta:
+                shared_agent_id = meta.agent_id
             logger.info(
-                "reuse-agents: loaded %d snapshots from %s (slice matches)",
-                len(snapshot.agents), reuse_agents_path,
+                "reuse-agents: loaded snapshot (shared_agent=%s, %d user entries)",
+                shared_agent_id or "none", len(loaded.agents) - (1 if meta else 0),
             )
         else:
             if loaded:
@@ -238,11 +251,34 @@ async def _run_sonzai_backend(
             snapshot = new_snapshot(current_slice)
         snapshot_lock = asyncio.Lock()
 
+    # Bootstrap the shared agent if we don't already have one. One agent,
+    # many users — mirrors how Sonzai is deployed in production.
+    if not shared_agent_id:
+        import uuid as _uuid
+        agent_name = f"lme-shared-{_uuid.uuid4().hex[:8]}"
+        shared = await client.agents.create(name=agent_name)
+        shared_agent_id = shared.agent_id
+        logger.info("reuse-agents: created shared agent %s (name=%s)", shared_agent_id, agent_name)
+        if snapshot is not None and snapshot_lock is not None:
+            async with snapshot_lock:
+                upsert_agent(
+                    snapshot,
+                    key=SHARED_META_KEY,
+                    agent_id=shared_agent_id,
+                    user_id="",  # not a real user; just a container entry
+                    meta={"role": "shared_agent"},
+                )
+                save_snapshot(reuse_agents_path, snapshot)
+
     async def one(q: LongMemEvalQuestion) -> dict:
         async with sem:
-            reused_entry = None
+            # Under the shared-agent model, the question_id still keys the
+            # snapshot — but the entry now only tells us whether THIS user's
+            # data is already ingested under the shared agent.
+            user_already_ingested = False
             if snapshot is not None and current_slice is not None:
-                reused_entry = should_reuse(snapshot, current_slice, q.question_id)
+                entry = should_reuse(snapshot, current_slice, q.question_id)
+                user_already_ingested = entry is not None and entry.agent_id == shared_agent_id
 
             try:
                 br = await sonzai_backend.run_question(
@@ -251,29 +287,33 @@ async def _run_sonzai_backend(
                     include_qa=(mode in {"qa", "both"}),
                     skip_advance_time=skip_advance_time,
                     max_sessions=max_sessions,
-                    existing_agent_id=reused_entry.agent_id if reused_entry else None,
-                    existing_user_id=reused_entry.user_id if reused_entry else None,
+                    existing_agent_id=shared_agent_id,
+                    existing_user_id=None,  # backend derives from question_id
+                    skip_ingest=user_already_ingested,
                     clear_memory_before_reuse=clear_reused_memory,
-                    keep_agent_alive=snapshot is not None,
+                    keep_agent_alive=True,  # never delete the shared agent
                 )
             except Exception as e:
                 logger.exception("sonzai backend failed on %s", q.question_id)
                 return _error_row(q, "sonzai", str(e))
 
-            # Persist the post-ingest agent ID so future runs with the same
-            # slice can reuse it. We write after every question so partial
-            # progress survives a crash mid-run.
-            if snapshot is not None and reused_entry is None and snapshot_lock is not None:
+            # After a fresh ingest for this user, persist so future runs
+            # with the same slice skip re-ingestion. Writing after every
+            # question makes partial progress survivable across crashes.
+            if (
+                snapshot is not None
+                and not user_already_ingested
+                and snapshot_lock is not None
+            ):
                 extra = br.extra or {}
-                agent_id = str(extra.get("agent_id") or "")
                 user_id = str(extra.get("user_id") or "")
                 session_ids = list(extra.get("session_ids_ingested") or [])
-                if agent_id and user_id:
+                if user_id:
                     async with snapshot_lock:
                         upsert_agent(
                             snapshot,
                             key=q.question_id,
-                            agent_id=agent_id,
+                            agent_id=shared_agent_id,
                             user_id=user_id,
                             session_ids=session_ids,
                         )
