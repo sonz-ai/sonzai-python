@@ -3487,3 +3487,52 @@ class GetToolSchemasResponse(BaseModel):
     model_config = {"extra": "allow"}
 
     model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Workbench / AdvanceTime
+# ---------------------------------------------------------------------------
+
+# NOTE: ``DiaryEntry`` is defined earlier in this module as the canonical diary
+# type (covers every field the diary API returns). The advance-time handler's
+# ``advanceTimeDiaryEntry`` is a strict subset of those fields — reusing the
+# same model means callers who import ``sonzai.types.DiaryEntry`` via either
+# surface get the same class.
+
+
+class WakeupExecution(BaseModel):
+    """A wakeup that fired during the workbench advance-time window.
+
+    Fields mirror the Go handler ``advanceTimeWakeup`` struct.
+    ``generated_message`` is populated only when the platform has wired in
+    the proactive message generator (production parity with the game-side
+    post-wakeup Chat call).
+    """
+
+    wakeup_id: str = ""
+    check_type: str = ""
+    intent: str = ""
+    user_id: str = ""
+    agent_id: str = ""
+    generated_message: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class AdvanceTimeResponse(BaseModel):
+    """Result of ``POST /workbench/advance-time``.
+
+    Mirrors the Go handler ``workbenchAdvanceTimeResponse`` struct. All
+    counters default to 0 and lists default to empty so callers can safely
+    ignore fields that aren't populated in a given run.
+    """
+
+    days_processed: int = 0
+    consolidation_ran: bool = False
+    weekly_consolidations: int = 0
+    diary_entries_created: int = 0
+    diary_entries: list[DiaryEntry] = Field(default_factory=list)
+    wakeups_executed: list[WakeupExecution] = Field(default_factory=list)
+    consolidation_processed: int = 0
+
+    model_config = {"extra": "allow"}

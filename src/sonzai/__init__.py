@@ -174,6 +174,10 @@ from .types import (
     WebhookEndpoint,
     WebhookListResponse,
     WebhookRegisterResponse,
+    # Workbench / AdvanceTime
+    AdvanceTimeResponse,
+    DiaryEntry,
+    WakeupExecution,
 )
 
 __version__ = "1.2.5"
@@ -381,4 +385,8 @@ __all__ = [
     # Types - Platform models
     "ModelVariant",
     "PlatformModelsResponse",
+    # Types - Workbench
+    "AdvanceTimeResponse",
+    "DiaryEntry",
+    "WakeupExecution",
 ]

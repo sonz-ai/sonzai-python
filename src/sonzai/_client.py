@@ -15,15 +15,20 @@ from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
 from .resources.eval_templates import AsyncEvalTemplates, EvalTemplates
 from .resources.knowledge import AsyncKnowledge, Knowledge
+from .resources.org import AsyncOrg, Org
 from .resources.project_config import AsyncProjectConfig, ProjectConfig
 from .resources.project_notifications import (
     AsyncProjectNotifications,
     ProjectNotifications,
 )
 from .resources.projects import AsyncProjects, Projects
+from .resources.storefront import AsyncStorefront, Storefront
+from .resources.support import AsyncSupport, Support
+from .resources.tenants import AsyncTenants, Tenants
 from .resources.user_personas import AsyncUserPersonas, UserPersonas
 from .resources.voice import AsyncVoices, Voices
 from .resources.webhooks import AsyncWebhooks, Webhooks
+from .resources.workbench import AsyncWorkbench, Workbench
 
 DEFAULT_BASE_URL = "https://api.sonz.ai"
 
@@ -71,6 +76,11 @@ class Sonzai:
     account_config: AccountConfig
     custom_llm: CustomLLM
     project_notifications: ProjectNotifications
+    workbench: Workbench
+    org: Org
+    storefront: Storefront
+    support: Support
+    tenants: Tenants
 
     def __init__(
         self,
@@ -128,6 +138,11 @@ class Sonzai:
         self.account_config = AccountConfig(self._http)
         self.custom_llm = CustomLLM(self._http)
         self.project_notifications = ProjectNotifications(self._http)
+        self.workbench = Workbench(self._http)
+        self.org = Org(self._http)
+        self.storefront = Storefront(self._http)
+        self.support = Support(self._http)
+        self.tenants = Tenants(self._http)
 
     def list_models(self) -> PlatformModelsResponse:
         """Return all LLM providers and model variants enabled on this deployment.
@@ -190,6 +205,11 @@ class AsyncSonzai:
     account_config: AsyncAccountConfig
     custom_llm: AsyncCustomLLM
     project_notifications: AsyncProjectNotifications
+    workbench: AsyncWorkbench
+    org: AsyncOrg
+    storefront: AsyncStorefront
+    support: AsyncSupport
+    tenants: AsyncTenants
 
     def __init__(
         self,
@@ -237,6 +257,11 @@ class AsyncSonzai:
         self.account_config = AsyncAccountConfig(self._http)
         self.custom_llm = AsyncCustomLLM(self._http)
         self.project_notifications = AsyncProjectNotifications(self._http)
+        self.workbench = AsyncWorkbench(self._http)
+        self.org = AsyncOrg(self._http)
+        self.storefront = AsyncStorefront(self._http)
+        self.support = AsyncSupport(self._http)
+        self.tenants = AsyncTenants(self._http)
 
     async def list_models(self) -> PlatformModelsResponse:
         """Return all LLM providers and model variants enabled on this deployment.

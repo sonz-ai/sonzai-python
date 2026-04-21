@@ -16,6 +16,31 @@ install-hooks:
     git config core.hooksPath .githooks
     @echo "✓ Hooks enabled: .githooks/pre-push will run on git push."
 
+# Regenerate src/sonzai/_generated/ from the committed OpenAPI spec.
+#
+# The generated package is consumed by the hand-written resources/* layer
+# (which remains the public API). We refresh the spec first so the
+# generator sees whatever the live platform is currently serving.
+#
+# Requires `openapi-python-client` on PATH (install with
+# `uv tool install openapi-python-client`).
+regenerate-sdk:
+    @echo "Step 1/3: sync OpenAPI spec from production..."
+    @just sync-spec
+    @echo "Step 2/3: regenerate src/sonzai/_generated/ ..."
+    @rm -rf src/sonzai/_generated _gen_tmp
+    @mkdir -p _gen_tmp
+    cd _gen_tmp && openapi-python-client generate \
+        --path ../openapi.json \
+        --config ../openapi-codegen.yaml \
+        --meta none \
+        --overwrite
+    @mv _gen_tmp/sonzai_generated src/sonzai/_generated
+    @rmdir _gen_tmp
+    @echo "Step 3/3: refreshing parity audit..."
+    @uv run --extra dev python scripts/parity_audit.py
+    @echo "✓ SDK regenerated. Review src/sonzai/_generated/ and SDK_PARITY_AUDIT.md."
+
 # Bump patch (x.y.Z+1) from pyproject.toml and deploy.
 patch:
     just deploy $(just _next patch)
