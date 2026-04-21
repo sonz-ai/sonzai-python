@@ -229,34 +229,29 @@ def render_sidebar() -> None:
             if st.button("Create agent", type="primary", disabled=not can_create):
                 try:
                     client = get_client(api_key)
-                    with st.spinner("Creating agent…"):
-                        # Seed with neutral Big5 (0.5 across the board) so sliders
-                        # have headroom in both directions. The user shapes the
-                        # personality via sliders/presets after creation.
-                        neutral_big5 = {
-                            "openness": 0.5,
-                            "conscientiousness": 0.5,
-                            "extraversion": 0.5,
-                            "agreeableness": 0.5,
-                            "neuroticism": 0.5,
-                        }
-                        agent = client.agents.create(
+                    with st.spinner("Generating + creating agent (10-30s, LLM is picking the Big5)…"):
+                        # LLM-generated personality — takes the description and
+                        # expands it into Big5 scores, speech patterns, etc.
+                        # Sliders start at whatever the LLM chose; user can
+                        # still drag to any personality from there.
+                        result = client.agents.generation.generate_and_create(
                             name=name,
+                            description=description,
                             gender=gender,
-                            personality_prompt=description,
-                            bio=description,
-                            big5=neutral_big5,
                         )
-                    agent_id = getattr(agent, "agent_id", None) or getattr(agent, "id", None)
-                    if not agent_id and isinstance(agent, dict):
-                        agent_id = agent.get("agent_id") or agent.get("id")
+                    agent_id = _extract_agent_id(result)
                     if not agent_id:
-                        st.error(f"Agent creation returned no agent_id. Raw: {agent}")
+                        st.error(f"Agent creation returned no agent_id. Raw: {result}")
                         return
                     _connect(client, agent_id, agent_name=name)
                     st.rerun()
                 except Exception as err:  # noqa: BLE001
-                    st.error(f"Create failed: {err}")
+                    st.error(
+                        f"Create failed: {err}\n\n"
+                        "Tip: if the platform's generate-character path is "
+                        "unhealthy, switch to 'Use existing' and paste an "
+                        "agent UUID instead."
+                    )
         else:
             existing_id = st.text_input("Agent ID (UUID)", help="Paste an existing agent's UUID.")
             if st.button("Connect", type="primary", disabled=not (api_key and existing_id)):
@@ -396,6 +391,30 @@ def render_chat_panel() -> None:
             return
 
     s.messages.append(ChatTurn(role="assistant", content=buf, session_number=s.number))
+
+
+def _extract_agent_id(result) -> str | None:
+    """Pull an agent_id out of generate_and_create's forgiving return shape."""
+    if result is None:
+        return None
+    # Object with attribute
+    for attr in ("agent_id", "agentId", "id"):
+        val = getattr(result, attr, None)
+        if val:
+            return str(val)
+    # Dict
+    if isinstance(result, dict):
+        for key in ("agent_id", "agentId", "id"):
+            if result.get(key):
+                return str(result[key])
+        # Some endpoints nest the agent under "agent" or "data"
+        for wrapper in ("agent", "data", "created_agent"):
+            nested = result.get(wrapper)
+            if isinstance(nested, dict):
+                for key in ("agent_id", "agentId", "id"):
+                    if nested.get(key):
+                        return str(nested[key])
+    return None
 
 
 def _extract_delta(event) -> str:
