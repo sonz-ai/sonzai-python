@@ -94,21 +94,48 @@ python -m benchmarks.longmemeval --compare \
 python -m benchmarks.longmemeval --backend sonzai --limit 0 --concurrency 8
 ```
 
-**Metrics reported**:
+**Metrics reported** — MemPalace-identical grid so numbers are directly
+comparable line-for-line with their published results:
 
-- **QA accuracy** — primary, apples-to-apples head-to-head metric. Both systems
-  produce an answer (Sonzai via `agents.chat`; MemPalace via Gemini reader over
-  its top-k retrieved sessions) and both are graded by the same Gemini judge.
-- **Session Recall@5 / NDCG@5** — meaningful for MemPalace (it stores sessions
-  verbatim). Sonzai extracts atomic facts, so session IDs aren't always
-  populated on retrieved items; reported only when the backend produces them.
-- **Fact Recall@5 / NDCG@5** — meaningful for Sonzai (fact-based retrieval).
-  A retrieved fact counts as a hit if its text contains the ground-truth
-  answer after normalization.
+- **R@G** (headline) — fractional recall at `k = |ground-truth|`: fraction of
+  answer-bearing sessions that land in the top-|GT| retrievals. Normalizes
+  across questions with different numbers of answer sessions.
+- **R@10 / R@30** — classic binary recall at k=10 and k=30.
+- **recall_any@k / recall_all@k / ndcg_any@k** for k ∈ {1, 3, 5, 10, 30, 50},
+  reported at both session and turn granularity. Formula-identical to
+  MemPalace's `ndcg()` in `benchmarks/longmemeval_bench.py` (ideal denominator
+  = sorted top-k relevances, not total-GT).
+- **QA accuracy** — end-to-end. Both systems produce an answer (Sonzai via
+  `agents.chat`; MemPalace via Gemini reader over its top-k retrieved sessions)
+  and both are graded by the same Gemini 3.1 Flash Lite judge.
+- **Fact Recall@5 / NDCG@5** — extra Sonzai-native signal: a retrieved fact
+  counts as a hit if its text contains the ground-truth answer after
+  normalization. Not part of parity, but useful to tell "retrieval found the
+  fact but chat didn't surface it" from "retrieval missed it".
+- **advance_time diagnostics** — total CE-worker calls, consolidations fired,
+  and failures per run. Proves self-learning actually ran.
 
-The per-question-type breakdown (`single-session-user`, `temporal-reasoning`,
-`multi-session`, etc.) is reported for QA accuracy — that's the fair axis for
-comparing very differently-architected systems.
+Per-question-type breakdown shows **R@G, R@10, R@30, QA** per type
+(`single-session-user`, `temporal-reasoning`, `multi-session`, etc.) — the
+fairest axis for comparing very differently-architected systems.
+
+### Head-to-head against MemPalace
+
+Canonical 10-question matched run, 6 sessions per question (pass
+`--max-sessions-per-question 6` on the Sonzai side; a dataset pre-trimmed to
+the same slice is passed as `--dataset-path` on the MemPalace side):
+
+| Metric | Sonzai | MemPalace (raw) | MemPalace (hybrid_v4) |
+|---|---:|---:|---:|
+| R@G (session) | _run-updated_ | _run-updated_ | _run-updated_ |
+| R@10 (session) | _run-updated_ | _run-updated_ | _run-updated_ |
+| R@30 (session) | _run-updated_ | _run-updated_ | _run-updated_ |
+| QA accuracy | _run-updated_ | _run-updated_ | _run-updated_ |
+
+Numbers are filled in by `scripts/update_readme_scores.py` after each
+`--compare` invocation — see `benchmarks/longmemeval/results/` for the raw
+JSONL. Re-run MemPalace only when the dataset slice changes (mode output is
+deterministic for a given dataset + mode).
 
 **MemPalace backend**: shells out to MemPalace's own
 [`longmemeval_bench.py`](https://github.com/MemPalace/mempalace). Uses their
@@ -167,20 +194,29 @@ calls can take a minute or two.
 Standard SOTOPIA scores a single social interaction on 7 dimensions
 (Believability, Relationship, Knowledge, Secret, Social Rules, Financial,
 Goal). Our extension: the **same Sonzai agent** plays the **same scenario**
-with the **same user** across N sessions (default 30), with `advance_time`
+with the **same user** across N sessions (default 90), with `advance_time`
 between sessions.
 
 If self-learning is real, later sessions should score higher — same agent, same
-partner, more shared history.
+partner, more shared history. The headline trajectory we track is
+
+> session 1 → session 10 → session 30 → session 60 → session 90
+
+with each checkpoint's average overall score reported side-by-side so the
+curve's monotonicity is visible at a glance.
 
 ```bash
-# Smoke: 4 scenarios × 10 sessions each
+# Smoke: 4 scenarios × 10 sessions each (checks the wiring)
 python -m benchmarks.sotopia --scenarios 4 --sessions-per-scenario 10 \
     --snapshot-at 1,5,10
 
-# Full: 20 scenarios × 30 sessions (slow — many hours of API time)
-python -m benchmarks.sotopia --scenarios 20 --sessions-per-scenario 30 \
+# Mid-horizon: 10 scenarios × 30 sessions
+python -m benchmarks.sotopia --scenarios 10 --sessions-per-scenario 30 \
     --snapshot-at 1,10,30
+
+# Full long-horizon: 20 scenarios × 90 sessions (slow — a day of API time)
+python -m benchmarks.sotopia --scenarios 20 --sessions-per-scenario 90 \
+    --snapshot-at 1,10,30,60,90
 ```
 
 **Output**:
@@ -190,9 +226,25 @@ python -m benchmarks.sotopia --scenarios 20 --sessions-per-scenario 30 \
   scenarios.
 - stdout table at the snapshot indices.
 
-**Headline metric**: `Δoverall` between session 1 and session 30. Expected
-direction: positive. Flat trajectory means self-learning isn't helping; a
-downward trend is a regression.
+### Headline trajectory table
+
+Printed by `run.py` at the end of every run and auto-refreshed in this README
+by `scripts/update_readme_scores.py`:
+
+| Dimension | Session 1 | Session 10 | Session 30 | Session 60 | Session 90 |
+|---|---:|---:|---:|---:|---:|
+| Believability (0..10) | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ |
+| Relationship (-5..5) | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ |
+| Knowledge (0..10) | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ |
+| Secret (-10..0) | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ |
+| Social rules (-10..0) | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ |
+| Financial (-5..5) | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ |
+| Goal (0..10) | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ |
+| **Overall** | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ | _run-updated_ |
+
+**Headline metric**: `Δoverall` between session 1 and session 90. Expected
+direction: positive and monotonic across the five checkpoints. Flat trajectory
+means self-learning isn't helping; a downward trend is a regression.
 
 **Scenario source**: pulled from the canonical
 [`cmu-lti/sotopia`](https://huggingface.co/datasets/cmu-lti/sotopia) HuggingFace
@@ -205,15 +257,14 @@ session 1 → 30 is Sonzai's side.
 
 ## Cost and time
 
-Ballpark per 1 full-limit run (all 500 LongMemEval questions OR 20 scenarios ×
-30 sessions):
+Ballpark per 1 full-limit run:
 
-| | LongMemEval | SOTOPIA longitudinal |
+| | LongMemEval (500 Q) | SOTOPIA (20 × 90) |
 |---|---|---|
-| API calls | ~30K | ~50K |
-| Wall time @ concurrency 8 | 2–4 hours | 4–8 hours |
-| Sonzai cost (order-of-magnitude) | $10–50 | $30–100 |
-| Gemini cost | ~$1 | ~$5 |
+| API calls | ~30K | ~150K |
+| Wall time @ concurrency 8 | 2–4 hours | ~1 day |
+| Sonzai cost (order-of-magnitude) | $10–50 | $80–250 |
+| Gemini cost | ~$1 | ~$15 |
 
 Start with `--limit 20` or `--scenarios 4 --sessions-per-scenario 10` to
 confirm setup works before committing to the full run.

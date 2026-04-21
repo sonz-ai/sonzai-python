@@ -32,7 +32,7 @@ from sonzai import AsyncSonzai
 from ...common.sdk_extras import async_memory, async_sessions
 from ...common.workbench_compat import advance_time_chunked_async
 from ..dataset import LongMemEvalQuestion, Session, hours_between
-from . import BackendResult
+from . import BackendResult, RankedItem
 
 logger = logging.getLogger(__name__)
 
@@ -82,12 +82,13 @@ async def _build_fact_to_session_map(
     """Build ``fact_id → session_id`` from the agent's memory state.
 
     ``memory.search`` returns ``fact_id`` but not the source session, so we
-    reconstruct the mapping. The typed ``Fact`` schema on ``list_facts``
-    doesn't include ``session_id`` today (server returns it as an extra
-    field), and ``memory.timeline``'s aggregation key occasionally falls
-    back to ``"unknown"``. We try both sources and use whichever actually
-    gives us session IDs — facts don't move between sessions, so collision
-    is impossible.
+    reconstruct the mapping. Both ``memory.timeline`` (per-fact
+    ``AtomicFact.session_id``) and ``memory.list_facts`` (``Fact.session_id``
+    / ``Fact.source_id``) now expose the source session directly. We still
+    guard against the ``"unknown"`` bucket because ``memory.timeline``'s
+    aggregation key falls back to that string when a fact predates server-
+    side session tagging, and such pre-fix data may still linger. Facts
+    don't move between sessions, so combining both sources cannot collide.
     """
     memory = async_memory(client)
     mapping: dict[str, str] = {}
@@ -99,21 +100,21 @@ async def _build_fact_to_session_map(
         for sess in timeline.sessions:
             fallback = sess.session_id if sess.session_id and sess.session_id != "unknown" else ""
             for fact in sess.facts:
-                sid = getattr(fact, "session_id", "") or fallback
+                sid = fact.session_id or fallback
                 if fact.fact_id and sid and sid != "unknown":
                     mapping[fact.fact_id] = sid
     except Exception as e:
         logger.debug("memory.timeline failed: %s", e)
 
-    # list_facts as a backstop — Fact has extra="allow" so session_id lives in
-    # model_extra if the server populates it.
+    # list_facts as a backstop — Fact.session_id is typed; source_id is the
+    # secondary signal for facts whose session_id is empty (e.g., manually
+    # created facts tagged only with the source message/episode).
     try:
         facts = await memory.list_facts(agent_id=agent_id, user_id=user_id, limit=5000)
         for fact in facts.facts:
             if fact.fact_id in mapping:
                 continue
-            extra = fact.model_extra or {}
-            sid = extra.get("session_id") or extra.get("source_id") or ""
+            sid = fact.session_id or fact.source_id
             if sid and sid != "unknown":
                 mapping[fact.fact_id] = sid
     except Exception as e:
@@ -129,12 +130,16 @@ async def _retrieve(
     user_id: str,
     question: str,
     limit: int,
-) -> tuple[list[str], list[str]]:
-    """Return ``(ranked_session_ids, ranked_fact_texts)`` for the question.
+    session_dates: dict[str, str],
+) -> tuple[list[str], list[str], list[RankedItem]]:
+    """Return ``(ranked_session_ids, ranked_fact_texts, ranked_items)`` for the question.
 
     Sonzai's memory is fact-oriented — retrieved facts are the first-class
     result. Session IDs are best-effort via a fact-to-session mapping (not
-    always populated server-side).
+    always populated server-side). ``ranked_items`` is the MemPalace-compatible
+    projection: one entry per retrieved fact, ``corpus_id`` set to the source
+    session id when known (so session-level recall works), falling back to the
+    fact_id so the item is still identifiable even when the mapping is sparse.
     """
     memory = async_memory(client)
     # Pass user_id so the server uses cosine-similarity semantic search over
@@ -149,14 +154,23 @@ async def _retrieve(
     seen: set[str] = set()
     ranked_sessions: list[str] = []
     ranked_facts: list[str] = []
+    ranked_items: list[RankedItem] = []
     for r in results.results:
         if r.content:
             ranked_facts.append(r.content)
         sid = fact_to_session.get(r.fact_id, "")
+        corpus_id = sid or r.fact_id
+        ranked_items.append(
+            RankedItem(
+                corpus_id=corpus_id,
+                text=(r.content or "")[:500],
+                timestamp=session_dates.get(sid, ""),
+            )
+        )
         if sid and sid not in seen:
             seen.add(sid)
             ranked_sessions.append(sid)
-    return ranked_sessions, ranked_facts
+    return ranked_sessions, ranked_facts, ranked_items
 
 
 async def _ask_question(
@@ -259,12 +273,14 @@ async def run_question(
         # Final advance-time lets the last session's consolidation/diary fire.
         await _try_advance(min_gap_hours)
 
-        ranked_sessions, ranked_facts = await _retrieve(
+        session_dates = {s.session_id: s.date for s in haystack}
+        ranked_sessions, ranked_facts, ranked_items = await _retrieve(
             client,
             agent_id=agent_id,
             user_id=user_id,
             question=question.question,
             limit=retrieval_limit,
+            session_dates=session_dates,
         )
 
         agent_answer = ""
@@ -289,6 +305,7 @@ async def run_question(
             logger.debug("memory.list_facts diagnostic failed: %s", e)
 
         return BackendResult(
+            ranked_items=ranked_items,
             ranked_session_ids=ranked_sessions,
             ranked_fact_texts=ranked_facts,
             agent_answer=agent_answer,

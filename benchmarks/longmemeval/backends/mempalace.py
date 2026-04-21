@@ -1,21 +1,27 @@
 """MemPalace backend for head-to-head comparison.
 
-We drive MemPalace's own ``longmemeval_bench.py`` script rather than
-re-implementing against their internal API. Using their canonical runner keeps
-the comparison as fair as possible — any critique of MemPalace's numbers
-applies identically to ours.
+We drive MemPalace's own ``longmemeval_bench.py`` rather than re-implementing
+against their internal API. Using their canonical runner keeps the comparison
+as fair as possible — any critique of MemPalace's numbers applies identically
+to ours.
 
-The script is invoked once over the whole question set (not per-question —
-their runner amortizes ChromaDB index setup). We parse the JSONL it writes and
-return ``BackendResult`` per question.
+Checkout resolution (in order):
+  1. ``SONZAI_BENCH_MEMPALACE_DIR`` env var (explicit override).
+  2. ``sonzai-sdk/mempalace`` — a sibling clone alongside ``sonzai-python`` at
+     the repo root. This is the intended default for local development and
+     lets us read the source while running the benchmark against it.
+  3. ``$SONZAI_BENCH_CACHE/mempalace`` (or ``~/.cache/sonzai-bench/mempalace``)
+     — auto-cloned on first invocation if nothing above exists.
 
-Setup (one-time)::
+MemPalace's script is invoked once per question set (its ChromaDB index setup
+amortizes well). We parse the JSONL it writes and return one ``BackendResult``
+per question, carrying:
 
-    git clone https://github.com/MemPalace/mempalace.git \\
-        ~/.cache/sonzai-bench/mempalace
-    pip install -e ~/.cache/sonzai-bench/mempalace[dev]
-
-The runner will do the clone automatically on first invocation if missing.
+- ``ranked_items`` (MemPalace's ``retrieval_results.ranked_items``) verbatim,
+  so downstream scoring sees identical inputs to MemPalace's internal scorer;
+- ``ranked_session_ids`` / ``ranked_fact_texts`` convenience projections;
+- ``extra["mempalace_metrics"]`` — MemPalace's own per-question metrics dict,
+  reported side-by-side with ours as a parity sanity check.
 """
 
 from __future__ import annotations
@@ -28,7 +34,7 @@ import subprocess
 from pathlib import Path
 
 from ..dataset import LongMemEvalQuestion
-from . import BackendResult
+from . import BackendResult, RankedItem
 
 logger = logging.getLogger(__name__)
 
@@ -37,14 +43,35 @@ MEMPALACE_REPO = "https://github.com/MemPalace/mempalace.git"
 BENCHMARK_SCRIPT = "benchmarks/longmemeval_bench.py"
 
 
-def _cache_dir() -> Path:
-    override = os.environ.get("SONZAI_BENCH_CACHE")
-    root = Path(override).expanduser() if override else Path.home() / ".cache" / "sonzai-bench"
-    return root / "mempalace"
+def _resolve_checkout() -> Path:
+    """Pick the MemPalace checkout to run against — prefer the sibling clone."""
+    env_override = os.environ.get("SONZAI_BENCH_MEMPALACE_DIR")
+    if env_override:
+        p = Path(env_override).expanduser()
+        if (p / BENCHMARK_SCRIPT).exists():
+            return p
+        logger.warning("SONZAI_BENCH_MEMPALACE_DIR set but %s missing — falling back", p)
+
+    # sonzai-python/benchmarks/longmemeval/backends/mempalace.py
+    #   -> sonzai-python/benchmarks/longmemeval/backends
+    #   -> sonzai-python/benchmarks/longmemeval
+    #   -> sonzai-python/benchmarks
+    #   -> sonzai-python
+    #   -> sonzai-sdk  (sibling "mempalace" checkout lives here)
+    repo_root = Path(__file__).resolve().parents[4]
+    sibling = repo_root / "mempalace"
+    if (sibling / BENCHMARK_SCRIPT).exists():
+        return sibling
+
+    cache_override = os.environ.get("SONZAI_BENCH_CACHE")
+    cache_root = (
+        Path(cache_override).expanduser() if cache_override else Path.home() / ".cache" / "sonzai-bench"
+    )
+    return cache_root / "mempalace"
 
 
 def _ensure_checkout() -> Path:
-    target = _cache_dir()
+    target = _resolve_checkout()
     if (target / BENCHMARK_SCRIPT).exists():
         return target
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -84,39 +111,53 @@ def _run_bench(
     subprocess.run(cmd, check=True, cwd=checkout)
 
 
-def _parse_results(output_path: Path) -> dict[str, tuple[list[str], list[str]]]:
-    """Parse MemPalace JSONL into ``{question_id: (session_ids, fact_texts)}``.
+def _parse_row(
+    row: dict,
+) -> tuple[list[RankedItem], list[str], list[str], dict]:
+    """Extract ranked items, session-id projection, fact-text projection, and metrics."""
+    retrieval = row.get("retrieval_results") or {}
+    ranked_raw = retrieval.get("ranked_items") or []
 
-    MemPalace's output schema (v3.x): each row has ``retrieval_results`` with
-    ``ranked_items[]`` where each item carries ``corpus_id`` (= session id at
-    the default session-granularity) and ``text``. We mirror both so the
-    downstream scoring can do session-level recall AND fact-level recall
-    over the same MemPalace output.
-    """
-    out: dict[str, tuple[list[str], list[str]]] = {}
+    items: list[RankedItem] = []
+    sids: list[str] = []
+    seen_sids: set[str] = set()
+    texts: list[str] = []
+
+    for item in ranked_raw:
+        corpus_id = str(item.get("corpus_id") or "")
+        text = str(item.get("text") or "")
+        timestamp = str(item.get("timestamp") or "")
+        items.append(RankedItem(corpus_id=corpus_id, text=text, timestamp=timestamp))
+        if corpus_id:
+            # Turn ids like "sess_xxx_turn_4" collapse to session ids.
+            sid = (
+                corpus_id.rsplit("_turn_", 1)[0] if "_turn_" in corpus_id else corpus_id
+            )
+            if sid not in seen_sids:
+                seen_sids.add(sid)
+                sids.append(sid)
+        if text:
+            texts.append(text)
+
+    # Legacy schema fallback (older MemPalace outputs).
+    if not sids:
+        legacy = list(row.get("ranked_session_ids") or row.get("top_sessions") or [])
+        sids = legacy
+
+    return items, sids, texts, (retrieval.get("metrics") or {})
+
+
+def _parse_results(
+    output_path: Path,
+) -> dict[str, tuple[list[RankedItem], list[str], list[str], dict]]:
+    out: dict[str, tuple[list[RankedItem], list[str], list[str], dict]] = {}
     with open(output_path) as f:
         for line in f:
             row = json.loads(line)
             qid = row.get("question_id") or row.get("qid")
             if not qid:
                 continue
-            retrieval = row.get("retrieval_results") or {}
-            ranked_items = retrieval.get("ranked_items") or []
-            sids: list[str] = []
-            texts: list[str] = []
-            seen_sids: set[str] = set()
-            for item in ranked_items:
-                sid = item.get("corpus_id") or ""
-                if sid and sid not in seen_sids:
-                    seen_sids.add(sid)
-                    sids.append(sid)
-                text = item.get("text") or ""
-                if text:
-                    texts.append(text)
-            # Legacy fallbacks for earlier MemPalace output schemas.
-            if not sids:
-                sids = list(row.get("ranked_session_ids") or row.get("top_sessions") or [])
-            out[qid] = (sids, texts)
+            out[qid] = _parse_row(row)
     return out
 
 
@@ -132,7 +173,10 @@ def run_all(
     the runner feeds MemPalace's top-k sessions back through a Gemini reader
     (see ``longmemeval/run.py``).
     """
-    output_path = _cache_dir() / f"results_{mempalace_mode}.jsonl"
+    checkout = _ensure_checkout()
+    # Write MemPalace's JSONL alongside the checkout to keep its conventions;
+    # the runner only reads the file.
+    output_path = checkout / "benchmarks" / f"results_sonzai_parity_{mempalace_mode}.jsonl"
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     _run_bench(
@@ -145,11 +189,16 @@ def run_all(
     parsed = _parse_results(output_path)
     results: dict[str, BackendResult] = {}
     for q in questions:
-        sids, texts = parsed.get(q.question_id, ([], []))
+        items, sids, texts, mp_metrics = parsed.get(q.question_id, ([], [], [], {}))
         results[q.question_id] = BackendResult(
+            ranked_items=items,
             ranked_session_ids=sids,
             ranked_fact_texts=texts,
             agent_answer="",
-            extra={"mempalace_mode": mempalace_mode},
+            extra={
+                "mempalace_mode": mempalace_mode,
+                "mempalace_checkout": str(checkout),
+                "mempalace_metrics": mp_metrics,
+            },
         )
     return results

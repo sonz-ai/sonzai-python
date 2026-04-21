@@ -16,24 +16,44 @@ from dataclasses import dataclass, field
 
 
 @dataclass
+class RankedItem:
+    """One retrieved item, in MemPalace's ``retrieval_results.ranked_items`` shape.
+
+    ``corpus_id`` is a session id at session granularity, or ``"{session_id}_turn_{n}"``
+    at turn granularity — ``scoring.session_id_from_corpus_id`` maps between them.
+    """
+
+    corpus_id: str
+    text: str
+    timestamp: str = ""
+
+
+@dataclass
 class BackendResult:
     """What a backend must return for scoring.
 
-    Two retrieval modes are supported because MemPalace and Sonzai have
-    fundamentally different data models:
+    The canonical field for retrieval scoring is ``ranked_items`` — it carries
+    enough information to derive session-level and turn-level metrics the same
+    way MemPalace does. The pre-computed ``ranked_session_ids`` and
+    ``ranked_fact_texts`` are convenience projections for backends that only
+    produce one granularity natively:
 
     - **Session-level** (MemPalace): systems that store raw conversation
       sessions rank whole sessions. Scored against ``answer_session_ids``.
     - **Fact-level** (Sonzai): systems that extract atomic facts rank facts.
-      Scored by whether any retrieved fact contains the ground-truth answer.
+      Session ids are best-effort via a fact→session map; fact-level recall
+      is an additional signal for how well retrieval found the answer span.
 
-    Backends populate whichever of the two they can; the head-to-head
-    apples-to-apples metric is end-to-end QA accuracy (``agent_answer``
-    graded by Gemini), which works for both.
+    End-to-end QA (``agent_answer`` graded by Gemini) is provider-neutral and
+    applies to both.
     """
 
-    # Ranked list of session IDs retrieved for the question.
-    # Populated by session-storing systems (e.g. MemPalace).
+    # MemPalace-shaped retrieval log: the authoritative retrieval output.
+    ranked_items: list[RankedItem] = field(default_factory=list)
+
+    # Ranked list of session IDs retrieved for the question. Derived from
+    # ``ranked_items`` for MemPalace; populated directly by fact-based backends
+    # that maintain a fact→session mapping.
     ranked_session_ids: list[str] = field(default_factory=list)
 
     # Ranked list of retrieved fact/memory texts.

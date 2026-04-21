@@ -1,5 +1,16 @@
 """LongMemEval runner: ingest haystacks, score retrieval + QA, write JSONL.
 
+Parity note — this file is deliberately shaped to match MemPalace's own
+``benchmarks/longmemeval_bench.py``:
+
+- Same rank-metric grid: ks = [1, 3, 5, 10, 30, 50].
+- Same three metrics at each k: ``recall_any``, ``recall_all``, ``ndcg_any``.
+- Same session/turn split (turn-level = corpus_id retains its turn suffix;
+  session-level = turn ids collapsed via ``session_id_from_corpus_id``).
+- Same per-question-type breakdown at ``recall_any@10``.
+- Output JSONL mirrors MemPalace's ``retrieval_results`` schema so either
+  benchmark's log can be fed to either scorer.
+
 Concurrency is bounded by ``--concurrency`` over questions. Each question is
 fully independent (fresh agent, fresh user_id), so parallelism is clean.
 
@@ -8,14 +19,21 @@ Output schema (one line per question)::
     {
       "question_id": "...",
       "question_type": "temporal-reasoning",
-      "backend": "sonzai",
-      "ranked_session_ids": ["s023", "s011", ...],
-      "recall_at_5": 1.0, "ndcg_at_5": 0.82,
+      "backend": "sonzai" | "mempalace",
+      "question": "...",
+      "answer": "...",
+      "answer_session_ids": ["s023"],
+      "retrieval_results": {
+        "query": "...",
+        "ranked_items": [{"corpus_id": "s023", "text": "...", "timestamp": "..."}, ...],
+        "metrics": {
+          "session": {"recall_any@1": ..., "ndcg_any@50": ...},
+          "turn":    {"recall_any@1": ..., "ndcg_any@50": ...}
+        }
+      },
       "agent_answer": "...",
       "qa_correct": true, "qa_rationale": "...",
-      "answer_session_ids": ["s023"],
-      "question": "...", "answer": "...",
-      "extra": {...}    # backend-specific diagnostics
+      "extra": {...}    # backend-specific diagnostics, plus mempalace_metrics for parity
     }
 """
 
@@ -28,6 +46,7 @@ import logging
 import os
 import sys
 import time
+from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -40,13 +59,25 @@ from ..common.gemini_judge import (
     GeminiJudge,
     judge_qa_async,
 )
-from .backends import BackendResult
+from .backends import BackendResult, RankedItem
 from .backends import mempalace as mempalace_backend
 from .backends import sonzai as sonzai_backend
 from .dataset import LongMemEvalQuestion, load_questions, resolve_dataset_path
-from .scoring import fact_ndcg_at_k, fact_recall_at_k, ndcg_at_k, recall_at_k
+from .scoring import (
+    fact_ndcg_at_k,
+    fact_recall_at_k,
+    ndcg_at_k,
+    recall_all_at_k,
+    recall_any_at_k,
+    recall_at_g,
+    session_id_from_corpus_id,
+)
 
 logger = logging.getLogger("benchmarks.longmemeval")
+
+# MemPalace's default evaluation grid — we mirror it exactly.
+KS = (1, 3, 5, 10, 30, 50)
+METRIC_NAMES = ("recall_any", "recall_all", "ndcg_any")
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -244,6 +275,73 @@ async def _run_mempalace_backend(
 # ---------------------------------------------------------------------------
 
 
+def _retrieval_metrics(
+    items: list[RankedItem], answer_session_ids: list[str]
+) -> dict[str, dict[str, float]]:
+    """Compute MemPalace's full k-grid at both session and turn granularity.
+
+    Bit-for-bit parity with MemPalace's ``benchmarks/longmemeval_bench.py``
+    evaluation block (around line 3155 in their file):
+
+    - **session-level**: each ranked item's ``corpus_id`` is mapped through
+      ``session_id_from_corpus_id``. The resulting list is scored positionally
+      — *no dedup before scoring*. If the same session shows up at rank 1
+      and rank 3 (e.g. two retrieved facts from the same session), both
+      positions contribute to DCG, matching MemPalace's ``session_level_ids``
+      approach. Dedup before scoring would slightly undercount NDCG versus
+      MemPalace's published numbers, so we avoid it.
+    - **turn-level**: ``turn_correct`` set is the set of corpus_ids whose
+      ``session_id_from_corpus_id`` is in ``answer_session_ids`` — identical
+      to MemPalace's ``turn_correct`` set comprehension. Scoring runs over
+      the turn-granular ranking directly.
+
+    LongMemEval doesn't publish answer turn ids, so the turn-level metric
+    here measures "any turn from an answer-bearing session shows up" — which
+    is exactly MemPalace's definition, not a Sonzai-specific choice.
+    """
+    if not items:
+        return {"session": {}, "turn": {}}
+
+    corpus_ids_turn = [it.corpus_id for it in items]
+    session_correct = set(answer_session_ids)
+    # Positional session-id list, NO dedup — mirrors MemPalace's
+    # ``session_level_ids = [session_id_from_corpus_id(cid) for cid in corpus_ids]``.
+    session_level_ids = [session_id_from_corpus_id(cid) for cid in corpus_ids_turn]
+    turn_correct = [cid for cid in corpus_ids_turn if session_id_from_corpus_id(cid) in session_correct]
+
+    metrics: dict[str, dict[str, float]] = {"session": {}, "turn": {}}
+    for k in KS:
+        metrics["session"][f"recall_any@{k}"] = recall_any_at_k(
+            session_level_ids, answer_session_ids, k
+        )
+        metrics["session"][f"recall_all@{k}"] = recall_all_at_k(
+            session_level_ids, answer_session_ids, k
+        )
+        metrics["session"][f"ndcg_any@{k}"] = ndcg_at_k(
+            session_level_ids, answer_session_ids, k
+        )
+
+        # Turn-level scoring runs over the original turn-granular ranking and
+        # judges each corpus_id against the turn_correct set — same as MemPalace.
+        metrics["turn"][f"recall_any@{k}"] = recall_any_at_k(
+            corpus_ids_turn, turn_correct, k
+        )
+        metrics["turn"][f"recall_all@{k}"] = recall_all_at_k(
+            corpus_ids_turn, turn_correct, k
+        )
+        metrics["turn"][f"ndcg_any@{k}"] = ndcg_at_k(
+            corpus_ids_turn, turn_correct, k
+        )
+
+    # R@G — fractional recall at k = |GT|. For session-level we use the
+    # positional list (same as above); a session hit at rank N counts as one
+    # "correct" item in the top-|GT| window. For turn-level, ``turn_correct``
+    # defines the GT set, identical to MemPalace's comprehension.
+    metrics["session"]["recall_at_g"] = recall_at_g(session_level_ids, answer_session_ids)
+    metrics["turn"]["recall_at_g"] = recall_at_g(corpus_ids_turn, turn_correct)
+    return metrics
+
+
 async def _score_and_serialize(
     q: LongMemEvalQuestion,
     br: BackendResult,
@@ -252,6 +350,12 @@ async def _score_and_serialize(
     judge: GeminiJudge | None,
     mode: str,
 ) -> dict:
+    items = br.ranked_items
+    if not items and br.ranked_session_ids:
+        # Backends that only surfaced a session-id projection (e.g. older
+        # outputs) still get scored — synthesize RankedItems.
+        items = [RankedItem(corpus_id=sid, text="") for sid in br.ranked_session_ids]
+
     row: dict = {
         "question_id": q.question_id,
         "question_type": q.question_type,
@@ -259,23 +363,25 @@ async def _score_and_serialize(
         "question": q.question,
         "answer": q.answer,
         "answer_session_ids": q.answer_session_ids,
-        "ranked_session_ids": br.ranked_session_ids,
-        "ranked_fact_texts": br.ranked_fact_texts[:10],  # cap for JSONL size
+        "retrieval_results": {
+            "query": q.question,
+            "ranked_items": [
+                {"corpus_id": it.corpus_id, "text": it.text[:500], "timestamp": it.timestamp}
+                for it in items[:50]
+            ],
+            "metrics": {"session": {}, "turn": {}},
+        },
         "agent_answer": br.agent_answer,
-        "extra": br.extra,
+        "extra": dict(br.extra),
     }
 
     if mode in {"retrieval", "both"}:
-        if br.ranked_session_ids:
-            row["session_recall_at_5"] = recall_at_k(
-                br.ranked_session_ids, q.answer_session_ids, 5
-            )
-            row["session_ndcg_at_5"] = ndcg_at_k(
-                br.ranked_session_ids, q.answer_session_ids, 5
-            )
+        metrics = _retrieval_metrics(items, q.answer_session_ids)
+        row["retrieval_results"]["metrics"] = metrics
+        # Sonzai-specific fact-level recall (an extra signal, not part of parity).
         if br.ranked_fact_texts:
-            row["fact_recall_at_5"] = fact_recall_at_k(br.ranked_fact_texts, q.answer, 5)
-            row["fact_ndcg_at_5"] = fact_ndcg_at_k(br.ranked_fact_texts, q.answer, 5)
+            row["extra"]["fact_recall_at_5"] = fact_recall_at_k(br.ranked_fact_texts, q.answer, 5)
+            row["extra"]["fact_ndcg_at_5"] = fact_ndcg_at_k(br.ranked_fact_texts, q.answer, 5)
 
     if mode in {"qa", "both"} and br.agent_answer and judge is not None:
         try:
@@ -303,7 +409,7 @@ def _error_row(q: LongMemEvalQuestion, backend: str, err: str) -> dict:
         "question": q.question,
         "answer": q.answer,
         "answer_session_ids": q.answer_session_ids,
-        "ranked_session_ids": [],
+        "retrieval_results": {"query": q.question, "ranked_items": [], "metrics": {"session": {}, "turn": {}}},
         "agent_answer": "",
         "extra": {"error": err},
     }
@@ -336,28 +442,68 @@ def _summarize(rows: list[dict]) -> dict:
 
     summary: dict = {"n": n}
 
-    def _avg(key: str) -> float | None:
-        vals = [r[key] for r in rows if key in r]
-        return sum(vals) / len(vals) if vals else None
+    # Aggregate retrieval metrics across the full k-grid.
+    sums: dict[str, dict[str, float]] = {"session": defaultdict(float), "turn": defaultdict(float)}
+    counts: dict[str, dict[str, int]] = {"session": defaultdict(int), "turn": defaultdict(int)}
+    for r in rows:
+        metrics = (r.get("retrieval_results") or {}).get("metrics") or {}
+        for gran in ("session", "turn"):
+            for key, val in (metrics.get(gran) or {}).items():
+                sums[gran][key] += float(val)
+                counts[gran][key] += 1
 
-    for key in ("session_recall_at_5", "session_ndcg_at_5", "fact_recall_at_5", "fact_ndcg_at_5"):
-        avg = _avg(key)
-        if avg is not None:
-            summary[key] = avg
+    retrieval: dict[str, dict[str, float]] = {"session": {}, "turn": {}}
+    for gran in ("session", "turn"):
+        for key, total in sums[gran].items():
+            c = counts[gran][key]
+            if c:
+                retrieval[gran][key] = total / c
+    summary["retrieval"] = retrieval
+
     if qa_rows:
         summary["qa_accuracy"] = sum(1 for r in qa_rows if r["qa_correct"]) / len(qa_rows)
 
-    by_type: dict[str, dict[str, float | int]] = {}
+    # Per-type breakdown — R@G, R@10, R@30, QA accuracy.
+    by_type: dict[str, dict] = {}
     for r in rows:
         t = r["question_type"]
-        b = by_type.setdefault(t, {"n": 0, "qa_correct_sum": 0})
-        b["n"] += 1
+        bucket = by_type.setdefault(
+            t,
+            {
+                "n": 0,
+                "qa_correct_sum": 0,
+                "rg_sum": 0.0,
+                "r10_sum": 0.0,
+                "r30_sum": 0.0,
+            },
+        )
+        bucket["n"] += 1
         if r.get("qa_correct") is True:
-            b["qa_correct_sum"] += 1
+            bucket["qa_correct_sum"] += 1
+        session_metrics = ((r.get("retrieval_results") or {}).get("metrics") or {}).get("session") or {}
+        bucket["rg_sum"] += float(session_metrics.get("recall_at_g", 0.0))
+        bucket["r10_sum"] += float(session_metrics.get("recall_any@10", 0.0))
+        bucket["r30_sum"] += float(session_metrics.get("recall_any@30", 0.0))
     for t, b in by_type.items():
         if b["n"]:
             b["qa_accuracy"] = b["qa_correct_sum"] / b["n"]
+            b["recall_at_g"] = b["rg_sum"] / b["n"]
+            b["recall_any@10"] = b["r10_sum"] / b["n"]
+            b["recall_any@30"] = b["r30_sum"] / b["n"]
     summary["by_type"] = by_type
+
+    # Advance-time diagnostics — proves CE workers actually ran.
+    adv_calls = [int(r.get("extra", {}).get("advance_time_calls", 0) or 0) for r in rows]
+    adv_cons = [int(r.get("extra", {}).get("consolidation_events", 0) or 0) for r in rows]
+    adv_fail = [int(r.get("extra", {}).get("advance_time_failures", 0) or 0) for r in rows]
+    if any(adv_calls) or any(adv_fail):
+        summary["advance_time"] = {
+            "total_calls": sum(adv_calls),
+            "total_consolidations": sum(adv_cons),
+            "total_failures": sum(adv_fail),
+            "avg_calls": sum(adv_calls) / max(len(adv_calls), 1),
+        }
+
     return summary
 
 
@@ -366,20 +512,77 @@ def _print_summary(summary: dict, *, label: str) -> None:
         print(f"[{label}] no results")
         return
     print(f"\n=== {label} (n={summary['n']}) ===")
-    for key, display in [
-        ("session_recall_at_5", "Session R@5"),
-        ("session_ndcg_at_5", "Session NDCG@5"),
-        ("fact_recall_at_5", "Fact R@5"),
-        ("fact_ndcg_at_5", "Fact NDCG@5"),
-        ("qa_accuracy", "QA accuracy"),
-    ]:
-        if key in summary:
-            print(f"  {display:<15}: {summary[key]:.3f}")
-    print(f"  {'type':<30} {'n':>4} {'QA':>6}")
-    for t, b in sorted(summary.get("by_type", {}).items()):
-        qa = b.get("qa_accuracy")
-        qa_s = f"{qa:.3f}" if qa is not None else "  -  "
-        print(f"  {t:<30} {b['n']:>4} {qa_s:>6}")
+    retrieval = summary.get("retrieval") or {}
+    session_m = retrieval.get("session") or {}
+
+    # Headline: the three numbers we compare against MemPalace —
+    # R@G, R@10, R@30, plus QA accuracy.
+    rg = session_m.get("recall_at_g")
+    r10 = session_m.get("recall_any@10")
+    r30 = session_m.get("recall_any@30")
+    qa = summary.get("qa_accuracy")
+    headline_bits = []
+    if rg is not None:
+        headline_bits.append(f"R@G={rg:.3f}")
+    if r10 is not None:
+        headline_bits.append(f"R@10={r10:.3f}")
+    if r30 is not None:
+        headline_bits.append(f"R@30={r30:.3f}")
+    if qa is not None:
+        headline_bits.append(f"QA={qa:.3f}")
+    if headline_bits:
+        print("  HEADLINE: " + "   ".join(headline_bits))
+
+    def _row(gran: str) -> None:
+        g = retrieval.get(gran) or {}
+        if not g:
+            return
+        print(f"  {gran.upper()}-LEVEL METRICS:")
+        rg_ = g.get("recall_at_g")
+        if rg_ is not None:
+            print(f"    R@G={rg_:.3f}")
+        for k in KS:
+            ra = g.get(f"recall_any@{k}")
+            rl = g.get(f"recall_all@{k}")
+            nd = g.get(f"ndcg_any@{k}")
+            parts = []
+            if ra is not None:
+                parts.append(f"R_any@{k}={ra:.3f}")
+            if rl is not None:
+                parts.append(f"R_all@{k}={rl:.3f}")
+            if nd is not None:
+                parts.append(f"NDCG@{k}={nd:.3f}")
+            if parts:
+                print("    " + "  ".join(parts))
+
+    _row("session")
+    _row("turn")
+
+    # Diagnostics: did advance_time actually fire on the Sonzai runs?
+    advance = summary.get("advance_time") or {}
+    if advance:
+        print(
+            f"  advance_time   : calls={advance['total_calls']}"
+            f"  consolidations={advance['total_consolidations']}"
+            f"  failures={advance['total_failures']}"
+            f"  avg_calls/q={advance['avg_calls']:.1f}"
+        )
+
+    by_type = summary.get("by_type") or {}
+    if by_type:
+        print(
+            f"  {'type':<30} {'n':>4} {'R@G':>6} {'R@10':>6} {'R@30':>6} {'QA':>6}"
+        )
+        for t, b in sorted(by_type.items()):
+            qa_s = (
+                f"{b['qa_accuracy']:.3f}" if b.get("qa_accuracy") is not None else "  -  "
+            )
+            rg_ = b.get("recall_at_g", 0.0)
+            r10_ = b.get("recall_any@10", 0.0)
+            r30_ = b.get("recall_any@30", 0.0)
+            print(
+                f"  {t:<30} {b['n']:>4} {rg_:>6.3f} {r10_:>6.3f} {r30_:>6.3f} {qa_s:>6}"
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -396,22 +599,39 @@ def _compare(file_a: Path, file_b: Path) -> None:
     _print_summary(sum_a, label=label_a)
     _print_summary(sum_b, label=label_b)
 
-    print("\n### Side-by-side\n")
+    print("\n### Side-by-side (session-level)\n")
     print(f"| Metric                 | {label_a:>12} | {label_b:>12} |")
     print("|------------------------|-------------:|-------------:|")
-    for k in (
-        "n",
-        "session_recall_at_5",
-        "session_ndcg_at_5",
-        "fact_recall_at_5",
-        "fact_ndcg_at_5",
-        "qa_accuracy",
-    ):
-        va = sum_a.get(k)
-        vb = sum_b.get(k)
-        va_s = f"{va:.3f}" if isinstance(va, float) else str(va or "-")
-        vb_s = f"{vb:.3f}" if isinstance(vb, float) else str(vb or "-")
-        print(f"| {k:<22} | {va_s:>12} | {vb_s:>12} |")
+
+    # Headline row order: n, R@G, R@10, R@30, then the rest of the k-grid, then QA.
+    headline_keys: list[tuple[str, str]] = [
+        ("n", "n"),
+        ("recall_at_g", "R@G"),
+        ("recall_any@10", "R@10"),
+        ("recall_any@30", "R@30"),
+    ]
+    for k in KS:
+        headline_keys.append((f"recall_any@{k}", f"recall_any@{k}"))
+        headline_keys.append((f"ndcg_any@{k}", f"ndcg_any@{k}"))
+    headline_keys.append(("qa_accuracy", "qa_accuracy"))
+
+    def _lookup(summary: dict, key: str):
+        if key == "n":
+            return summary.get("n")
+        if key == "qa_accuracy":
+            return summary.get("qa_accuracy")
+        return (summary.get("retrieval") or {}).get("session", {}).get(key)
+
+    seen_labels: set[str] = set()
+    for key, label in headline_keys:
+        if label in seen_labels:
+            continue
+        seen_labels.add(label)
+        va = _lookup(sum_a, key)
+        vb = _lookup(sum_b, key)
+        va_s = f"{va:.3f}" if isinstance(va, float) else str(va if va is not None else "-")
+        vb_s = f"{vb:.3f}" if isinstance(vb, float) else str(vb if vb is not None else "-")
+        print(f"| {label:<22} | {va_s:>12} | {vb_s:>12} |")
 
 
 # ---------------------------------------------------------------------------
