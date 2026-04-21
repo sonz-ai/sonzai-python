@@ -24,7 +24,7 @@ T = TypeVar("T", bound="StoredFact")
 
 @_attrs_define
 class StoredFact:
-    """ 
+    """
         Attributes:
             confidence (float):
             content (str):
@@ -36,6 +36,8 @@ class StoredFact:
             updated_at (str):
             entity (str | Unset):
             metadata (StoredFactMetadata | Unset):
+            session_id (str | Unset):
+            source_id (str | Unset):
             source_type (str | Unset):
      """
 
@@ -49,6 +51,8 @@ class StoredFact:
     updated_at: str
     entity: str | Unset = UNSET
     metadata: StoredFactMetadata | Unset = UNSET
+    session_id: str | Unset = UNSET
+    source_id: str | Unset = UNSET
     source_type: str | Unset = UNSET
 
 
@@ -79,6 +83,10 @@ class StoredFact:
         if not isinstance(self.metadata, Unset):
             metadata = self.metadata.to_dict()
 
+        session_id = self.session_id
+
+        source_id = self.source_id
+
         source_type = self.source_type
 
 
@@ -98,6 +106,10 @@ class StoredFact:
             field_dict["entity"] = entity
         if metadata is not UNSET:
             field_dict["metadata"] = metadata
+        if session_id is not UNSET:
+            field_dict["session_id"] = session_id
+        if source_id is not UNSET:
+            field_dict["source_id"] = source_id
         if source_type is not UNSET:
             field_dict["source_type"] = source_type
 
@@ -137,6 +149,10 @@ class StoredFact:
 
 
 
+        session_id = d.pop("session_id", UNSET)
+
+        source_id = d.pop("source_id", UNSET)
+
         source_type = d.pop("source_type", UNSET)
 
         stored_fact = cls(
@@ -150,6 +166,8 @@ class StoredFact:
             updated_at=updated_at,
             entity=entity,
             metadata=metadata,
+            session_id=session_id,
+            source_id=source_id,
             source_type=source_type,
         )
 

@@ -7,6 +7,7 @@ from .generation import AsyncGeneration, Generation
 from .org import AsyncOrg, Org
 from .project_config import AsyncProjectConfig, ProjectConfig
 from .project_notifications import AsyncProjectNotifications, ProjectNotifications
+from .schedules import AsyncSchedules, Schedules
 from .storefront import AsyncStorefront, Storefront
 from .support import AsyncSupport, Support
 from .tenants import AsyncTenants, Tenants
@@ -33,6 +34,8 @@ __all__ = [
     "AsyncProjectConfig",
     "ProjectNotifications",
     "AsyncProjectNotifications",
+    "Schedules",
+    "AsyncSchedules",
     "Storefront",
     "AsyncStorefront",
     "Support",

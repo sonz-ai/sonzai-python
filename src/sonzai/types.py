@@ -822,6 +822,8 @@ class Fact(BaseModel):
     category: str = ""
     confidence: float = 0.0
     mention_count: int = 0
+    session_id: str = ""
+    source_id: str = ""
     created_at: str | None = None
     last_mentioned_at: str | None = None
     context_examples: list[str] = Field(default_factory=list)
@@ -1190,6 +1192,46 @@ class ScheduledWakeup(BaseModel):
     created_at: str | None = None
 
     model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Schedules (recurring, per-user)
+# ---------------------------------------------------------------------------
+
+
+class Schedule(BaseModel):
+    schedule_id: str = ""
+    cadence_type: str = ""
+    cadence: str = ""
+    active_window: str = ""
+    timezone: str = ""
+    next_fire_at: str = ""
+    inventory_item_id: str = ""
+    intent: str = ""
+    check_type: str = ""
+    metadata: str = ""
+    enabled: bool = False
+    starts_at: str = ""
+    ends_at: str = ""
+    created_at: str = ""
+    updated_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class ScheduleListResponse(BaseModel):
+    schedules: list[Schedule] = Field(default_factory=list)
+
+
+class ScheduleCreateResponse(BaseModel):
+    schedule_id: str = ""
+    next_fire_at: str = ""
+    next_fire_at_local: str = ""
+    enabled: bool = False
+
+
+class ScheduleUpcomingResponse(BaseModel):
+    upcoming: list[str] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -1910,6 +1952,24 @@ class ImportJobListResponse(BaseModel):
     count: int = 0
 
 
+class JobUser(BaseModel):
+    job_id: str = ""
+    user_id: str = ""
+    status: str = ""
+    facts_stored: int = 0
+    facts_deduped: int = 0
+    warmth_score: int = 0
+    updated_at: str = ""
+    started_at: str = ""
+    completed_at: str = ""
+    error_message: str = ""
+
+
+class ListImportJobUsersResponse(BaseModel):
+    users: list[JobUser] = Field(default_factory=list)
+    count: int = 0
+
+
 # ---------------------------------------------------------------------------
 # Structured Import (Priming)
 # ---------------------------------------------------------------------------
@@ -1999,6 +2059,8 @@ class StoredFact(BaseModel):
     entity: str = ""
     source_type: str = ""
     mention_count: int = 0
+    session_id: str = ""
+    source_id: str = ""
     metadata: dict[str, Any] | None = None
     created_at: str = ""
     updated_at: str = ""
@@ -3542,3 +3604,97 @@ class AdvanceTimeResponse(BaseModel):
     def _none_is_empty_list(cls, v: Any) -> Any:
         # Go marshals empty slices as JSON `null` — coerce to [] for Python callers.
         return [] if v is None else v
+
+
+# ---------------------------------------------------------------------------
+# Support tickets
+# ---------------------------------------------------------------------------
+
+
+class SupportTicketComment(BaseModel):
+    """A single comment on a support ticket thread."""
+
+    comment_id: str = ""
+    ticket_id: str = ""
+    author_id: str = ""
+    author_email: str = ""
+    author_type: str = ""
+    content: str = ""
+    is_internal: bool = False
+    created_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class SupportTicketHistory(BaseModel):
+    """A single audit-log entry describing a change to a support ticket."""
+
+    history_id: str = ""
+    ticket_id: str = ""
+    changed_by: str = ""
+    changed_by_email: str = ""
+    field_changed: str = ""
+    old_value: str = ""
+    new_value: str = ""
+    created_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class SupportTicket(BaseModel):
+    """A support ticket owned by a tenant."""
+
+    ticket_id: str = ""
+    tenant_id: str = ""
+    created_by: str = ""
+    created_by_email: str = ""
+    assigned_to: str = ""
+    assigned_to_email: str = ""
+    title: str = ""
+    description: str = ""
+    type: str = ""
+    status: str = ""
+    priority: str = ""
+    comment_count: int = 0
+    comments: list[SupportTicketComment] | None = None
+    resolved_at: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class TicketSummary(BaseModel):
+    """Compact ticket representation used by list endpoints."""
+
+    ticket_id: str = ""
+    title: str = ""
+    type: str = ""
+    status: str = ""
+    priority: str = ""
+    created_by_email: str = ""
+    assigned_to_email: str = ""
+    comment_count: int = 0
+    created_at: str | None = None
+    updated_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class TicketListResponse(BaseModel):
+    """Paginated list of the caller's support tickets."""
+
+    tickets: list[TicketSummary] = Field(default_factory=list)
+    total: int = 0
+    has_more: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+class TicketDetailResponse(BaseModel):
+    """A single support ticket with its change history."""
+
+    ticket: SupportTicket = Field(default_factory=lambda: SupportTicket())
+    history: list[SupportTicketHistory] | None = None
+
+    model_config = {"extra": "allow"}

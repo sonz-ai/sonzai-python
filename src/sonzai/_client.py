@@ -22,6 +22,7 @@ from .resources.project_notifications import (
     ProjectNotifications,
 )
 from .resources.projects import AsyncProjects, Projects
+from .resources.schedules import AsyncSchedules, Schedules
 from .resources.storefront import AsyncStorefront, Storefront
 from .resources.support import AsyncSupport, Support
 from .resources.tenants import AsyncTenants, Tenants
@@ -76,6 +77,7 @@ class Sonzai:
     account_config: AccountConfig
     custom_llm: CustomLLM
     project_notifications: ProjectNotifications
+    schedules: Schedules
     workbench: Workbench
     org: Org
     storefront: Storefront
@@ -138,6 +140,7 @@ class Sonzai:
         self.account_config = AccountConfig(self._http)
         self.custom_llm = CustomLLM(self._http)
         self.project_notifications = ProjectNotifications(self._http)
+        self.schedules = Schedules(self._http)
         self.workbench = Workbench(self._http)
         self.org = Org(self._http)
         self.storefront = Storefront(self._http)
@@ -205,6 +208,7 @@ class AsyncSonzai:
     account_config: AsyncAccountConfig
     custom_llm: AsyncCustomLLM
     project_notifications: AsyncProjectNotifications
+    schedules: AsyncSchedules
     workbench: AsyncWorkbench
     org: AsyncOrg
     storefront: AsyncStorefront
@@ -257,6 +261,7 @@ class AsyncSonzai:
         self.account_config = AsyncAccountConfig(self._http)
         self.custom_llm = AsyncCustomLLM(self._http)
         self.project_notifications = AsyncProjectNotifications(self._http)
+        self.schedules = AsyncSchedules(self._http)
         self.workbench = AsyncWorkbench(self._http)
         self.org = AsyncOrg(self._http)
         self.storefront = AsyncStorefront(self._http)

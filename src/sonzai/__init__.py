@@ -128,6 +128,10 @@ from .types import (
     RecentShiftsResponse,
     RelationshipResponse,
     RunRef,
+    Schedule,
+    ScheduleCreateResponse,
+    ScheduleListResponse,
+    ScheduleUpcomingResponse,
     ScheduledWakeup,
     SeedMemoriesResponse,
     SessionResponse,
@@ -140,6 +144,12 @@ from .types import (
     StructuredColumnMapping,
     StructuredImportSpec,
     SummariesResponse,
+    SupportTicket,
+    SupportTicketComment,
+    SupportTicketHistory,
+    TicketDetailResponse,
+    TicketListResponse,
+    TicketSummary,
     GetToolSchemasResponse,
     Project,
     ProjectAPIKey,
@@ -308,6 +318,11 @@ __all__ = [
     "AcknowledgeResponse",
     # Types - Wakeups
     "ScheduledWakeup",
+    # Types - Schedules
+    "Schedule",
+    "ScheduleCreateResponse",
+    "ScheduleListResponse",
+    "ScheduleUpcomingResponse",
     # Types - Capabilities
     "CustomToolDefinition",
     "CustomToolListResponse",
@@ -389,4 +404,11 @@ __all__ = [
     "AdvanceTimeResponse",
     "DiaryEntry",
     "WakeupExecution",
+    # Types - Support tickets
+    "SupportTicket",
+    "SupportTicketComment",
+    "SupportTicketHistory",
+    "TicketDetailResponse",
+    "TicketListResponse",
+    "TicketSummary",
 ]
