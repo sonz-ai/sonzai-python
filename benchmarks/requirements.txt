@@ -1,0 +1,27 @@
+# Benchmark-only dependencies (NOT required by the `sonzai` package itself).
+#
+# Install with:
+#   pip install sonzai
+#   pip install -r benchmarks/requirements.txt
+
+# Sonzai SDK — the system under test. Pinned to >= current to guarantee
+# `client.workbench.advance_time` availability once the regenerated SDK ships.
+sonzai>=1.2.5
+
+# Judge (third-party neutral — no Anthropic or OpenAI in the scoring loop).
+google-genai>=2.0.0
+
+# Progress bars + HTTP + data.
+tqdm>=4.66
+httpx>=0.27
+pydantic>=2.6
+
+# SOTOPIA dataset loader.
+datasets>=3.0
+
+# Trajectory chart for SOTOPIA longitudinal results.
+matplotlib>=3.8
+
+# MemPalace comparison backend (optional — only needed for `--backend mempalace`).
+# Install on demand; not imported unless the MemPalace backend is selected.
+# mempalace>=0.1
