@@ -34,6 +34,7 @@ def _build_advance_time_body(
     simulated_base_offset_hours: float,
     instance_id: str | None,
     character_config: dict[str, Any] | None,
+    async_: bool = False,
 ) -> dict[str, Any]:
     """Shape the request body the Go handler expects.
 
@@ -57,6 +58,8 @@ def _build_advance_time_body(
         body["agent_id"] = agent_id
     if user_id is not None:
         body["user_id"] = user_id
+    if async_:
+        body["async"] = True
     return body
 
 
@@ -77,7 +80,8 @@ class Workbench:
         simulated_base_offset_hours: float = 0.0,
         instance_id: str | None = None,
         character_config: dict[str, Any] | None = None,
-    ) -> AdvanceTimeResponse:
+        run_async: bool = False,
+    ) -> AdvanceTimeResponse | dict[str, Any]:
         """Advance simulated time by ``simulated_hours``.
 
         Runs the full production CE worker fleet (decays, consolidation,
@@ -123,9 +127,26 @@ class Workbench:
             simulated_base_offset_hours=simulated_base_offset_hours,
             instance_id=instance_id,
             character_config=character_config,
+            async_=run_async,
         )
         data = self._http.post("/api/v1/workbench/advance-time", json_data=body)
+        if run_async:
+            # 202 body: {"job_id": "...", "status": "running"} — let the
+            # caller poll get_advance_time_job until it's terminal.
+            return data  # type: ignore[return-value]
         return AdvanceTimeResponse.model_validate(data)
+
+    def get_advance_time_job(self, job_id: str) -> dict[str, Any]:
+        """Get the state of an async advance-time job.
+
+        Returns a dict with at least ``job_id``, ``status`` (``running`` |
+        ``succeeded`` | ``failed``), and — once terminal — ``result`` (on
+        success) or ``error`` (on failure). State lives in Redis with a
+        30-minute TTL; poll within that window.
+        """
+        return self._http.get(  # type: ignore[no-any-return]
+            f"/api/v1/workbench/advance-time/jobs/{job_id}"
+        )
 
     # -- Other workbench endpoints --------------------------------------------
     # These are thinner — benchmarks mostly care about advance_time, but we
@@ -194,7 +215,8 @@ class AsyncWorkbench:
         simulated_base_offset_hours: float = 0.0,
         instance_id: str | None = None,
         character_config: dict[str, Any] | None = None,
-    ) -> AdvanceTimeResponse:
+        run_async: bool = False,
+    ) -> AdvanceTimeResponse | dict[str, Any]:
         body = _build_advance_time_body(
             agent_id=agent_id,
             user_id=user_id,
@@ -202,11 +224,20 @@ class AsyncWorkbench:
             simulated_base_offset_hours=simulated_base_offset_hours,
             instance_id=instance_id,
             character_config=character_config,
+            async_=run_async,
         )
         data = await self._http.post(
             "/api/v1/workbench/advance-time", json_data=body
         )
+        if run_async:
+            return data  # type: ignore[return-value]
         return AdvanceTimeResponse.model_validate(data)
+
+    async def get_advance_time_job(self, job_id: str) -> dict[str, Any]:
+        """Get the state of an async advance-time job."""
+        return await self._http.get(  # type: ignore[no-any-return]
+            f"/api/v1/workbench/advance-time/jobs/{job_id}"
+        )
 
     async def prepare(self, **body: Any) -> dict[str, Any]:
         return await self._http.post("/api/v1/workbench/prepare", json_data=body)  # type: ignore[no-any-return]

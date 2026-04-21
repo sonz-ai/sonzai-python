@@ -17,10 +17,10 @@ Env (optional — the sidebar also lets you enter these):
 from __future__ import annotations
 
 import os
-import threading
 import time
 import uuid
 from dataclasses import dataclass, field
+from typing import Any
 
 import streamlit as st
 
@@ -186,7 +186,13 @@ def start_new_session() -> SessionEntry:
 
 
 def close_session_and_consolidate(client: Sonzai, agent_id: str, session: SessionEntry) -> None:
-    """End the session server-side and kick off advance-time (best-effort, timeout-bounded)."""
+    """End the session server-side and kick off async advance-time.
+
+    Uses the durable ``run_async=True`` path so Cloudflare's ~100s origin
+    timeout doesn't cut the client off. Polls the job for up to 40s and
+    surfaces progress; if it's still running after that, we move on and
+    the job continues server-side (state lives in Redis for 30 min).
+    """
     ss = st.session_state
     session.ended = True
 
@@ -210,44 +216,78 @@ def close_session_and_consolidate(client: Sonzai, agent_id: str, session: Sessio
     except Exception as err:  # noqa: BLE001
         push_banner("warning", f"sessions.end failed (non-fatal): {err}")
 
-    # Advance-time runs CE daily jobs (consolidation, diary, decay, etc.)
-    # Cloudflare's edge times out at ~100s so we cap the client side at 25s
-    # and let the server finish asynchronously if it's still working.
-    result_holder: dict = {}
+    # Record a banner turn NOW so the chat scrollback shows the boundary
+    # before we block on consolidation polling.
+    ss.messages.append(
+        ChatTurn(
+            role="system_banner",
+            content=f"Session {session.number} completed. Running consolidation…",
+            session_number=session.number,
+        )
+    )
 
-    def _advance() -> None:
+    # Kick off async advance-time — server spawns a goroutine and returns
+    # {"job_id", "status": "running"} immediately.
+    try:
+        start = client.workbench.advance_time(
+            agent_id,
+            ss.user_id,
+            25.0,  # one full simulated day triggers the daily gates
+            instance_id=ss.instance_id,
+            run_async=True,
+        )
+    except Exception as err:  # noqa: BLE001
+        push_banner("warning", f"advance-time start failed (non-fatal): {err}")
+        session.consolidation_result = {"status": "failed", "error": str(err)}
+        return
+
+    job_id = (start or {}).get("job_id") if isinstance(start, dict) else None
+    if not job_id:
+        push_banner("warning", f"advance-time returned no job_id. Raw: {start}")
+        session.consolidation_result = {"status": "failed", "error": "no job_id"}
+        return
+
+    session.consolidation_result = {"status": "running", "job_id": job_id}
+
+    # Poll the job status. We budget 40s at 1.5s intervals — if it's still
+    # running after that, we surface the job_id and move on.
+    poll_interval = 1.5
+    max_polls = 27  # ~40s total
+    final: dict[str, Any] | None = None
+    for _ in range(max_polls):
+        time.sleep(poll_interval)
         try:
-            resp = client.workbench.advance_time(
-                agent_id,
-                ss.user_id,
-                25.0,  # one full simulated day triggers the daily gates
-                instance_id=ss.instance_id,
-            )
-            result_holder["resp"] = resp
+            state = client.workbench.get_advance_time_job(job_id)
         except Exception as err:  # noqa: BLE001
-            result_holder["err"] = err
+            push_banner("warning", f"advance-time poll failed (non-fatal): {err}")
+            break
+        if not isinstance(state, dict):
+            break
+        status = state.get("status")
+        if status in ("succeeded", "failed"):
+            final = state
+            break
 
-    t = threading.Thread(target=_advance, daemon=True)
-    t.start()
-    t.join(timeout=25.0)
-    if t.is_alive():
+    if final is None:
         push_banner(
             "info",
-            f"Session {session.number} consolidation still running in background "
-            "(advance-time exceeded 25s client cap). Moving on.",
+            f"Session {session.number} consolidation still running server-side "
+            f"(job {job_id[:8]}…). Will reflect on the next refresh.",
         )
-        session.consolidation_result = {"status": "pending_in_background"}
-    elif "err" in result_holder:
-        push_banner("warning", f"advance-time failed (non-fatal): {result_holder['err']}")
-        session.consolidation_result = {"status": "failed", "error": str(result_holder["err"])}
+        session.consolidation_result = {"status": "running", "job_id": job_id}
+    elif final.get("status") == "failed":
+        err_msg = final.get("error", "unknown")
+        push_banner("warning", f"Consolidation failed (non-fatal): {err_msg}")
+        session.consolidation_result = {"status": "failed", "error": err_msg, "job_id": job_id}
     else:
-        resp = result_holder.get("resp")
-        diary_count = getattr(resp, "diary_entries_created", 0) or 0
-        days = getattr(resp, "days_processed", 1) or 1
+        result = final.get("result") or {}
+        days = result.get("days_processed", 1) or 1
+        diary_count = result.get("diary_entries_created", 0) or 0
         session.consolidation_result = {
             "status": "ok",
             "days_processed": days,
             "diary_entries": diary_count,
+            "job_id": job_id,
         }
         push_banner(
             "success",
@@ -262,17 +302,9 @@ def close_session_and_consolidate(client: Sonzai, agent_id: str, session: Sessio
         ss.pending_big5 = dict(new_big5)
         ss.current_dimensions = new_dims
         ss.primary_traits = traits
+        ss.needs_slider_sync = True
     except Exception as err:  # noqa: BLE001
         push_banner("warning", f"Could not refresh personality post-consolidation: {err}")
-
-    # Record a banner turn so the chat scrollback shows the boundary.
-    ss.messages.append(
-        ChatTurn(
-            role="system_banner",
-            content=f"Session {session.number} completed. Running consolidation…",
-            session_number=session.number,
-        )
-    )
 
 
 def restore_baseline(client: Sonzai, agent_id: str) -> None:
