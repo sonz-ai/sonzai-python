@@ -140,26 +140,55 @@ async def _run_scenario(
     sessions_per_scenario: int,
     judge: GeminiJudge,
     min_gap_hours: float,
+    existing_agent_id: str | None = None,
+    existing_user_id: str | None = None,
+    resume_from_session: int = 0,
+    keep_agent_alive: bool = False,
+    on_session_complete=None,
 ) -> list[SessionRun]:
-    """Run N sessions for one scenario, score each, advance time between."""
-    agent_name = f"sotopia-{scenario.scenario_id[:16]}-{uuid.uuid4().hex[:6]}"
-    user_id = f"sotopia-user-{scenario.scenario_id[:16]}"
+    """Run N sessions for one scenario, score each, advance time between.
 
-    agent = await client.agents.create(
-        name=agent_name,
-        personality_prompt=(
-            f"You are {scenario.agent.name}. {scenario.agent.background} "
-            f"Your goal in interactions with {scenario.partner.name}: "
-            f"{scenario.agent.goal}"
-        ),
-        true_interests=[],
-        true_dislikes=[],
-    )
-    agent_id = agent.agent_id
+    **Reuse mode** (``existing_agent_id`` + ``existing_user_id``): skip
+    agent creation and start the session loop at ``resume_from_session + 1``.
+    Paired with ``on_session_complete`` (called after every scored session
+    with the cumulative session index) so a caller using
+    :mod:`benchmarks.common.agent_reuse` can persist progress mid-trajectory.
+
+    ``keep_agent_alive=True`` suppresses the ``agents.delete`` cleanup —
+    required when reusing across runs. Automatically implied when an
+    existing agent is passed in.
+    """
+    reuse = existing_agent_id is not None and existing_user_id is not None
+
+    if reuse:
+        agent_id = str(existing_agent_id)
+        user_id = str(existing_user_id)
+    else:
+        agent_name = f"sotopia-{scenario.scenario_id[:16]}-{uuid.uuid4().hex[:6]}"
+        user_id = f"sotopia-user-{scenario.scenario_id[:16]}"
+        agent = await client.agents.create(
+            name=agent_name,
+            personality_prompt=(
+                f"You are {scenario.agent.name}. {scenario.agent.background} "
+                f"Your goal in interactions with {scenario.partner.name}: "
+                f"{scenario.agent.goal}"
+            ),
+            true_interests=[],
+            true_dislikes=[],
+        )
+        agent_id = agent.agent_id
+
     runs: list[SessionRun] = []
+    start_idx = max(1, int(resume_from_session) + 1)
+    if start_idx > sessions_per_scenario:
+        logger.info(
+            "sotopia: scenario %s already at session %d ≥ target %d — nothing to do",
+            scenario.scenario_id, resume_from_session, sessions_per_scenario,
+        )
+        return runs
 
     try:
-        for idx in range(1, sessions_per_scenario + 1):
+        for idx in range(start_idx, sessions_per_scenario + 1):
             session_id = f"{scenario.scenario_id}-s{idx:02d}-{uuid.uuid4().hex[:4]}"
             transcript = await _simulate_session(
                 client,
@@ -197,6 +226,19 @@ async def _run_scenario(
                 )
             )
 
+            # Notify the caller so it can persist the reuse-snapshot after
+            # every scored session — crash-mid-run is now resumable at
+            # (idx+1) on the next invocation.
+            if on_session_complete is not None:
+                try:
+                    maybe_coro = on_session_complete(
+                        scenario.scenario_id, agent_id, user_id, idx
+                    )
+                    if hasattr(maybe_coro, "__await__"):
+                        await maybe_coro
+                except Exception as e:
+                    logger.debug("on_session_complete callback failed: %s", e)
+
             if idx < sessions_per_scenario:
                 try:
                     await advance_time_chunked_async(
@@ -208,10 +250,13 @@ async def _run_scenario(
                 except Exception as e:
                     logger.warning("advance_time failed between sessions: %s", e)
     finally:
-        try:
-            await client.agents.delete(agent_id)
-        except Exception as e:
-            logger.warning("agents.delete(%s) cleanup failed: %s", agent_id, e)
+        # Never delete an agent we didn't create; skip when the caller
+        # explicitly wants to preserve it for future reuse runs.
+        if not reuse and not keep_agent_alive:
+            try:
+                await client.agents.delete(agent_id)
+            except Exception as e:
+                logger.warning("agents.delete(%s) cleanup failed: %s", agent_id, e)
 
     return runs
 
@@ -320,6 +365,23 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Skip the HuggingFace dataset and use bundled seed scenarios only.",
     )
+    p.add_argument(
+        "--reuse-agents",
+        nargs="?",
+        const=str(Path(__file__).parent / "results" / "reuse_agents.json"),
+        default=None,
+        metavar="PATH",
+        help="Persist {scenario_id → agent_id, last session index} across runs. "
+        "Subsequent invocations resume each scenario at last_session+1 "
+        "(continuing the trajectory) rather than starting over. Default path: "
+        "benchmarks/sotopia/results/reuse_agents.json.",
+    )
+    p.add_argument(
+        "--clear-reused-memory",
+        action="store_true",
+        help="When reusing agents, call memory.reset before the next session — "
+        "useful to re-score with a clean slate without creating a new agent.",
+    )
     p.add_argument("-v", "--verbose", action="count", default=0)
     return p.parse_args(argv)
 
@@ -352,8 +414,77 @@ async def _amain(args: argparse.Namespace) -> int:
     all_runs: list[SessionRun] = []
     sem = asyncio.Semaphore(args.scenario_concurrency)
 
+    # --- Snapshot setup for --reuse-agents ---------------------------------
+    # SOTOPIA reuse is "resume mid-trajectory": on each run, every scenario
+    # continues at last_session_index+1. Lets a crashed 20×90 run survive
+    # without re-running completed sessions.
+    snapshot = None
+    current_slice = None
+    snapshot_lock: asyncio.Lock | None = None
+    if args.reuse_agents:
+        from ..common.agent_reuse import (
+            SliceKey,
+            load_snapshot,
+            new_snapshot,
+            save_snapshot,
+            should_reuse,
+            upsert_agent,
+        )
+        from ..common.sdk_extras import clear_agent_memory_async
+
+        current_slice = SliceKey(
+            benchmark="sotopia",
+            limit=len(scenarios),
+            sessions_per_scenario=args.sessions_per_scenario,
+        )
+        loaded = load_snapshot(args.reuse_agents)
+        if loaded and loaded.slice.matches(current_slice):
+            snapshot = loaded
+            logger.info(
+                "reuse-agents: loaded %d scenario snapshots from %s",
+                len(snapshot.agents), args.reuse_agents,
+            )
+        else:
+            if loaded:
+                logger.info(
+                    "reuse-agents: snapshot slice mismatch — starting fresh. "
+                    "expected=%s, found=%s", current_slice, loaded.slice,
+                )
+            snapshot = new_snapshot(current_slice)
+        snapshot_lock = asyncio.Lock()
+
+    async def _persist_session(
+        scenario_id: str, agent_id: str, user_id: str, session_idx: int
+    ) -> None:
+        """Callback fired after each scored session — persist the resume point."""
+        if snapshot is None or snapshot_lock is None:
+            return
+        async with snapshot_lock:
+            upsert_agent(
+                snapshot,
+                key=scenario_id,
+                agent_id=agent_id,
+                user_id=user_id,
+                meta={"last_session_index": int(session_idx)},
+            )
+            save_snapshot(args.reuse_agents, snapshot)
+
     async def one(sc: Scenario) -> list[SessionRun]:
         async with sem:
+            reused = None
+            if snapshot is not None and current_slice is not None:
+                reused = should_reuse(snapshot, current_slice, sc.scenario_id)
+            resume_from = 0
+            ex_agent = ex_user = None
+            if reused:
+                ex_agent = reused.agent_id
+                ex_user = reused.user_id
+                resume_from = int(reused.meta.get("last_session_index", 0) or 0)
+                if args.clear_reused_memory:
+                    await clear_agent_memory_async(
+                        client, agent_id=ex_agent, user_id=ex_user
+                    )
+                    resume_from = 0  # clean slate → start over
             try:
                 return await _run_scenario(
                     client,
@@ -361,6 +492,11 @@ async def _amain(args: argparse.Namespace) -> int:
                     sessions_per_scenario=args.sessions_per_scenario,
                     judge=judge,
                     min_gap_hours=MIN_GAP_HOURS,
+                    existing_agent_id=ex_agent,
+                    existing_user_id=ex_user,
+                    resume_from_session=resume_from,
+                    keep_agent_alive=snapshot is not None,
+                    on_session_complete=_persist_session if snapshot is not None else None,
                 )
             except Exception:
                 logger.exception("scenario %s failed", sc.scenario_id)

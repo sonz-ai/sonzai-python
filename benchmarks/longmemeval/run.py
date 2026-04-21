@@ -132,6 +132,25 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "Produces a baseline without self-learning — the delta vs normal runs is the measured lift.",
     )
     p.add_argument(
+        "--reuse-agents",
+        nargs="?",
+        const=str(Path(__file__).parent / "results" / "reuse_agents.json"),
+        default=None,
+        metavar="PATH",
+        help="Sonzai only: persist {question_id → agent_id} after first ingest; "
+        "subsequent runs skip ingest + advance_time and reuse the pre-populated "
+        "agents. Iteration time drops from ~19 min to ~2 min. Default path: "
+        "benchmarks/longmemeval/results/reuse_agents.json. Snapshot slice must "
+        "match current --limit / --max-sessions-per-question or it's ignored.",
+    )
+    p.add_argument(
+        "--clear-reused-memory",
+        action="store_true",
+        help="Sonzai only: when reusing agents, call memory.reset before each "
+        "question to wipe stale state. Rarely needed — delete the snapshot "
+        "file to force re-ingest instead.",
+    )
+    p.add_argument(
         "--max-sessions-per-question",
         type=int,
         default=0,
@@ -173,14 +192,58 @@ async def _run_sonzai_backend(
     judge: GeminiJudge | None,
     skip_advance_time: bool,
     max_sessions: int,
+    reuse_agents_path: str | None = None,
+    clear_reused_memory: bool = False,
+    dataset_path_hint: str | None = None,
 ) -> list[dict]:
     # advance_time runs the full CE worker stack per simulated day and can take
     # minutes per call. The SDK default timeout (30s) is way too short.
     client = AsyncSonzai(timeout=600.0)
     sem = asyncio.Semaphore(concurrency)
 
+    # --- Snapshot setup for --reuse-agents ---------------------------------
+    snapshot = None
+    current_slice = None
+    snapshot_lock: asyncio.Lock | None = None
+    if reuse_agents_path:
+        from ..common.agent_reuse import (
+            SliceKey,
+            dataset_tag,
+            load_snapshot,
+            new_snapshot,
+            save_snapshot,
+            should_reuse,
+            upsert_agent,
+        )
+
+        current_slice = SliceKey(
+            benchmark="longmemeval",
+            limit=len(questions),
+            max_sessions_per_question=max_sessions,
+            dataset_tag=dataset_tag(dataset_path_hint),
+        )
+        loaded = load_snapshot(reuse_agents_path)
+        if loaded and loaded.slice.matches(current_slice):
+            snapshot = loaded
+            logger.info(
+                "reuse-agents: loaded %d snapshots from %s (slice matches)",
+                len(snapshot.agents), reuse_agents_path,
+            )
+        else:
+            if loaded:
+                logger.info(
+                    "reuse-agents: snapshot slice mismatch — starting fresh. "
+                    "expected=%s, found=%s", current_slice, loaded.slice,
+                )
+            snapshot = new_snapshot(current_slice)
+        snapshot_lock = asyncio.Lock()
+
     async def one(q: LongMemEvalQuestion) -> dict:
         async with sem:
+            reused_entry = None
+            if snapshot is not None and current_slice is not None:
+                reused_entry = should_reuse(snapshot, current_slice, q.question_id)
+
             try:
                 br = await sonzai_backend.run_question(
                     client,
@@ -188,10 +251,34 @@ async def _run_sonzai_backend(
                     include_qa=(mode in {"qa", "both"}),
                     skip_advance_time=skip_advance_time,
                     max_sessions=max_sessions,
+                    existing_agent_id=reused_entry.agent_id if reused_entry else None,
+                    existing_user_id=reused_entry.user_id if reused_entry else None,
+                    clear_memory_before_reuse=clear_reused_memory,
+                    keep_agent_alive=snapshot is not None,
                 )
             except Exception as e:
                 logger.exception("sonzai backend failed on %s", q.question_id)
                 return _error_row(q, "sonzai", str(e))
+
+            # Persist the post-ingest agent ID so future runs with the same
+            # slice can reuse it. We write after every question so partial
+            # progress survives a crash mid-run.
+            if snapshot is not None and reused_entry is None and snapshot_lock is not None:
+                extra = br.extra or {}
+                agent_id = str(extra.get("agent_id") or "")
+                user_id = str(extra.get("user_id") or "")
+                session_ids = list(extra.get("session_ids_ingested") or [])
+                if agent_id and user_id:
+                    async with snapshot_lock:
+                        upsert_agent(
+                            snapshot,
+                            key=q.question_id,
+                            agent_id=agent_id,
+                            user_id=user_id,
+                            session_ids=session_ids,
+                        )
+                        save_snapshot(reuse_agents_path, snapshot)
+
             return await _score_and_serialize(q, br, backend="sonzai", judge=judge, mode=mode)
 
     try:
@@ -730,6 +817,9 @@ async def _amain(args: argparse.Namespace) -> int:
             judge=judge,
             skip_advance_time=args.skip_advance_time,
             max_sessions=args.max_sessions_per_question,
+            reuse_agents_path=args.reuse_agents,
+            clear_reused_memory=args.clear_reused_memory,
+            dataset_path_hint=str(args.dataset_path) if args.dataset_path else None,
         )
     else:
         rows = await _run_mempalace_backend(

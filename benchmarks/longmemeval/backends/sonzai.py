@@ -194,6 +194,10 @@ async def run_question(
     include_qa: bool = True,
     skip_advance_time: bool = False,
     max_sessions: int = 0,
+    existing_agent_id: str | None = None,
+    existing_user_id: str | None = None,
+    clear_memory_before_reuse: bool = False,
+    keep_agent_alive: bool = False,
 ) -> BackendResult:
     """Ingest one LongMemEval question's haystack and evaluate Sonzai's memory.
 
@@ -203,32 +207,58 @@ async def run_question(
 
     ``max_sessions > 0`` truncates the haystack for fast smoke runs; keeps
     answer-bearing sessions preferentially.
+
+    **Reuse mode** (``existing_agent_id`` + ``existing_user_id``): skip
+    agent creation, session replay, and all advance_time calls; reuse the
+    pre-populated agent directly for retrieval + QA. Cuts per-question wall
+    time from ~1–2 min to ~5–10 s, letting the outer iteration loop focus
+    on chat-path fixes without re-ingesting haystacks each run. Set
+    ``clear_memory_before_reuse=True`` to call ``memory.reset`` first if
+    the reused state is stale and you want a clean slate (rarely needed —
+    re-ingest in that case).
+
+    ``keep_agent_alive`` suppresses the ``agents.delete`` cleanup so future
+    reuse runs can pick the agent back up. Automatically true when an
+    existing agent is passed in (never delete what we didn't create).
     """
-    agent_name = f"lme-{question.question_id[:12]}-{uuid.uuid4().hex[:6]}"
-    user_id = f"lme-user-{question.question_id[:12]}"
+    reuse = existing_agent_id is not None and existing_user_id is not None
 
-    # Optionally trim haystack for smoke runs — keep answer-bearing sessions.
-    haystack = question.sessions
-    if max_sessions and len(haystack) > max_sessions:
-        answer_set = set(question.answer_session_ids)
-        keep_ids = {s.session_id for s in haystack if s.session_id in answer_set}
-        filler_budget = max(max_sessions - len(keep_ids), 0)
-        filler_ids = {
-            s.session_id
-            for s in [s for s in haystack if s.session_id not in keep_ids][-filler_budget:]
-        } if filler_budget else set()
-        keep = keep_ids | filler_ids
-        haystack = sorted(
-            (s for s in haystack if s.session_id in keep),
-            key=lambda s: s.parsed_date,
-        )
+    if reuse:
+        agent_id = str(existing_agent_id)
+        user_id = str(existing_user_id)
+        haystack = question.sessions  # session metadata still needed for session_dates
+    else:
+        agent_name = f"lme-{question.question_id[:12]}-{uuid.uuid4().hex[:6]}"
+        user_id = f"lme-user-{question.question_id[:12]}"
+        # Optionally trim haystack for smoke runs — keep answer-bearing sessions.
+        haystack = question.sessions
+        if max_sessions and len(haystack) > max_sessions:
+            answer_set = set(question.answer_session_ids)
+            keep_ids = {s.session_id for s in haystack if s.session_id in answer_set}
+            filler_budget = max(max_sessions - len(keep_ids), 0)
+            filler_ids = {
+                s.session_id
+                for s in [s for s in haystack if s.session_id not in keep_ids][-filler_budget:]
+            } if filler_budget else set()
+            keep = keep_ids | filler_ids
+            haystack = sorted(
+                (s for s in haystack if s.session_id in keep),
+                key=lambda s: s.parsed_date,
+            )
 
-    agent = await client.agents.create(name=agent_name)
-    agent_id = agent.agent_id
+        agent = await client.agents.create(name=agent_name)
+        agent_id = agent.agent_id
+
     advance_calls = 0
     consolidation_events = 0
-
     advance_failures = 0
+
+    if reuse and clear_memory_before_reuse:
+        from ...common.sdk_extras import clear_agent_memory_async
+
+        await clear_agent_memory_async(
+            client, agent_id=agent_id, user_id=user_id
+        )
 
     async def _try_advance(hours: float) -> None:
         nonlocal advance_calls, consolidation_events, advance_failures
@@ -251,27 +281,32 @@ async def run_question(
             )
 
     try:
-        prev_session: Session | None = None
-        for session in haystack:
-            if prev_session is not None:
-                gap = max(min_gap_hours, hours_between(prev_session, session))
-                await _try_advance(gap)
+        # Skip ingest + advance_time when reusing a pre-populated agent.
+        # The outer iteration loop only changes the chat path; the agent's
+        # memory state from the original ingest is still the authoritative
+        # corpus for retrieval + QA on this question.
+        if not reuse:
+            prev_session: Session | None = None
+            for session in haystack:
+                if prev_session is not None:
+                    gap = max(min_gap_hours, hours_between(prev_session, session))
+                    await _try_advance(gap)
 
-            # Use LongMemEval's own session IDs (e.g., "answer_280352e9",
-            # "sharegpt_xxx_0") so memory.timeline groups extracted facts
-            # under the same IDs that `answer_session_ids` references — that's
-            # what session-level Recall@5 is scored against.
-            await _replay_session(
-                client,
-                agent_id=agent_id,
-                user_id=user_id,
-                session_id=session.session_id,
-                session=session,
-            )
-            prev_session = session
+                # Use LongMemEval's own session IDs (e.g., "answer_280352e9",
+                # "sharegpt_xxx_0") so memory.timeline groups extracted facts
+                # under the same IDs that `answer_session_ids` references —
+                # that's what session-level Recall@5 is scored against.
+                await _replay_session(
+                    client,
+                    agent_id=agent_id,
+                    user_id=user_id,
+                    session_id=session.session_id,
+                    session=session,
+                )
+                prev_session = session
 
-        # Final advance-time lets the last session's consolidation/diary fire.
-        await _try_advance(min_gap_hours)
+            # Final advance-time lets the last session's consolidation/diary fire.
+            await _try_advance(min_gap_hours)
 
         session_dates = {s.session_id: s.date for s in haystack}
         ranked_sessions, ranked_facts, ranked_items = await _retrieve(
@@ -311,10 +346,13 @@ async def run_question(
             agent_answer=agent_answer,
             extra={
                 "agent_id": agent_id,
+                "user_id": user_id,
+                "reused_agent": reuse,
+                "session_ids_ingested": [s.session_id for s in haystack] if not reuse else [],
                 "advance_time_calls": advance_calls,
                 "advance_time_failures": advance_failures,
                 "consolidation_events": consolidation_events,
-                "sessions_replayed": len(haystack),
+                "sessions_replayed": 0 if reuse else len(haystack),
                 "skip_advance_time": skip_advance_time,
                 "facts_retrieved": len(ranked_facts),
                 "facts_stored": facts_stored,
@@ -322,7 +360,12 @@ async def run_question(
             },
         )
     finally:
-        try:
-            await client.agents.delete(agent_id)
-        except Exception as e:
-            logger.warning("agents.delete(%s) failed during cleanup: %s", agent_id, e)
+        # Never delete an agent we didn't create — reuse mode hands us an
+        # existing one and may reuse it on the next iteration. Ingest mode
+        # can opt into keep-alive via ``keep_agent_alive`` so the caller
+        # can persist the snapshot and reuse on the next run.
+        if not reuse and not keep_agent_alive:
+            try:
+                await client.agents.delete(agent_id)
+            except Exception as e:
+                logger.warning("agents.delete(%s) failed during cleanup: %s", agent_id, e)
