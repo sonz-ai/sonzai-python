@@ -5,7 +5,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # ---------------------------------------------------------------------------
 # Chat
@@ -3536,3 +3536,9 @@ class AdvanceTimeResponse(BaseModel):
     consolidation_processed: int = 0
 
     model_config = {"extra": "allow"}
+
+    @field_validator("diary_entries", "wakeups_executed", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        # Go marshals empty slices as JSON `null` — coerce to [] for Python callers.
+        return [] if v is None else v
