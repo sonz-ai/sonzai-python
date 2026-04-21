@@ -19,6 +19,7 @@ from .resources.project_notifications import (
     AsyncProjectNotifications,
     ProjectNotifications,
 )
+from .resources.support_tickets import AsyncSupportTickets, SupportTickets
 from .resources.voice import AsyncVoices, Voices
 from .resources.webhooks import AsyncWebhooks, Webhooks
 
@@ -65,6 +66,7 @@ class Sonzai:
     account_config: AccountConfig
     custom_llm: CustomLLM
     project_notifications: ProjectNotifications
+    support_tickets: SupportTickets
 
     def __init__(
         self,
@@ -119,6 +121,7 @@ class Sonzai:
         self.account_config = AccountConfig(self._http)
         self.custom_llm = CustomLLM(self._http)
         self.project_notifications = ProjectNotifications(self._http)
+        self.support_tickets = SupportTickets(self._http)
 
     def list_models(self) -> PlatformModelsResponse:
         """Return all LLM providers and model variants enabled on this deployment.
@@ -178,6 +181,7 @@ class AsyncSonzai:
     account_config: AsyncAccountConfig
     custom_llm: AsyncCustomLLM
     project_notifications: AsyncProjectNotifications
+    support_tickets: AsyncSupportTickets
 
     def __init__(
         self,
@@ -222,6 +226,7 @@ class AsyncSonzai:
         self.account_config = AsyncAccountConfig(self._http)
         self.custom_llm = AsyncCustomLLM(self._http)
         self.project_notifications = AsyncProjectNotifications(self._http)
+        self.support_tickets = AsyncSupportTickets(self._http)
 
     async def list_models(self) -> PlatformModelsResponse:
         """Return all LLM providers and model variants enabled on this deployment.

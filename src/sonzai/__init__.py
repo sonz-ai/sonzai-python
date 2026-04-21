@@ -136,6 +136,15 @@ from .types import (
     StoredFact,
     StructuredColumnMapping,
     StructuredImportSpec,
+    # Support tickets
+    AddCommentRequest,
+    CreateTicketRequest,
+    SupportTicket,
+    SupportTicketComment,
+    SupportTicketHistory,
+    TicketDetailResponse,
+    TicketListResponse,
+    TicketSummary,
     SummariesResponse,
     ToolSchema,
     ToolSchemasResponse,
@@ -356,4 +365,13 @@ __all__ = [
     # Types - Platform models
     "ModelVariant",
     "PlatformModelsResponse",
+    # Types - Support tickets
+    "AddCommentRequest",
+    "CreateTicketRequest",
+    "SupportTicket",
+    "SupportTicketComment",
+    "SupportTicketHistory",
+    "TicketDetailResponse",
+    "TicketListResponse",
+    "TicketSummary",
 ]

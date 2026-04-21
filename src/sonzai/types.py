@@ -3365,4 +3365,118 @@ class ToolDefinition(BaseModel):
     description: str = ""
     parameters: dict[str, Any] = Field(default_factory=dict)
 
+
+# ---------------------------------------------------------------------------
+# Support Tickets
+# ---------------------------------------------------------------------------
+
+
+class SupportTicketComment(BaseModel):
+    """A single comment on a support ticket thread."""
+
+    comment_id: str = ""
+    ticket_id: str = ""
+    author_id: str = ""
+    author_email: str = ""
+    author_type: str = ""
+    content: str = ""
+    is_internal: bool = False
+    created_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class SupportTicketHistory(BaseModel):
+    """A single audit-log entry describing a change to a support ticket."""
+
+    history_id: str = ""
+    ticket_id: str = ""
+    changed_by: str = ""
+    changed_by_email: str = ""
+    field_changed: str = ""
+    old_value: str = ""
+    new_value: str = ""
+    created_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class SupportTicket(BaseModel):
+    """A support ticket owned by a tenant."""
+
+    ticket_id: str = ""
+    tenant_id: str = ""
+    created_by: str = ""
+    created_by_email: str = ""
+    assigned_to: str = ""
+    assigned_to_email: str = ""
+    title: str = ""
+    description: str = ""
+    type: str = ""
+    status: str = ""
+    priority: str = ""
+    comment_count: int = 0
+    comments: list[SupportTicketComment] | None = None
+    resolved_at: str | None = None
+    created_at: str | None = None
+    updated_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class TicketSummary(BaseModel):
+    """Compact ticket representation used by list endpoints."""
+
+    ticket_id: str = ""
+    title: str = ""
+    type: str = ""
+    status: str = ""
+    priority: str = ""
+    created_by_email: str = ""
+    assigned_to_email: str = ""
+    comment_count: int = 0
+    created_at: str | None = None
+    updated_at: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class TicketListResponse(BaseModel):
+    """Paginated list of the caller's support tickets."""
+
+    tickets: list[TicketSummary] = Field(default_factory=list)
+    total: int = 0
+    has_more: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+class TicketDetailResponse(BaseModel):
+    """A single support ticket with its change history."""
+
+    ticket: SupportTicket = Field(default_factory=lambda: SupportTicket())
+    history: list[SupportTicketHistory] | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class CreateTicketRequest(BaseModel):
+    """Request body for :meth:`SupportTickets.create`."""
+
+    title: str
+    description: str
+    type: str
+    priority: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class AddCommentRequest(BaseModel):
+    """Request body for :meth:`SupportTickets.add_comment`."""
+
+    content: str
+    is_internal: bool | None = None
+
+    model_config = {"extra": "allow"}
+
     model_config = {"extra": "allow"}
