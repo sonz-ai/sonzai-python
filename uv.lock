@@ -450,7 +450,7 @@ wheels = [
 
 [[package]]
 name = "sonzai"
-version = "1.2.1"
+version = "1.2.5"
 source = { editable = "." }
 dependencies = [
     { name = "httpx" },
