@@ -10,6 +10,7 @@ from ... import errors
 
 from ...models.agent_kb_search_input_body import AgentKBSearchInputBody
 from ...models.error_model import ErrorModel
+from ...models.kb_search_response import KbSearchResponse
 from typing import cast
 
 
@@ -42,9 +43,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorModel | KbSearchResponse:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = KbSearchResponse.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -55,7 +59,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorModel | KbSearchResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -70,7 +74,7 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: AgentKBSearchInputBody,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | KbSearchResponse]:
     """ Search agent knowledge base
 
      Searches the agent's configured knowledge base and returns ranked results. Uses hybrid BM25 +
@@ -85,7 +89,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | KbSearchResponse]
      """
 
 
@@ -107,7 +111,7 @@ def sync(
     client: AuthenticatedClient,
     body: AgentKBSearchInputBody,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | KbSearchResponse | None:
     """ Search agent knowledge base
 
      Searches the agent's configured knowledge base and returns ranked results. Uses hybrid BM25 +
@@ -122,7 +126,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | KbSearchResponse
      """
 
 
@@ -139,7 +143,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: AgentKBSearchInputBody,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | KbSearchResponse]:
     """ Search agent knowledge base
 
      Searches the agent's configured knowledge base and returns ranked results. Uses hybrid BM25 +
@@ -154,7 +158,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | KbSearchResponse]
      """
 
 
@@ -176,7 +180,7 @@ async def asyncio(
     client: AuthenticatedClient,
     body: AgentKBSearchInputBody,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | KbSearchResponse | None:
     """ Search agent knowledge base
 
      Searches the agent's configured knowledge base and returns ranked results. Uses hybrid BM25 +
@@ -191,7 +195,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | KbSearchResponse
      """
 
 

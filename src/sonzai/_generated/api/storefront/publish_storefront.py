@@ -34,7 +34,7 @@ def _get_kwargs(
 
 def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = response.json()
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())

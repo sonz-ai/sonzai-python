@@ -9,7 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.error_model import ErrorModel
-from ...models.update_personality_input_body import UpdatePersonalityInputBody
+from ...models.update_personality_body import UpdatePersonalityBody
 from ...models.update_personality_output_body import UpdatePersonalityOutputBody
 from typing import cast
 
@@ -18,7 +18,7 @@ from typing import cast
 def _get_kwargs(
     agent_id: str,
     *,
-    body: UpdatePersonalityInputBody,
+    body: UpdatePersonalityBody,
 
 ) -> dict[str, Any]:
     headers: dict[str, Any] = {}
@@ -72,17 +72,18 @@ def sync_detailed(
     agent_id: str,
     *,
     client: AuthenticatedClient,
-    body: UpdatePersonalityInputBody,
+    body: UpdatePersonalityBody,
 
 ) -> Response[ErrorModel | UpdatePersonalityOutputBody]:
     """ Update agent personality scores
 
      Sets the agent's Big5 and/or personality dimension scores. At least one of `big5` or `dimensions`
-    must be provided.
+    must be provided. When `big5` is set, `dimensions` is automatically re-derived from it unless the
+    caller also passes a `dimensions` block explicitly.
 
     Args:
         agent_id (str): Agent UUID or URL-encoded agent name
-        body (UpdatePersonalityInputBody):
+        body (UpdatePersonalityBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -109,17 +110,18 @@ def sync(
     agent_id: str,
     *,
     client: AuthenticatedClient,
-    body: UpdatePersonalityInputBody,
+    body: UpdatePersonalityBody,
 
 ) -> ErrorModel | UpdatePersonalityOutputBody | None:
     """ Update agent personality scores
 
      Sets the agent's Big5 and/or personality dimension scores. At least one of `big5` or `dimensions`
-    must be provided.
+    must be provided. When `big5` is set, `dimensions` is automatically re-derived from it unless the
+    caller also passes a `dimensions` block explicitly.
 
     Args:
         agent_id (str): Agent UUID or URL-encoded agent name
-        body (UpdatePersonalityInputBody):
+        body (UpdatePersonalityBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -141,17 +143,18 @@ async def asyncio_detailed(
     agent_id: str,
     *,
     client: AuthenticatedClient,
-    body: UpdatePersonalityInputBody,
+    body: UpdatePersonalityBody,
 
 ) -> Response[ErrorModel | UpdatePersonalityOutputBody]:
     """ Update agent personality scores
 
      Sets the agent's Big5 and/or personality dimension scores. At least one of `big5` or `dimensions`
-    must be provided.
+    must be provided. When `big5` is set, `dimensions` is automatically re-derived from it unless the
+    caller also passes a `dimensions` block explicitly.
 
     Args:
         agent_id (str): Agent UUID or URL-encoded agent name
-        body (UpdatePersonalityInputBody):
+        body (UpdatePersonalityBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -178,17 +181,18 @@ async def asyncio(
     agent_id: str,
     *,
     client: AuthenticatedClient,
-    body: UpdatePersonalityInputBody,
+    body: UpdatePersonalityBody,
 
 ) -> ErrorModel | UpdatePersonalityOutputBody | None:
     """ Update agent personality scores
 
      Sets the agent's Big5 and/or personality dimension scores. At least one of `big5` or `dimensions`
-    must be provided.
+    must be provided. When `big5` is set, `dimensions` is automatically re-derived from it unless the
+    caller also passes a `dimensions` block explicitly.
 
     Args:
         agent_id (str): Agent UUID or URL-encoded agent name
-        body (UpdatePersonalityInputBody):
+        body (UpdatePersonalityBody):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.

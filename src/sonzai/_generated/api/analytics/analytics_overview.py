@@ -8,6 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.analytics_overview import AnalyticsOverview
 from ...models.error_model import ErrorModel
 from typing import cast
 
@@ -32,9 +33,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AnalyticsOverview | ErrorModel:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = AnalyticsOverview.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -45,7 +49,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AnalyticsOverview | ErrorModel]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -58,7 +62,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[AnalyticsOverview | ErrorModel]:
     """ Dashboard analytics overview
 
      Returns aggregate counts for the authenticated tenant: total/active agents, total messages, total
@@ -70,7 +74,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[AnalyticsOverview | ErrorModel]
      """
 
 
@@ -88,7 +92,7 @@ def sync(
     *,
     client: AuthenticatedClient,
 
-) -> Any | ErrorModel | None:
+) -> AnalyticsOverview | ErrorModel | None:
     """ Dashboard analytics overview
 
      Returns aggregate counts for the authenticated tenant: total/active agents, total messages, total
@@ -100,7 +104,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        AnalyticsOverview | ErrorModel
      """
 
 
@@ -113,7 +117,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[AnalyticsOverview | ErrorModel]:
     """ Dashboard analytics overview
 
      Returns aggregate counts for the authenticated tenant: total/active agents, total messages, total
@@ -125,7 +129,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[AnalyticsOverview | ErrorModel]
      """
 
 
@@ -143,7 +147,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
 
-) -> Any | ErrorModel | None:
+) -> AnalyticsOverview | ErrorModel | None:
     """ Dashboard analytics overview
 
      Returns aggregate counts for the authenticated tenant: total/active agents, total messages, total
@@ -155,7 +159,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        AnalyticsOverview | ErrorModel
      """
 
 

@@ -9,6 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.error_model import ErrorModel
+from ...models.storefront_agent import StorefrontAgent
 from ...models.storefront_upsert_agent_input_body import StorefrontUpsertAgentInputBody
 from typing import cast
 
@@ -42,9 +43,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorModel | StorefrontAgent:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = StorefrontAgent.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -55,7 +59,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorModel | StorefrontAgent]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -70,7 +74,7 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: StorefrontUpsertAgentInputBody,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | StorefrontAgent]:
     """ Add or update an agent on the storefront
 
      Creates or updates the storefront configuration for a given agent (slug, display info, featured
@@ -85,7 +89,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | StorefrontAgent]
      """
 
 
@@ -107,7 +111,7 @@ def sync(
     client: AuthenticatedClient,
     body: StorefrontUpsertAgentInputBody,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | StorefrontAgent | None:
     """ Add or update an agent on the storefront
 
      Creates or updates the storefront configuration for a given agent (slug, display info, featured
@@ -122,7 +126,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | StorefrontAgent
      """
 
 
@@ -139,7 +143,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: StorefrontUpsertAgentInputBody,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | StorefrontAgent]:
     """ Add or update an agent on the storefront
 
      Creates or updates the storefront configuration for a given agent (slug, display info, featured
@@ -154,7 +158,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | StorefrontAgent]
      """
 
 
@@ -176,7 +180,7 @@ async def asyncio(
     client: AuthenticatedClient,
     body: StorefrontUpsertAgentInputBody,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | StorefrontAgent | None:
     """ Add or update an agent on the storefront
 
      Creates or updates the storefront configuration for a given agent (slug, display info, featured
@@ -191,7 +195,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | StorefrontAgent
      """
 
 

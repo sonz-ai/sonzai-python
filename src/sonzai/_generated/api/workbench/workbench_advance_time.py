@@ -42,7 +42,7 @@ def _get_kwargs(
 
 def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = response.json()
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -72,7 +72,8 @@ def sync_detailed(
 
      Runs the same background CE workers (diary, consolidation, constellation) the production scheduler
     would run, for a chosen number of simulated days. Used by the workbench time-machine UI and long-
-    horizon benchmarks.
+    horizon benchmarks. Pass `async: true` to run in the background and poll `/workbench/advance-
+    time/jobs/{jobId}` — useful when the full run exceeds your proxy's read timeout.
 
     Args:
         body (Any):
@@ -107,7 +108,8 @@ def sync(
 
      Runs the same background CE workers (diary, consolidation, constellation) the production scheduler
     would run, for a chosen number of simulated days. Used by the workbench time-machine UI and long-
-    horizon benchmarks.
+    horizon benchmarks. Pass `async: true` to run in the background and poll `/workbench/advance-
+    time/jobs/{jobId}` — useful when the full run exceeds your proxy's read timeout.
 
     Args:
         body (Any):
@@ -137,7 +139,8 @@ async def asyncio_detailed(
 
      Runs the same background CE workers (diary, consolidation, constellation) the production scheduler
     would run, for a chosen number of simulated days. Used by the workbench time-machine UI and long-
-    horizon benchmarks.
+    horizon benchmarks. Pass `async: true` to run in the background and poll `/workbench/advance-
+    time/jobs/{jobId}` — useful when the full run exceeds your proxy's read timeout.
 
     Args:
         body (Any):
@@ -172,7 +175,8 @@ async def asyncio(
 
      Runs the same background CE workers (diary, consolidation, constellation) the production scheduler
     would run, for a chosen number of simulated days. Used by the workbench time-machine UI and long-
-    horizon benchmarks.
+    horizon benchmarks. Pass `async: true` to run in the background and poll `/workbench/advance-
+    time/jobs/{jobId}` — useful when the full run exceeds your proxy's read timeout.
 
     Args:
         body (Any):

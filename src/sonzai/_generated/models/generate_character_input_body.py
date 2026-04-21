@@ -30,6 +30,8 @@ class GenerateCharacterInputBody:
             schema (str | Unset): A URL to the JSON Schema for this object.
             agent_id (str | Unset): Pre-existing agent UUID (optional)
             fields (list[str] | None | Unset): Optional list of fields to generate
+            model (str | Unset): Optional model override for the chosen provider.
+            provider (str | Unset): LLM provider for generation (gemini | openrouter | xai). Defaults to gemini.
             regenerate (bool | Unset): Force regeneration even if agent exists
      """
 
@@ -39,6 +41,8 @@ class GenerateCharacterInputBody:
     schema: str | Unset = UNSET
     agent_id: str | Unset = UNSET
     fields: list[str] | None | Unset = UNSET
+    model: str | Unset = UNSET
+    provider: str | Unset = UNSET
     regenerate: bool | Unset = UNSET
 
 
@@ -66,6 +70,10 @@ class GenerateCharacterInputBody:
         else:
             fields = self.fields
 
+        model = self.model
+
+        provider = self.provider
+
         regenerate = self.regenerate
 
 
@@ -82,6 +90,10 @@ class GenerateCharacterInputBody:
             field_dict["agent_id"] = agent_id
         if fields is not UNSET:
             field_dict["fields"] = fields
+        if model is not UNSET:
+            field_dict["model"] = model
+        if provider is not UNSET:
+            field_dict["provider"] = provider
         if regenerate is not UNSET:
             field_dict["regenerate"] = regenerate
 
@@ -120,6 +132,10 @@ class GenerateCharacterInputBody:
         fields = _parse_fields(d.pop("fields", UNSET))
 
 
+        model = d.pop("model", UNSET)
+
+        provider = d.pop("provider", UNSET)
+
         regenerate = d.pop("regenerate", UNSET)
 
         generate_character_input_body = cls(
@@ -129,6 +145,8 @@ class GenerateCharacterInputBody:
             schema=schema,
             agent_id=agent_id,
             fields=fields,
+            model=model,
+            provider=provider,
             regenerate=regenerate,
         )
 

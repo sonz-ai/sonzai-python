@@ -35,6 +35,7 @@ class UserPrimingMetadata:
             display_name (str):
             email (str):
             facts_count (int):
+            first_met_at (datetime.datetime | None):
             linkedin_url (str):
             phone (str):
             primed_at (datetime.datetime):
@@ -55,6 +56,7 @@ class UserPrimingMetadata:
     display_name: str
     email: str
     facts_count: int
+    first_met_at: datetime.datetime | None
     linkedin_url: str
     phone: str
     primed_at: datetime.datetime
@@ -86,6 +88,12 @@ class UserPrimingMetadata:
         email = self.email
 
         facts_count = self.facts_count
+
+        first_met_at: None | str
+        if isinstance(self.first_met_at, datetime.datetime):
+            first_met_at = self.first_met_at.isoformat()
+        else:
+            first_met_at = self.first_met_at
 
         linkedin_url = self.linkedin_url
 
@@ -120,6 +128,7 @@ class UserPrimingMetadata:
             "DisplayName": display_name,
             "Email": email,
             "FactsCount": facts_count,
+            "FirstMetAt": first_met_at,
             "LinkedinURL": linkedin_url,
             "Phone": phone,
             "PrimedAt": primed_at,
@@ -162,6 +171,24 @@ class UserPrimingMetadata:
 
         facts_count = d.pop("FactsCount")
 
+        def _parse_first_met_at(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                first_met_at_type_0 = isoparse(data)
+
+
+
+                return first_met_at_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        first_met_at = _parse_first_met_at(d.pop("FirstMetAt"))
+
+
         linkedin_url = d.pop("LinkedinURL")
 
         phone = d.pop("Phone")
@@ -198,6 +225,7 @@ class UserPrimingMetadata:
             display_name=display_name,
             email=email,
             facts_count=facts_count,
+            first_met_at=first_met_at,
             linkedin_url=linkedin_url,
             phone=phone,
             primed_at=primed_at,

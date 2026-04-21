@@ -19,12 +19,12 @@ if TYPE_CHECKING:
 
 
 
-T = TypeVar("T", bound="UpdatePersonalityInputBody")
+T = TypeVar("T", bound="UpdatePersonalityBody")
 
 
 
 @_attrs_define
-class UpdatePersonalityInputBody:
+class UpdatePersonalityBody:
     """ 
         Attributes:
             schema (str | Unset): A URL to the JSON Schema for this object.
@@ -96,11 +96,11 @@ class UpdatePersonalityInputBody:
 
 
 
-        update_personality_input_body = cls(
+        update_personality_body = cls(
             schema=schema,
             big5=big5,
             dimensions=dimensions,
         )
 
-        return update_personality_input_body
+        return update_personality_body
 

@@ -8,6 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.active_character_summary import ActiveCharacterSummary
 from ...models.error_model import ErrorModel
 from ...types import UNSET, Unset
 from typing import cast
@@ -42,9 +43,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ActiveCharacterSummary | ErrorModel:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = ActiveCharacterSummary.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -55,7 +59,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ActiveCharacterSummary | ErrorModel]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -69,7 +73,7 @@ def sync_detailed(
     client: AuthenticatedClient,
     days: int | Unset = 30,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ActiveCharacterSummary | ErrorModel]:
     """ List active characters for billing
 
      Returns per-character activity (messages, tokens) used by the billing breakdown view.
@@ -82,7 +86,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ActiveCharacterSummary | ErrorModel]
      """
 
 
@@ -102,7 +106,7 @@ def sync(
     client: AuthenticatedClient,
     days: int | Unset = 30,
 
-) -> Any | ErrorModel | None:
+) -> ActiveCharacterSummary | ErrorModel | None:
     """ List active characters for billing
 
      Returns per-character activity (messages, tokens) used by the billing breakdown view.
@@ -115,7 +119,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ActiveCharacterSummary | ErrorModel
      """
 
 
@@ -130,7 +134,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     days: int | Unset = 30,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ActiveCharacterSummary | ErrorModel]:
     """ List active characters for billing
 
      Returns per-character activity (messages, tokens) used by the billing breakdown view.
@@ -143,7 +147,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ActiveCharacterSummary | ErrorModel]
      """
 
 
@@ -163,7 +167,7 @@ async def asyncio(
     client: AuthenticatedClient,
     days: int | Unset = 30,
 
-) -> Any | ErrorModel | None:
+) -> ActiveCharacterSummary | ErrorModel | None:
     """ List active characters for billing
 
      Returns per-character activity (messages, tokens) used by the billing breakdown view.
@@ -176,7 +180,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ActiveCharacterSummary | ErrorModel
      """
 
 

@@ -9,6 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.error_model import ErrorModel
+from ...models.workbench_state_response import WorkbenchStateResponse
 from typing import cast
 
 
@@ -40,9 +41,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorModel | WorkbenchStateResponse:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = WorkbenchStateResponse.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -53,7 +57,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorModel | WorkbenchStateResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -67,7 +71,7 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: Any,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | WorkbenchStateResponse]:
     """ Get current workbench state
 
      Returns the current workbench state for inspection (loaded facts, sessions, pending jobs). Used by
@@ -81,7 +85,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | WorkbenchStateResponse]
      """
 
 
@@ -101,7 +105,7 @@ def sync(
     client: AuthenticatedClient,
     body: Any,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | WorkbenchStateResponse | None:
     """ Get current workbench state
 
      Returns the current workbench state for inspection (loaded facts, sessions, pending jobs). Used by
@@ -115,7 +119,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | WorkbenchStateResponse
      """
 
 
@@ -130,7 +134,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: Any,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | WorkbenchStateResponse]:
     """ Get current workbench state
 
      Returns the current workbench state for inspection (loaded facts, sessions, pending jobs). Used by
@@ -144,7 +148,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | WorkbenchStateResponse]
      """
 
 
@@ -164,7 +168,7 @@ async def asyncio(
     client: AuthenticatedClient,
     body: Any,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | WorkbenchStateResponse | None:
     """ Get current workbench state
 
      Returns the current workbench state for inspection (loaded facts, sessions, pending jobs). Used by
@@ -178,7 +182,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | WorkbenchStateResponse
      """
 
 

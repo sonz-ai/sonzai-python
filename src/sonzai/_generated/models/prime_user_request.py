@@ -9,10 +9,14 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 from ..types import UNSET, Unset
+from dateutil.parser import isoparse
 from typing import cast
+import datetime
 
 if TYPE_CHECKING:
   from ..models.prime_content_block import PrimeContentBlock
+  from ..models.prime_fact import PrimeFact
+  from ..models.prime_message import PrimeMessage
   from ..models.prime_user_metadata import PrimeUserMetadata
   from ..models.structured_import_spec import StructuredImportSpec
 
@@ -30,7 +34,14 @@ class PrimeUserRequest:
         Attributes:
             display_name (str):
             schema (str | Unset): A URL to the JSON Schema for this object.
-            content (list[PrimeContentBlock] | None | Unset):
+            content (list[PrimeContentBlock] | None | Unset): Raw content blocks for LLM fact extraction.
+            facts (list[PrimeFact] | None | Unset): Pre-extracted facts written directly to memory. Skips LLM re-extraction
+                and preserves supplied timestamps. Use when migrating from another context service.
+            first_met_at (datetime.datetime | Unset): Original date the source system first knew this user. Persisted on
+                UserPrimingMetadata.FirstMetAt.
+            messages (list[PrimeMessage] | None | Unset): Dialogue history. When >= 3 messages are supplied, the worker
+                invokes the session-end pipeline so consolidation summaries, diary, constellation, and personality systems
+                populate as if the conversation had occurred live.
             metadata (PrimeUserMetadata | Unset):
             source (str | Unset):
             structured_import (StructuredImportSpec | Unset):
@@ -39,6 +50,9 @@ class PrimeUserRequest:
     display_name: str
     schema: str | Unset = UNSET
     content: list[PrimeContentBlock] | None | Unset = UNSET
+    facts: list[PrimeFact] | None | Unset = UNSET
+    first_met_at: datetime.datetime | Unset = UNSET
+    messages: list[PrimeMessage] | None | Unset = UNSET
     metadata: PrimeUserMetadata | Unset = UNSET
     source: str | Unset = UNSET
     structured_import: StructuredImportSpec | Unset = UNSET
@@ -49,6 +63,8 @@ class PrimeUserRequest:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.prime_content_block import PrimeContentBlock
+        from ..models.prime_fact import PrimeFact
+        from ..models.prime_message import PrimeMessage
         from ..models.prime_user_metadata import PrimeUserMetadata
         from ..models.structured_import_spec import StructuredImportSpec
         display_name = self.display_name
@@ -67,6 +83,36 @@ class PrimeUserRequest:
 
         else:
             content = self.content
+
+        facts: list[dict[str, Any]] | None | Unset
+        if isinstance(self.facts, Unset):
+            facts = UNSET
+        elif isinstance(self.facts, list):
+            facts = []
+            for facts_type_0_item_data in self.facts:
+                facts_type_0_item = facts_type_0_item_data.to_dict()
+                facts.append(facts_type_0_item)
+
+
+        else:
+            facts = self.facts
+
+        first_met_at: str | Unset = UNSET
+        if not isinstance(self.first_met_at, Unset):
+            first_met_at = self.first_met_at.isoformat()
+
+        messages: list[dict[str, Any]] | None | Unset
+        if isinstance(self.messages, Unset):
+            messages = UNSET
+        elif isinstance(self.messages, list):
+            messages = []
+            for messages_type_0_item_data in self.messages:
+                messages_type_0_item = messages_type_0_item_data.to_dict()
+                messages.append(messages_type_0_item)
+
+
+        else:
+            messages = self.messages
 
         metadata: dict[str, Any] | Unset = UNSET
         if not isinstance(self.metadata, Unset):
@@ -88,6 +134,12 @@ class PrimeUserRequest:
             field_dict["$schema"] = schema
         if content is not UNSET:
             field_dict["content"] = content
+        if facts is not UNSET:
+            field_dict["facts"] = facts
+        if first_met_at is not UNSET:
+            field_dict["first_met_at"] = first_met_at
+        if messages is not UNSET:
+            field_dict["messages"] = messages
         if metadata is not UNSET:
             field_dict["metadata"] = metadata
         if source is not UNSET:
@@ -102,6 +154,8 @@ class PrimeUserRequest:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.prime_content_block import PrimeContentBlock
+        from ..models.prime_fact import PrimeFact
+        from ..models.prime_message import PrimeMessage
         from ..models.prime_user_metadata import PrimeUserMetadata
         from ..models.structured_import_spec import StructuredImportSpec
         d = dict(src_dict)
@@ -134,6 +188,66 @@ class PrimeUserRequest:
         content = _parse_content(d.pop("content", UNSET))
 
 
+        def _parse_facts(data: object) -> list[PrimeFact] | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                facts_type_0 = []
+                _facts_type_0 = data
+                for facts_type_0_item_data in (_facts_type_0):
+                    facts_type_0_item = PrimeFact.from_dict(facts_type_0_item_data)
+
+
+
+                    facts_type_0.append(facts_type_0_item)
+
+                return facts_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[PrimeFact] | None | Unset, data)
+
+        facts = _parse_facts(d.pop("facts", UNSET))
+
+
+        _first_met_at = d.pop("first_met_at", UNSET)
+        first_met_at: datetime.datetime | Unset
+        if isinstance(_first_met_at,  Unset):
+            first_met_at = UNSET
+        else:
+            first_met_at = isoparse(_first_met_at)
+
+
+
+
+        def _parse_messages(data: object) -> list[PrimeMessage] | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                messages_type_0 = []
+                _messages_type_0 = data
+                for messages_type_0_item_data in (_messages_type_0):
+                    messages_type_0_item = PrimeMessage.from_dict(messages_type_0_item_data)
+
+
+
+                    messages_type_0.append(messages_type_0_item)
+
+                return messages_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[PrimeMessage] | None | Unset, data)
+
+        messages = _parse_messages(d.pop("messages", UNSET))
+
+
         _metadata = d.pop("metadata", UNSET)
         metadata: PrimeUserMetadata | Unset
         if isinstance(_metadata,  Unset):
@@ -160,6 +274,9 @@ class PrimeUserRequest:
             display_name=display_name,
             schema=schema,
             content=content,
+            facts=facts,
+            first_met_at=first_met_at,
+            messages=messages,
             metadata=metadata,
             source=source,
             structured_import=structured_import,

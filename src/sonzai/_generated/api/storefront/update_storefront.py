@@ -9,6 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.error_model import ErrorModel
+from ...models.storefront import Storefront
 from ...models.storefront_update_input_body import StorefrontUpdateInputBody
 from typing import cast
 
@@ -41,9 +42,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorModel | Storefront:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = Storefront.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -54,7 +58,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorModel | Storefront]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -68,7 +72,7 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: StorefrontUpdateInputBody,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | Storefront]:
     """ Update storefront config
 
      Updates storefront metadata (slug, display name, access mode, rate caps). Does not publish; see
@@ -82,7 +86,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | Storefront]
      """
 
 
@@ -102,7 +106,7 @@ def sync(
     client: AuthenticatedClient,
     body: StorefrontUpdateInputBody,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | Storefront | None:
     """ Update storefront config
 
      Updates storefront metadata (slug, display name, access mode, rate caps). Does not publish; see
@@ -116,7 +120,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | Storefront
      """
 
 
@@ -131,7 +135,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: StorefrontUpdateInputBody,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | Storefront]:
     """ Update storefront config
 
      Updates storefront metadata (slug, display name, access mode, rate caps). Does not publish; see
@@ -145,7 +149,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | Storefront]
      """
 
 
@@ -165,7 +169,7 @@ async def asyncio(
     client: AuthenticatedClient,
     body: StorefrontUpdateInputBody,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | Storefront | None:
     """ Update storefront config
 
      Updates storefront metadata (slug, display name, access mode, rate caps). Does not publish; see
@@ -179,7 +183,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | Storefront
      """
 
 

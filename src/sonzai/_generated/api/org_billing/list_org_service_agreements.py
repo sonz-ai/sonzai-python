@@ -9,6 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.error_model import ErrorModel
+from ...models.project_service_charge import ProjectServiceCharge
 from typing import cast
 
 
@@ -32,9 +33,30 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorModel | list[ProjectServiceCharge] | None:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        def _parse_response_200(data: object) -> list[ProjectServiceCharge] | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                response_200_type_0 = []
+                _response_200_type_0 = data
+                for response_200_type_0_item_data in (_response_200_type_0):
+                    response_200_type_0_item = ProjectServiceCharge.from_dict(response_200_type_0_item_data)
+
+
+
+                    response_200_type_0.append(response_200_type_0_item)
+
+                return response_200_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(list[ProjectServiceCharge] | None, data)
+
+        response_200 = _parse_response_200(response.json())
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -45,7 +67,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorModel | list[ProjectServiceCharge] | None]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -58,7 +80,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | list[ProjectServiceCharge] | None]:
     """ List active service agreements
 
      Returns enterprise service agreements (pricing overrides, commit levels) active on the tenant.
@@ -68,7 +90,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | list[ProjectServiceCharge] | None]
      """
 
 
@@ -86,7 +108,7 @@ def sync(
     *,
     client: AuthenticatedClient,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | list[ProjectServiceCharge] | None | None:
     """ List active service agreements
 
      Returns enterprise service agreements (pricing overrides, commit levels) active on the tenant.
@@ -96,7 +118,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | list[ProjectServiceCharge] | None
      """
 
 
@@ -109,7 +131,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | list[ProjectServiceCharge] | None]:
     """ List active service agreements
 
      Returns enterprise service agreements (pricing overrides, commit levels) active on the tenant.
@@ -119,7 +141,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | list[ProjectServiceCharge] | None]
      """
 
 
@@ -137,7 +159,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | list[ProjectServiceCharge] | None | None:
     """ List active service agreements
 
      Returns enterprise service agreements (pricing overrides, commit levels) active on the tenant.
@@ -147,7 +169,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | list[ProjectServiceCharge] | None
      """
 
 

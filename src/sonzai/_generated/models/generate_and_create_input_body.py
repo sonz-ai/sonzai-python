@@ -31,7 +31,9 @@ class GenerateAndCreateInputBody:
             agent_id (str | Unset): Pre-existing agent UUID (optional)
             fields (list[str] | None | Unset): Optional list of fields to generate
             language (str | Unset): Language for generation
+            model (str | Unset): Optional model override for the chosen provider.
             project_id (str | Unset): Project UUID to assign agent to
+            provider (str | Unset): LLM provider for generation (gemini | openrouter | xai). Defaults to gemini.
      """
 
     description: str
@@ -41,7 +43,9 @@ class GenerateAndCreateInputBody:
     agent_id: str | Unset = UNSET
     fields: list[str] | None | Unset = UNSET
     language: str | Unset = UNSET
+    model: str | Unset = UNSET
     project_id: str | Unset = UNSET
+    provider: str | Unset = UNSET
 
 
 
@@ -70,7 +74,11 @@ class GenerateAndCreateInputBody:
 
         language = self.language
 
+        model = self.model
+
         project_id = self.project_id
+
+        provider = self.provider
 
 
         field_dict: dict[str, Any] = {}
@@ -88,8 +96,12 @@ class GenerateAndCreateInputBody:
             field_dict["fields"] = fields
         if language is not UNSET:
             field_dict["language"] = language
+        if model is not UNSET:
+            field_dict["model"] = model
         if project_id is not UNSET:
             field_dict["project_id"] = project_id
+        if provider is not UNSET:
+            field_dict["provider"] = provider
 
         return field_dict
 
@@ -128,7 +140,11 @@ class GenerateAndCreateInputBody:
 
         language = d.pop("language", UNSET)
 
+        model = d.pop("model", UNSET)
+
         project_id = d.pop("project_id", UNSET)
+
+        provider = d.pop("provider", UNSET)
 
         generate_and_create_input_body = cls(
             description=description,
@@ -138,7 +154,9 @@ class GenerateAndCreateInputBody:
             agent_id=agent_id,
             fields=fields,
             language=language,
+            model=model,
             project_id=project_id,
+            provider=provider,
         )
 
         return generate_and_create_input_body

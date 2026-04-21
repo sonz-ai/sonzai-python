@@ -24,7 +24,7 @@ T = TypeVar("T", bound="StoredFact")
 
 @_attrs_define
 class StoredFact:
-    """
+    """ 
         Attributes:
             confidence (float):
             content (str):

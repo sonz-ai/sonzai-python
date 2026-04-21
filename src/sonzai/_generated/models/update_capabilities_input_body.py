@@ -8,6 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..models.update_capabilities_input_body_memory_mode import UpdateCapabilitiesInputBodyMemoryMode
 from ..types import UNSET, Unset
 
 
@@ -27,6 +28,9 @@ class UpdateCapabilitiesInputBody:
             image_generation (bool | Unset): Enable/disable image generation
             inventory (bool | Unset): Enable/disable inventory tracking
             knowledge_base (bool | Unset): Enable/disable knowledge base search
+            memory_mode (UpdateCapabilitiesInputBodyMemoryMode | Unset): Supplementary memory recall timing. 'sync'
+                (default) blocks context build until recall returns so facts land in the current turn. 'async' lets the recall
+                race a deadline — slow hits spill to the next turn for lower first-response latency.
             remember_name (bool | Unset): Enable/disable remember name tool
             web_search (bool | Unset): Enable/disable web search tool
      """
@@ -35,6 +39,7 @@ class UpdateCapabilitiesInputBody:
     image_generation: bool | Unset = UNSET
     inventory: bool | Unset = UNSET
     knowledge_base: bool | Unset = UNSET
+    memory_mode: UpdateCapabilitiesInputBodyMemoryMode | Unset = UNSET
     remember_name: bool | Unset = UNSET
     web_search: bool | Unset = UNSET
 
@@ -50,6 +55,11 @@ class UpdateCapabilitiesInputBody:
         inventory = self.inventory
 
         knowledge_base = self.knowledge_base
+
+        memory_mode: str | Unset = UNSET
+        if not isinstance(self.memory_mode, Unset):
+            memory_mode = self.memory_mode.value
+
 
         remember_name = self.remember_name
 
@@ -68,6 +78,8 @@ class UpdateCapabilitiesInputBody:
             field_dict["inventory"] = inventory
         if knowledge_base is not UNSET:
             field_dict["knowledgeBase"] = knowledge_base
+        if memory_mode is not UNSET:
+            field_dict["memoryMode"] = memory_mode
         if remember_name is not UNSET:
             field_dict["rememberName"] = remember_name
         if web_search is not UNSET:
@@ -88,6 +100,16 @@ class UpdateCapabilitiesInputBody:
 
         knowledge_base = d.pop("knowledgeBase", UNSET)
 
+        _memory_mode = d.pop("memoryMode", UNSET)
+        memory_mode: UpdateCapabilitiesInputBodyMemoryMode | Unset
+        if isinstance(_memory_mode,  Unset):
+            memory_mode = UNSET
+        else:
+            memory_mode = UpdateCapabilitiesInputBodyMemoryMode(_memory_mode)
+
+
+
+
         remember_name = d.pop("rememberName", UNSET)
 
         web_search = d.pop("webSearch", UNSET)
@@ -97,6 +119,7 @@ class UpdateCapabilitiesInputBody:
             image_generation=image_generation,
             inventory=inventory,
             knowledge_base=knowledge_base,
+            memory_mode=memory_mode,
             remember_name=remember_name,
             web_search=web_search,
         )

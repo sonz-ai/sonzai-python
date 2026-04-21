@@ -9,6 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.error_model import ErrorModel
+from ...models.org_billing_url_body import OrgBillingURLBody
 from typing import cast
 
 
@@ -32,9 +33,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorModel | OrgBillingURLBody:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = OrgBillingURLBody.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -45,7 +49,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorModel | OrgBillingURLBody]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -58,7 +62,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | OrgBillingURLBody]:
     """ Create Stripe billing-portal session
 
      Creates a Stripe Customer Portal session. Dashboard redirects the user there to manage payment
@@ -69,7 +73,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | OrgBillingURLBody]
      """
 
 
@@ -87,7 +91,7 @@ def sync(
     *,
     client: AuthenticatedClient,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | OrgBillingURLBody | None:
     """ Create Stripe billing-portal session
 
      Creates a Stripe Customer Portal session. Dashboard redirects the user there to manage payment
@@ -98,7 +102,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | OrgBillingURLBody
      """
 
 
@@ -111,7 +115,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | OrgBillingURLBody]:
     """ Create Stripe billing-portal session
 
      Creates a Stripe Customer Portal session. Dashboard redirects the user there to manage payment
@@ -122,7 +126,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | OrgBillingURLBody]
      """
 
 
@@ -140,7 +144,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | OrgBillingURLBody | None:
     """ Create Stripe billing-portal session
 
      Creates a Stripe Customer Portal session. Dashboard redirects the user there to manage payment
@@ -151,7 +155,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | OrgBillingURLBody
      """
 
 

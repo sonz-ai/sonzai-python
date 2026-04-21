@@ -9,6 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.error_model import ErrorModel
+from ...models.workbench_reset_agent_body import WorkbenchResetAgentBody
 from typing import cast
 
 
@@ -40,9 +41,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorModel | WorkbenchResetAgentBody:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = WorkbenchResetAgentBody.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -53,7 +57,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorModel | WorkbenchResetAgentBody]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -67,7 +71,7 @@ def sync_detailed(
     client: AuthenticatedClient,
     body: Any,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | WorkbenchResetAgentBody]:
     """ Reset the workbench agent's data
 
      Deletes the ephemeral workbench agent's profile, memories, and sessions so a fresh run starts from
@@ -81,7 +85,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | WorkbenchResetAgentBody]
      """
 
 
@@ -101,7 +105,7 @@ def sync(
     client: AuthenticatedClient,
     body: Any,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | WorkbenchResetAgentBody | None:
     """ Reset the workbench agent's data
 
      Deletes the ephemeral workbench agent's profile, memories, and sessions so a fresh run starts from
@@ -115,7 +119,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | WorkbenchResetAgentBody
      """
 
 
@@ -130,7 +134,7 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     body: Any,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | WorkbenchResetAgentBody]:
     """ Reset the workbench agent's data
 
      Deletes the ephemeral workbench agent's profile, memories, and sessions so a fresh run starts from
@@ -144,7 +148,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | WorkbenchResetAgentBody]
      """
 
 
@@ -164,7 +168,7 @@ async def asyncio(
     client: AuthenticatedClient,
     body: Any,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | WorkbenchResetAgentBody | None:
     """ Reset the workbench agent's data
 
      Deletes the ephemeral workbench agent's profile, memories, and sessions so a fresh run starts from
@@ -178,7 +182,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | WorkbenchResetAgentBody
      """
 
 

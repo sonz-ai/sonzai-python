@@ -19,7 +19,9 @@ def _get_kwargs(
     agent_id: str,
     *,
     q: str,
+    user_id: str | Unset = UNSET,
     instance_id: str | Unset = UNSET,
+    mode: str | Unset = UNSET,
     limit: str | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -31,7 +33,11 @@ def _get_kwargs(
 
     params["q"] = q
 
+    params["user_id"] = user_id
+
     params["instance_id"] = instance_id
+
+    params["mode"] = mode
 
     params["limit"] = limit
 
@@ -80,19 +86,27 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     q: str,
+    user_id: str | Unset = UNSET,
     instance_id: str | Unset = UNSET,
+    mode: str | Unset = UNSET,
     limit: str | Unset = UNSET,
 
 ) -> Response[ErrorModel | SearchResponse]:
-    """ Search agent memories via BM25
+    """ Search agent memories (semantic or BM25)
 
-     Performs a BM25 text search across the agent's indexed memory facts. Returns scored results ordered
-    by relevance.
+     Searches across the agent's indexed memory facts. When a user_id is provided and a vector index is
+    wired (default in production), results are ranked by cosine similarity to the query embedding.
+    Otherwise falls back to a BM25 token search. Pass `mode=bm25` to force the lexical path even when
+    user_id is set.
 
     Args:
         agent_id (str): Agent UUID or URL-encoded agent name
         q (str): Search query text
+        user_id (str | Unset): Optional user ID. When set and a vector index is available, search
+            uses cosine similarity over fact embeddings; otherwise falls back to BM25.
         instance_id (str | Unset): Optional instance ID for scoping
+        mode (str | Unset): Retrieval mode: 'semantic' (requires user_id), 'bm25', or 'auto'
+            (default). 'auto' picks semantic when user_id is set and a vector index is wired.
         limit (str | Unset): Max results to return (default 20, max 100)
 
     Raises:
@@ -107,7 +121,9 @@ def sync_detailed(
     kwargs = _get_kwargs(
         agent_id=agent_id,
 q=q,
+user_id=user_id,
 instance_id=instance_id,
+mode=mode,
 limit=limit,
 
     )
@@ -123,19 +139,27 @@ def sync(
     *,
     client: AuthenticatedClient,
     q: str,
+    user_id: str | Unset = UNSET,
     instance_id: str | Unset = UNSET,
+    mode: str | Unset = UNSET,
     limit: str | Unset = UNSET,
 
 ) -> ErrorModel | SearchResponse | None:
-    """ Search agent memories via BM25
+    """ Search agent memories (semantic or BM25)
 
-     Performs a BM25 text search across the agent's indexed memory facts. Returns scored results ordered
-    by relevance.
+     Searches across the agent's indexed memory facts. When a user_id is provided and a vector index is
+    wired (default in production), results are ranked by cosine similarity to the query embedding.
+    Otherwise falls back to a BM25 token search. Pass `mode=bm25` to force the lexical path even when
+    user_id is set.
 
     Args:
         agent_id (str): Agent UUID or URL-encoded agent name
         q (str): Search query text
+        user_id (str | Unset): Optional user ID. When set and a vector index is available, search
+            uses cosine similarity over fact embeddings; otherwise falls back to BM25.
         instance_id (str | Unset): Optional instance ID for scoping
+        mode (str | Unset): Retrieval mode: 'semantic' (requires user_id), 'bm25', or 'auto'
+            (default). 'auto' picks semantic when user_id is set and a vector index is wired.
         limit (str | Unset): Max results to return (default 20, max 100)
 
     Raises:
@@ -151,7 +175,9 @@ def sync(
         agent_id=agent_id,
 client=client,
 q=q,
+user_id=user_id,
 instance_id=instance_id,
+mode=mode,
 limit=limit,
 
     ).parsed
@@ -161,19 +187,27 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     q: str,
+    user_id: str | Unset = UNSET,
     instance_id: str | Unset = UNSET,
+    mode: str | Unset = UNSET,
     limit: str | Unset = UNSET,
 
 ) -> Response[ErrorModel | SearchResponse]:
-    """ Search agent memories via BM25
+    """ Search agent memories (semantic or BM25)
 
-     Performs a BM25 text search across the agent's indexed memory facts. Returns scored results ordered
-    by relevance.
+     Searches across the agent's indexed memory facts. When a user_id is provided and a vector index is
+    wired (default in production), results are ranked by cosine similarity to the query embedding.
+    Otherwise falls back to a BM25 token search. Pass `mode=bm25` to force the lexical path even when
+    user_id is set.
 
     Args:
         agent_id (str): Agent UUID or URL-encoded agent name
         q (str): Search query text
+        user_id (str | Unset): Optional user ID. When set and a vector index is available, search
+            uses cosine similarity over fact embeddings; otherwise falls back to BM25.
         instance_id (str | Unset): Optional instance ID for scoping
+        mode (str | Unset): Retrieval mode: 'semantic' (requires user_id), 'bm25', or 'auto'
+            (default). 'auto' picks semantic when user_id is set and a vector index is wired.
         limit (str | Unset): Max results to return (default 20, max 100)
 
     Raises:
@@ -188,7 +222,9 @@ async def asyncio_detailed(
     kwargs = _get_kwargs(
         agent_id=agent_id,
 q=q,
+user_id=user_id,
 instance_id=instance_id,
+mode=mode,
 limit=limit,
 
     )
@@ -204,19 +240,27 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
     q: str,
+    user_id: str | Unset = UNSET,
     instance_id: str | Unset = UNSET,
+    mode: str | Unset = UNSET,
     limit: str | Unset = UNSET,
 
 ) -> ErrorModel | SearchResponse | None:
-    """ Search agent memories via BM25
+    """ Search agent memories (semantic or BM25)
 
-     Performs a BM25 text search across the agent's indexed memory facts. Returns scored results ordered
-    by relevance.
+     Searches across the agent's indexed memory facts. When a user_id is provided and a vector index is
+    wired (default in production), results are ranked by cosine similarity to the query embedding.
+    Otherwise falls back to a BM25 token search. Pass `mode=bm25` to force the lexical path even when
+    user_id is set.
 
     Args:
         agent_id (str): Agent UUID or URL-encoded agent name
         q (str): Search query text
+        user_id (str | Unset): Optional user ID. When set and a vector index is available, search
+            uses cosine similarity over fact embeddings; otherwise falls back to BM25.
         instance_id (str | Unset): Optional instance ID for scoping
+        mode (str | Unset): Retrieval mode: 'semantic' (requires user_id), 'bm25', or 'auto'
+            (default). 'auto' picks semantic when user_id is set and a vector index is wired.
         limit (str | Unset): Max results to return (default 20, max 100)
 
     Raises:
@@ -232,7 +276,9 @@ async def asyncio(
         agent_id=agent_id,
 client=client,
 q=q,
+user_id=user_id,
 instance_id=instance_id,
+mode=mode,
 limit=limit,
 
     )).parsed

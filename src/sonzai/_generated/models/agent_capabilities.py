@@ -40,6 +40,7 @@ class AgentCapabilities:
             knowledge_base (bool | Unset):
             knowledge_base_project_id (str | Unset):
             knowledge_base_scope_mode (str | Unset):
+            memory_mode (str | Unset):
             music_unlocked_at (datetime.datetime | Unset):
             pending_capabilities (list[PendingCapability] | None | Unset):
             remember_name (bool | Unset):
@@ -61,6 +62,7 @@ class AgentCapabilities:
     knowledge_base: bool | Unset = UNSET
     knowledge_base_project_id: str | Unset = UNSET
     knowledge_base_scope_mode: str | Unset = UNSET
+    memory_mode: str | Unset = UNSET
     music_unlocked_at: datetime.datetime | Unset = UNSET
     pending_capabilities: list[PendingCapability] | None | Unset = UNSET
     remember_name: bool | Unset = UNSET
@@ -111,6 +113,8 @@ class AgentCapabilities:
         knowledge_base_project_id = self.knowledge_base_project_id
 
         knowledge_base_scope_mode = self.knowledge_base_scope_mode
+
+        memory_mode = self.memory_mode
 
         music_unlocked_at: str | Unset = UNSET
         if not isinstance(self.music_unlocked_at, Unset):
@@ -168,6 +172,8 @@ class AgentCapabilities:
             field_dict["knowledgeBaseProjectId"] = knowledge_base_project_id
         if knowledge_base_scope_mode is not UNSET:
             field_dict["knowledgeBaseScopeMode"] = knowledge_base_scope_mode
+        if memory_mode is not UNSET:
+            field_dict["memoryMode"] = memory_mode
         if music_unlocked_at is not UNSET:
             field_dict["musicUnlockedAt"] = music_unlocked_at
         if pending_capabilities is not UNSET:
@@ -247,6 +253,8 @@ class AgentCapabilities:
 
         knowledge_base_scope_mode = d.pop("knowledgeBaseScopeMode", UNSET)
 
+        memory_mode = d.pop("memoryMode", UNSET)
+
         _music_unlocked_at = d.pop("musicUnlockedAt", UNSET)
         music_unlocked_at: datetime.datetime | Unset
         if isinstance(_music_unlocked_at,  Unset):
@@ -322,6 +330,7 @@ class AgentCapabilities:
             knowledge_base=knowledge_base,
             knowledge_base_project_id=knowledge_base_project_id,
             knowledge_base_scope_mode=knowledge_base_scope_mode,
+            memory_mode=memory_mode,
             music_unlocked_at=music_unlocked_at,
             pending_capabilities=pending_capabilities,
             remember_name=remember_name,

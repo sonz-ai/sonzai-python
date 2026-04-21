@@ -12,29 +12,27 @@ from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
-  from ..models.kb_search_result import KBSearchResult
+  from ..models.kb_search_result_item import KbSearchResultItem
 
 
 
 
 
-T = TypeVar("T", bound="KBSearchResponse")
+T = TypeVar("T", bound="KbSearchResponse")
 
 
 
 @_attrs_define
-class KBSearchResponse:
+class KbSearchResponse:
     """ 
         Attributes:
             query (str):
-            results (list[KBSearchResult] | None):
-            total (int):
+            results (list[KbSearchResultItem] | None):
             schema (str | Unset): A URL to the JSON Schema for this object.
      """
 
     query: str
-    results: list[KBSearchResult] | None
-    total: int
+    results: list[KbSearchResultItem] | None
     schema: str | Unset = UNSET
 
 
@@ -42,7 +40,7 @@ class KBSearchResponse:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.kb_search_result import KBSearchResult
+        from ..models.kb_search_result_item import KbSearchResultItem
         query = self.query
 
         results: list[dict[str, Any]] | None
@@ -56,8 +54,6 @@ class KBSearchResponse:
         else:
             results = self.results
 
-        total = self.total
-
         schema = self.schema
 
 
@@ -66,7 +62,6 @@ class KBSearchResponse:
         field_dict.update({
             "query": query,
             "results": results,
-            "total": total,
         })
         if schema is not UNSET:
             field_dict["$schema"] = schema
@@ -77,11 +72,11 @@ class KBSearchResponse:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.kb_search_result import KBSearchResult
+        from ..models.kb_search_result_item import KbSearchResultItem
         d = dict(src_dict)
         query = d.pop("query")
 
-        def _parse_results(data: object) -> list[KBSearchResult] | None:
+        def _parse_results(data: object) -> list[KbSearchResultItem] | None:
             if data is None:
                 return data
             try:
@@ -90,7 +85,7 @@ class KBSearchResponse:
                 results_type_0 = []
                 _results_type_0 = data
                 for results_type_0_item_data in (_results_type_0):
-                    results_type_0_item = KBSearchResult.from_dict(results_type_0_item_data)
+                    results_type_0_item = KbSearchResultItem.from_dict(results_type_0_item_data)
 
 
 
@@ -99,19 +94,16 @@ class KBSearchResponse:
                 return results_type_0
             except (TypeError, ValueError, AttributeError, KeyError):
                 pass
-            return cast(list[KBSearchResult] | None, data)
+            return cast(list[KbSearchResultItem] | None, data)
 
         results = _parse_results(d.pop("results"))
 
-
-        total = d.pop("total")
 
         schema = d.pop("$schema", UNSET)
 
         kb_search_response = cls(
             query=query,
             results=results,
-            total=total,
             schema=schema,
         )
 

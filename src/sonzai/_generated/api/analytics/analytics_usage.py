@@ -9,6 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.error_model import ErrorModel
+from ...models.usage_response import UsageResponse
 from ...types import UNSET, Unset
 from typing import cast
 
@@ -16,7 +17,8 @@ from typing import cast
 
 def _get_kwargs(
     *,
-    days: int | Unset = 30,
+    month: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
 ) -> dict[str, Any]:
     
@@ -25,7 +27,9 @@ def _get_kwargs(
 
     params: dict[str, Any] = {}
 
-    params["days"] = days
+    params["month"] = month
+
+    params["project_id"] = project_id
 
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
@@ -42,9 +46,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorModel | UsageResponse:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = UsageResponse.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -55,7 +62,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorModel | UsageResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -67,27 +74,30 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    month: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | UsageResponse]:
     """ Token and session usage analytics
 
      Returns daily token consumption and session counts over the requested window (default 30 days).
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        month (str | Unset): Month filter YYYY-MM (defaults to current month)
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | UsageResponse]
      """
 
 
     kwargs = _get_kwargs(
-        days=days,
+        month=month,
+project_id=project_id,
 
     )
 
@@ -100,55 +110,61 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    month: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | UsageResponse | None:
     """ Token and session usage analytics
 
      Returns daily token consumption and session counts over the requested window (default 30 days).
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        month (str | Unset): Month filter YYYY-MM (defaults to current month)
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | UsageResponse
      """
 
 
     return sync_detailed(
         client=client,
-days=days,
+month=month,
+project_id=project_id,
 
     ).parsed
 
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    month: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | UsageResponse]:
     """ Token and session usage analytics
 
      Returns daily token consumption and session counts over the requested window (default 30 days).
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        month (str | Unset): Month filter YYYY-MM (defaults to current month)
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | UsageResponse]
      """
 
 
     kwargs = _get_kwargs(
-        days=days,
+        month=month,
+project_id=project_id,
 
     )
 
@@ -161,27 +177,30 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    month: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | UsageResponse | None:
     """ Token and session usage analytics
 
      Returns daily token consumption and session counts over the requested window (default 30 days).
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        month (str | Unset): Month filter YYYY-MM (defaults to current month)
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | UsageResponse
      """
 
 
     return (await asyncio_detailed(
         client=client,
-days=days,
+month=month,
+project_id=project_id,
 
     )).parsed

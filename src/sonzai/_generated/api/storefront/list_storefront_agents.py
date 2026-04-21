@@ -9,6 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.error_model import ErrorModel
+from ...models.storefront_list_agents_output_body import StorefrontListAgentsOutputBody
 from typing import cast
 
 
@@ -32,9 +33,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorModel | StorefrontListAgentsOutputBody:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = StorefrontListAgentsOutputBody.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -45,7 +49,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorModel | StorefrontListAgentsOutputBody]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -58,7 +62,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | StorefrontListAgentsOutputBody]:
     """ List agents on the storefront
 
      Returns the agents currently placed on the storefront (both drafts and published), along with their
@@ -69,7 +73,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | StorefrontListAgentsOutputBody]
      """
 
 
@@ -87,7 +91,7 @@ def sync(
     *,
     client: AuthenticatedClient,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | StorefrontListAgentsOutputBody | None:
     """ List agents on the storefront
 
      Returns the agents currently placed on the storefront (both drafts and published), along with their
@@ -98,7 +102,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | StorefrontListAgentsOutputBody
      """
 
 
@@ -111,7 +115,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[ErrorModel | StorefrontListAgentsOutputBody]:
     """ List agents on the storefront
 
      Returns the agents currently placed on the storefront (both drafts and published), along with their
@@ -122,7 +126,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[ErrorModel | StorefrontListAgentsOutputBody]
      """
 
 
@@ -140,7 +144,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
 
-) -> Any | ErrorModel | None:
+) -> ErrorModel | StorefrontListAgentsOutputBody | None:
     """ List agents on the storefront
 
      Returns the agents currently placed on the storefront (both drafts and published), along with their
@@ -151,7 +155,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        ErrorModel | StorefrontListAgentsOutputBody
      """
 
 

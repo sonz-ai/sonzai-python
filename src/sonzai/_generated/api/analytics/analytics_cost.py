@@ -8,6 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.cost_response import CostResponse
 from ...models.error_model import ErrorModel
 from ...types import UNSET, Unset
 from typing import cast
@@ -16,7 +17,10 @@ from typing import cast
 
 def _get_kwargs(
     *,
-    days: int | Unset = 30,
+    start: str | Unset = UNSET,
+    end: str | Unset = UNSET,
+    group_by: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
 ) -> dict[str, Any]:
     
@@ -25,7 +29,13 @@ def _get_kwargs(
 
     params: dict[str, Any] = {}
 
-    params["days"] = days
+    params["start"] = start
+
+    params["end"] = end
+
+    params["group_by"] = group_by
+
+    params["project_id"] = project_id
 
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
@@ -42,9 +52,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> CostResponse | ErrorModel:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = CostResponse.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -55,7 +68,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[CostResponse | ErrorModel]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -67,28 +80,37 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    start: str | Unset = UNSET,
+    end: str | Unset = UNSET,
+    group_by: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[CostResponse | ErrorModel]:
     """ Cost analytics with billing-aware pricing
 
      Returns USD cost summary + daily cost chart + project breakdown over the requested window (default
     30 days).
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        start (str | Unset): Start date YYYY-MM-DD (defaults to 30 days ago)
+        end (str | Unset): End date YYYY-MM-DD (defaults to today)
+        group_by (str | Unset): Group by 'project' (default) or 'character'
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[CostResponse | ErrorModel]
      """
 
 
     kwargs = _get_kwargs(
-        days=days,
+        start=start,
+end=end,
+group_by=group_by,
+project_id=project_id,
 
     )
 
@@ -101,57 +123,75 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    start: str | Unset = UNSET,
+    end: str | Unset = UNSET,
+    group_by: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Any | ErrorModel | None:
+) -> CostResponse | ErrorModel | None:
     """ Cost analytics with billing-aware pricing
 
      Returns USD cost summary + daily cost chart + project breakdown over the requested window (default
     30 days).
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        start (str | Unset): Start date YYYY-MM-DD (defaults to 30 days ago)
+        end (str | Unset): End date YYYY-MM-DD (defaults to today)
+        group_by (str | Unset): Group by 'project' (default) or 'character'
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        CostResponse | ErrorModel
      """
 
 
     return sync_detailed(
         client=client,
-days=days,
+start=start,
+end=end,
+group_by=group_by,
+project_id=project_id,
 
     ).parsed
 
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    start: str | Unset = UNSET,
+    end: str | Unset = UNSET,
+    group_by: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[CostResponse | ErrorModel]:
     """ Cost analytics with billing-aware pricing
 
      Returns USD cost summary + daily cost chart + project breakdown over the requested window (default
     30 days).
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        start (str | Unset): Start date YYYY-MM-DD (defaults to 30 days ago)
+        end (str | Unset): End date YYYY-MM-DD (defaults to today)
+        group_by (str | Unset): Group by 'project' (default) or 'character'
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[CostResponse | ErrorModel]
      """
 
 
     kwargs = _get_kwargs(
-        days=days,
+        start=start,
+end=end,
+group_by=group_by,
+project_id=project_id,
 
     )
 
@@ -164,28 +204,37 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    start: str | Unset = UNSET,
+    end: str | Unset = UNSET,
+    group_by: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Any | ErrorModel | None:
+) -> CostResponse | ErrorModel | None:
     """ Cost analytics with billing-aware pricing
 
      Returns USD cost summary + daily cost chart + project breakdown over the requested window (default
     30 days).
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        start (str | Unset): Start date YYYY-MM-DD (defaults to 30 days ago)
+        end (str | Unset): End date YYYY-MM-DD (defaults to today)
+        group_by (str | Unset): Group by 'project' (default) or 'character'
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        CostResponse | ErrorModel
      """
 
 
     return (await asyncio_detailed(
         client=client,
-days=days,
+start=start,
+end=end,
+group_by=group_by,
+project_id=project_id,
 
     )).parsed

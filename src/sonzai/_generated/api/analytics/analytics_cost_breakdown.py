@@ -8,6 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.cost_breakdown_response import CostBreakdownResponse
 from ...models.error_model import ErrorModel
 from ...types import UNSET, Unset
 from typing import cast
@@ -16,7 +17,10 @@ from typing import cast
 
 def _get_kwargs(
     *,
-    days: int | Unset = 30,
+    month: str | Unset = UNSET,
+    start: str | Unset = UNSET,
+    end: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
 ) -> dict[str, Any]:
     
@@ -25,7 +29,13 @@ def _get_kwargs(
 
     params: dict[str, Any] = {}
 
-    params["days"] = days
+    params["month"] = month
+
+    params["start"] = start
+
+    params["end"] = end
+
+    params["project_id"] = project_id
 
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
@@ -42,9 +52,12 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorModel:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> CostBreakdownResponse | ErrorModel:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = CostBreakdownResponse.from_dict(response.json())
+
+
+
         return response_200
 
     response_default = ErrorModel.from_dict(response.json())
@@ -55,7 +68,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorModel]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[CostBreakdownResponse | ErrorModel]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -67,9 +80,12 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    month: str | Unset = UNSET,
+    start: str | Unset = UNSET,
+    end: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[CostBreakdownResponse | ErrorModel]:
     """ Cost breakdown by operation / model / agent
 
      Returns tokens + USD grouped three ways (operation, model, agent) over the requested window. Query
@@ -77,19 +93,25 @@ def sync_detailed(
     Backed by platform.token_usage_daily_by_op which is populated for every priced LLM + embedding call.
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        month (str | Unset): Month shortcut YYYY-MM (takes priority over start/end)
+        start (str | Unset): Start date YYYY-MM-DD
+        end (str | Unset): End date YYYY-MM-DD
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[CostBreakdownResponse | ErrorModel]
      """
 
 
     kwargs = _get_kwargs(
-        days=days,
+        month=month,
+start=start,
+end=end,
+project_id=project_id,
 
     )
 
@@ -102,9 +124,12 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    month: str | Unset = UNSET,
+    start: str | Unset = UNSET,
+    end: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Any | ErrorModel | None:
+) -> CostBreakdownResponse | ErrorModel | None:
     """ Cost breakdown by operation / model / agent
 
      Returns tokens + USD grouped three ways (operation, model, agent) over the requested window. Query
@@ -112,29 +137,38 @@ def sync(
     Backed by platform.token_usage_daily_by_op which is populated for every priced LLM + embedding call.
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        month (str | Unset): Month shortcut YYYY-MM (takes priority over start/end)
+        start (str | Unset): Start date YYYY-MM-DD
+        end (str | Unset): End date YYYY-MM-DD
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        CostBreakdownResponse | ErrorModel
      """
 
 
     return sync_detailed(
         client=client,
-days=days,
+month=month,
+start=start,
+end=end,
+project_id=project_id,
 
     ).parsed
 
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    month: str | Unset = UNSET,
+    start: str | Unset = UNSET,
+    end: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Response[Any | ErrorModel]:
+) -> Response[CostBreakdownResponse | ErrorModel]:
     """ Cost breakdown by operation / model / agent
 
      Returns tokens + USD grouped three ways (operation, model, agent) over the requested window. Query
@@ -142,19 +176,25 @@ async def asyncio_detailed(
     Backed by platform.token_usage_daily_by_op which is populated for every priced LLM + embedding call.
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        month (str | Unset): Month shortcut YYYY-MM (takes priority over start/end)
+        start (str | Unset): Start date YYYY-MM-DD
+        end (str | Unset): End date YYYY-MM-DD
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorModel]
+        Response[CostBreakdownResponse | ErrorModel]
      """
 
 
     kwargs = _get_kwargs(
-        days=days,
+        month=month,
+start=start,
+end=end,
+project_id=project_id,
 
     )
 
@@ -167,9 +207,12 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    days: int | Unset = 30,
+    month: str | Unset = UNSET,
+    start: str | Unset = UNSET,
+    end: str | Unset = UNSET,
+    project_id: str | Unset = UNSET,
 
-) -> Any | ErrorModel | None:
+) -> CostBreakdownResponse | ErrorModel | None:
     """ Cost breakdown by operation / model / agent
 
      Returns tokens + USD grouped three ways (operation, model, agent) over the requested window. Query
@@ -177,19 +220,25 @@ async def asyncio(
     Backed by platform.token_usage_daily_by_op which is populated for every priced LLM + embedding call.
 
     Args:
-        days (int | Unset): Lookback window in days Default: 30.
+        month (str | Unset): Month shortcut YYYY-MM (takes priority over start/end)
+        start (str | Unset): Start date YYYY-MM-DD
+        end (str | Unset): End date YYYY-MM-DD
+        project_id (str | Unset): Optional project UUID filter
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorModel
+        CostBreakdownResponse | ErrorModel
      """
 
 
     return (await asyncio_detailed(
         client=client,
-days=days,
+month=month,
+start=start,
+end=end,
+project_id=project_id,
 
     )).parsed
