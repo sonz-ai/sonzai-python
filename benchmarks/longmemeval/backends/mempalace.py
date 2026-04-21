@@ -75,7 +75,7 @@ def _run_bench(
         str(dataset_path),
         "--mode",
         mode,
-        "--output",
+        "--out",
         str(output_path),
     ]
     if limit and limit > 0:
@@ -84,16 +84,39 @@ def _run_bench(
     subprocess.run(cmd, check=True, cwd=checkout)
 
 
-def _parse_results(output_path: Path) -> dict[str, list[str]]:
-    """Parse MemPalace JSONL output into ``{question_id: [ranked_session_ids]}``."""
-    out: dict[str, list[str]] = {}
+def _parse_results(output_path: Path) -> dict[str, tuple[list[str], list[str]]]:
+    """Parse MemPalace JSONL into ``{question_id: (session_ids, fact_texts)}``.
+
+    MemPalace's output schema (v3.x): each row has ``retrieval_results`` with
+    ``ranked_items[]`` where each item carries ``corpus_id`` (= session id at
+    the default session-granularity) and ``text``. We mirror both so the
+    downstream scoring can do session-level recall AND fact-level recall
+    over the same MemPalace output.
+    """
+    out: dict[str, tuple[list[str], list[str]]] = {}
     with open(output_path) as f:
         for line in f:
             row = json.loads(line)
             qid = row.get("question_id") or row.get("qid")
-            ranked = row.get("ranked_session_ids") or row.get("top_sessions") or []
-            if qid:
-                out[qid] = list(ranked)
+            if not qid:
+                continue
+            retrieval = row.get("retrieval_results") or {}
+            ranked_items = retrieval.get("ranked_items") or []
+            sids: list[str] = []
+            texts: list[str] = []
+            seen_sids: set[str] = set()
+            for item in ranked_items:
+                sid = item.get("corpus_id") or ""
+                if sid and sid not in seen_sids:
+                    seen_sids.add(sid)
+                    sids.append(sid)
+                text = item.get("text") or ""
+                if text:
+                    texts.append(text)
+            # Legacy fallbacks for earlier MemPalace output schemas.
+            if not sids:
+                sids = list(row.get("ranked_session_ids") or row.get("top_sessions") or [])
+            out[qid] = (sids, texts)
     return out
 
 
@@ -122,9 +145,10 @@ def run_all(
     parsed = _parse_results(output_path)
     results: dict[str, BackendResult] = {}
     for q in questions:
-        ranked = parsed.get(q.question_id, [])
+        sids, texts = parsed.get(q.question_id, ([], []))
         results[q.question_id] = BackendResult(
-            ranked_session_ids=ranked,
+            ranked_session_ids=sids,
+            ranked_fact_texts=texts,
             agent_answer="",
             extra={"mempalace_mode": mempalace_mode},
         )

@@ -88,18 +88,27 @@ def _build_question(raw: dict) -> LongMemEvalQuestion:
     )
 
 
-def load_questions(*, limit: int = 0) -> list[LongMemEvalQuestion]:
+def load_questions(*, limit: int = 0, path: "str | None" = None) -> list[LongMemEvalQuestion]:
     """Load LongMemEval questions, auto-downloading the dataset on first run.
 
-    ``limit=0`` returns all 500 questions.
+    ``limit=0`` returns all 500 questions. ``path`` overrides the cached
+    default — pass a pre-trimmed copy to run both Sonzai and MemPalace on the
+    same haystack sizes for apples-to-apples comparison.
     """
-    path = ensure_file(DATASET_URL, DATASET_FILE)
-    with open(path) as f:
+    from pathlib import Path as _Path
+    target = _Path(path) if path else ensure_file(DATASET_URL, DATASET_FILE)
+    with open(target) as f:
         raw = json.load(f)
     questions = [_build_question(q) for q in raw]
     if limit and limit > 0:
         questions = questions[:limit]
     return questions
+
+
+def resolve_dataset_path(path: "str | None" = None):
+    """Return the dataset file path, auto-downloading if no override given."""
+    from pathlib import Path as _Path
+    return _Path(path) if path else ensure_file(DATASET_URL, DATASET_FILE)
 
 
 def hours_between(earlier: Session, later: Session) -> float:

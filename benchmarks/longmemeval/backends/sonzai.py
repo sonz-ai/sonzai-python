@@ -137,7 +137,11 @@ async def _retrieve(
     always populated server-side).
     """
     memory = async_memory(client)
-    results = await memory.search(agent_id=agent_id, query=question, limit=limit)
+    # Pass user_id so the server uses cosine-similarity semantic search over
+    # fact embeddings instead of falling back to BM25 token search.
+    results = await memory.search(
+        agent_id=agent_id, user_id=user_id, query=question, limit=limit
+    )
     fact_to_session = await _build_fact_to_session_map(
         client, agent_id=agent_id, user_id=user_id
     )
@@ -269,6 +273,21 @@ async def run_question(
                 client, agent_id=agent_id, user_id=user_id, question=question.question
             )
 
+        # Diagnostic: count facts actually stored for this (agent, user).
+        # Helps distinguish "CE didn't extract the fact" from "search didn't
+        # find it" or "advance-time pruned it".
+        facts_stored = 0
+        facts_sample: list[str] = []
+        try:
+            memory = async_memory(client)
+            fact_list = await memory.list_facts(
+                agent_id=agent_id, user_id=user_id, limit=500
+            )
+            facts_stored = len(fact_list.facts)
+            facts_sample = [f.content for f in fact_list.facts[:5]]
+        except Exception as e:
+            logger.debug("memory.list_facts diagnostic failed: %s", e)
+
         return BackendResult(
             ranked_session_ids=ranked_sessions,
             ranked_fact_texts=ranked_facts,
@@ -281,6 +300,8 @@ async def run_question(
                 "sessions_replayed": len(haystack),
                 "skip_advance_time": skip_advance_time,
                 "facts_retrieved": len(ranked_facts),
+                "facts_stored": facts_stored,
+                "facts_sample": facts_sample,
             },
         )
     finally:

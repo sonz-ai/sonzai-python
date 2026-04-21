@@ -61,13 +61,24 @@ class Memory:
         agent_id: str,
         *,
         query: str,
+        user_id: str | None = None,
         instance_id: str | None = None,
+        mode: str | None = None,
         limit: int = 20,
     ) -> MemorySearchResponse:
-        """Search agent memories."""
+        """Search agent memories.
+
+        Passing ``user_id`` opts into semantic (cosine) retrieval over fact
+        embeddings. Without it the server falls back to BM25 token search.
+        ``mode`` can force ``"bm25"`` or ``"semantic"`` explicitly.
+        """
         params: dict[str, Any] = {"q": query, "limit": limit}
+        if user_id:
+            params["user_id"] = user_id
         if instance_id:
             params["instance_id"] = instance_id
+        if mode:
+            params["mode"] = mode
 
         data = self._http.get(
             f"/api/v1/agents/{agent_id}/memory/search", params=params
@@ -297,12 +308,24 @@ class AsyncMemory:
         agent_id: str,
         *,
         query: str,
+        user_id: str | None = None,
         instance_id: str | None = None,
+        mode: str | None = None,
         limit: int = 20,
     ) -> MemorySearchResponse:
+        """Search agent memories.
+
+        Passing ``user_id`` opts into semantic (cosine) retrieval over fact
+        embeddings. Without it the server falls back to BM25 token search.
+        ``mode`` can force ``"bm25"`` or ``"semantic"`` explicitly.
+        """
         params: dict[str, Any] = {"q": query, "limit": limit}
+        if user_id:
+            params["user_id"] = user_id
         if instance_id:
             params["instance_id"] = instance_id
+        if mode:
+            params["mode"] = mode
 
         data = await self._http.get(
             f"/api/v1/agents/{agent_id}/memory/search", params=params

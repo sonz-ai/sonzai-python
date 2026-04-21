@@ -84,11 +84,18 @@ class Generation:
         gender: str | None = None,
         description: str | None = None,
         fields: list[str] | None = None,
+        provider: str | None = None,
+        model: str | None = None,
     ) -> GenerateCharacterResponse:
         """Generate a full character profile from a description.
 
         If an agent with the resolved ID already exists, the LLM is skipped
         and the existing profile is returned.
+
+        Args:
+            provider: Optional LLM provider ("gemini" | "openrouter" | "xai").
+                Platform defaults to gemini when omitted.
+            model: Optional model override for the chosen provider.
         """
         body: dict[str, Any] = {"name": name}
         if agent_id is not None:
@@ -99,6 +106,10 @@ class Generation:
             body["description"] = description
         if fields is not None:
             body["fields"] = fields
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
 
         data = self._http.post(
             "/api/v1/agents/generate-character", json_data=body
@@ -115,11 +126,18 @@ class Generation:
         fields: list[str] | None = None,
         project_id: str | None = None,
         language: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
     ) -> dict[str, Any]:
         """Generate a character and create the agent in one idempotent call.
 
         If the agent already exists, the LLM is skipped and the existing
         agent is returned. Safe to call on every app startup.
+
+        Args:
+            provider: Optional LLM provider ("gemini" | "openrouter" | "xai").
+                Platform defaults to gemini when omitted.
+            model: Optional model override for the chosen provider.
         """
         body: dict[str, Any] = {"name": name}
         if agent_id is not None:
@@ -134,6 +152,10 @@ class Generation:
             body["project_id"] = project_id
         if language is not None:
             body["language"] = language
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
 
         return self._http.post(
             "/api/v1/agents/generate-and-create", json_data=body
@@ -263,11 +285,18 @@ class AsyncGeneration:
         gender: str | None = None,
         description: str | None = None,
         fields: list[str] | None = None,
+        provider: str | None = None,
+        model: str | None = None,
     ) -> GenerateCharacterResponse:
         """Generate a full character profile from a description.
 
         If an agent with the resolved ID already exists, the LLM is skipped
         and the existing profile is returned.
+
+        Args:
+            provider: Optional LLM provider ("gemini" | "openrouter" | "xai").
+                Platform defaults to gemini when omitted.
+            model: Optional model override for the chosen provider.
         """
         body: dict[str, Any] = {"name": name}
         if agent_id is not None:
@@ -278,6 +307,10 @@ class AsyncGeneration:
             body["description"] = description
         if fields is not None:
             body["fields"] = fields
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
 
         data = await self._http.post(
             "/api/v1/agents/generate-character", json_data=body
@@ -294,11 +327,18 @@ class AsyncGeneration:
         fields: list[str] | None = None,
         project_id: str | None = None,
         language: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
     ) -> dict[str, Any]:
         """Generate a character and create the agent in one idempotent call.
 
         If the agent already exists, the LLM is skipped and the existing
         agent is returned. Safe to call on every app startup.
+
+        Args:
+            provider: Optional LLM provider ("gemini" | "openrouter" | "xai").
+                Platform defaults to gemini when omitted.
+            model: Optional model override for the chosen provider.
         """
         body: dict[str, Any] = {"name": name}
         if agent_id is not None:
@@ -313,6 +353,10 @@ class AsyncGeneration:
             body["project_id"] = project_id
         if language is not None:
             body["language"] = language
+        if provider is not None:
+            body["provider"] = provider
+        if model is not None:
+            body["model"] = model
 
         return await self._http.post(
             "/api/v1/agents/generate-and-create", json_data=body

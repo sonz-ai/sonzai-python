@@ -34,7 +34,7 @@ from pathlib import Path
 from sonzai import AsyncSonzai
 from tqdm.asyncio import tqdm_asyncio
 
-from ..common.dataset_cache import cache_root, ensure_file
+from ..common.dataset_cache import cache_root
 from ..common.gemini_judge import (
     DEFAULT_MODEL as DEFAULT_JUDGE_MODEL,
     GeminiJudge,
@@ -43,7 +43,7 @@ from ..common.gemini_judge import (
 from .backends import BackendResult
 from .backends import mempalace as mempalace_backend
 from .backends import sonzai as sonzai_backend
-from .dataset import DATASET_FILE, DATASET_URL, LongMemEvalQuestion, load_questions
+from .dataset import LongMemEvalQuestion, load_questions, resolve_dataset_path
 from .scoring import fact_ndcg_at_k, fact_recall_at_k, ndcg_at_k, recall_at_k
 
 logger = logging.getLogger("benchmarks.longmemeval")
@@ -106,6 +106,13 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=0,
         help="Sonzai only: cap haystack size per question (0 = full). "
         "Answer-bearing sessions are kept preferentially. Use for fast smoke runs.",
+    )
+    p.add_argument(
+        "--dataset-path",
+        type=Path,
+        default=None,
+        help="Override the dataset JSON file (default: auto-download LongMemEval-S). "
+        "Use a pre-trimmed copy to match Sonzai's --max-sessions-per-question on the MemPalace side.",
     )
     p.add_argument(
         "--compare",
@@ -212,8 +219,8 @@ async def _run_mempalace_backend(
     mode: str,
     judge: GeminiJudge | None,
     concurrency: int,
+    dataset_path: Path,
 ) -> list[dict]:
-    dataset_path = ensure_file(DATASET_URL, DATASET_FILE)
     results = mempalace_backend.run_all(
         questions, dataset_path=dataset_path, mempalace_mode=mempalace_mode
     )
@@ -429,7 +436,8 @@ async def _amain(args: argparse.Namespace) -> int:
         print("error: GEMINI_API_KEY must be set for QA scoring", file=sys.stderr)
         return 2
 
-    questions = load_questions(limit=args.limit)
+    dataset_path = resolve_dataset_path(str(args.dataset_path) if args.dataset_path else None)
+    questions = load_questions(limit=args.limit, path=str(dataset_path))
     print(
         f"Loaded {len(questions)} questions from LongMemEval "
         f"(cache: {cache_root()}).",
@@ -457,6 +465,7 @@ async def _amain(args: argparse.Namespace) -> int:
             mode=args.mode,
             judge=judge,
             concurrency=args.concurrency,
+            dataset_path=dataset_path,
         )
     elapsed = time.time() - t0
 
