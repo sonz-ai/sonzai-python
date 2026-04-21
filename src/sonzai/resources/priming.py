@@ -11,6 +11,7 @@ from ..types import (
     BatchImportResponse,
     ImportJob,
     ImportJobListResponse,
+    ListImportJobUsersResponse,
     PrimeUserResponse,
     UpdateMetadataResponse,
     UserPrimingMetadata,
@@ -118,6 +119,18 @@ class Priming:
         data = self._http.get(f"/api/v1/agents/{agent_id}/users/imports", params=params)
         return ImportJobListResponse.model_validate(data)
 
+    def list_import_job_users(
+        self, agent_id: str, job_id: str, *, limit: int | None = None
+    ) -> ListImportJobUsersResponse:
+        """List per-user progress rows for a batch import job."""
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        data = self._http.get(
+            f"/api/v1/agents/{agent_id}/users/import/{job_id}/users", params=params
+        )
+        return ListImportJobUsersResponse.model_validate(data)
+
 
 class AsyncPriming:
     """Async user priming operations for an agent."""
@@ -176,3 +189,15 @@ class AsyncPriming:
             params["limit"] = limit
         data = await self._http.get(f"/api/v1/agents/{agent_id}/users/imports", params=params)
         return ImportJobListResponse.model_validate(data)
+
+    async def list_import_job_users(
+        self, agent_id: str, job_id: str, *, limit: int | None = None
+    ) -> ListImportJobUsersResponse:
+        """List per-user progress rows for a batch import job."""
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        data = await self._http.get(
+            f"/api/v1/agents/{agent_id}/users/import/{job_id}/users", params=params
+        )
+        return ListImportJobUsersResponse.model_validate(data)

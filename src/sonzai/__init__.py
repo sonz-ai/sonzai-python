@@ -98,7 +98,9 @@ from .types import (
     KBScope,
     KBNodeWithScope,
     CreateOrgNodeOptions,
+    JobUser,
     ListAllFactsResponse,
+    ListImportJobUsersResponse,
     MemoryNode,
     MemoryResetResponse,
     MemoryResponse,
@@ -404,4 +406,7 @@ __all__ = [
     "TicketSummary",
     "TicketListResponse",
     "TicketDetailResponse",
+    # Types - Batch Import per-user progress
+    "JobUser",
+    "ListImportJobUsersResponse",
 ]

@@ -3619,3 +3619,30 @@ class TicketDetailResponse(BaseModel):
 
     model_config = {"extra": "allow"}
 
+
+# ---------------------------------------------------------------------------
+# Per-user progress rows for a batch import job
+# ---------------------------------------------------------------------------
+
+
+class JobUser(BaseModel):
+    job_id: str
+    user_id: str
+    status: str
+    facts_stored: int = 0
+    facts_deduped: int = 0
+    warmth_score: int = 0
+    updated_at: str
+    started_at: str | None = None
+    completed_at: str | None = None
+    error_message: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class ListImportJobUsersResponse(BaseModel):
+    users: list[JobUser] = Field(default_factory=list)
+    count: int = 0
+
+    model_config = {"extra": "allow"}
+
