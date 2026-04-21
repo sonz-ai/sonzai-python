@@ -143,11 +143,10 @@ class Generation:
         self,
         agent_id: str,
         *,
-        user_id: str | None = None,
         agent_name: str | None = None,
         big5: dict[str, Any] | None = None,
         personality_prompt: str | None = None,
-        guide_summary: str | None = None,
+        primary_traits: list[str] | None = None,
         true_interests: list[str] | None = None,
         true_dislikes: list[str] | None = None,
         speech_patterns: list[str] | None = None,
@@ -157,20 +156,17 @@ class Generation:
         identity_memory_templates: list[dict[str, Any]] | None = None,
         generate_origin_story: bool | None = None,
         generate_personalized_memories: bool | None = None,
-        store_memories: bool | None = None,
     ) -> GenerateSeedMemoriesResponse:
         """Generate seed memories for an agent using AI."""
         body: dict[str, Any] = {}
-        if user_id is not None:
-            body["user_id"] = user_id
         if agent_name is not None:
             body["agentName"] = agent_name
         if big5 is not None:
             body["big5"] = big5
         if personality_prompt is not None:
             body["personalityPrompt"] = personality_prompt
-        if guide_summary is not None:
-            body["guide_summary"] = guide_summary
+        if primary_traits is not None:
+            body["primaryTraits"] = primary_traits
         if true_interests is not None:
             body["trueInterests"] = true_interests
         if true_dislikes is not None:
@@ -189,8 +185,6 @@ class Generation:
             body["generateOriginStory"] = generate_origin_story
         if generate_personalized_memories is not None:
             body["generatePersonalizedMemories"] = generate_personalized_memories
-        if store_memories is not None:
-            body["store_memories"] = store_memories
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/memory/seed", json_data=body
@@ -328,11 +322,10 @@ class AsyncGeneration:
         self,
         agent_id: str,
         *,
-        user_id: str | None = None,
         agent_name: str | None = None,
         big5: dict[str, Any] | None = None,
         personality_prompt: str | None = None,
-        guide_summary: str | None = None,
+        primary_traits: list[str] | None = None,
         true_interests: list[str] | None = None,
         true_dislikes: list[str] | None = None,
         speech_patterns: list[str] | None = None,
@@ -342,20 +335,17 @@ class AsyncGeneration:
         identity_memory_templates: list[dict[str, Any]] | None = None,
         generate_origin_story: bool | None = None,
         generate_personalized_memories: bool | None = None,
-        store_memories: bool | None = None,
     ) -> GenerateSeedMemoriesResponse:
         """Generate seed memories for an agent using AI."""
         body: dict[str, Any] = {}
-        if user_id is not None:
-            body["user_id"] = user_id
         if agent_name is not None:
             body["agentName"] = agent_name
         if big5 is not None:
             body["big5"] = big5
         if personality_prompt is not None:
             body["personalityPrompt"] = personality_prompt
-        if guide_summary is not None:
-            body["guide_summary"] = guide_summary
+        if primary_traits is not None:
+            body["primaryTraits"] = primary_traits
         if true_interests is not None:
             body["trueInterests"] = true_interests
         if true_dislikes is not None:
@@ -374,8 +364,6 @@ class AsyncGeneration:
             body["generateOriginStory"] = generate_origin_story
         if generate_personalized_memories is not None:
             body["generatePersonalizedMemories"] = generate_personalized_memories
-        if store_memories is not None:
-            body["store_memories"] = store_memories
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/memory/seed", json_data=body

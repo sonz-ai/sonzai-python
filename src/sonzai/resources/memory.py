@@ -149,19 +149,17 @@ class Memory:
         self,
         agent_id: str,
         *,
-        user_id: str | None = None,
+        user_id: str,
         instance_id: str | None = None,
     ) -> MemoryResetResponse:
-        """Delete all memory for an agent, optionally scoped to a user or instance."""
-        params: dict[str, Any] = {}
-        if user_id:
-            params["user_id"] = user_id
+        """Delete all memory for an agent scoped to a user."""
+        params: dict[str, Any] = {"user_id": user_id}
         if instance_id:
             params["instance_id"] = instance_id
 
         data = self._http.delete(
             f"/api/v1/agents/{agent_id}/memory",
-            params=params if params else None,
+            params=params,
         )
         if isinstance(data, dict):
             return MemoryResetResponse.model_validate(data)
@@ -385,19 +383,17 @@ class AsyncMemory:
         self,
         agent_id: str,
         *,
-        user_id: str | None = None,
+        user_id: str,
         instance_id: str | None = None,
     ) -> MemoryResetResponse:
-        """Delete all memory for an agent, optionally scoped to a user or instance."""
-        params: dict[str, Any] = {}
-        if user_id:
-            params["user_id"] = user_id
+        """Delete all memory for an agent scoped to a user."""
+        params: dict[str, Any] = {"user_id": user_id}
         if instance_id:
             params["instance_id"] = instance_id
 
         data = await self._http.delete(
             f"/api/v1/agents/{agent_id}/memory",
-            params=params if params else None,
+            params=params,
         )
         if isinstance(data, dict):
             return MemoryResetResponse.model_validate(data)
