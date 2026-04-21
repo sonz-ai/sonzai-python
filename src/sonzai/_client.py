@@ -10,20 +10,25 @@ from ._http import AsyncHTTPClient, HTTPClient
 from .resources.account_config import AccountConfig, AsyncAccountConfig
 from .resources.agents import Agents, AsyncAgents
 from .resources.analytics import Analytics, AsyncAnalytics
-from .types import PlatformModelsResponse
+from .types import MeResponse, PlatformModelsResponse
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
 from .resources.eval_templates import AsyncEvalTemplates, EvalTemplates
 from .resources.knowledge import AsyncKnowledge, Knowledge
+from .resources.org_billing import AsyncOrgBilling, OrgBilling
 from .resources.project_config import AsyncProjectConfig, ProjectConfig
 from .resources.project_notifications import (
     AsyncProjectNotifications,
     ProjectNotifications,
 )
 from .resources.projects import AsyncProjects, Projects
+from .resources.storefront import AsyncStorefront, Storefront
+from .resources.support import AsyncSupport, Support
+from .resources.tenants import AsyncTenants, Tenants
 from .resources.user_personas import AsyncUserPersonas, UserPersonas
 from .resources.voice import AsyncVoices, Voices
 from .resources.webhooks import AsyncWebhooks, Webhooks
+from .resources.workbench import AsyncWorkbench, Workbench
 
 DEFAULT_BASE_URL = "https://api.sonz.ai"
 
@@ -63,10 +68,15 @@ class Sonzai:
     knowledge: Knowledge
     eval_templates: EvalTemplates
     eval_runs: EvalRuns
+    org_billing: OrgBilling
     projects: Projects
+    storefront: Storefront
+    support: Support
+    tenants: Tenants
     user_personas: UserPersonas
     voices: Voices
     webhooks: Webhooks
+    workbench: Workbench
     project_config: ProjectConfig
     account_config: AccountConfig
     custom_llm: CustomLLM
@@ -120,10 +130,15 @@ class Sonzai:
         self.knowledge = Knowledge(self._http)
         self.eval_templates = EvalTemplates(self._http)
         self.eval_runs = EvalRuns(self._http)
+        self.org_billing = OrgBilling(self._http)
         self.projects = Projects(self._http)
+        self.storefront = Storefront(self._http)
+        self.support = Support(self._http)
+        self.tenants = Tenants(self._http)
         self.user_personas = UserPersonas(self._http)
         self.voices = Voices(self._http)
         self.webhooks = Webhooks(self._http)
+        self.workbench = Workbench(self._http)
         self.project_config = ProjectConfig(self._http)
         self.account_config = AccountConfig(self._http)
         self.custom_llm = CustomLLM(self._http)
@@ -143,6 +158,20 @@ class Sonzai:
         """
         data = self._http.get("/api/v1/models")
         return PlatformModelsResponse.model_validate(data)
+
+    def get_my_org(self) -> MeResponse:
+        """Return the caller's user profile with all orgs they belong to.
+
+        Maps to ``GET /me``. Useful for admin UIs that need to render an
+        org switcher or show the authenticated user's roles.
+
+        Example::
+
+            me = client.get_my_org()
+            print(me.email, [org.name for org in me.orgs])
+        """
+        data = self._http.get("/api/v1/me")
+        return MeResponse.model_validate(data)
 
     def close(self) -> None:
         """Close the underlying HTTP client."""
@@ -182,10 +211,15 @@ class AsyncSonzai:
     knowledge: AsyncKnowledge
     eval_templates: AsyncEvalTemplates
     eval_runs: AsyncEvalRuns
+    org_billing: AsyncOrgBilling
     projects: AsyncProjects
+    storefront: AsyncStorefront
+    support: AsyncSupport
+    tenants: AsyncTenants
     user_personas: AsyncUserPersonas
     voices: AsyncVoices
     webhooks: AsyncWebhooks
+    workbench: AsyncWorkbench
     project_config: AsyncProjectConfig
     account_config: AsyncAccountConfig
     custom_llm: AsyncCustomLLM
@@ -229,10 +263,15 @@ class AsyncSonzai:
         self.knowledge = AsyncKnowledge(self._http)
         self.eval_templates = AsyncEvalTemplates(self._http)
         self.eval_runs = AsyncEvalRuns(self._http)
+        self.org_billing = AsyncOrgBilling(self._http)
         self.projects = AsyncProjects(self._http)
+        self.storefront = AsyncStorefront(self._http)
+        self.support = AsyncSupport(self._http)
+        self.tenants = AsyncTenants(self._http)
         self.user_personas = AsyncUserPersonas(self._http)
         self.voices = AsyncVoices(self._http)
         self.webhooks = AsyncWebhooks(self._http)
+        self.workbench = AsyncWorkbench(self._http)
         self.project_config = AsyncProjectConfig(self._http)
         self.account_config = AsyncAccountConfig(self._http)
         self.custom_llm = AsyncCustomLLM(self._http)
@@ -252,6 +291,14 @@ class AsyncSonzai:
         """
         data = await self._http.get("/api/v1/models")
         return PlatformModelsResponse.model_validate(data)
+
+    async def get_my_org(self) -> MeResponse:
+        """Return the caller's user profile with all orgs they belong to.
+
+        Maps to ``GET /me``.
+        """
+        data = await self._http.get("/api/v1/me")
+        return MeResponse.model_validate(data)
 
     async def close(self) -> None:
         """Close the underlying HTTP client."""

@@ -1,0 +1,174 @@
+"""Support tickets resource for the Sonzai SDK."""
+
+from __future__ import annotations
+
+from typing import Any
+from urllib.parse import quote
+
+from .._http import AsyncHTTPClient, HTTPClient
+from ..types import (
+    SupportTicket,
+    SupportTicketComment,
+    TicketDetailResponse,
+    TicketListResponse,
+)
+
+
+class Support:
+    """Sync support-ticket operations (per-caller scope)."""
+
+    def __init__(self, http: HTTPClient) -> None:
+        self._http = http
+
+    def list_tickets(
+        self,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+        status: str | None = None,
+        type: str | None = None,
+    ) -> TicketListResponse:
+        """List tickets owned by the caller.
+
+        Args:
+            limit: Items per page.
+            offset: Pagination offset.
+            status: Filter by status (``open``, ``in_progress``, ``resolved``, ``closed``).
+            type: Filter by type (``support``, ``bug``, ``feature_request``, ``billing``, ...).
+        """
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+        if status is not None:
+            params["status"] = status
+        if type is not None:
+            params["type"] = type
+        data = self._http.get("/api/v1/support/tickets", params=params or None)
+        return TicketListResponse.model_validate(data)
+
+    def create_ticket(
+        self,
+        *,
+        title: str,
+        description: str,
+        type: str,
+        priority: str | None = None,
+    ) -> SupportTicket:
+        """Create a support ticket.
+
+        Args:
+            title: Short summary.
+            description: Full body.
+            type: Ticket type (``support``, ``bug``, ``feature_request``, ``billing``, ...).
+            priority: Optional priority hint (``low``, ``normal``, ``high``).
+        """
+        body: dict[str, Any] = {"title": title, "description": description, "type": type}
+        if priority is not None:
+            body["priority"] = priority
+        data = self._http.post("/api/v1/support/tickets", json_data=body)
+        return SupportTicket.model_validate(data)
+
+    def get_ticket(self, ticket_id: str) -> TicketDetailResponse:
+        """Get a ticket with comments and history."""
+        data = self._http.get(f"/api/v1/support/tickets/{quote(ticket_id, safe='')}")
+        return TicketDetailResponse.model_validate(data)
+
+    def close_ticket(self, ticket_id: str) -> SupportTicket:
+        """Close a ticket as the ticket's owner."""
+        data = self._http.post(
+            f"/api/v1/support/tickets/{quote(ticket_id, safe='')}/close",
+            json_data={},
+        )
+        return SupportTicket.model_validate(data)
+
+    def add_comment(
+        self,
+        ticket_id: str,
+        *,
+        content: str,
+        is_internal: bool | None = None,
+    ) -> SupportTicketComment:
+        """Add a comment to a ticket."""
+        body: dict[str, Any] = {"content": content}
+        if is_internal is not None:
+            body["is_internal"] = is_internal
+        data = self._http.post(
+            f"/api/v1/support/tickets/{quote(ticket_id, safe='')}/comments",
+            json_data=body,
+        )
+        return SupportTicketComment.model_validate(data)
+
+
+class AsyncSupport:
+    """Async support-ticket operations."""
+
+    def __init__(self, http: AsyncHTTPClient) -> None:
+        self._http = http
+
+    async def list_tickets(
+        self,
+        *,
+        limit: int | None = None,
+        offset: int | None = None,
+        status: str | None = None,
+        type: str | None = None,
+    ) -> TicketListResponse:
+        """List tickets owned by the caller."""
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+        if status is not None:
+            params["status"] = status
+        if type is not None:
+            params["type"] = type
+        data = await self._http.get("/api/v1/support/tickets", params=params or None)
+        return TicketListResponse.model_validate(data)
+
+    async def create_ticket(
+        self,
+        *,
+        title: str,
+        description: str,
+        type: str,
+        priority: str | None = None,
+    ) -> SupportTicket:
+        """Create a support ticket."""
+        body: dict[str, Any] = {"title": title, "description": description, "type": type}
+        if priority is not None:
+            body["priority"] = priority
+        data = await self._http.post("/api/v1/support/tickets", json_data=body)
+        return SupportTicket.model_validate(data)
+
+    async def get_ticket(self, ticket_id: str) -> TicketDetailResponse:
+        """Get a ticket with comments and history."""
+        data = await self._http.get(f"/api/v1/support/tickets/{quote(ticket_id, safe='')}")
+        return TicketDetailResponse.model_validate(data)
+
+    async def close_ticket(self, ticket_id: str) -> SupportTicket:
+        """Close a ticket as the ticket's owner."""
+        data = await self._http.post(
+            f"/api/v1/support/tickets/{quote(ticket_id, safe='')}/close",
+            json_data={},
+        )
+        return SupportTicket.model_validate(data)
+
+    async def add_comment(
+        self,
+        ticket_id: str,
+        *,
+        content: str,
+        is_internal: bool | None = None,
+    ) -> SupportTicketComment:
+        """Add a comment to a ticket."""
+        body: dict[str, Any] = {"content": content}
+        if is_internal is not None:
+            body["is_internal"] = is_internal
+        data = await self._http.post(
+            f"/api/v1/support/tickets/{quote(ticket_id, safe='')}/comments",
+            json_data=body,
+        )
+        return SupportTicketComment.model_validate(data)

@@ -3487,3 +3487,135 @@ class GetToolSchemasResponse(BaseModel):
     model_config = {"extra": "allow"}
 
     model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Tenants
+# ---------------------------------------------------------------------------
+
+
+class Tenant(BaseModel):
+    tenant_id: str
+    name: str
+    created_at: str
+    is_active: bool
+    slug: str | None = None
+    clerk_org_id: str | None = None
+    license_key_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class TenantList(BaseModel):
+    """Wrapper for GET /tenants which returns a raw array."""
+
+    tenants: list[Tenant] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Me / Org (Users tag)
+# ---------------------------------------------------------------------------
+
+
+class OrgResponse(BaseModel):
+    id: str
+    name: str
+    role: str
+    member_count: int = 0
+    created_at: str
+    slug: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class MeResponse(BaseModel):
+    user_id: str
+    email: str
+    orgs: list[OrgResponse] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Support tickets
+# ---------------------------------------------------------------------------
+
+
+class SupportTicketComment(BaseModel):
+    comment_id: str
+    ticket_id: str
+    author_id: str
+    author_email: str
+    author_type: str
+    content: str
+    is_internal: bool = False
+    created_at: str
+
+    model_config = {"extra": "allow"}
+
+
+class SupportTicket(BaseModel):
+    ticket_id: str
+    tenant_id: str
+    created_by: str
+    created_by_email: str
+    title: str
+    description: str
+    type: str
+    status: str
+    priority: str
+    created_at: str
+    updated_at: str | None = None
+    resolved_at: str | None = None
+    assigned_to: str | None = None
+    assigned_to_email: str | None = None
+    comment_count: int = 0
+    comments: list[SupportTicketComment] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class SupportTicketHistory(BaseModel):
+    history_id: str
+    ticket_id: str
+    changed_by: str
+    changed_by_email: str
+    field_changed: str
+    created_at: str
+    old_value: str | None = None
+    new_value: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class TicketSummary(BaseModel):
+    ticket_id: str
+    title: str
+    type: str
+    status: str
+    priority: str
+    created_by_email: str
+    created_at: str
+    updated_at: str
+    comment_count: int = 0
+    assigned_to_email: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class TicketListResponse(BaseModel):
+    tickets: list[TicketSummary] = Field(default_factory=list)
+    total: int = 0
+    has_more: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+class TicketDetailResponse(BaseModel):
+    ticket: SupportTicket
+    history: list[SupportTicketHistory] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
