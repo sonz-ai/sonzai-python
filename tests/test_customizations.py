@@ -279,3 +279,228 @@ class TestListAllFactsResponseMigration:
         payload = {"facts": [], "total": 0}
         resp = ListAllFactsResponse.model_validate(payload)
         assert resp.total == 0
+
+
+# ---------------------------------------------------------------------------
+# Batch 2 — Personality & Traits
+# ---------------------------------------------------------------------------
+
+_BIG5_TRAIT = {"score": 0.7, "confidence": 0.9}
+_FULL_BIG5_ASSESSMENT = {
+    "agreeableness": _BIG5_TRAIT,
+    "conscientiousness": _BIG5_TRAIT,
+    "extraversion": _BIG5_TRAIT,
+    "neuroticism": _BIG5_TRAIT,
+    "openness": _BIG5_TRAIT,
+}
+_DIMENSIONS = {
+    "aesthetic": 7.0,
+    "assertiveness": 6.0,
+    "compassion": 9.0,
+    "enthusiasm": 7.0,
+    "industriousness": 6.0,
+    "intellect": 9.0,
+    "orderliness": 5.0,
+    "politeness": 8.0,
+    "volatility": 2.0,
+    "withdrawal": 3.0,
+}
+_BEHAVIORS = {
+    "conflict_approach": "collaborative",
+    "empathy_style": "reflective",
+    "question_frequency": "moderate",
+    "response_length": "medium",
+}
+_PREFERENCES = {
+    "conversation_pace": "relaxed",
+    "emotional_expression": "open",
+    "formality": "casual",
+    "humor_style": "dry",
+}
+_PROFILE = {
+    "agent_id": "agent_1",
+    "behaviors": _BEHAVIORS,
+    "big5": _FULL_BIG5_ASSESSMENT,
+    "created_at": "2026-01-01T00:00:00Z",
+    "dimensions": _DIMENSIONS,
+    "gender": "female",
+    "name": "Luna",
+    "preferences": _PREFERENCES,
+    "primary_traits": ["curious", "empathetic"],
+    "speech_patterns": ["uses ellipses...", "asks questions"],
+    "temperature": 0.7,
+    "true_dislikes": ["rudeness"],
+    "true_interests": ["astronomy", "cooking"],
+}
+_DELTA = {
+    "delta": 0.05,
+    "new_value": 0.8,
+    "old_value": 0.75,
+    "timestamp": "2026-01-01T00:00:00Z",
+    "trait_category": "big5",
+    "trait_name": "openness",
+    "trigger_type": "conversation",
+}
+
+
+class TestBig5TraitMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import Big5Trait
+        from sonzai._generated.models import Big5Trait as GenBig5Trait
+        assert Big5Trait is GenBig5Trait
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import Big5Trait
+        trait = Big5Trait.model_validate({"score": 0.75, "confidence": 0.9})
+        assert trait.score == 0.75
+        assert trait.confidence == 0.9
+        assert trait.level is None
+        assert trait.facets is None
+
+    def test_old_fields_gone(self) -> None:
+        from sonzai import Big5Trait
+        # hand-rolled had `percentile` — spec does not
+        assert "percentile" not in Big5Trait.model_fields
+
+
+class TestBig5Migration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import Big5
+        from sonzai._generated.models import Big5 as GenBig5
+        assert Big5 is GenBig5
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import Big5
+        payload = {
+            "agreeableness": 0.9,
+            "conscientiousness": 0.6,
+            "extraversion": 0.75,
+            "neuroticism": 0.25,
+            "openness": 0.85,
+        }
+        b = Big5.model_validate(payload)
+        assert b.openness == 0.85
+        assert b.agreeableness == 0.9
+
+    def test_old_fields_gone(self) -> None:
+        from sonzai import Big5
+        # hand-rolled Big5 had Big5Trait objects; generated has float fields
+        # The field names are the same but types differ — verify they're floats
+        b = Big5.model_validate({
+            "agreeableness": 0.5,
+            "conscientiousness": 0.5,
+            "extraversion": 0.5,
+            "neuroticism": 0.5,
+            "openness": 0.5,
+        })
+        assert isinstance(b.openness, float)
+
+
+class TestPersonalityDimensionsMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import PersonalityDimensions
+        from sonzai._generated.models import PersonalityDimensions as GenPersonalityDimensions
+        assert PersonalityDimensions is GenPersonalityDimensions
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import PersonalityDimensions
+        dims = PersonalityDimensions.model_validate(_DIMENSIONS)
+        assert dims.intellect == 9.0
+        assert dims.withdrawal == 3.0
+        assert dims.volatility == 2.0
+
+
+class TestTraitPrecisionMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import TraitPrecision
+        from sonzai._generated.models import TraitPrecision as GenTraitPrecision
+        assert TraitPrecision is GenTraitPrecision
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import TraitPrecision
+        tp = TraitPrecision.model_validate({
+            "precision": 0.85,
+            "last_updated_at": "2026-01-01T00:00:00Z",
+            "observation_count": 42,
+        })
+        assert tp.precision == 0.85
+        assert tp.observation_count == 42
+        assert tp.last_updated_at is not None
+
+
+class TestPersonalityProfileMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import PersonalityProfile
+        from sonzai._generated.models import PersonalityProfile as GenPersonalityProfile
+        assert PersonalityProfile is GenPersonalityProfile
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import PersonalityProfile
+        profile = PersonalityProfile.model_validate(_PROFILE)
+        assert profile.agent_id == "agent_1"
+        assert profile.name == "Luna"
+        assert profile.temperature == 0.7
+        assert profile.big5.openness.score == 0.7
+        assert profile.dimensions.intellect == 9.0
+
+    def test_old_fields_gone(self) -> None:
+        from sonzai import PersonalityProfile
+        # hand-rolled had bio/avatar_url/personality_prompt as required str (non-optional)
+        # generated has them as optional — just verify field exists in right form
+        assert "bio" in PersonalityProfile.model_fields
+        # hand-rolled had no field_schema; generated PersonalityProfile has no $schema either
+
+
+class TestPersonalityDeltaMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import PersonalityDelta
+        from sonzai._generated.models import PersonalityDelta as GenPersonalityDelta
+        assert PersonalityDelta is GenPersonalityDelta
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import PersonalityDelta
+        delta = PersonalityDelta.model_validate(_DELTA)
+        assert delta.trait_category == "big5"
+        assert delta.trait_name == "openness"
+        assert delta.delta == 0.05
+        assert delta.trigger_type == "conversation"
+
+    def test_old_fields_gone(self) -> None:
+        from sonzai import PersonalityDelta
+        # hand-rolled had delta_id, change, reason — spec does not
+        assert "delta_id" not in PersonalityDelta.model_fields
+        assert "change" not in PersonalityDelta.model_fields
+        assert "reason" not in PersonalityDelta.model_fields
+
+
+class TestPersonalityResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import PersonalityResponse
+        from sonzai._generated.models import PersonalityResponse as GenPersonalityResponse
+        assert PersonalityResponse is GenPersonalityResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import PersonalityResponse
+        resp = PersonalityResponse.model_validate({
+            "profile": _PROFILE,
+            "evolution": [_DELTA],
+        })
+        assert resp.profile.name == "Luna"
+        assert len(resp.evolution) == 1
+        assert resp.evolution[0].trait_name == "openness"
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import PersonalityResponse
+        resp = PersonalityResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/PersonalityResponse.json",
+            "profile": _PROFILE,
+            "evolution": None,
+        })
+        assert resp.field_schema is not None
+        assert "PersonalityResponse" in str(resp.field_schema)
+        assert resp.evolution is None
+
+    def test_old_evolution_shape_gone(self) -> None:
+        from sonzai import PersonalityDelta
+        # old hand-rolled PersonalityDelta had delta_id; spec has trait_category
+        assert "trait_category" in PersonalityDelta.model_fields

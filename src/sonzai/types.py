@@ -10,10 +10,17 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact  # noqa: F401
 from ._generated.models import (  # noqa: F401
     AtomicFact,
+    Big5,
+    Big5Trait,
     ListAllFactsResponse,
     MemoryNode,
     MemoryResponse,
+    PersonalityDelta,
+    PersonalityDimensions,
+    PersonalityProfile,
+    PersonalityResponse,
     TimelineSession,
+    TraitPrecision,
 )
 
 # ---------------------------------------------------------------------------
@@ -95,33 +102,6 @@ class MemoryTimelineResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class Big5Trait(BaseModel):
-    score: float = 0.0
-    percentile: int = 0
-    confidence: float = 0.0
-
-
-class Big5(BaseModel):
-    openness: Big5Trait = Field(default_factory=Big5Trait)
-    conscientiousness: Big5Trait = Field(default_factory=Big5Trait)
-    extraversion: Big5Trait = Field(default_factory=Big5Trait)
-    agreeableness: Big5Trait = Field(default_factory=Big5Trait)
-    neuroticism: Big5Trait = Field(default_factory=Big5Trait)
-
-
-class PersonalityDimensions(BaseModel):
-    intellect: float = 0.0
-    aesthetic: float = 0.0
-    industriousness: float = 0.0
-    orderliness: float = 0.0
-    enthusiasm: float = 0.0
-    assertiveness: float = 0.0
-    compassion: float = 0.0
-    politeness: float = 0.0
-    withdrawal: float = 0.0
-    volatility: float = 0.0
-
-
 class PersonalityPreferences(BaseModel):
     conversation_pace: str = ""
     formality: str = ""
@@ -134,45 +114,6 @@ class PersonalityBehaviors(BaseModel):
     question_frequency: str = ""
     empathy_style: str = ""
     conflict_approach: str = ""
-
-
-class TraitPrecision(BaseModel):
-    precision: float = 0.0
-    observation_count: int = 0
-    last_updated_at: str | None = None
-
-
-class PersonalityProfile(BaseModel):
-    agent_id: str = ""
-    name: str = ""
-    gender: str = ""
-    bio: str = ""
-    avatar_url: str = ""
-    personality_prompt: str = ""
-    speech_patterns: list[str] = Field(default_factory=list)
-    true_interests: list[str] = Field(default_factory=list)
-    true_dislikes: list[str] = Field(default_factory=list)
-    primary_traits: list[str] = Field(default_factory=list)
-    temperature: float = 0.0
-    big5: Big5 = Field(default_factory=Big5)
-    dimensions: PersonalityDimensions = Field(default_factory=PersonalityDimensions)
-    preferences: PersonalityPreferences = Field(default_factory=PersonalityPreferences)
-    behaviors: PersonalityBehaviors = Field(default_factory=PersonalityBehaviors)
-    emotional_tendencies: dict[str, float] = Field(default_factory=dict)
-    trait_precisions: dict[str, TraitPrecision] = Field(default_factory=dict)
-    created_at: str | None = None
-
-
-class PersonalityDelta(BaseModel):
-    delta_id: str = ""
-    change: str = ""
-    reason: str = ""
-    created_at: str | None = None
-
-
-class PersonalityResponse(BaseModel):
-    profile: PersonalityProfile = Field(default_factory=PersonalityProfile)
-    evolution: list[PersonalityDelta] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------

@@ -162,6 +162,7 @@ class TestMemory:
 class TestPersonality:
     @respx.mock
     def test_get_personality(self, client, base_url):
+        _trait = {"score": 0.8, "confidence": 0.9}
         respx.get(f"{base_url}/api/v1/agents/agent-1/personality").mock(
             return_value=httpx.Response(
                 200,
@@ -169,12 +170,37 @@ class TestPersonality:
                     "profile": {
                         "agent_id": "agent-1",
                         "name": "Luna",
+                        "gender": "female",
+                        "created_at": "2026-01-01T00:00:00Z",
+                        "temperature": 0.7,
+                        "speech_patterns": [],
+                        "true_interests": [],
+                        "true_dislikes": [],
+                        "primary_traits": [],
                         "big5": {
-                            "openness": {"score": 0.8, "percentile": 85},
-                            "conscientiousness": {"score": 0.6, "percentile": 60},
-                            "extraversion": {"score": 0.7, "percentile": 70},
-                            "agreeableness": {"score": 0.9, "percentile": 95},
-                            "neuroticism": {"score": 0.3, "percentile": 25},
+                            "openness": {"score": 0.8, "confidence": 0.9},
+                            "conscientiousness": {"score": 0.6, "confidence": 0.8},
+                            "extraversion": {"score": 0.7, "confidence": 0.85},
+                            "agreeableness": {"score": 0.9, "confidence": 0.95},
+                            "neuroticism": {"score": 0.3, "confidence": 0.75},
+                        },
+                        "dimensions": {
+                            "intellect": 8.0, "aesthetic": 7.0, "industriousness": 6.0,
+                            "orderliness": 5.0, "enthusiasm": 7.0, "assertiveness": 6.0,
+                            "compassion": 9.0, "politeness": 8.0, "withdrawal": 3.0,
+                            "volatility": 2.0,
+                        },
+                        "preferences": {
+                            "conversation_pace": "relaxed",
+                            "emotional_expression": "open",
+                            "formality": "casual",
+                            "humor_style": "dry",
+                        },
+                        "behaviors": {
+                            "conflict_approach": "collaborative",
+                            "empathy_style": "reflective",
+                            "question_frequency": "moderate",
+                            "response_length": "medium",
                         },
                     },
                     "evolution": [],

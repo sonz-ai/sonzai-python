@@ -102,18 +102,25 @@ class TestMemoryResponse:
 
 class TestPersonalityResponse:
     def test_parse_full_profile(self):
+        _trait = {"score": 0.85, "confidence": 0.9}
         data = {
             "profile": {
                 "agent_id": "a1",
                 "name": "Luna",
                 "gender": "female",
                 "bio": "A curious soul",
+                "created_at": "2026-01-01T00:00:00Z",
+                "temperature": 0.7,
+                "speech_patterns": ["uses ellipses...", "asks questions"],
+                "true_interests": ["astronomy", "cooking"],
+                "true_dislikes": [],
+                "primary_traits": ["curious"],
                 "big5": {
-                    "openness": {"score": 0.85, "percentile": 90},
-                    "conscientiousness": {"score": 0.6, "percentile": 55},
-                    "extraversion": {"score": 0.75, "percentile": 70},
-                    "agreeableness": {"score": 0.9, "percentile": 95},
-                    "neuroticism": {"score": 0.25, "percentile": 20},
+                    "openness": {"score": 0.85, "confidence": 0.9},
+                    "conscientiousness": {"score": 0.6, "confidence": 0.8},
+                    "extraversion": {"score": 0.75, "confidence": 0.85},
+                    "agreeableness": {"score": 0.9, "confidence": 0.95},
+                    "neuroticism": {"score": 0.25, "confidence": 0.75},
                 },
                 "dimensions": {
                     "intellect": 9.0,
@@ -127,14 +134,28 @@ class TestPersonalityResponse:
                     "withdrawal": 3.0,
                     "volatility": 2.0,
                 },
-                "speech_patterns": ["uses ellipses...", "asks questions"],
-                "true_interests": ["astronomy", "cooking"],
+                "preferences": {
+                    "conversation_pace": "relaxed",
+                    "emotional_expression": "open",
+                    "formality": "casual",
+                    "humor_style": "dry",
+                },
+                "behaviors": {
+                    "conflict_approach": "collaborative",
+                    "empathy_style": "reflective",
+                    "question_frequency": "moderate",
+                    "response_length": "medium",
+                },
             },
             "evolution": [
                 {
-                    "delta_id": "d1",
-                    "change": "Became more curious",
-                    "reason": "Many exploratory conversations",
+                    "trait_category": "big5",
+                    "trait_name": "openness",
+                    "old_value": 0.8,
+                    "new_value": 0.85,
+                    "delta": 0.05,
+                    "trigger_type": "conversation",
+                    "timestamp": "2026-01-01T00:00:00Z",
                 }
             ],
         }
