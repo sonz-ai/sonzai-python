@@ -51,16 +51,45 @@ class TestMemoryResponse:
     def test_parse_with_contents(self):
         data = {
             "nodes": [
-                {"node_id": "n1", "title": "Food", "importance": 0.9},
-                {"node_id": "n2", "title": "Hobbies", "importance": 0.7},
+                {
+                    "node_id": "n1",
+                    "agent_id": "a1",
+                    "name": "Food",
+                    "description": "Food preferences",
+                    "path": "root/food",
+                    "memory_type": "semantic",
+                    "importance": 0.9,
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "updated_at": "2026-01-01T00:00:00Z",
+                },
+                {
+                    "node_id": "n2",
+                    "agent_id": "a1",
+                    "name": "Hobbies",
+                    "description": "Hobby interests",
+                    "path": "root/hobbies",
+                    "memory_type": "semantic",
+                    "importance": 0.7,
+                    "created_at": "2026-01-01T00:00:00Z",
+                    "updated_at": "2026-01-01T00:00:00Z",
+                },
             ],
             "contents": {
                 "n1": [
                     {
                         "fact_id": "f1",
+                        "agent_id": "a1",
+                        "node_id": "n1",
                         "atomic_text": "Loves sushi",
                         "fact_type": "preference",
                         "importance": 0.95,
+                        "confidence": 0.9,
+                        "mention_count": 1,
+                        "retention_strength": 0.5,
+                        "last_confirmed": "2026-01-01T00:00:00Z",
+                        "last_retrieved_at": "2026-01-01T00:00:00Z",
+                        "created_at": "2026-01-01T00:00:00Z",
+                        "updated_at": "2026-01-01T00:00:00Z",
                     }
                 ]
             },

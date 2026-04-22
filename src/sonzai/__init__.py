@@ -24,7 +24,6 @@ from .types import (
     AgentIndex,
     AgentInstance,
     AgentListResponse,
-    AtomicFact,
     BatchPersonalityEntry,
     BatchPersonalityResponse,
     Big5,
@@ -96,10 +95,7 @@ from .types import (
     KBScope,
     KBNodeWithScope,
     CreateOrgNodeOptions,
-    ListAllFactsResponse,
-    MemoryNode,
     MemoryResetResponse,
-    MemoryResponse,
     MemorySearchResponse,
     MemorySearchResult,
     MemorySummary,
@@ -156,7 +152,6 @@ from .types import (
     ToolSchema,
     ToolSchemaEntry,
     ToolSchemasResponse,
-    TimelineSession,
     UserPersonaList,
     UserPersonaRecord,
     TimeMachineMoodSnapshot,
@@ -187,6 +182,13 @@ from .types import (
     WakeupExecution,
 )
 from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact
+from ._generated.models import (
+    AtomicFact,
+    ListAllFactsResponse,
+    MemoryNode,
+    MemoryResponse,
+    TimelineSession,
+)
 
 __version__ = "1.3.0"
 

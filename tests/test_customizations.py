@@ -162,3 +162,120 @@ class TestChatStreamEvent:
         )
         assert event.type == "side_effects"
         assert event.data == {"facts": [{"content": "x"}]}
+
+
+class TestMemoryNodeMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import MemoryNode
+        from sonzai._generated.models import MemoryNode as GenMemoryNode
+        assert MemoryNode is GenMemoryNode
+
+    def test_spec_fields_roundtrip(self) -> None:
+        """Spec fields are name/description (not title/summary)."""
+        from sonzai import MemoryNode
+        payload = {
+            "node_id": "n1",
+            "agent_id": "a1",
+            "path": "root/child",
+            "name": "my-node",
+            "description": "hello",
+            "memory_type": "semantic",
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
+        node = MemoryNode.model_validate(payload)
+        assert node.name == "my-node"
+        assert node.description == "hello"
+        assert node.memory_type == "semantic"
+
+    def test_old_hand_rolled_fields_gone(self) -> None:
+        """title/summary are no longer fields — hand-rolled was stale."""
+        from sonzai import MemoryNode
+        assert "title" not in MemoryNode.model_fields
+        assert "summary" not in MemoryNode.model_fields
+
+
+class TestAtomicFactMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import AtomicFact
+        from sonzai._generated.models import AtomicFact as GenAtomicFact
+        assert AtomicFact is GenAtomicFact
+
+    def test_surfaces_new_spec_fields(self) -> None:
+        """Spec has extra fields like cluster_id, character_salience that hand-rolled lacked."""
+        from sonzai import AtomicFact
+        assert "cluster_id" in AtomicFact.model_fields
+        assert "character_salience" in AtomicFact.model_fields
+        assert "retention_strength" in AtomicFact.model_fields
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import AtomicFact
+        payload = {
+            "fact_id": "f1",
+            "agent_id": "a1",
+            "node_id": "n1",
+            "atomic_text": "hello",
+            "fact_type": "stable",
+            "confidence": 0.9,
+            "mention_count": 1,
+            "last_confirmed": "2026-01-01T00:00:00Z",
+            "retention_strength": 0.5,
+            "last_retrieved_at": "2026-01-01T00:00:00Z",
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
+        fact = AtomicFact.model_validate(payload)
+        assert fact.fact_id == "f1"
+        assert fact.confidence == 0.9
+
+
+class TestMemoryResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import MemoryResponse
+        from sonzai._generated.models import MemoryResponse as GenMemoryResponse
+        assert MemoryResponse is GenMemoryResponse
+
+    def test_schema_field_aliased(self) -> None:
+        """$schema is a field (aliased to field_schema in Python)."""
+        from sonzai import MemoryResponse
+        payload = {
+            "$schema": "https://api.sonz.ai/api/v1/schemas/MemoryResponse.json",
+            "nodes": [],
+        }
+        resp = MemoryResponse.model_validate(payload)
+        assert resp.field_schema is not None
+        assert "MemoryResponse" in str(resp.field_schema)
+        assert resp.nodes == []
+
+
+class TestTimelineSessionMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import TimelineSession
+        from sonzai._generated.models import TimelineSession as GenTimelineSession
+        assert TimelineSession is GenTimelineSession
+
+    def test_required_roundtrip(self) -> None:
+        from sonzai import TimelineSession
+        payload = {
+            "session_id": "s1",
+            "facts": [],
+            "first_fact_at": "2026-01-01T00:00:00Z",
+            "last_fact_at": "2026-01-01T00:00:00Z",
+            "fact_count": 0,
+        }
+        ts = TimelineSession.model_validate(payload)
+        assert ts.session_id == "s1"
+        assert ts.fact_count == 0
+
+
+class TestListAllFactsResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import ListAllFactsResponse
+        from sonzai._generated.models import ListAllFactsResponse as GenListAllFactsResponse
+        assert ListAllFactsResponse is GenListAllFactsResponse
+
+    def test_references_stored_fact(self) -> None:
+        from sonzai import ListAllFactsResponse
+        payload = {"facts": [], "total": 0}
+        resp = ListAllFactsResponse.model_validate(payload)
+        assert resp.total == 0

@@ -116,8 +116,14 @@ class TestMemory:
                     "nodes": [
                         {
                             "node_id": "n1",
-                            "title": "Favorites",
+                            "agent_id": "agent-1",
+                            "name": "Favorites",
+                            "description": "Favorite things",
+                            "path": "root/favorites",
+                            "memory_type": "semantic",
                             "importance": 0.8,
+                            "created_at": "2026-01-01T00:00:00Z",
+                            "updated_at": "2026-01-01T00:00:00Z",
                         }
                     ],
                     "contents": {},
@@ -128,7 +134,7 @@ class TestMemory:
         result = client.agents.memory.list("agent-1")
         assert len(result.nodes) == 1
         assert result.nodes[0].node_id == "n1"
-        assert result.nodes[0].title == "Favorites"
+        assert result.nodes[0].name == "Favorites"
 
     @respx.mock
     def test_search_memory(self, client, base_url):

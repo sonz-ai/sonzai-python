@@ -8,6 +8,13 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact
+from ._generated.models import (
+    AtomicFact,
+    ListAllFactsResponse,
+    MemoryNode,
+    MemoryResponse,
+    TimelineSession,
+)
 
 # ---------------------------------------------------------------------------
 # Chat
@@ -66,60 +73,6 @@ class ToolCallResponseOptions(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class MemoryNode(BaseModel):
-    node_id: str = ""
-    agent_id: str = ""
-    user_id: str = ""
-    parent_id: str = ""
-    title: str = ""
-    summary: str = ""
-    importance: float = 0.0
-    created_at: str | None = None
-    updated_at: str | None = None
-
-
-class AtomicFact(BaseModel):
-    fact_id: str = ""
-    agent_id: str = ""
-    user_id: str = ""
-    node_id: str = ""
-    atomic_text: str = ""
-    fact_type: str = ""
-    importance: float = 0.0
-    confidence: float = 0.0
-    supersedes_id: str = ""
-    session_id: str = ""
-    source_id: str = ""
-    source_type: str = ""
-    sentiment: str = ""
-    entities: list[str] = Field(default_factory=list)
-    inferred_entities: list[str] = Field(default_factory=list)
-    topic_tags: list[str] = Field(default_factory=list)
-    agent_framing: str = ""
-    character_salience: float = 0.0
-    emotional_intensity: float = 0.0
-    relationship_relevance: float = 0.0
-    retention_strength: float = 0.0
-    temporal_relevance: str = ""
-    time_sensitive_at: str = ""
-    episode_id: str = ""
-    event_time: str = ""
-    evidence_message_ids: list[str] = Field(default_factory=list)
-    polarity_group_id: str = ""
-    hit_count: int = 0
-    miss_count: int = 0
-    mention_count: int = 0
-    last_confirmed: str = ""
-    last_retrieved_at: str = ""
-    metadata: dict[str, Any] | None = None
-    created_at: str | None = None
-    updated_at: str | None = None
-
-
-class MemoryResponse(BaseModel):
-    nodes: list[MemoryNode] = Field(default_factory=list)
-    contents: dict[str, list[AtomicFact]] = Field(default_factory=dict)
-
 
 class MemorySearchResult(BaseModel):
     fact_id: str = ""
@@ -130,14 +83,6 @@ class MemorySearchResult(BaseModel):
 
 class MemorySearchResponse(BaseModel):
     results: list[MemorySearchResult] = Field(default_factory=list)
-
-
-class TimelineSession(BaseModel):
-    session_id: str = ""
-    facts: list[AtomicFact] = Field(default_factory=list)
-    first_fact_at: str | None = None
-    last_fact_at: str | None = None
-    fact_count: int = 0
 
 
 class MemoryTimelineResponse(BaseModel):
@@ -1996,11 +1941,6 @@ class InventoryDirectUpdateResponse(BaseModel):
     status: str = ""
     fact_id: str = ""
     error: str = ""
-
-
-class ListAllFactsResponse(BaseModel):
-    facts: list[StoredFact] = Field(default_factory=list)
-    total: int = 0
 
 
 # ---------------------------------------------------------------------------
