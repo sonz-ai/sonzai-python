@@ -142,6 +142,8 @@ from .types import (
     PersonalityUpdateResponse,
     PendingCapability,
     PlatformModelsResponse,
+    PrimeContentBlock,
+    PrimeUserMetadata,
     ProcessResponse,
     ProcessSideEffectsSummary,
     ProjectConfigEntry,
@@ -445,6 +447,9 @@ __all__ = [
     "ToolSchemaEntry",
     "ToolSchemasResponse",
     "GetToolSchemasResponse",
+    # Types - Priming
+    "PrimeContentBlock",
+    "PrimeUserMetadata",
     # Types - Platform models
     "ModelVariant",
     "PlatformModelsResponse",

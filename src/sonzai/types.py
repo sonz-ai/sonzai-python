@@ -63,6 +63,8 @@ from ._generated.models import (  # noqa: F401
     PersonalityProfile,
     PersonalityResponse,
     PersonalityShift,
+    PrimeContentBlock,
+    PrimeUserMetadata,
     Project,
     ProjectAPIKey,
     RecentShiftsResponse,
@@ -73,6 +75,9 @@ from ._generated.models import (  # noqa: F401
     TimeMachineResponse,
     TimelineSession,
     TraitPrecision,
+    UserPersona,
+    UserPersonaRecord,
+    UsersResponse,
     WebhookDeliveryAttempt,
 )
 
@@ -315,14 +320,6 @@ class DiaryResponse(BaseModel):
     model_config = {"extra": "allow"}
 
 
-class UsersResponse(BaseModel):
-    # Users are returned as open-shaped dicts by the API today;
-    # keep them flexible here rather than forcing a schema.
-    users: list[dict] = Field(default_factory=list)
-
-    model_config = {"extra": "allow"}
-
-
 # ---------------------------------------------------------------------------
 # Evaluation
 # ---------------------------------------------------------------------------
@@ -379,21 +376,6 @@ class SimulationEvent(BaseModel):
     eval_result: dict[str, Any] | None = None
     adaptation_result: dict[str, Any] | None = None
     error: dict[str, str] | None = None
-
-    model_config = {"extra": "allow"}
-
-
-# ---------------------------------------------------------------------------
-# User Persona
-# ---------------------------------------------------------------------------
-
-
-class UserPersona(BaseModel):
-    id: str = ""
-    name: str = ""
-    background: str = ""
-    personality_traits: list[str] = Field(default_factory=list)
-    communication_style: str = ""
 
     model_config = {"extra": "allow"}
 
@@ -2175,24 +2157,6 @@ class ListAllFactsOptions(BaseModel):
 # --- User Priming ---
 
 
-class PrimeContentBlock(BaseModel):
-    type: str = ""
-    body: str = ""
-
-    model_config = {"extra": "allow"}
-
-
-class PrimeUserMetadata(BaseModel):
-    company: str | None = None
-    title: str | None = None
-    email: str | None = None
-    phone: str | None = None
-    timezone: str | None = None
-    custom: dict[str, str] = Field(default_factory=dict)
-
-    model_config = {"extra": "allow"}
-
-
 class UpdateMetadataOptions(BaseModel):
     display_name: str | None = None
     company: str | None = None
@@ -2733,18 +2697,6 @@ class DeleteProjectResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # User Personas (API resource — distinct from simulation UserPersona)
 # ---------------------------------------------------------------------------
-
-class UserPersonaRecord(BaseModel):
-    persona_id: str = ""
-    name: str = ""
-    description: str = ""
-    style: str = ""
-    is_default: bool = False
-    created_at: str = ""
-    updated_at: str = ""
-    tenant_id: str = ""
-
-    model_config = {"extra": "allow"}
 
 
 class UserPersonaList(BaseModel):

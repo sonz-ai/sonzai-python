@@ -2420,3 +2420,124 @@ class TestWebhookDeliveryAttemptMigration:
         for field in ("attempt_id", "event_type", "webhook_url", "response_code",
                       "duration_ms", "attempt_number", "status", "created_at"):
             assert field in WebhookDeliveryAttempt.model_fields
+
+
+# ---------------------------------------------------------------------------
+# Batch 11 — Priming & Users
+# ---------------------------------------------------------------------------
+
+
+class TestPrimeContentBlockMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import PrimeContentBlock
+        from sonzai._generated.models import PrimeContentBlock as GenPrimeContentBlock
+        assert PrimeContentBlock is GenPrimeContentBlock
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import PrimeContentBlock
+        payload = {"type": "text", "body": "Hello world"}
+        obj = PrimeContentBlock.model_validate(payload)
+        assert obj.type == "text"
+        assert obj.body == "Hello world"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import PrimeContentBlock
+        for field in ("type", "body"):
+            assert field in PrimeContentBlock.model_fields
+
+
+class TestPrimeUserMetadataMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import PrimeUserMetadata
+        from sonzai._generated.models import PrimeUserMetadata as GenPrimeUserMetadata
+        assert PrimeUserMetadata is GenPrimeUserMetadata
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import PrimeUserMetadata
+        payload: dict = {}
+        obj = PrimeUserMetadata.model_validate(payload)
+        assert obj.company is None
+        assert obj.email is None
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import PrimeUserMetadata
+        for field in ("company", "email", "phone", "title"):
+            assert field in PrimeUserMetadata.model_fields
+
+
+class TestUserPersonaMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import UserPersona
+        from sonzai._generated.models import UserPersona as GenUserPersona
+        assert UserPersona is GenUserPersona
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import UserPersona
+        payload = {
+            "name": "Casual Gamer",
+            "description": "A laid-back player who enjoys casual games",
+            "style": "informal",
+        }
+        obj = UserPersona.model_validate(payload)
+        assert obj.name == "Casual Gamer"
+        assert obj.description == "A laid-back player who enjoys casual games"
+        assert obj.style == "informal"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import UserPersona
+        for field in ("name", "description", "style"):
+            assert field in UserPersona.model_fields
+
+
+class TestUserPersonaRecordMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import UserPersonaRecord
+        from sonzai._generated.models import UserPersonaRecord as GenUserPersonaRecord
+        assert UserPersonaRecord is GenUserPersonaRecord
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import UserPersonaRecord
+        payload = {
+            "persona_id": "persona-1",
+            "name": "Power User",
+            "description": "An experienced user who knows the product well",
+            "style": "technical",
+            "is_default": False,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-02T00:00:00Z",
+        }
+        obj = UserPersonaRecord.model_validate(payload)
+        assert obj.persona_id == "persona-1"
+        assert obj.name == "Power User"
+        assert obj.is_default is False
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import UserPersonaRecord
+        for field in ("persona_id", "name", "description", "style", "is_default",
+                      "created_at", "updated_at"):
+            assert field in UserPersonaRecord.model_fields
+
+
+class TestUsersResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import UsersResponse
+        from sonzai._generated.models import UsersResponse as GenUsersResponse
+        assert UsersResponse is GenUsersResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import UsersResponse
+        payload = {
+            "users": [
+                {"user_id": "u-1", "role": "user"},
+            ],
+            "total": 1,
+        }
+        obj = UsersResponse.model_validate(payload)
+        assert obj.total == 1
+        assert len(obj.users) == 1
+        assert obj.users[0].user_id == "u-1"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import UsersResponse
+        for field in ("users", "total"):
+            assert field in UsersResponse.model_fields
