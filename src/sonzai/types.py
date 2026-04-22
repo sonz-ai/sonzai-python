@@ -9,9 +9,11 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact  # noqa: F401
 from ._generated.models import (  # noqa: F401
+    AdvanceTimeDiaryEntry,
     AtomicFact,
     Big5,
     Big5Trait,
+    DiaryEntry,
     Goal,
     GoalsResponse,
     Habit,
@@ -20,6 +22,10 @@ from ._generated.models import (  # noqa: F401
     ListAllFactsResponse,
     MemoryNode,
     MemoryResponse,
+    MoodHistoryEntry,
+    MoodHistoryResponse,
+    MoodResponse,
+    MoodState,
     PersonalityDelta,
     PersonalityDimensions,
     PersonalityProfile,
@@ -177,40 +183,6 @@ class NotificationListResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class MoodResponse(BaseModel):
-    """Current mood snapshot for an agent."""
-
-    # Forward reference — MoodState is defined later in this module.
-    mood: "MoodState" = Field(default_factory=lambda: MoodState())
-
-    model_config = {"extra": "allow"}
-
-
-class MoodHistoryEntry(BaseModel):
-    """A single mood history data point with flat dimensions and deltas."""
-
-    valence: float = 0.0
-    arousal: float = 0.0
-    tension: float = 0.0
-    affiliation: float = 0.0
-    label: str = ""
-    trigger_type: str = ""
-    trigger_reason: str = ""
-    delta_valence: float = 0.0
-    delta_arousal: float = 0.0
-    delta_tension: float = 0.0
-    delta_affiliation: float = 0.0
-    timestamp: str = ""
-
-    model_config = {"extra": "allow"}
-
-
-class MoodHistoryResponse(BaseModel):
-    entries: list[MoodHistoryEntry] = Field(default_factory=list)
-
-    model_config = {"extra": "allow"}
-
-
 class RelationshipData(BaseModel):
     """A relationship between an agent and a user."""
 
@@ -302,26 +274,6 @@ class InterestData(BaseModel):
     last_mentioned_at: str = ""
     created_at: str = ""
     updated_at: str = ""
-
-    model_config = {"extra": "allow"}
-
-
-class DiaryEntry(BaseModel):
-    """A single diary entry."""
-
-    entry_id: str = ""
-    agent_id: str = ""
-    user_id: str = ""
-    date: str = ""
-    content: str = ""
-    title: str = ""
-    body_lines: list[str] = Field(default_factory=list)
-    body: str = ""  # Deprecated: use content instead.
-    mood: str = ""
-    topics: list[str] = Field(default_factory=list)
-    tags: list[str] = Field(default_factory=list)
-    trigger_type: str = ""
-    created_at: str = ""
 
     model_config = {"extra": "allow"}
 
@@ -586,18 +538,6 @@ class BreakthroughsResponse(BaseModel):
 class WakeupsResponse(BaseModel):
     # Forward reference: ScheduledWakeup is defined later in this module.
     wakeups: list["ScheduledWakeup"] = Field(default_factory=list)
-
-    model_config = {"extra": "allow"}
-
-
-class MoodState(BaseModel):
-    """Snapshot of an agent's four-dimensional mood vector (valence-arousal-tension-affiliation)."""
-
-    valence: float = 0.0
-    arousal: float = 0.0
-    tension: float = 0.0
-    affiliation: float = 0.0
-    label: str = ""
 
     model_config = {"extra": "allow"}
 
@@ -2130,6 +2070,7 @@ class MemoryListOptions(BaseModel):
     parent_id: str | None = None
     include_contents: bool | None = None
     limit: int | None = None
+    memory_type: str | None = None
 
     model_config = {"extra": "allow"}
 
@@ -2522,6 +2463,7 @@ class KBSchemaField(BaseModel):
     name: str = ""
     type: str = ""
     required: bool | None = None
+    indexed: bool | None = None
 
     model_config = {"extra": "allow"}
 
@@ -2609,6 +2551,7 @@ class RecordFeedbackOptions(BaseModel):
     rule_id: str = ""
     converted: bool = False
     score_at_time: float = 0.0
+    action: str | None = None
 
     model_config = {"extra": "allow"}
 
@@ -3358,7 +3301,7 @@ class AdvanceTimeResponse(BaseModel):
     consolidation_ran: bool = False
     weekly_consolidations: int = 0
     diary_entries_created: int = 0
-    diary_entries: list[DiaryEntry] = Field(default_factory=list)
+    diary_entries: list[AdvanceTimeDiaryEntry] = Field(default_factory=list)
     wakeups_executed: list[WakeupExecution] = Field(default_factory=list)
     consolidation_processed: int = 0
 

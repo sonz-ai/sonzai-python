@@ -664,3 +664,196 @@ class TestInterestsResponseMigration:
         })
         assert resp.field_schema is not None
         assert "InterestsResponse" in str(resp.field_schema)
+
+
+# ---------------------------------------------------------------------------
+# Batch 4 — Mood & Diary
+# ---------------------------------------------------------------------------
+
+_MOOD_STATE = {
+    "agent_id": "agent_1",
+    "valence": 0.6,
+    "arousal": 0.4,
+    "tension": 0.2,
+    "affiliation": 0.8,
+    "label": "content",
+    "baseline_valence": 0.5,
+    "baseline_arousal": 0.5,
+    "baseline_tension": 0.3,
+    "baseline_affiliation": 0.7,
+    "last_interaction_at": "2026-01-01T00:00:00Z",
+    "last_decay_at": "2026-01-01T00:00:00Z",
+    "created_at": "2026-01-01T00:00:00Z",
+    "updated_at": "2026-01-02T00:00:00Z",
+}
+
+
+class TestMoodStateMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import MoodState
+        from sonzai._generated.models import MoodState as GenMoodState
+        assert MoodState is GenMoodState
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import MoodState
+        ms = MoodState.model_validate(_MOOD_STATE)
+        assert ms.agent_id == "agent_1"
+        assert ms.valence == 0.6
+        assert ms.arousal == 0.4
+        assert ms.tension == 0.2
+        assert ms.affiliation == 0.8
+        assert ms.label == "content"
+        assert ms.baseline_valence == 0.5
+        assert ms.last_interaction_at is not None
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import MoodState
+        with pytest.raises(ValidationError):
+            MoodState.model_validate({**_MOOD_STATE, "unknown_field": "boom"})
+
+    def test_old_hand_rolled_fields_gone(self) -> None:
+        """Hand-rolled MoodState lacked agent_id and baseline_* fields."""
+        from sonzai import MoodState
+        assert "agent_id" in MoodState.model_fields
+        assert "baseline_valence" in MoodState.model_fields
+        assert "baseline_arousal" in MoodState.model_fields
+        assert "baseline_tension" in MoodState.model_fields
+        assert "baseline_affiliation" in MoodState.model_fields
+
+
+class TestMoodResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import MoodResponse
+        from sonzai._generated.models import MoodResponse as GenMoodResponse
+        assert MoodResponse is GenMoodResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import MoodResponse
+        resp = MoodResponse.model_validate({"mood": _MOOD_STATE})
+        assert resp.mood.agent_id == "agent_1"
+        assert resp.mood.valence == 0.6
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import MoodResponse
+        resp = MoodResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/MoodResponse.json",
+            "mood": _MOOD_STATE,
+        })
+        assert resp.field_schema is not None
+        assert "MoodResponse" in str(resp.field_schema)
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import MoodResponse
+        with pytest.raises(ValidationError):
+            MoodResponse.model_validate({"mood": _MOOD_STATE, "unknown_field": "boom"})
+
+
+class TestMoodHistoryEntryMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import MoodHistoryEntry
+        from sonzai._generated.models import MoodHistoryEntry as GenMoodHistoryEntry
+        assert MoodHistoryEntry is GenMoodHistoryEntry
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import MoodHistoryEntry
+        entry = MoodHistoryEntry.model_validate({
+            "valence": 0.5,
+            "arousal": 0.3,
+            "tension": 0.2,
+            "affiliation": 0.7,
+            "timestamp": "2026-01-01T00:00:00Z",
+        })
+        assert entry.valence == 0.5
+        assert entry.tension == 0.2
+        assert entry.timestamp == "2026-01-01T00:00:00Z"
+        assert entry.label is None
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import MoodHistoryEntry
+        with pytest.raises(ValidationError):
+            MoodHistoryEntry.model_validate({
+                "valence": 0.5, "arousal": 0.3, "tension": 0.2,
+                "affiliation": 0.7, "timestamp": "2026-01-01T00:00:00Z",
+                "unknown_field": "boom",
+            })
+
+
+class TestMoodHistoryResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import MoodHistoryResponse
+        from sonzai._generated.models import MoodHistoryResponse as GenMoodHistoryResponse
+        assert MoodHistoryResponse is GenMoodHistoryResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import MoodHistoryResponse
+        resp = MoodHistoryResponse.model_validate({"entries": None})
+        assert resp.entries is None
+
+    def test_with_entries(self) -> None:
+        from sonzai import MoodHistoryResponse
+        resp = MoodHistoryResponse.model_validate({
+            "entries": [{
+                "valence": 0.5, "arousal": 0.3, "tension": 0.2,
+                "affiliation": 0.7, "timestamp": "2026-01-01T00:00:00Z",
+            }],
+        })
+        assert resp.entries is not None
+        assert len(resp.entries) == 1
+        assert resp.entries[0].valence == 0.5
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import MoodHistoryResponse
+        resp = MoodHistoryResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/MoodHistoryResponse.json",
+            "entries": None,
+        })
+        assert resp.field_schema is not None
+        assert "MoodHistoryResponse" in str(resp.field_schema)
+
+
+class TestDiaryEntryMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import DiaryEntry
+        from sonzai._generated.models import DiaryEntry as GenDiaryEntry
+        assert DiaryEntry is GenDiaryEntry
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import DiaryEntry
+        entry = DiaryEntry.model_validate({
+            "entry_id": "e1",
+            "agent_id": "a1",
+            "date": "2026-01-01",
+            "content": "Today was a good day.",
+            "created_at": "2026-01-01T00:00:00Z",
+        })
+        assert entry.entry_id == "e1"
+        assert entry.agent_id == "a1"
+        assert entry.date == "2026-01-01"
+        assert entry.content == "Today was a good day."
+        assert entry.created_at is not None
+
+    def test_optional_fields_default_none(self) -> None:
+        from sonzai import DiaryEntry
+        entry = DiaryEntry.model_validate({
+            "entry_id": "e1",
+            "agent_id": "a1",
+            "date": "2026-01-01",
+            "content": "Hello.",
+            "created_at": "2026-01-01T00:00:00Z",
+        })
+        assert entry.mood is None
+        assert entry.tags is None
+        assert entry.title is None
+        assert entry.user_id is None
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import DiaryEntry
+        with pytest.raises(ValidationError):
+            DiaryEntry.model_validate({
+                "entry_id": "e1",
+                "agent_id": "a1",
+                "date": "2026-01-01",
+                "content": "Hello.",
+                "created_at": "2026-01-01T00:00:00Z",
+                "body": "old deprecated field",
+            })
