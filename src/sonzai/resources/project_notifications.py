@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import AcknowledgeProjectNotificationsInputBody
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import AcknowledgeResponse, ProjectNotificationListResponse
 
 
@@ -43,9 +45,13 @@ class ProjectNotifications:
         notification_ids: list[str],
     ) -> AcknowledgeResponse:
         """Acknowledge specific notifications by ID."""
+        body = encode_body(
+            AcknowledgeProjectNotificationsInputBody,
+            {"notification_ids": notification_ids},
+        )
         data = self._http.post(
             f"/api/v1/projects/{project_id}/notifications/acknowledge",
-            json_data={"notification_ids": notification_ids},
+            json_data=body,
         )
         return AcknowledgeResponse.model_validate(data)
 
@@ -103,9 +109,13 @@ class AsyncProjectNotifications:
         project_id: str,
         notification_ids: list[str],
     ) -> AcknowledgeResponse:
+        body = encode_body(
+            AcknowledgeProjectNotificationsInputBody,
+            {"notification_ids": notification_ids},
+        )
         data = await self._http.post(
             f"/api/v1/projects/{project_id}/notifications/acknowledge",
-            json_data={"notification_ids": notification_ids},
+            json_data=body,
         )
         return AcknowledgeResponse.model_validate(data)
 

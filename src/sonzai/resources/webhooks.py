@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import UpsertWebhookForTenantInputBody, UpsertWebhookInputBody
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import (
     DeleteResponse,
     DeliveryAttemptsResponse,
@@ -27,9 +29,10 @@ class Webhooks:
         auth_header: str | None = None,
     ) -> WebhookRegisterResponse:
         """Register (or update) a webhook URL for an event type."""
-        body: dict[str, Any] = {"webhook_url": webhook_url}
+        raw: dict[str, Any] = {"webhook_url": webhook_url}
         if auth_header is not None:
-            body["auth_header"] = auth_header
+            raw["auth_header"] = auth_header
+        body = encode_body(UpsertWebhookForTenantInputBody, raw)
 
         data = self._http.put(
             f"/api/v1/webhooks/{event_type}", json_data=body
@@ -75,9 +78,10 @@ class Webhooks:
         auth_header: str | None = None,
     ) -> WebhookRegisterResponse:
         """Register (or update) a webhook for a project event type."""
-        body: dict[str, Any] = {"webhook_url": webhook_url}
+        raw: dict[str, Any] = {"webhook_url": webhook_url}
         if auth_header is not None:
-            body["auth_header"] = auth_header
+            raw["auth_header"] = auth_header
+        body = encode_body(UpsertWebhookInputBody, raw)
         data = self._http.put(
             f"/api/v1/projects/{project_id}/webhooks/{event_type}",
             json_data=body,
@@ -133,9 +137,10 @@ class AsyncWebhooks:
         auth_header: str | None = None,
     ) -> WebhookRegisterResponse:
         """Register (or update) a webhook URL for an event type."""
-        body: dict[str, Any] = {"webhook_url": webhook_url}
+        raw: dict[str, Any] = {"webhook_url": webhook_url}
         if auth_header is not None:
-            body["auth_header"] = auth_header
+            raw["auth_header"] = auth_header
+        body = encode_body(UpsertWebhookForTenantInputBody, raw)
 
         data = await self._http.put(
             f"/api/v1/webhooks/{event_type}", json_data=body
@@ -183,9 +188,10 @@ class AsyncWebhooks:
         auth_header: str | None = None,
     ) -> WebhookRegisterResponse:
         """Register (or update) a webhook for a project event type."""
-        body: dict[str, Any] = {"webhook_url": webhook_url}
+        raw: dict[str, Any] = {"webhook_url": webhook_url}
         if auth_header is not None:
-            body["auth_header"] = auth_header
+            raw["auth_header"] = auth_header
+        body = encode_body(UpsertWebhookInputBody, raw)
         data = await self._http.put(
             f"/api/v1/projects/{project_id}/webhooks/{event_type}",
             json_data=body,

@@ -7,7 +7,13 @@ import json as _json
 import struct
 from typing import Any, Iterator
 
+from .._generated.models import (
+    SpeechToTextInputBody,
+    TextToSpeechInputBody,
+    VoiceLiveWSTokenInputBody,
+)
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import (
     VoiceListResponse,
     VoiceStreamEvent,
@@ -36,15 +42,16 @@ class VoiceResource:
 
         The token expires in 60 seconds and is single-use.
         """
-        body: dict[str, Any] = {}
+        raw: dict[str, Any] = {}
         if voice_name is not None:
-            body["voiceName"] = voice_name
+            raw["voice_name"] = voice_name
         if language is not None:
-            body["language"] = language
+            raw["language"] = language
         if user_id is not None:
-            body["userId"] = user_id
+            raw["user_id"] = user_id
         if compiled_system_prompt is not None:
-            body["compiledSystemPrompt"] = compiled_system_prompt
+            raw["compiled_system_prompt"] = compiled_system_prompt
+        body = encode_body(VoiceLiveWSTokenInputBody, raw)
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/voice/live-ws-token", json_data=body
@@ -92,13 +99,14 @@ class VoiceResource:
 
         Returns a :class:`TTSResponse` with base64-encoded audio data.
         """
-        body: dict[str, Any] = {"text": text}
+        raw: dict[str, Any] = {"text": text}
         if voice_name is not None:
-            body["voiceName"] = voice_name
+            raw["voice_name"] = voice_name
         if language is not None:
-            body["language"] = language
+            raw["language"] = language
         if output_format is not None:
-            body["outputFormat"] = output_format
+            raw["output_format"] = output_format
+        body = encode_body(TextToSpeechInputBody, raw)
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/voice/tts", json_data=body
@@ -117,9 +125,10 @@ class VoiceResource:
 
         Returns a :class:`STTResponse` with the transcript.
         """
-        body: dict[str, Any] = {"audio": audio, "audioFormat": audio_format}
+        raw: dict[str, Any] = {"audio": audio, "audio_format": audio_format}
         if language is not None:
-            body["language"] = language
+            raw["language"] = language
+        body = encode_body(SpeechToTextInputBody, raw)
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/voice/stt", json_data=body
@@ -552,15 +561,16 @@ class AsyncVoiceResource:
         compiled_system_prompt: str | None = None,
     ) -> VoiceStreamToken:
         """Get a short-lived token for voice live WebSocket streaming."""
-        body: dict[str, Any] = {}
+        raw: dict[str, Any] = {}
         if voice_name is not None:
-            body["voiceName"] = voice_name
+            raw["voice_name"] = voice_name
         if language is not None:
-            body["language"] = language
+            raw["language"] = language
         if user_id is not None:
-            body["userId"] = user_id
+            raw["user_id"] = user_id
         if compiled_system_prompt is not None:
-            body["compiledSystemPrompt"] = compiled_system_prompt
+            raw["compiled_system_prompt"] = compiled_system_prompt
+        body = encode_body(VoiceLiveWSTokenInputBody, raw)
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/voice/live-ws-token", json_data=body
@@ -591,13 +601,14 @@ class AsyncVoiceResource:
         output_format: str | None = None,
     ) -> TTSResponse:
         """Convert text to speech audio."""
-        body: dict[str, Any] = {"text": text}
+        raw: dict[str, Any] = {"text": text}
         if voice_name is not None:
-            body["voiceName"] = voice_name
+            raw["voice_name"] = voice_name
         if language is not None:
-            body["language"] = language
+            raw["language"] = language
         if output_format is not None:
-            body["outputFormat"] = output_format
+            raw["output_format"] = output_format
+        body = encode_body(TextToSpeechInputBody, raw)
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/voice/tts", json_data=body
@@ -613,9 +624,10 @@ class AsyncVoiceResource:
         language: str | None = None,
     ) -> STTResponse:
         """Transcribe audio to text."""
-        body: dict[str, Any] = {"audio": audio, "audioFormat": audio_format}
+        raw: dict[str, Any] = {"audio": audio, "audio_format": audio_format}
         if language is not None:
-            body["language"] = language
+            raw["language"] = language
+        body = encode_body(SpeechToTextInputBody, raw)
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/voice/stt", json_data=body

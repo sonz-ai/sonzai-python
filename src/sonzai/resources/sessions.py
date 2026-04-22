@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import EndSessionInputBody, StartSessionInputBody
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import ChatMessage, SessionResponse
 
 
@@ -25,16 +27,17 @@ class Sessions:
         tool_definitions: list[dict[str, Any]] | None = None,
     ) -> SessionResponse:
         """Start a chat session."""
-        body: dict[str, Any] = {
+        raw: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
         }
         if instance_id:
-            body["instance_id"] = instance_id
+            raw["instance_id"] = instance_id
         if user_display_name:
-            body["user_display_name"] = user_display_name
+            raw["user_display_name"] = user_display_name
         if tool_definitions:
-            body["tool_definitions"] = tool_definitions
+            raw["tool_definitions"] = tool_definitions
+        body = encode_body(StartSessionInputBody, raw)
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/sessions/start", json_data=body
@@ -55,22 +58,23 @@ class Sessions:
         user_timezone: str | None = None,
     ) -> SessionResponse:
         """End a chat session."""
-        body: dict[str, Any] = {
+        raw: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
             "total_messages": total_messages,
             "duration_seconds": duration_seconds,
         }
         if instance_id:
-            body["instance_id"] = instance_id
+            raw["instance_id"] = instance_id
         if messages:
-            body["messages"] = [
+            raw["messages"] = [
                 m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
             ]
         if user_display_name is not None:
-            body["user_display_name"] = user_display_name
+            raw["user_display_name"] = user_display_name
         if user_timezone is not None:
-            body["user_timezone"] = user_timezone
+            raw["user_timezone"] = user_timezone
+        body = encode_body(EndSessionInputBody, raw)
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/sessions/end", json_data=body
@@ -103,16 +107,17 @@ class AsyncSessions:
         user_display_name: str | None = None,
         tool_definitions: list[dict[str, Any]] | None = None,
     ) -> SessionResponse:
-        body: dict[str, Any] = {
+        raw: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
         }
         if instance_id:
-            body["instance_id"] = instance_id
+            raw["instance_id"] = instance_id
         if user_display_name:
-            body["user_display_name"] = user_display_name
+            raw["user_display_name"] = user_display_name
         if tool_definitions:
-            body["tool_definitions"] = tool_definitions
+            raw["tool_definitions"] = tool_definitions
+        body = encode_body(StartSessionInputBody, raw)
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/sessions/start", json_data=body
@@ -140,24 +145,25 @@ class AsyncSessions:
         the pipeline synchronously — use this in benchmarks and test
         harnesses that query memory or start another session right after.
         """
-        body: dict[str, Any] = {
+        raw: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
             "total_messages": total_messages,
             "duration_seconds": duration_seconds,
         }
         if instance_id:
-            body["instance_id"] = instance_id
+            raw["instance_id"] = instance_id
         if messages:
-            body["messages"] = [
+            raw["messages"] = [
                 m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
             ]
         if wait:
-            body["wait"] = True
+            raw["wait"] = True
         if user_display_name is not None:
-            body["user_display_name"] = user_display_name
+            raw["user_display_name"] = user_display_name
         if user_timezone is not None:
-            body["user_timezone"] = user_timezone
+            raw["user_timezone"] = user_timezone
+        body = encode_body(EndSessionInputBody, raw)
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/sessions/end", json_data=body

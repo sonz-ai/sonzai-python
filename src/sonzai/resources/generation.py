@@ -4,7 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import (
+    GenerateAndCreateInputBody,
+    GenerateBioInputBody,
+    GenerateCharacterInputBody,
+    GenerateImageInputBody,
+    GenerateSeedMemoriesInputBody,
+)
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import (
     GenerateBioResponse,
     GenerateCharacterResponse,
@@ -32,21 +40,24 @@ class Generation:
         instance_id: str | None = None,
     ) -> GenerateBioResponse:
         """Generate a bio for an agent using AI."""
-        body: dict[str, Any] = {}
+        # BEHAVIOR CHANGE: GenerateBioInputBody marks ``name`` and ``description``
+        # as required; omitting them now raises ValidationError at the SDK boundary.
+        raw: dict[str, Any] = {}
         if name is not None:
-            body["name"] = name
+            raw["name"] = name
         if gender is not None:
-            body["gender"] = gender
+            raw["gender"] = gender
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if user_id is not None:
-            body["user_id"] = user_id
+            raw["user_id"] = user_id
         if current_bio is not None:
-            body["current_bio"] = current_bio
+            raw["current_bio"] = current_bio
         if style is not None:
-            body["style"] = style
+            raw["style"] = style
         if instance_id is not None:
-            body["instance_id"] = instance_id
+            raw["instance_id"] = instance_id
+        body = encode_body(GenerateBioInputBody, raw)
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/bio/generate", json_data=body
@@ -63,13 +74,14 @@ class Generation:
         provider: str | None = None,
     ) -> ImageGenerateResponse:
         """Generate an image using the agent's context."""
-        body: dict[str, Any] = {"prompt": prompt}
+        raw: dict[str, Any] = {"prompt": prompt}
         if negative_prompt is not None:
-            body["negative_prompt"] = negative_prompt
+            raw["negative_prompt"] = negative_prompt
         if model is not None:
-            body["model"] = model
+            raw["model"] = model
         if provider is not None:
-            body["provider"] = provider
+            raw["provider"] = provider
+        body = encode_body(GenerateImageInputBody, raw)
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/image/generate", json_data=body
@@ -97,19 +109,22 @@ class Generation:
                 Platform defaults to gemini when omitted.
             model: Optional model override for the chosen provider.
         """
-        body: dict[str, Any] = {"name": name}
+        # BEHAVIOR CHANGE: GenerateCharacterInputBody marks ``description`` as
+        # required; omitting it now raises ValidationError at the SDK boundary.
+        raw: dict[str, Any] = {"name": name}
         if agent_id is not None:
-            body["agent_id"] = agent_id
+            raw["agent_id"] = agent_id
         if gender is not None:
-            body["gender"] = gender
+            raw["gender"] = gender
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if fields is not None:
-            body["fields"] = fields
+            raw["fields"] = fields
         if provider is not None:
-            body["provider"] = provider
+            raw["provider"] = provider
         if model is not None:
-            body["model"] = model
+            raw["model"] = model
+        body = encode_body(GenerateCharacterInputBody, raw)
 
         data = self._http.post(
             "/api/v1/agents/generate-character", json_data=body
@@ -139,23 +154,26 @@ class Generation:
                 Platform defaults to gemini when omitted.
             model: Optional model override for the chosen provider.
         """
-        body: dict[str, Any] = {"name": name}
+        # BEHAVIOR CHANGE: GenerateAndCreateInputBody marks ``description`` as
+        # required; omitting it now raises ValidationError at the SDK boundary.
+        raw: dict[str, Any] = {"name": name}
         if agent_id is not None:
-            body["agent_id"] = agent_id
+            raw["agent_id"] = agent_id
         if gender is not None:
-            body["gender"] = gender
+            raw["gender"] = gender
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if fields is not None:
-            body["fields"] = fields
+            raw["fields"] = fields
         if project_id is not None:
-            body["project_id"] = project_id
+            raw["project_id"] = project_id
         if language is not None:
-            body["language"] = language
+            raw["language"] = language
         if provider is not None:
-            body["provider"] = provider
+            raw["provider"] = provider
         if model is not None:
-            body["model"] = model
+            raw["model"] = model
+        body = encode_body(GenerateAndCreateInputBody, raw)
 
         return self._http.post(
             "/api/v1/agents/generate-and-create", json_data=body
@@ -180,33 +198,37 @@ class Generation:
         generate_personalized_memories: bool | None = None,
     ) -> GenerateSeedMemoriesResponse:
         """Generate seed memories for an agent using AI."""
-        body: dict[str, Any] = {}
+        # BEHAVIOR CHANGE: GenerateSeedMemoriesInputBody marks ``agent_name``,
+        # ``personality_prompt``, ``speech_patterns``, and ``true_interests`` as
+        # required; omitting them now raises ValidationError at the SDK boundary.
+        raw: dict[str, Any] = {}
         if agent_name is not None:
-            body["agentName"] = agent_name
+            raw["agent_name"] = agent_name
         if big5 is not None:
-            body["big5"] = big5
+            raw["big5"] = big5
         if personality_prompt is not None:
-            body["personalityPrompt"] = personality_prompt
+            raw["personality_prompt"] = personality_prompt
         if primary_traits is not None:
-            body["primaryTraits"] = primary_traits
+            raw["primary_traits"] = primary_traits
         if true_interests is not None:
-            body["trueInterests"] = true_interests
+            raw["true_interests"] = true_interests
         if true_dislikes is not None:
-            body["trueDislikes"] = true_dislikes
+            raw["true_dislikes"] = true_dislikes
         if speech_patterns is not None:
-            body["speechPatterns"] = speech_patterns
+            raw["speech_patterns"] = speech_patterns
         if creator_display_name is not None:
-            body["creatorDisplayName"] = creator_display_name
+            raw["creator_display_name"] = creator_display_name
         if static_lore_memories is not None:
-            body["staticLoreMemories"] = static_lore_memories
+            raw["static_lore_memories"] = static_lore_memories
         if lore_generation_context is not None:
-            body["loreGenerationContext"] = lore_generation_context
+            raw["lore_generation_context"] = lore_generation_context
         if identity_memory_templates is not None:
-            body["identityMemoryTemplates"] = identity_memory_templates
+            raw["identity_memory_templates"] = identity_memory_templates
         if generate_origin_story is not None:
-            body["generateOriginStory"] = generate_origin_story
+            raw["generate_origin_story"] = generate_origin_story
         if generate_personalized_memories is not None:
-            body["generatePersonalizedMemories"] = generate_personalized_memories
+            raw["generate_personalized_memories"] = generate_personalized_memories
+        body = encode_body(GenerateSeedMemoriesInputBody, raw)
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/memory/seed", json_data=body
@@ -233,21 +255,24 @@ class AsyncGeneration:
         instance_id: str | None = None,
     ) -> GenerateBioResponse:
         """Generate a bio for an agent using AI."""
-        body: dict[str, Any] = {}
+        # BEHAVIOR CHANGE: GenerateBioInputBody marks ``name`` and ``description``
+        # as required; omitting them now raises ValidationError at the SDK boundary.
+        raw: dict[str, Any] = {}
         if name is not None:
-            body["name"] = name
+            raw["name"] = name
         if gender is not None:
-            body["gender"] = gender
+            raw["gender"] = gender
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if user_id is not None:
-            body["user_id"] = user_id
+            raw["user_id"] = user_id
         if current_bio is not None:
-            body["current_bio"] = current_bio
+            raw["current_bio"] = current_bio
         if style is not None:
-            body["style"] = style
+            raw["style"] = style
         if instance_id is not None:
-            body["instance_id"] = instance_id
+            raw["instance_id"] = instance_id
+        body = encode_body(GenerateBioInputBody, raw)
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/bio/generate", json_data=body
@@ -264,13 +289,14 @@ class AsyncGeneration:
         provider: str | None = None,
     ) -> ImageGenerateResponse:
         """Generate an image using the agent's context."""
-        body: dict[str, Any] = {"prompt": prompt}
+        raw: dict[str, Any] = {"prompt": prompt}
         if negative_prompt is not None:
-            body["negative_prompt"] = negative_prompt
+            raw["negative_prompt"] = negative_prompt
         if model is not None:
-            body["model"] = model
+            raw["model"] = model
         if provider is not None:
-            body["provider"] = provider
+            raw["provider"] = provider
+        body = encode_body(GenerateImageInputBody, raw)
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/image/generate", json_data=body
@@ -298,19 +324,22 @@ class AsyncGeneration:
                 Platform defaults to gemini when omitted.
             model: Optional model override for the chosen provider.
         """
-        body: dict[str, Any] = {"name": name}
+        # BEHAVIOR CHANGE: GenerateCharacterInputBody marks ``description`` as
+        # required; omitting it now raises ValidationError at the SDK boundary.
+        raw: dict[str, Any] = {"name": name}
         if agent_id is not None:
-            body["agent_id"] = agent_id
+            raw["agent_id"] = agent_id
         if gender is not None:
-            body["gender"] = gender
+            raw["gender"] = gender
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if fields is not None:
-            body["fields"] = fields
+            raw["fields"] = fields
         if provider is not None:
-            body["provider"] = provider
+            raw["provider"] = provider
         if model is not None:
-            body["model"] = model
+            raw["model"] = model
+        body = encode_body(GenerateCharacterInputBody, raw)
 
         data = await self._http.post(
             "/api/v1/agents/generate-character", json_data=body
@@ -340,23 +369,26 @@ class AsyncGeneration:
                 Platform defaults to gemini when omitted.
             model: Optional model override for the chosen provider.
         """
-        body: dict[str, Any] = {"name": name}
+        # BEHAVIOR CHANGE: GenerateAndCreateInputBody marks ``description`` as
+        # required; omitting it now raises ValidationError at the SDK boundary.
+        raw: dict[str, Any] = {"name": name}
         if agent_id is not None:
-            body["agent_id"] = agent_id
+            raw["agent_id"] = agent_id
         if gender is not None:
-            body["gender"] = gender
+            raw["gender"] = gender
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if fields is not None:
-            body["fields"] = fields
+            raw["fields"] = fields
         if project_id is not None:
-            body["project_id"] = project_id
+            raw["project_id"] = project_id
         if language is not None:
-            body["language"] = language
+            raw["language"] = language
         if provider is not None:
-            body["provider"] = provider
+            raw["provider"] = provider
         if model is not None:
-            body["model"] = model
+            raw["model"] = model
+        body = encode_body(GenerateAndCreateInputBody, raw)
 
         return await self._http.post(
             "/api/v1/agents/generate-and-create", json_data=body
@@ -381,33 +413,37 @@ class AsyncGeneration:
         generate_personalized_memories: bool | None = None,
     ) -> GenerateSeedMemoriesResponse:
         """Generate seed memories for an agent using AI."""
-        body: dict[str, Any] = {}
+        # BEHAVIOR CHANGE: GenerateSeedMemoriesInputBody marks ``agent_name``,
+        # ``personality_prompt``, ``speech_patterns``, and ``true_interests`` as
+        # required; omitting them now raises ValidationError at the SDK boundary.
+        raw: dict[str, Any] = {}
         if agent_name is not None:
-            body["agentName"] = agent_name
+            raw["agent_name"] = agent_name
         if big5 is not None:
-            body["big5"] = big5
+            raw["big5"] = big5
         if personality_prompt is not None:
-            body["personalityPrompt"] = personality_prompt
+            raw["personality_prompt"] = personality_prompt
         if primary_traits is not None:
-            body["primaryTraits"] = primary_traits
+            raw["primary_traits"] = primary_traits
         if true_interests is not None:
-            body["trueInterests"] = true_interests
+            raw["true_interests"] = true_interests
         if true_dislikes is not None:
-            body["trueDislikes"] = true_dislikes
+            raw["true_dislikes"] = true_dislikes
         if speech_patterns is not None:
-            body["speechPatterns"] = speech_patterns
+            raw["speech_patterns"] = speech_patterns
         if creator_display_name is not None:
-            body["creatorDisplayName"] = creator_display_name
+            raw["creator_display_name"] = creator_display_name
         if static_lore_memories is not None:
-            body["staticLoreMemories"] = static_lore_memories
+            raw["static_lore_memories"] = static_lore_memories
         if lore_generation_context is not None:
-            body["loreGenerationContext"] = lore_generation_context
+            raw["lore_generation_context"] = lore_generation_context
         if identity_memory_templates is not None:
-            body["identityMemoryTemplates"] = identity_memory_templates
+            raw["identity_memory_templates"] = identity_memory_templates
         if generate_origin_story is not None:
-            body["generateOriginStory"] = generate_origin_story
+            raw["generate_origin_story"] = generate_origin_story
         if generate_personalized_memories is not None:
-            body["generatePersonalizedMemories"] = generate_personalized_memories
+            raw["generate_personalized_memories"] = generate_personalized_memories
+        body = encode_body(GenerateSeedMemoriesInputBody, raw)
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/memory/seed", json_data=body

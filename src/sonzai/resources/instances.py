@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import CreateInstanceInputBody, UpdateInstanceInputBody
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import AgentInstance, InstanceListResponse, SessionResponse
 
 
@@ -27,9 +29,10 @@ class Instances:
         description: str | None = None,
     ) -> AgentInstance:
         """Create a new agent instance."""
-        body: dict[str, Any] = {"name": name}
+        raw: dict[str, Any] = {"name": name}
         if description:
-            body["description"] = description
+            raw["description"] = description
+        body = encode_body(CreateInstanceInputBody, raw)
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/instances", json_data=body
@@ -67,13 +70,14 @@ class Instances:
         status: str | None = None,
     ) -> AgentInstance:
         """Update an agent instance."""
-        body: dict[str, Any] = {}
+        raw: dict[str, Any] = {}
         if name is not None:
-            body["name"] = name
+            raw["name"] = name
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if status is not None:
-            body["status"] = status
+            raw["status"] = status
+        body = encode_body(UpdateInstanceInputBody, raw)
         data = self._http.patch(
             f"/api/v1/agents/{agent_id}/instances/{instance_id}", json_data=body
         )
@@ -97,9 +101,10 @@ class AsyncInstances:
         name: str,
         description: str | None = None,
     ) -> AgentInstance:
-        body: dict[str, Any] = {"name": name}
+        raw: dict[str, Any] = {"name": name}
         if description:
-            body["description"] = description
+            raw["description"] = description
+        body = encode_body(CreateInstanceInputBody, raw)
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/instances", json_data=body
@@ -134,13 +139,14 @@ class AsyncInstances:
         status: str | None = None,
     ) -> AgentInstance:
         """Update an agent instance."""
-        body: dict[str, Any] = {}
+        raw: dict[str, Any] = {}
         if name is not None:
-            body["name"] = name
+            raw["name"] = name
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if status is not None:
-            body["status"] = status
+            raw["status"] = status
+        body = encode_body(UpdateInstanceInputBody, raw)
         data = await self._http.patch(
             f"/api/v1/agents/{agent_id}/instances/{instance_id}", json_data=body
         )

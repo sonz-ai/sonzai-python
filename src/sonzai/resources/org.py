@@ -17,7 +17,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import (
+    OrgBillingCheckoutInputBody,
+    OrgBillingSubscribeInputBody,
+    OrgBillingVoucherInputBody,
+)
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 
 
 class _OrgBase:
@@ -43,8 +49,17 @@ class Org(_OrgBase):
         """Get the org billing profile."""
         return self._http.get("/api/v1/org/billing")  # type: ignore[no-any-return]
 
-    def create_billing_checkout(self, **body: Any) -> dict[str, Any]:
+    def create_billing_checkout(
+        self,
+        *,
+        amount: int,
+        currency: str | None = None,
+    ) -> dict[str, Any]:
         """Create a Stripe checkout session for credit top-up."""
+        raw: dict[str, Any] = {"amount": amount}
+        if currency is not None:
+            raw["currency"] = currency
+        body = encode_body(OrgBillingCheckoutInputBody, raw)
         return self._http.post("/api/v1/org/billing/checkout", json_data=body)  # type: ignore[no-any-return]
 
     def create_billing_portal(self, **body: Any) -> dict[str, Any]:
@@ -71,8 +86,9 @@ class Org(_OrgBase):
         """Get the org's current enterprise contract."""
         return self._http.get("/api/v1/org/contract")  # type: ignore[no-any-return]
 
-    def subscribe_contract(self, **body: Any) -> dict[str, Any]:
+    def subscribe_contract(self, *, contract_id: str) -> dict[str, Any]:
         """Subscribe the tenant to an enterprise contract."""
+        body = encode_body(OrgBillingSubscribeInputBody, {"contract_id": contract_id})
         return self._http.post("/api/v1/org/contract/subscribe", json_data=body)  # type: ignore[no-any-return]
 
     def list_service_agreements(self) -> dict[str, Any]:
@@ -111,9 +127,9 @@ class Org(_OrgBase):
             params["cursor"] = cursor
         return self._http.get("/api/v1/org/events", params=params or None)  # type: ignore[no-any-return]
 
-    def redeem_voucher(self, *, code: str, **extra: Any) -> dict[str, Any]:
+    def redeem_voucher(self, *, code: str) -> dict[str, Any]:
         """Redeem a voucher code."""
-        body: dict[str, Any] = {"code": code, **extra}
+        body = encode_body(OrgBillingVoucherInputBody, {"code": code})
         return self._http.post("/api/v1/org/vouchers/redeem", json_data=body)  # type: ignore[no-any-return]
 
 
@@ -129,7 +145,16 @@ class AsyncOrg(_OrgBase):
     async def get_billing(self) -> dict[str, Any]:
         return await self._http.get("/api/v1/org/billing")  # type: ignore[no-any-return]
 
-    async def create_billing_checkout(self, **body: Any) -> dict[str, Any]:
+    async def create_billing_checkout(
+        self,
+        *,
+        amount: int,
+        currency: str | None = None,
+    ) -> dict[str, Any]:
+        raw: dict[str, Any] = {"amount": amount}
+        if currency is not None:
+            raw["currency"] = currency
+        body = encode_body(OrgBillingCheckoutInputBody, raw)
         return await self._http.post("/api/v1/org/billing/checkout", json_data=body)  # type: ignore[no-any-return]
 
     async def create_billing_portal(self, **body: Any) -> dict[str, Any]:
@@ -151,7 +176,8 @@ class AsyncOrg(_OrgBase):
     async def get_contract(self) -> dict[str, Any]:
         return await self._http.get("/api/v1/org/contract")  # type: ignore[no-any-return]
 
-    async def subscribe_contract(self, **body: Any) -> dict[str, Any]:
+    async def subscribe_contract(self, *, contract_id: str) -> dict[str, Any]:
+        body = encode_body(OrgBillingSubscribeInputBody, {"contract_id": contract_id})
         return await self._http.post("/api/v1/org/contract/subscribe", json_data=body)  # type: ignore[no-any-return]
 
     async def list_service_agreements(self) -> dict[str, Any]:
@@ -182,6 +208,6 @@ class AsyncOrg(_OrgBase):
             params["cursor"] = cursor
         return await self._http.get("/api/v1/org/events", params=params or None)  # type: ignore[no-any-return]
 
-    async def redeem_voucher(self, *, code: str, **extra: Any) -> dict[str, Any]:
-        body: dict[str, Any] = {"code": code, **extra}
+    async def redeem_voucher(self, *, code: str) -> dict[str, Any]:
+        body = encode_body(OrgBillingVoucherInputBody, {"code": code})
         return await self._http.post("/api/v1/org/vouchers/redeem", json_data=body)  # type: ignore[no-any-return]

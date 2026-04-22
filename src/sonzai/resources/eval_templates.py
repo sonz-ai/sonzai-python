@@ -5,7 +5,9 @@ from __future__ import annotations
 import builtins
 from typing import Any
 
+from .._generated.models import CreateEvalTemplateInputBody
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import EvalTemplate, EvalTemplateCategory, EvalTemplateListResponse, SessionResponse
 
 # Alias to avoid shadowing by the ``list`` method on resource classes.
@@ -45,7 +47,7 @@ class EvalTemplates:
         categories: _list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
         """Create a new eval template."""
-        body: dict[str, Any] = {
+        raw: dict[str, Any] = {
             "name": name,
             "description": description,
             "template_type": template_type,
@@ -55,7 +57,8 @@ class EvalTemplates:
             "scoring_rubric": scoring_rubric,
         }
         if categories:
-            body["categories"] = categories
+            raw["categories"] = categories
+        body = encode_body(CreateEvalTemplateInputBody, raw)
 
         data = self._http.post("/api/v1/eval-templates", json_data=body)
         return EvalTemplate.model_validate(data)
@@ -74,6 +77,8 @@ class EvalTemplates:
         categories: _list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
         """Update an eval template."""
+        # NOTE: not routed through encode_body — UpdateEvalTemplateInputBody lacks
+        # the ``template_type`` field that this method exposes.
         body: dict[str, Any] = {}
         if name is not None:
             body["name"] = name
@@ -132,7 +137,7 @@ class AsyncEvalTemplates:
         scoring_rubric: str = "",
         categories: _list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
-        body: dict[str, Any] = {
+        raw: dict[str, Any] = {
             "name": name,
             "description": description,
             "template_type": template_type,
@@ -142,7 +147,8 @@ class AsyncEvalTemplates:
             "scoring_rubric": scoring_rubric,
         }
         if categories:
-            body["categories"] = categories
+            raw["categories"] = categories
+        body = encode_body(CreateEvalTemplateInputBody, raw)
         data = await self._http.post("/api/v1/eval-templates", json_data=body)
         return EvalTemplate.model_validate(data)
 
@@ -159,6 +165,8 @@ class AsyncEvalTemplates:
         scoring_rubric: str | None = None,
         categories: _list[dict[str, Any]] | None = None,
     ) -> EvalTemplate:
+        # NOTE: not routed through encode_body — UpdateEvalTemplateInputBody lacks
+        # the ``template_type`` field that this method exposes.
         body: dict[str, Any] = {}
         if name is not None:
             body["name"] = name

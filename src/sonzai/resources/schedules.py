@@ -9,7 +9,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import CreateScheduleInputBody, PatchScheduleInputBody
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import (
     DeleteResponse,
     Schedule,
@@ -112,7 +114,7 @@ class Schedules:
         required ``timezone`` field. ``active_window`` is an optional
         quiet-hours/days filter.
         """
-        body = _build_create_body(
+        body = encode_body(CreateScheduleInputBody, _build_create_body(
             cadence=cadence,
             intent=intent,
             check_type=check_type,
@@ -121,7 +123,7 @@ class Schedules:
             metadata=metadata,
             starts_at=starts_at,
             ends_at=ends_at,
-        )
+        ))
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/users/{user_id}/schedules",
             json_data=body,
@@ -155,7 +157,7 @@ class Schedules:
         ``next_fire_at`` is recomputed only when ``cadence``, ``active_window``,
         or ``starts_at`` change.
         """
-        body = _build_patch_body(
+        body = encode_body(PatchScheduleInputBody, _build_patch_body(
             cadence=cadence,
             active_window=active_window,
             intent=intent,
@@ -164,7 +166,7 @@ class Schedules:
             enabled=enabled,
             starts_at=starts_at,
             ends_at=ends_at,
-        )
+        ))
         data = self._http.patch(
             f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}",
             json_data=body,
@@ -224,7 +226,7 @@ class AsyncSchedules:
         starts_at: str | None = None,
         ends_at: str | None = None,
     ) -> ScheduleCreateResponse:
-        body = _build_create_body(
+        body = encode_body(CreateScheduleInputBody, _build_create_body(
             cadence=cadence,
             intent=intent,
             check_type=check_type,
@@ -233,7 +235,7 @@ class AsyncSchedules:
             metadata=metadata,
             starts_at=starts_at,
             ends_at=ends_at,
-        )
+        ))
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/users/{user_id}/schedules",
             json_data=body,
@@ -263,7 +265,7 @@ class AsyncSchedules:
         starts_at: str | None = None,
         ends_at: str | None = None,
     ) -> Schedule:
-        body = _build_patch_body(
+        body = encode_body(PatchScheduleInputBody, _build_patch_body(
             cadence=cadence,
             active_window=active_window,
             intent=intent,
@@ -272,7 +274,7 @@ class AsyncSchedules:
             enabled=enabled,
             starts_at=starts_at,
             ends_at=ends_at,
-        )
+        ))
         data = await self._http.patch(
             f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}",
             json_data=body,

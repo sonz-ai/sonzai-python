@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import SetCustomLLMConfigInputBody
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import CustomLLMConfigResponse
 
 
@@ -32,13 +34,14 @@ class CustomLLM:
         is_active: bool | None = None,
     ) -> CustomLLMConfigResponse:
         """Set or update the custom LLM config."""
-        body: dict[str, Any] = {"endpoint": endpoint, "api_key": api_key}
+        raw: dict[str, Any] = {"endpoint": endpoint, "api_key": api_key}
         if model is not None:
-            body["model"] = model
+            raw["model"] = model
         if display_name is not None:
-            body["display_name"] = display_name
+            raw["display_name"] = display_name
         if is_active is not None:
-            body["is_active"] = is_active
+            raw["is_active"] = is_active
+        body = encode_body(SetCustomLLMConfigInputBody, raw)
 
         data = self._http.put(
             f"/api/v1/projects/{project_id}/custom-llm",
@@ -75,13 +78,14 @@ class AsyncCustomLLM:
         is_active: bool | None = None,
     ) -> CustomLLMConfigResponse:
         """Set or update the custom LLM config."""
-        body: dict[str, Any] = {"endpoint": endpoint, "api_key": api_key}
+        raw: dict[str, Any] = {"endpoint": endpoint, "api_key": api_key}
         if model is not None:
-            body["model"] = model
+            raw["model"] = model
         if display_name is not None:
-            body["display_name"] = display_name
+            raw["display_name"] = display_name
         if is_active is not None:
-            body["is_active"] = is_active
+            raw["is_active"] = is_active
+        body = encode_body(SetCustomLLMConfigInputBody, raw)
 
         data = await self._http.put(
             f"/api/v1/projects/{project_id}/custom-llm",

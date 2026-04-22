@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import CreateUserPersonaInputBody, UpdateUserPersonaInputBody
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import DeleteUserPersonaResponse, UserPersonaList, UserPersonaRecord
 
 
@@ -31,11 +33,12 @@ class UserPersonas:
         style: str | None = None,
     ) -> UserPersonaRecord:
         """Create a new user persona."""
-        body: dict[str, Any] = {"name": name}
+        raw: dict[str, Any] = {"name": name}
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if style is not None:
-            body["style"] = style
+            raw["style"] = style
+        body = encode_body(CreateUserPersonaInputBody, raw)
         data = self._http.post("/api/v1/user-personas", json_data=body)
         return UserPersonaRecord.model_validate(data)
 
@@ -53,13 +56,14 @@ class UserPersonas:
         style: str | None = None,
     ) -> UserPersonaRecord:
         """Update a user persona."""
-        body: dict[str, Any] = {}
+        raw: dict[str, Any] = {}
         if name is not None:
-            body["name"] = name
+            raw["name"] = name
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if style is not None:
-            body["style"] = style
+            raw["style"] = style
+        body = encode_body(UpdateUserPersonaInputBody, raw)
         data = self._http.put(f"/api/v1/user-personas/{persona_id}", json_data=body)
         return UserPersonaRecord.model_validate(data)
 
@@ -92,11 +96,12 @@ class AsyncUserPersonas:
         style: str | None = None,
     ) -> UserPersonaRecord:
         """Create a new user persona."""
-        body: dict[str, Any] = {"name": name}
+        raw: dict[str, Any] = {"name": name}
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if style is not None:
-            body["style"] = style
+            raw["style"] = style
+        body = encode_body(CreateUserPersonaInputBody, raw)
         data = await self._http.post("/api/v1/user-personas", json_data=body)
         return UserPersonaRecord.model_validate(data)
 
@@ -114,13 +119,14 @@ class AsyncUserPersonas:
         style: str | None = None,
     ) -> UserPersonaRecord:
         """Update a user persona."""
-        body: dict[str, Any] = {}
+        raw: dict[str, Any] = {}
         if name is not None:
-            body["name"] = name
+            raw["name"] = name
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if style is not None:
-            body["style"] = style
+            raw["style"] = style
+        body = encode_body(UpdateUserPersonaInputBody, raw)
         data = await self._http.put(f"/api/v1/user-personas/{persona_id}", json_data=body)
         return UserPersonaRecord.model_validate(data)
 

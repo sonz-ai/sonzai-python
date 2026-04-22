@@ -14,7 +14,9 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import quote
 
+from .._generated.models import AddCommentRequest, CreateTicketRequest
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import (
     SupportTicket,
     SupportTicketComment,
@@ -71,13 +73,14 @@ class Support:
 
         ``priority`` defaults to ``medium`` server-side when omitted.
         """
-        body: dict[str, Any] = {
+        raw: dict[str, Any] = {
             "title": title,
             "description": description,
             "type": type,
         }
         if priority is not None:
-            body["priority"] = priority
+            raw["priority"] = priority
+        body = encode_body(CreateTicketRequest, raw)
         data = self._http.post("/api/v1/support/tickets", json_data=body)
         return SupportTicket.model_validate(data)
 
@@ -104,9 +107,10 @@ class Support:
         can create internal comments via the admin portal, and the server
         will override the flag accordingly.
         """
-        body: dict[str, Any] = {"content": content}
+        raw: dict[str, Any] = {"content": content}
         if is_internal is not None:
-            body["is_internal"] = is_internal
+            raw["is_internal"] = is_internal
+        body = encode_body(AddCommentRequest, raw)
         data = self._http.post(
             f"/api/v1/support/tickets/{quote(ticket_id, safe='')}/comments",
             json_data=body,
@@ -157,13 +161,14 @@ class AsyncSupport:
         type: str,
         priority: str | None = None,
     ) -> SupportTicket:
-        body: dict[str, Any] = {
+        raw: dict[str, Any] = {
             "title": title,
             "description": description,
             "type": type,
         }
         if priority is not None:
-            body["priority"] = priority
+            raw["priority"] = priority
+        body = encode_body(CreateTicketRequest, raw)
         data = await self._http.post("/api/v1/support/tickets", json_data=body)
         return SupportTicket.model_validate(data)
 
@@ -180,9 +185,10 @@ class AsyncSupport:
         content: str,
         is_internal: bool | None = None,
     ) -> SupportTicketComment:
-        body: dict[str, Any] = {"content": content}
+        raw: dict[str, Any] = {"content": content}
         if is_internal is not None:
-            body["is_internal"] = is_internal
+            raw["is_internal"] = is_internal
+        body = encode_body(AddCommentRequest, raw)
         data = await self._http.post(
             f"/api/v1/support/tickets/{quote(ticket_id, safe='')}/comments",
             json_data=body,

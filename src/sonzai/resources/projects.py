@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import (
+    CreateAPIKeyInputBody,
+    CreateProjectInputBody,
+    UpdateProjectInputBody,
+)
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import (
     CreateAPIKeyResponse,
     DeleteProjectResponse,
@@ -33,9 +39,10 @@ class Projects:
 
     def create(self, *, name: str, environment: str | None = None) -> Project:
         """Create a new project."""
-        body: dict[str, Any] = {"name": name}
+        raw: dict[str, Any] = {"name": name}
         if environment is not None:
-            body["environment"] = environment
+            raw["environment"] = environment
+        body = encode_body(CreateProjectInputBody, raw)
         data = self._http.post("/api/v1/projects", json_data=body)
         return Project.model_validate(data)
 
@@ -53,13 +60,14 @@ class Projects:
         environment: str | None = None,
     ) -> Project:
         """Update a project."""
-        body: dict[str, Any] = {}
+        raw: dict[str, Any] = {}
         if name is not None:
-            body["name"] = name
+            raw["name"] = name
         if game_name is not None:
-            body["game_name"] = game_name
+            raw["game_name"] = game_name
         if environment is not None:
-            body["environment"] = environment
+            raw["environment"] = environment
+        body = encode_body(UpdateProjectInputBody, raw)
         data = self._http.put(f"/api/v1/projects/{project_id}", json_data=body)
         return Project.model_validate(data)
 
@@ -88,13 +96,14 @@ class Projects:
         scopes: list[str] | None = None,
     ) -> CreateAPIKeyResponse:
         """Create a new API key. The plaintext key is only returned once."""
-        body: dict[str, Any] = {}
+        raw: dict[str, Any] = {}
         if name is not None:
-            body["name"] = name
+            raw["name"] = name
         if expires_days is not None:
-            body["expires_days"] = expires_days
+            raw["expires_days"] = expires_days
         if scopes is not None:
-            body["scopes"] = scopes
+            raw["scopes"] = scopes
+        body = encode_body(CreateAPIKeyInputBody, raw)
         data = self._http.post(f"/api/v1/projects/{project_id}/keys", json_data=body)
         return CreateAPIKeyResponse.model_validate(data)
 
@@ -121,9 +130,10 @@ class AsyncProjects:
 
     async def create(self, *, name: str, environment: str | None = None) -> Project:
         """Create a new project."""
-        body: dict[str, Any] = {"name": name}
+        raw: dict[str, Any] = {"name": name}
         if environment is not None:
-            body["environment"] = environment
+            raw["environment"] = environment
+        body = encode_body(CreateProjectInputBody, raw)
         data = await self._http.post("/api/v1/projects", json_data=body)
         return Project.model_validate(data)
 
@@ -141,13 +151,14 @@ class AsyncProjects:
         environment: str | None = None,
     ) -> Project:
         """Update a project."""
-        body: dict[str, Any] = {}
+        raw: dict[str, Any] = {}
         if name is not None:
-            body["name"] = name
+            raw["name"] = name
         if game_name is not None:
-            body["game_name"] = game_name
+            raw["game_name"] = game_name
         if environment is not None:
-            body["environment"] = environment
+            raw["environment"] = environment
+        body = encode_body(UpdateProjectInputBody, raw)
         data = await self._http.put(f"/api/v1/projects/{project_id}", json_data=body)
         return Project.model_validate(data)
 
@@ -176,13 +187,14 @@ class AsyncProjects:
         scopes: list[str] | None = None,
     ) -> CreateAPIKeyResponse:
         """Create a new API key. The plaintext key is only returned once."""
-        body: dict[str, Any] = {}
+        raw: dict[str, Any] = {}
         if name is not None:
-            body["name"] = name
+            raw["name"] = name
         if expires_days is not None:
-            body["expires_days"] = expires_days
+            raw["expires_days"] = expires_days
         if scopes is not None:
-            body["scopes"] = scopes
+            raw["scopes"] = scopes
+        body = encode_body(CreateAPIKeyInputBody, raw)
         data = await self._http.post(f"/api/v1/projects/{project_id}/keys", json_data=body)
         return CreateAPIKeyResponse.model_validate(data)
 
