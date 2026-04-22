@@ -17,3 +17,4 @@ venv/
 .npmrc
 .pypirc
 .worktrees/
+REQUEST_BODY_MAP.csv
