@@ -209,7 +209,21 @@ client.agents.update_capabilities(
 )
 ```
 
-> `memory_mode` is only settable on an existing agent via `update_capabilities()` — there's no equivalent at agent-creation time. Create the agent first, then flip the mode.
+You can also set `memory_mode` (and `knowledge_base`) at creation time via the `tool_capabilities` dict:
+
+```python
+agent = client.agents.create(
+    name="Luna",
+    tool_capabilities={
+        "web_search": True,
+        "remember_name": True,
+        "image_generation": False,
+        "inventory": False,
+        "knowledge_base": True,     # enable project-scoped KB search
+        "memory_mode": "async",      # "sync" (default) or "async"
+    },
+)
+```
 
 ### Context Engine Data
 

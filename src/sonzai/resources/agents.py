@@ -107,7 +107,7 @@ class Agents:
         dimensions: dict[str, Any] | None = None,
         preferences: dict[str, str] | None = None,
         behaviors: dict[str, str] | None = None,
-        tool_capabilities: dict[str, bool] | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
         language: str | None = None,
         seed_memories: list[dict[str, Any]] | None = None,
         lore_generation_context: dict[str, Any] | None = None,
@@ -191,7 +191,7 @@ class Agents:
         true_dislikes: list[str] | None = None,
         big5: dict[str, Any] | None = None,
         dimensions: dict[str, Any] | None = None,
-        tool_capabilities: dict[str, bool] | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
     ) -> Agent:
         """Update an agent's profile."""
         body: dict[str, Any] = {}
@@ -245,7 +245,7 @@ class Agents:
         compiled_system_prompt: str | None = None,
         interaction_role: str | None = None,
         timezone: str | None = None,
-        tool_capabilities: dict[str, bool] | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
         tool_definitions: list[dict[str, Any]] | None = None,
         stream: bool = False,
     ) -> ChatResponse | Iterator[ChatStreamEvent]:
@@ -1503,7 +1503,7 @@ class AsyncAgents:
         dimensions: dict[str, Any] | None = None,
         preferences: dict[str, str] | None = None,
         behaviors: dict[str, str] | None = None,
-        tool_capabilities: dict[str, bool] | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
         language: str | None = None,
         seed_memories: list[dict[str, Any]] | None = None,
         lore_generation_context: dict[str, Any] | None = None,
@@ -1587,7 +1587,7 @@ class AsyncAgents:
         true_dislikes: list[str] | None = None,
         big5: dict[str, Any] | None = None,
         dimensions: dict[str, Any] | None = None,
-        tool_capabilities: dict[str, bool] | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
     ) -> Agent:
         """Update an agent's profile."""
         body: dict[str, Any] = {}
@@ -1641,7 +1641,7 @@ class AsyncAgents:
         compiled_system_prompt: str | None = None,
         interaction_role: str | None = None,
         timezone: str | None = None,
-        tool_capabilities: dict[str, bool] | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
         tool_definitions: list[dict[str, Any]] | None = None,
         stream: bool = False,
     ) -> ChatResponse | AsyncIterator[ChatStreamEvent]:
