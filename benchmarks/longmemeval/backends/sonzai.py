@@ -67,12 +67,21 @@ async def _replay_session(
     messages: list[ChatMessage | dict[str, str]] = [
         {"role": t.role, "content": t.content} for t in session.turns
     ]
+    # ``wait=True`` asks the server to run the full OnSessionEnd pipeline
+    # (segmentation, memory.ProcessSessionEnd for fact extraction, summary
+    # storage, side-effects) synchronously before responding. Without this,
+    # the pipeline runs in a detached goroutine with a 5-min budget — the
+    # bench's next step (advance_time or the final memory.search) would
+    # race the extractor and potentially measure an incomplete memory state.
+    # This makes the dev-API session-end behave like the workbench's
+    # SSE-waiting path: deterministic "data is ready" semantics.
     await sessions.end(
         agent_id=agent_id,
         user_id=user_id,
         session_id=session_id,
         total_messages=len(messages),
         messages=messages,
+        wait=True,
     )
 
 

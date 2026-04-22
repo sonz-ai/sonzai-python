@@ -123,7 +123,15 @@ class AsyncSessions:
         total_messages: int = 0,
         duration_seconds: int = 0,
         messages: list[ChatMessage | dict[str, str]] | None = None,
+        wait: bool = False,
     ) -> SessionResponse:
+        """End a session and optionally wait for the CE pipeline.
+
+        By default the server runs fact extraction + summary + side-effects
+        asynchronously and responds immediately. Pass ``wait=True`` to run
+        the pipeline synchronously — use this in benchmarks and test
+        harnesses that query memory or start another session right after.
+        """
         body: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
@@ -136,6 +144,8 @@ class AsyncSessions:
             body["messages"] = [
                 m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
             ]
+        if wait:
+            body["wait"] = True
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/sessions/end", json_data=body
