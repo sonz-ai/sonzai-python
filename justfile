@@ -44,7 +44,8 @@ regenerate-sdk:
         --allow-population-by-field-name \
         --enum-field-as-literal all \
         --collapse-root-models \
-        --use-schema-description
+        --use-schema-description \
+        --disable-timestamp
     @printf '"""Spec-derived pydantic models. Do not edit by hand.\n\nRegenerate with `just regenerate-sdk`. Hand-written customizations live in\n`src/sonzai/_customizations/`.\n"""\n\nfrom .models import *  # noqa: F401,F403\n' > src/sonzai/_generated/__init__.py
     @echo "Step 3/3: refreshing parity audit..."
     @uv run --extra dev python scripts/parity_audit.py

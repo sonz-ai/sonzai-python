@@ -1,8 +1,7 @@
+"""Spec-derived pydantic models. Do not edit by hand.
 
-""" A client library for accessing Sonzai Platform API """
-from .client import AuthenticatedClient, Client
+Regenerate with `just regenerate-sdk`. Hand-written customizations live in
+`src/sonzai/_customizations/`.
+"""
 
-__all__ = (
-    "AuthenticatedClient",
-    "Client",
-)
+from .models import *  # noqa: F401,F403
