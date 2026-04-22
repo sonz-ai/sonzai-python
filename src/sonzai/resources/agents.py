@@ -7,8 +7,11 @@ from typing import Any, Literal
 from urllib.parse import quote
 
 from .._http import AsyncHTTPClient, HTTPClient
+from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
 from .._generated.models import (
+    AgentIndex,
+    UserEntry,
     AgentDialogueInputBody,
     AgentKBSearchInputBody,
     CreateAgentBody,
@@ -926,22 +929,23 @@ class Agents:
         self,
         agent_id: str,
         *,
-        limit: int | None = None,
-        offset: int | None = None,
+        limit: int = 100,
         sort_by: str | None = None,
         sort_order: str | None = None,
-    ) -> UsersResponse:
-        params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+    ) -> Page[UserEntry]:
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if sort_by is not None:
             params["sort_by"] = sort_by
         if sort_order is not None:
             params["sort_order"] = sort_order
-        data = self._http.get(f"/api/v1/agents/{agent_id}/users", params=params)
-        return UsersResponse.model_validate(data)
+        return Page(
+            fetcher=lambda p: self._http.get(f"/api/v1/agents/{agent_id}/users", params=p),
+            params=params,
+            item_key="users",
+            item_parser=UserEntry.model_validate,
+            mode="offset",
+            total_key="total",
+        )
 
     def get_constellation(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -1047,22 +1051,23 @@ class Agents:
     def list(
         self,
         *,
-        page_size: int | None = None,
-        cursor: str | None = None,
+        limit: int = 100,
         search: str | None = None,
         project_id: str | None = None,
-    ) -> AgentListResponse:
+    ) -> Page[AgentIndex]:
         """List agents with optional pagination and filtering."""
-        params: dict[str, str] = {}
-        if page_size is not None:
-            params["page_size"] = str(page_size)
-        if cursor is not None:
-            params["cursor"] = cursor
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if search is not None:
             params["search"] = search
         if project_id is not None:
             params["project_id"] = project_id
-        return AgentListResponse.model_validate(self._http.get("/api/v1/agents", params=params))
+        return Page(
+            fetcher=lambda p: self._http.get("/api/v1/agents", params=p),
+            params=params,
+            item_key="items",
+            item_parser=AgentIndex.model_validate,
+            mode="offset",
+        )
 
     # -- Agent Status --
 
@@ -2306,22 +2311,27 @@ class AsyncAgents:
         self,
         agent_id: str,
         *,
-        limit: int | None = None,
-        offset: int | None = None,
+        limit: int = 100,
         sort_by: str | None = None,
         sort_order: str | None = None,
-    ) -> UsersResponse:
-        params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+    ) -> AsyncPage[UserEntry]:
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if sort_by is not None:
             params["sort_by"] = sort_by
         if sort_order is not None:
             params["sort_order"] = sort_order
-        data = await self._http.get(f"/api/v1/agents/{agent_id}/users", params=params)
-        return UsersResponse.model_validate(data)
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get(f"/api/v1/agents/{agent_id}/users", params=p)
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params=params,
+            item_key="users",
+            item_parser=UserEntry.model_validate,
+            mode="offset",
+            total_key="total",
+        )
 
     async def get_constellation(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -2429,23 +2439,26 @@ class AsyncAgents:
     async def list(
         self,
         *,
-        page_size: int | None = None,
-        cursor: str | None = None,
+        limit: int = 100,
         search: str | None = None,
         project_id: str | None = None,
-    ) -> AgentListResponse:
+    ) -> AsyncPage[AgentIndex]:
         """List agents with optional pagination and filtering."""
-        params: dict[str, str] = {}
-        if page_size is not None:
-            params["page_size"] = str(page_size)
-        if cursor is not None:
-            params["cursor"] = cursor
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if search is not None:
             params["search"] = search
         if project_id is not None:
             params["project_id"] = project_id
-        return AgentListResponse.model_validate(
-            await self._http.get("/api/v1/agents", params=params)
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get("/api/v1/agents", params=p)
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params=params,
+            item_key="items",
+            item_parser=AgentIndex.model_validate,
+            mode="offset",
         )
 
     # -- Agent Status --

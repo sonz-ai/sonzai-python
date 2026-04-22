@@ -6,6 +6,7 @@ from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
+from .._pagination import AsyncPage, Page
 from ..types import EvalRun, EvalRunListResponse, SessionResponse, SimulationEvent
 
 
@@ -19,16 +20,20 @@ class EvalRuns:
         self,
         *,
         agent_id: str | None = None,
-        limit: int = 20,
-        offset: int = 0,
-    ) -> EvalRunListResponse:
+        limit: int = 100,
+    ) -> Page[EvalRun]:
         """List eval runs."""
-        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if agent_id:
             params["agent_id"] = agent_id
 
-        data = self._http.get("/api/v1/eval-runs", params=params)
-        return EvalRunListResponse.model_validate(data)
+        return Page(
+            fetcher=lambda p: self._http.get("/api/v1/eval-runs", params=p),
+            params=params,
+            item_key="runs",
+            item_parser=EvalRun.model_validate,
+            mode="offset",
+        )
 
     def get(self, run_id: str) -> EvalRun:
         """Get a specific eval run."""
@@ -64,14 +69,22 @@ class AsyncEvalRuns:
         self,
         *,
         agent_id: str | None = None,
-        limit: int = 20,
-        offset: int = 0,
-    ) -> EvalRunListResponse:
-        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        limit: int = 100,
+    ) -> AsyncPage[EvalRun]:
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if agent_id:
             params["agent_id"] = agent_id
-        data = await self._http.get("/api/v1/eval-runs", params=params)
-        return EvalRunListResponse.model_validate(data)
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get("/api/v1/eval-runs", params=p)
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params=params,
+            item_key="runs",
+            item_parser=EvalRun.model_validate,
+            mode="offset",
+        )
 
     async def get(self, run_id: str) -> EvalRun:
         data = await self._http.get(f"/api/v1/eval-runs/{run_id}")

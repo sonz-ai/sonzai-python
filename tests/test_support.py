@@ -4,7 +4,7 @@ Confirms:
 
 - Request shapes match the OpenAPI spec (query params on list, JSON body on
   create/comments, no body on close).
-- Responses parse into the typed models (``TicketListResponse``,
+- Responses parse into the typed models (``Page[TicketSummary]``,
   ``SupportTicket``, ``TicketDetailResponse``, ``SupportTicketComment``).
 - Optional args are omitted from the wire payload when ``None``.
 - Both sync and async clients expose the resource.
@@ -65,14 +65,13 @@ class TestSupportSync:
             )
         )
 
-        result = client.support.list_tickets()
+        page = client.support.list_tickets()
+        tickets = page.to_list()
         assert route.called
-        assert result.total == 1
-        assert result.has_more is False
-        assert len(result.tickets) == 1
-        assert result.tickets[0].ticket_id == "t1"
-        assert result.tickets[0].title == "Cannot log in"
-        assert route.calls[0].request.url.query == b""
+        assert page.total == 1
+        assert len(tickets) == 1
+        assert tickets[0].ticket_id == "t1"
+        assert tickets[0].title == "Cannot log in"
 
     @respx.mock
     def test_list_with_filters(self, client: Sonzai, base_url: str) -> None:
@@ -83,12 +82,13 @@ class TestSupportSync:
             )
         )
 
-        client.support.list_tickets(limit=50, offset=10, status="open", type="bug")
+        page = client.support.list_tickets(limit=50, status="open", type="bug")
+        page.to_list()
         assert route.called
         params = dict(route.calls[0].request.url.params)
         assert params == {
             "limit": "50",
-            "offset": "10",
+            "offset": "0",
             "status": "open",
             "type": "bug",
         }
@@ -324,11 +324,12 @@ class TestSupportAsync:
 
         client = AsyncSonzai(api_key="test-key", base_url=base_url)
         try:
-            result = await client.support.list_tickets()
+            page = await client.support.list_tickets()
+            tickets = await page.to_list()
         finally:
             await client.close()
-        assert len(result.tickets) == 1
-        assert result.tickets[0].ticket_id == "t1"
+        assert len(tickets) == 1
+        assert tickets[0].ticket_id == "t1"
 
     @respx.mock
     async def test_create_async(self, base_url: str) -> None:

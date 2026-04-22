@@ -9,8 +9,10 @@ from .._generated.models import (
     InventoryWriteRequest,
 )
 from .._http import HTTPClient, AsyncHTTPClient
+from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
 from ..types import (
+    InventoryGroupResult,
     InventoryUpdateResponse,
     InventoryQueryResponse,
     InventoryBatchImportResponse,
@@ -118,11 +120,9 @@ class Inventory:
         sort_order: str | None = None,
         aggregations: str | None = None,
         group_by: str | None = None,
-        limit: int | None = None,
-        offset: int | None = None,
-        cursor: str | None = None,
+        limit: int = 100,
         instance_id: str | None = None,
-    ) -> InventoryQueryResponse:
+    ) -> Page[InventoryGroupResult]:
         """Query a user's inventory with optional valuations and aggregation.
 
         Args:
@@ -130,10 +130,8 @@ class Inventory:
                      Operators: eq, neq, gt, gte, lt, lte, in (pipe-separated), contains.
             sort_by: Metadata field to sort by.
             sort_order: "asc" or "desc".
-            offset: Offset for pagination (0-based). Ignored if cursor is set.
-            cursor: Base64-encoded pagination cursor (takes precedence over offset).
         """
-        params: dict[str, str] = {}
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if mode is not None:
             params["mode"] = mode
         if item_type is not None:
@@ -152,19 +150,15 @@ class Inventory:
             params["aggregations"] = aggregations
         if group_by is not None:
             params["group_by"] = group_by
-        if limit is not None:
-            params["limit"] = str(limit)
-        if offset is not None:
-            params["offset"] = str(offset)
-        if cursor is not None:
-            params["cursor"] = cursor
         if instance_id is not None:
             params["instance_id"] = instance_id
-        return InventoryQueryResponse.model_validate(
-            self._http.get(
-                f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/inventory",
-                params=params,
-            )
+        url = f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/inventory"
+        return Page(
+            fetcher=lambda p: self._http.get(url, params=p),
+            params=params,
+            item_key="groups",
+            item_parser=InventoryGroupResult.model_validate,
+            mode="offset",
         )
 
     def batch_import(
@@ -358,11 +352,9 @@ class AsyncInventory:
         sort_order: str | None = None,
         aggregations: str | None = None,
         group_by: str | None = None,
-        limit: int | None = None,
-        offset: int | None = None,
-        cursor: str | None = None,
+        limit: int = 100,
         instance_id: str | None = None,
-    ) -> InventoryQueryResponse:
+    ) -> AsyncPage[InventoryGroupResult]:
         """Query a user's inventory with optional valuations and aggregation.
 
         Args:
@@ -370,10 +362,8 @@ class AsyncInventory:
                      Operators: eq, neq, gt, gte, lt, lte, in (pipe-separated), contains.
             sort_by: Metadata field to sort by.
             sort_order: "asc" or "desc".
-            offset: Offset for pagination (0-based). Ignored if cursor is set.
-            cursor: Base64-encoded pagination cursor (takes precedence over offset).
         """
-        params: dict[str, str] = {}
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if mode is not None:
             params["mode"] = mode
         if item_type is not None:
@@ -392,19 +382,19 @@ class AsyncInventory:
             params["aggregations"] = aggregations
         if group_by is not None:
             params["group_by"] = group_by
-        if limit is not None:
-            params["limit"] = str(limit)
-        if offset is not None:
-            params["offset"] = str(offset)
-        if cursor is not None:
-            params["cursor"] = cursor
         if instance_id is not None:
             params["instance_id"] = instance_id
-        return InventoryQueryResponse.model_validate(
-            await self._http.get(
-                f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/inventory",
-                params=params,
-            )
+        url = f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/inventory"
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get(url, params=p)
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params=params,
+            item_key="groups",
+            item_parser=InventoryGroupResult.model_validate,
+            mode="offset",
         )
 
     async def batch_import(

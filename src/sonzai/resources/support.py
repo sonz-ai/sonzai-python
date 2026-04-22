@@ -16,12 +16,14 @@ from urllib.parse import quote
 
 from .._generated.models import AddCommentRequest, CreateTicketRequest
 from .._http import AsyncHTTPClient, HTTPClient
+from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
 from ..types import (
     SupportTicket,
     SupportTicketComment,
     TicketDetailResponse,
     TicketListResponse,
+    TicketSummary,
 )
 
 
@@ -34,32 +36,32 @@ class Support:
     def list_tickets(
         self,
         *,
-        limit: int | None = None,
-        offset: int | None = None,
+        limit: int = 100,
         status: str | None = None,
         type: str | None = None,
-    ) -> TicketListResponse:
+    ) -> Page[TicketSummary]:
         """List the caller's support tickets within their active tenant.
 
         Args:
-            limit: Items per page (server default 20, max 100).
-            offset: Pagination offset (server default 0).
+            limit: Items per page (max 100).
             status: Filter by status (``open``, ``in_progress``, ``resolved``,
                 ``closed``).
             type: Filter by type (``support``, ``bug``, ``feature_request``,
                 ``billing``, ...).
         """
-        params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if status is not None:
             params["status"] = status
         if type is not None:
             params["type"] = type
-        data = self._http.get("/api/v1/support/tickets", params=params or None)
-        return TicketListResponse.model_validate(data)
+        return Page(
+            fetcher=lambda p: self._http.get("/api/v1/support/tickets", params=p),
+            params=params,
+            item_key="tickets",
+            item_parser=TicketSummary.model_validate,
+            mode="offset",
+            total_key="total",
+        )
 
     def create_ticket(
         self,
@@ -134,24 +136,27 @@ class AsyncSupport:
     async def list_tickets(
         self,
         *,
-        limit: int | None = None,
-        offset: int | None = None,
+        limit: int = 100,
         status: str | None = None,
         type: str | None = None,
-    ) -> TicketListResponse:
-        params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+    ) -> AsyncPage[TicketSummary]:
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if status is not None:
             params["status"] = status
         if type is not None:
             params["type"] = type
-        data = await self._http.get(
-            "/api/v1/support/tickets", params=params or None
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get("/api/v1/support/tickets", params=p)
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params=params,
+            item_key="tickets",
+            item_parser=TicketSummary.model_validate,
+            mode="offset",
+            total_key="total",
         )
-        return TicketListResponse.model_validate(data)
 
     async def create_ticket(
         self,

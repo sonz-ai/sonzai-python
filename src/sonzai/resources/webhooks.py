@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from .._generated.models import UpsertWebhookForTenantInputBody, UpsertWebhookInputBody
+from .._generated.models import UpsertWebhookForTenantInputBody, UpsertWebhookInputBody, WebhookDeliveryAttempt
 from .._http import AsyncHTTPClient, HTTPClient
+from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
 from ..types import (
     DeleteResponse,
@@ -52,13 +53,19 @@ class Webhooks:
         return DeleteResponse(success=True)
 
     def list_delivery_attempts(
-        self, event_type: str
-    ) -> DeliveryAttemptsResponse:
+        self, event_type: str, *, limit: int = 100
+    ) -> Page[WebhookDeliveryAttempt]:
         """List recent delivery attempts for a specific event type."""
-        data = self._http.get(
-            f"/api/v1/webhooks/{event_type}/attempts"
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        return Page(
+            fetcher=lambda p: self._http.get(
+                f"/api/v1/webhooks/{event_type}/attempts", params=p
+            ),
+            params=params,
+            item_key="attempts",
+            item_parser=WebhookDeliveryAttempt.model_validate,
+            mode="offset",
         )
-        return DeliveryAttemptsResponse.model_validate(data)
 
     def rotate_secret(self, event_type: str) -> WebhookRegisterResponse:
         """Generate a new signing secret for a webhook event type."""
@@ -105,13 +112,20 @@ class Webhooks:
         return DeleteResponse(success=True)
 
     def list_delivery_attempts_for_project(
-        self, project_id: str, event_type: str
-    ) -> DeliveryAttemptsResponse:
+        self, project_id: str, event_type: str, *, limit: int = 100
+    ) -> Page[WebhookDeliveryAttempt]:
         """List delivery attempts for a project webhook event type."""
-        data = self._http.get(
-            f"/api/v1/projects/{project_id}/webhooks/{event_type}/attempts"
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        return Page(
+            fetcher=lambda p: self._http.get(
+                f"/api/v1/projects/{project_id}/webhooks/{event_type}/attempts",
+                params=p,
+            ),
+            params=params,
+            item_key="attempts",
+            item_parser=WebhookDeliveryAttempt.model_validate,
+            mode="offset",
         )
-        return DeliveryAttemptsResponse.model_validate(data)
 
     def rotate_secret_for_project(
         self, project_id: str, event_type: str
@@ -160,13 +174,23 @@ class AsyncWebhooks:
         return DeleteResponse(success=True)
 
     async def list_delivery_attempts(
-        self, event_type: str
-    ) -> DeliveryAttemptsResponse:
+        self, event_type: str, *, limit: int = 100
+    ) -> AsyncPage[WebhookDeliveryAttempt]:
         """List recent delivery attempts for a specific event type."""
-        data = await self._http.get(
-            f"/api/v1/webhooks/{event_type}/attempts"
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get(
+                f"/api/v1/webhooks/{event_type}/attempts", params=p
+            )
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params=params,
+            item_key="attempts",
+            item_parser=WebhookDeliveryAttempt.model_validate,
+            mode="offset",
         )
-        return DeliveryAttemptsResponse.model_validate(data)
 
     async def rotate_secret(
         self, event_type: str
@@ -219,13 +243,24 @@ class AsyncWebhooks:
         return DeleteResponse(success=True)
 
     async def list_delivery_attempts_for_project(
-        self, project_id: str, event_type: str
-    ) -> DeliveryAttemptsResponse:
+        self, project_id: str, event_type: str, *, limit: int = 100
+    ) -> AsyncPage[WebhookDeliveryAttempt]:
         """List delivery attempts for a project webhook event type."""
-        data = await self._http.get(
-            f"/api/v1/projects/{project_id}/webhooks/{event_type}/attempts"
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get(
+                f"/api/v1/projects/{project_id}/webhooks/{event_type}/attempts",
+                params=p,
+            )
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params=params,
+            item_key="attempts",
+            item_parser=WebhookDeliveryAttempt.model_validate,
+            mode="offset",
         )
-        return DeliveryAttemptsResponse.model_validate(data)
 
     async def rotate_secret_for_project(
         self, project_id: str, event_type: str

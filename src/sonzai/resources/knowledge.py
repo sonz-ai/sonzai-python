@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
+from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
 from .._generated.models import (
     KbBulkUpdateInputBody,
@@ -109,20 +110,15 @@ class Knowledge:
         project_id: str,
         *,
         node_type: str | None = None,
-        limit: int | None = None,
-        offset: int | None = None,
+        limit: int = 100,
         sort_by: str | None = None,
         sort_order: str | None = None,
         properties: dict[str, str] | None = None,
-    ) -> KBNodeListResponse:
+    ) -> Page[KBNode]:
         """List knowledge graph nodes with filtering, pagination, and sorting."""
-        params: dict[str, Any] = {}
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if node_type is not None:
             params["type"] = node_type
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
         if sort_by is not None:
             params["sort_by"] = sort_by
         if sort_order is not None:
@@ -130,8 +126,16 @@ class Knowledge:
         if properties is not None:
             for k, v in properties.items():
                 params[f"properties.{k}"] = v
-        data = self._http.get(f"/api/v1/projects/{project_id}/knowledge/nodes", params=params)
-        return KBNodeListResponse.model_validate(data)
+        return Page(
+            fetcher=lambda p: self._http.get(
+                f"/api/v1/projects/{project_id}/knowledge/nodes", params=p
+            ),
+            params=params,
+            item_key="nodes",
+            item_parser=KBNode.model_validate,
+            mode="offset",
+            total_key="total",
+        )
 
     def get_node(
         self, project_id: str, node_id: str, *, include_history: bool = False
@@ -490,19 +494,14 @@ class AsyncKnowledge:
         project_id: str,
         *,
         node_type: str | None = None,
-        limit: int | None = None,
-        offset: int | None = None,
+        limit: int = 100,
         sort_by: str | None = None,
         sort_order: str | None = None,
         properties: dict[str, str] | None = None,
-    ) -> KBNodeListResponse:
-        params: dict[str, Any] = {}
+    ) -> AsyncPage[KBNode]:
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if node_type is not None:
             params["type"] = node_type
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
         if sort_by is not None:
             params["sort_by"] = sort_by
         if sort_order is not None:
@@ -510,8 +509,20 @@ class AsyncKnowledge:
         if properties is not None:
             for k, v in properties.items():
                 params[f"properties.{k}"] = v
-        data = await self._http.get(f"/api/v1/projects/{project_id}/knowledge/nodes", params=params)
-        return KBNodeListResponse.model_validate(data)
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get(
+                f"/api/v1/projects/{project_id}/knowledge/nodes", params=p
+            )
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params=params,
+            item_key="nodes",
+            item_parser=KBNode.model_validate,
+            mode="offset",
+            total_key="total",
+        )
 
     async def get_node(
         self, project_id: str, node_id: str, *, include_history: bool = False

@@ -403,9 +403,10 @@ class TestEvalRuns:
             )
         )
 
-        result = client.eval_runs.list()
-        assert len(result.runs) == 1
-        assert result.runs[0].status == "completed"
+        page = client.eval_runs.list()
+        runs = page.to_list()
+        assert len(runs) == 1
+        assert runs[0].status == "completed"
 
 
 class TestTriggerGameEvent:
