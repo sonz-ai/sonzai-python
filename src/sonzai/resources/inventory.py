@@ -3,7 +3,13 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import quote
 
+from .._generated.models import (
+    BatchInventoryRequest,
+    CreateInventoryItemHumaInputBody,
+    InventoryWriteRequest,
+)
 from .._http import HTTPClient, AsyncHTTPClient
+from .._request_helpers import encode_body
 from ..types import (
     InventoryUpdateResponse,
     InventoryQueryResponse,
@@ -34,17 +40,18 @@ class Inventory:
         label: str | None = None,
     ) -> InventoryUpdateResponse:
         """Add, update, or remove an inventory item."""
-        body: dict[str, Any] = {"action": action, "item_type": item_type}
+        raw: dict[str, Any] = {"action": action, "item_type": item_type}
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if kb_node_id is not None:
-            body["kb_node_id"] = kb_node_id
+            raw["kb_node_id"] = kb_node_id
         if properties is not None:
-            body["properties"] = properties
+            raw["properties"] = properties
         if project_id is not None:
-            body["project_id"] = project_id
+            raw["project_id"] = project_id
         if label is not None:
-            body["label"] = label
+            raw["label"] = label
+        body = encode_body(InventoryWriteRequest, raw)
         params: dict[str, str] | None = None
         if instance_id is not None:
             params = {"instance_id": instance_id}
@@ -74,17 +81,18 @@ class Inventory:
         Equivalent to ``update(action="add", ...)`` but without requiring the
         action field — the route itself encodes the "add" semantic.
         """
-        body: dict[str, Any] = {"item_type": item_type}
+        raw: dict[str, Any] = {"item_type": item_type}
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if label is not None:
-            body["label"] = label
+            raw["label"] = label
         if kb_node_id is not None:
-            body["kb_node_id"] = kb_node_id
+            raw["kb_node_id"] = kb_node_id
         if properties is not None:
-            body["properties"] = properties
+            raw["properties"] = properties
         if project_id is not None:
-            body["project_id"] = project_id
+            raw["project_id"] = project_id
+        body = encode_body(CreateInventoryItemHumaInputBody, raw)
         params: dict[str, str] | None = None
         if instance_id is not None:
             params = {"instance_id": instance_id}
@@ -170,11 +178,12 @@ class Inventory:
         label: str | None = None,
     ) -> InventoryBatchImportResponse:
         """Batch-import inventory items (up to 1000)."""
-        body: dict[str, Any] = {"items": items}
+        raw: dict[str, Any] = {"items": items}
         if project_id is not None:
-            body["project_id"] = project_id
+            raw["project_id"] = project_id
         if label is not None:
-            body["label"] = label
+            raw["label"] = label
+        body = encode_body(BatchInventoryRequest, raw)
         params: dict[str, str] | None = None
         if instance_id is not None:
             params = {"instance_id": instance_id}
@@ -271,17 +280,18 @@ class AsyncInventory:
         label: str | None = None,
     ) -> InventoryUpdateResponse:
         """Add, update, or remove an inventory item."""
-        body: dict[str, Any] = {"action": action, "item_type": item_type}
+        raw: dict[str, Any] = {"action": action, "item_type": item_type}
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if kb_node_id is not None:
-            body["kb_node_id"] = kb_node_id
+            raw["kb_node_id"] = kb_node_id
         if properties is not None:
-            body["properties"] = properties
+            raw["properties"] = properties
         if project_id is not None:
-            body["project_id"] = project_id
+            raw["project_id"] = project_id
         if label is not None:
-            body["label"] = label
+            raw["label"] = label
+        body = encode_body(InventoryWriteRequest, raw)
         params: dict[str, str] | None = None
         if instance_id is not None:
             params = {"instance_id": instance_id}
@@ -311,17 +321,18 @@ class AsyncInventory:
         Equivalent to ``update(action="add", ...)`` but without requiring the
         action field — the route itself encodes the "add" semantic.
         """
-        body: dict[str, Any] = {"item_type": item_type}
+        raw: dict[str, Any] = {"item_type": item_type}
         if description is not None:
-            body["description"] = description
+            raw["description"] = description
         if label is not None:
-            body["label"] = label
+            raw["label"] = label
         if kb_node_id is not None:
-            body["kb_node_id"] = kb_node_id
+            raw["kb_node_id"] = kb_node_id
         if properties is not None:
-            body["properties"] = properties
+            raw["properties"] = properties
         if project_id is not None:
-            body["project_id"] = project_id
+            raw["project_id"] = project_id
+        body = encode_body(CreateInventoryItemHumaInputBody, raw)
         params: dict[str, str] | None = None
         if instance_id is not None:
             params = {"instance_id": instance_id}
@@ -407,11 +418,12 @@ class AsyncInventory:
         label: str | None = None,
     ) -> InventoryBatchImportResponse:
         """Batch-import inventory items (up to 1000)."""
-        body: dict[str, Any] = {"items": items}
+        raw: dict[str, Any] = {"items": items}
         if project_id is not None:
-            body["project_id"] = project_id
+            raw["project_id"] = project_id
         if label is not None:
-            body["label"] = label
+            raw["label"] = label
+        body = encode_body(BatchInventoryRequest, raw)
         params: dict[str, str] | None = None
         if instance_id is not None:
             params = {"instance_id": instance_id}

@@ -6,6 +6,13 @@ from typing import Any
 from urllib.parse import quote
 
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
+from .._generated.models import (
+    AddContentRequest,
+    BatchImportRequest,
+    PrimeUserRequest,
+    UpdateMetadataRequest,
+)
 from ..types import (
     AddContentResponse,
     BatchImportResponse,
@@ -35,15 +42,19 @@ class Priming:
         source: str | None = None,
     ) -> PrimeUserResponse:
         """Prime a user with metadata and content."""
-        body: dict[str, Any] = {}
+        # BEHAVIOR CHANGE: PrimeUserRequest marks display_name as required (no default);
+        # this SDK signature allows omitting it. Migrated for correctness — callers that
+        # omit display_name will now receive a ValidationError at the SDK boundary.
+        raw: dict[str, Any] = {}
         if display_name is not None:
-            body["display_name"] = display_name
+            raw["display_name"] = display_name
         if metadata is not None:
-            body["metadata"] = metadata
+            raw["metadata"] = metadata
         if content is not None:
-            body["content"] = content
+            raw["content"] = content
         if source is not None:
-            body["source"] = source
+            raw["source"] = source
+        body = encode_body(PrimeUserRequest, raw)
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/prime",
             json_data=body,
@@ -66,9 +77,10 @@ class Priming:
         source: str | None = None,
     ) -> AddContentResponse:
         """Add content blocks for async LLM extraction."""
-        body: dict[str, Any] = {"content": content}
+        raw: dict[str, Any] = {"content": content}
         if source is not None:
-            body["source"] = source
+            raw["source"] = source
+        body = encode_body(AddContentRequest, raw)
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/content",
             json_data=body,
@@ -86,9 +98,10 @@ class Priming:
         Custom fields in the ``custom`` dict are merged with existing values,
         not replaced. Omit ``custom`` to leave it unchanged.
         """
+        body = encode_body(UpdateMetadataRequest, kwargs)
         data = self._http.patch(
             f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/metadata",
-            json_data=kwargs,
+            json_data=body,
         )
         return UpdateMetadataResponse.model_validate(data)
 
@@ -100,9 +113,10 @@ class Priming:
         source: str | None = None,
     ) -> BatchImportResponse:
         """Batch import multiple users."""
-        body: dict[str, Any] = {"users": users}
+        raw: dict[str, Any] = {"users": users}
         if source is not None:
-            body["source"] = source
+            raw["source"] = source
+        body = encode_body(BatchImportRequest, raw)
         data = self._http.post(f"/api/v1/agents/{agent_id}/users/import", json_data=body)
         return BatchImportResponse.model_validate(data)
 
@@ -144,9 +158,12 @@ class AsyncPriming:
         self._http = http
 
     async def prime_user(self, agent_id: str, user_id: str, **kwargs: Any) -> PrimeUserResponse:
+        # BEHAVIOR CHANGE: PrimeUserRequest marks display_name as required (no default);
+        # callers that omit it will now receive a ValidationError at the SDK boundary.
+        body = encode_body(PrimeUserRequest, kwargs)
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/prime",
-            json_data=kwargs,
+            json_data=body,
         )
         return PrimeUserResponse.model_validate(data)
 

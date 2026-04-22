@@ -4,7 +4,13 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import (
+    CreateCustomStateInputBody,
+    UpdateCustomStateInputBody,
+    UpsertCustomStateByKeyInputBody,
+)
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
 from ..types import CustomState, CustomStateListResponse, DeleteResponse
 
 
@@ -48,15 +54,16 @@ class CustomStates:
         instance_id: str | None = None,
     ) -> CustomState:
         """Create a new custom state."""
-        body: dict[str, Any] = {"key": key, "value": value}
+        raw: dict[str, Any] = {"key": key, "value": value}
         if scope is not None:
-            body["scope"] = scope
+            raw["scope"] = scope
         if content_type is not None:
-            body["content_type"] = content_type
+            raw["content_type"] = content_type
         if user_id is not None:
-            body["user_id"] = user_id
+            raw["user_id"] = user_id
         if instance_id is not None:
-            body["instance_id"] = instance_id
+            raw["instance_id"] = instance_id
+        body = encode_body(CreateCustomStateInputBody, raw)
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/custom-states", json_data=body
@@ -72,9 +79,10 @@ class CustomStates:
         content_type: str | None = None,
     ) -> CustomState:
         """Update a custom state."""
-        body: dict[str, Any] = {"value": value}
+        raw: dict[str, Any] = {"value": value}
         if content_type is not None:
-            body["content_type"] = content_type
+            raw["content_type"] = content_type
+        body = encode_body(UpdateCustomStateInputBody, raw)
 
         data = self._http.put(
             f"/api/v1/agents/{agent_id}/custom-states/{state_id}",
@@ -103,15 +111,16 @@ class CustomStates:
         instance_id: str | None = None,
     ) -> CustomState:
         """Create or update a custom state by composite key (key + scope + user_id + instance_id)."""
-        body: dict[str, Any] = {"key": key, "value": value}
+        raw: dict[str, Any] = {"key": key, "value": value}
         if scope is not None:
-            body["scope"] = scope
+            raw["scope"] = scope
         if content_type is not None:
-            body["content_type"] = content_type
+            raw["content_type"] = content_type
         if user_id is not None:
-            body["user_id"] = user_id
+            raw["user_id"] = user_id
         if instance_id is not None:
-            body["instance_id"] = instance_id
+            raw["instance_id"] = instance_id
+        body = encode_body(UpsertCustomStateByKeyInputBody, raw)
 
         data = self._http.put(
             f"/api/v1/agents/{agent_id}/custom-states/by-key", json_data=body
@@ -207,15 +216,16 @@ class AsyncCustomStates:
         instance_id: str | None = None,
     ) -> CustomState:
         """Create a new custom state."""
-        body: dict[str, Any] = {"key": key, "value": value}
+        raw: dict[str, Any] = {"key": key, "value": value}
         if scope is not None:
-            body["scope"] = scope
+            raw["scope"] = scope
         if content_type is not None:
-            body["content_type"] = content_type
+            raw["content_type"] = content_type
         if user_id is not None:
-            body["user_id"] = user_id
+            raw["user_id"] = user_id
         if instance_id is not None:
-            body["instance_id"] = instance_id
+            raw["instance_id"] = instance_id
+        body = encode_body(CreateCustomStateInputBody, raw)
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/custom-states", json_data=body
@@ -231,9 +241,10 @@ class AsyncCustomStates:
         content_type: str | None = None,
     ) -> CustomState:
         """Update a custom state."""
-        body: dict[str, Any] = {"value": value}
+        raw: dict[str, Any] = {"value": value}
         if content_type is not None:
-            body["content_type"] = content_type
+            raw["content_type"] = content_type
+        body = encode_body(UpdateCustomStateInputBody, raw)
 
         data = await self._http.put(
             f"/api/v1/agents/{agent_id}/custom-states/{state_id}",
@@ -262,15 +273,16 @@ class AsyncCustomStates:
         instance_id: str | None = None,
     ) -> CustomState:
         """Create or update a custom state by composite key (key + scope + user_id + instance_id)."""
-        body: dict[str, Any] = {"key": key, "value": value}
+        raw: dict[str, Any] = {"key": key, "value": value}
         if scope is not None:
-            body["scope"] = scope
+            raw["scope"] = scope
         if content_type is not None:
-            body["content_type"] = content_type
+            raw["content_type"] = content_type
         if user_id is not None:
-            body["user_id"] = user_id
+            raw["user_id"] = user_id
         if instance_id is not None:
-            body["instance_id"] = instance_id
+            raw["instance_id"] = instance_id
+        body = encode_body(UpsertCustomStateByKeyInputBody, raw)
 
         data = await self._http.put(
             f"/api/v1/agents/{agent_id}/custom-states/by-key", json_data=body

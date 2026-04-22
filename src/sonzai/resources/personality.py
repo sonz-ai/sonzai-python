@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
+from .._generated.models import BatchGetPersonalitiesInputBody
 from ..types import (
     BatchPersonalityResponse,
     PersonalityResponse,
@@ -48,6 +50,8 @@ class Personality:
         total_exchanges: int | None = None,
     ) -> PersonalityUpdateResponse:
         """Update an agent's Big5 personality scores."""
+        # NOTE: not routed through encode_body — UpdatePersonalityBody does not include
+        # assessment_method or total_exchanges; migrating would silently drop those fields.
         body: dict[str, Any] = {"big5": big5}
         if assessment_method is not None:
             body["assessment_method"] = assessment_method
@@ -61,8 +65,9 @@ class Personality:
 
     def batch_get(self, agent_ids: list[str]) -> BatchPersonalityResponse:
         """Get personality profiles for multiple agents at once."""
+        body = encode_body(BatchGetPersonalitiesInputBody, {"agent_ids": agent_ids})
         return BatchPersonalityResponse.model_validate(
-            self._http.post("/api/v1/agents/personalities/batch", json_data={"agent_ids": agent_ids})
+            self._http.post("/api/v1/agents/personalities/batch", json_data=body)
         )
 
     def get_significant_moments(
@@ -138,6 +143,8 @@ class AsyncPersonality:
         total_exchanges: int | None = None,
     ) -> PersonalityUpdateResponse:
         """Update an agent's Big5 personality scores."""
+        # NOTE: not routed through encode_body — UpdatePersonalityBody does not include
+        # assessment_method or total_exchanges; migrating would silently drop those fields.
         body: dict[str, Any] = {"big5": big5}
         if assessment_method is not None:
             body["assessment_method"] = assessment_method
@@ -151,8 +158,9 @@ class AsyncPersonality:
 
     async def batch_get(self, agent_ids: list[str]) -> BatchPersonalityResponse:
         """Get personality profiles for multiple agents at once."""
+        body = encode_body(BatchGetPersonalitiesInputBody, {"agent_ids": agent_ids})
         return BatchPersonalityResponse.model_validate(
-            await self._http.post("/api/v1/agents/personalities/batch", json_data={"agent_ids": agent_ids})
+            await self._http.post("/api/v1/agents/personalities/batch", json_data=body)
         )
 
     async def get_significant_moments(

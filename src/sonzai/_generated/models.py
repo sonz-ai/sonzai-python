@@ -887,6 +887,14 @@ class CreateAgentBodyToolCapabilitiesStruct(BaseModel):
     )
     image_generation: bool
     inventory: bool
+    knowledge_base: bool | None = None
+    """
+    Enable the knowledge_search tool (reads from the agent's project-scoped KB).
+    """
+    memory_mode: Literal['sync', 'async'] | None = None
+    """
+    Supplementary memory recall timing. 'sync' (default) blocks context build until recall returns so facts land in the current turn. 'async' lets the recall race a deadline — slow hits spill to the next turn for lower first-response latency.
+    """
     remember_name: bool
     web_search: bool
 
