@@ -6,26 +6,14 @@ from `type` and `data` payloads (not part of the server schema).
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from sonzai._generated.models import ChatSSEChunk as _GenChatSSEChunk
 
-
-class ChatUsage(BaseModel):
-    """Token-usage counters attached to SSE stream events.
-
-    Not part of the ChatSSEChunk spec; populated by the stream consumer
-    from usage frames emitted by the server and preserved here for
-    backward compatibility with existing callers.
-    """
-
-    model_config = ConfigDict(populate_by_name=True)
-
-    prompt_tokens: int = Field(alias="promptTokens", default=0)
-    completion_tokens: int = Field(alias="completionTokens", default=0)
-    total_tokens: int = Field(alias="totalTokens", default=0)
+if TYPE_CHECKING:
+    from sonzai.types import ChatUsage
 
 
 class ChatStreamEvent(_GenChatSSEChunk):
@@ -56,7 +44,11 @@ class ChatStreamEvent(_GenChatSSEChunk):
 
     # Backward-compat field: not in the spec but used by client-side
     # aggregation code and existing tests.
-    usage: ChatUsage | None = None
+    # NOTE: ChatUsage is imported only under TYPE_CHECKING to avoid a
+    # circular import (chat.py → sonzai.types → _customizations → chat.py).
+    # model_rebuild() is called at the bottom of sonzai/types.py once
+    # ChatUsage is defined, supplying the concrete type to Pydantic.
+    usage: "ChatUsage | None" = None
 
     model_config = ConfigDict(extra="allow", populate_by_name=True)
 

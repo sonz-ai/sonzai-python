@@ -5,9 +5,9 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from ._customizations import AgentCapabilities, ChatStreamEvent, ChatUsage, StoredFact
+from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact
 
 # ---------------------------------------------------------------------------
 # Chat
@@ -23,6 +23,21 @@ class ChatChoice(BaseModel):
     delta: dict[str, str] = Field(default_factory=dict)
     finish_reason: str | None = None
     index: int = 0
+
+
+class ChatUsage(BaseModel):
+    """Token-usage counters attached to SSE stream events.
+
+    Not part of the ChatSSEChunk spec; populated by the stream consumer
+    from usage frames emitted by the server and preserved here for
+    backward compatibility with existing callers.
+    """
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    prompt_tokens: int = Field(alias="promptTokens", default=0)
+    completion_tokens: int = Field(alias="completionTokens", default=0)
+    total_tokens: int = Field(alias="totalTokens", default=0)
 
 
 class ChatResponse(BaseModel):
@@ -3613,4 +3628,13 @@ class TicketDetailResponse(BaseModel):
     ticket: SupportTicket = Field(default_factory=lambda: SupportTicket())
     history: list[SupportTicketHistory] | None = None
 
-    model_config = {"extra": "allow"}
+
+# ---------------------------------------------------------------------------
+# Resolve forward references
+# ---------------------------------------------------------------------------
+# ChatStreamEvent (in _customizations/chat.py) has `usage: "ChatUsage | None"`
+# as a forward reference to avoid a circular import at definition time.
+# Now that ChatUsage is defined above, tell Pydantic to resolve it.
+from sonzai._customizations.chat import ChatStreamEvent as _ChatStreamEvent  # noqa: E402
+
+_ChatStreamEvent.model_rebuild(_types_namespace={"ChatUsage": ChatUsage})
