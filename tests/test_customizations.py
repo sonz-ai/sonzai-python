@@ -857,3 +857,230 @@ class TestDiaryEntryMigration:
                 "created_at": "2026-01-01T00:00:00Z",
                 "body": "old deprecated field",
             })
+
+
+# ---------------------------------------------------------------------------
+# Batch 5 — Memory Extensions
+# ---------------------------------------------------------------------------
+
+
+class TestMoodAggregateResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import MoodAggregateResponse
+        from sonzai._generated.models import MoodAggregateResponse as GenMoodAggregateResponse
+        assert MoodAggregateResponse is GenMoodAggregateResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import MoodAggregateResponse
+        resp = MoodAggregateResponse.model_validate({
+            "valence": 0.6,
+            "arousal": 0.4,
+            "tension": 0.2,
+            "affiliation": 0.8,
+            "label": "positive",
+            "user_count": 42,
+            "days_window": 7,
+        })
+        assert resp.valence == 0.6
+        assert resp.arousal == 0.4
+        assert resp.tension == 0.2
+        assert resp.affiliation == 0.8
+        assert resp.label == "positive"
+        assert resp.user_count == 42
+        assert resp.days_window == 7
+
+    def test_old_hand_rolled_fields_gone(self) -> None:
+        """Hand-rolled had float defaults; generated fields are required (no defaults)."""
+        from sonzai import MoodAggregateResponse
+        # All 7 spec fields should be present
+        for field in ("valence", "arousal", "tension", "affiliation", "label", "user_count", "days_window"):
+            assert field in MoodAggregateResponse.model_fields
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import MoodAggregateResponse
+        resp = MoodAggregateResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/MoodAggregateResponse.json",
+            "valence": 0.0, "arousal": 0.0, "tension": 0.0,
+            "affiliation": 0.0, "label": "", "user_count": 0, "days_window": 0,
+        })
+        assert resp.field_schema is not None
+        assert "MoodAggregateResponse" in str(resp.field_schema)
+
+
+class TestTimeMachineMoodSnapshotMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import TimeMachineMoodSnapshot
+        from sonzai._generated.models import TimeMachineMoodSnapshot as GenTimeMachineMoodSnapshot
+        assert TimeMachineMoodSnapshot is GenTimeMachineMoodSnapshot
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import TimeMachineMoodSnapshot
+        snap = TimeMachineMoodSnapshot.model_validate({
+            "valence": 0.5,
+            "arousal": 0.3,
+            "tension": 0.1,
+            "affiliation": 0.7,
+            "label": "calm",
+        })
+        assert snap.valence == 0.5
+        assert snap.arousal == 0.3
+        assert snap.tension == 0.1
+        assert snap.affiliation == 0.7
+        assert snap.label == "calm"
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import TimeMachineMoodSnapshot
+        with pytest.raises(ValidationError):
+            TimeMachineMoodSnapshot.model_validate({
+                "valence": 0.0, "arousal": 0.0, "tension": 0.0,
+                "affiliation": 0.0, "label": "", "unknown_field": "boom",
+            })
+
+
+_BIG5_TRAIT_SNAP = {"score": 0.7, "confidence": 0.9}
+_BIG5_ASSESSMENT_SNAP = {
+    "agreeableness": _BIG5_TRAIT_SNAP,
+    "conscientiousness": _BIG5_TRAIT_SNAP,
+    "extraversion": _BIG5_TRAIT_SNAP,
+    "neuroticism": _BIG5_TRAIT_SNAP,
+    "openness": _BIG5_TRAIT_SNAP,
+}
+_MOOD_SNAP = {"valence": 0.5, "arousal": 0.3, "tension": 0.1, "affiliation": 0.7, "label": "calm"}
+
+
+class TestTimeMachineResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import TimeMachineResponse
+        from sonzai._generated.models import TimeMachineResponse as GenTimeMachineResponse
+        assert TimeMachineResponse is GenTimeMachineResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import TimeMachineResponse
+        resp = TimeMachineResponse.model_validate({
+            "personality_at": _BIG5_ASSESSMENT_SNAP,
+            "current_personality": _BIG5_ASSESSMENT_SNAP,
+            "evolution_events": None,
+            "mood_at": _MOOD_SNAP,
+            "requested_at": "2026-01-01T00:00:00Z",
+        })
+        assert resp.requested_at == "2026-01-01T00:00:00Z"
+        assert resp.mood_at.valence == 0.5
+        assert resp.mood_at.label == "calm"
+        assert resp.personality_at.openness.score == 0.7
+        assert resp.current_personality.agreeableness.confidence == 0.9
+        assert resp.evolution_events is None
+
+    def test_old_hand_rolled_fields_gone(self) -> None:
+        """Hand-rolled had dict[str, Any] for personality_at/current_personality;
+        generated uses Big5Assessment with typed fields."""
+        from sonzai import TimeMachineResponse
+        from sonzai._generated.models import Big5Assessment
+        import inspect
+        hints = TimeMachineResponse.model_fields
+        assert "personality_at" in hints
+        assert "current_personality" in hints
+        # Verify these are Big5Assessment, not dict
+        assert hints["personality_at"].annotation is Big5Assessment
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import TimeMachineResponse
+        resp = TimeMachineResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/TimeMachineResponse.json",
+            "personality_at": _BIG5_ASSESSMENT_SNAP,
+            "current_personality": _BIG5_ASSESSMENT_SNAP,
+            "evolution_events": None,
+            "mood_at": _MOOD_SNAP,
+            "requested_at": "2026-01-01T00:00:00Z",
+        })
+        assert resp.field_schema is not None
+        assert "TimeMachineResponse" in str(resp.field_schema)
+
+
+class TestMemorySummaryMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import MemorySummary
+        from sonzai._generated.models import MemorySummary as GenMemorySummary
+        assert MemorySummary is GenMemorySummary
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import MemorySummary
+        ms = MemorySummary.model_validate({
+            "summary_id": "sum_1",
+            "agent_id": "a1",
+            "stage": "consolidation",
+            "summary": "The user discussed hobbies and goals.",
+            "period_start": "2026-01-01T00:00:00Z",
+            "period_end": "2026-01-07T23:59:59Z",
+            "created_at": "2026-01-08T00:00:00Z",
+        })
+        assert ms.summary_id == "sum_1"
+        assert ms.agent_id == "a1"
+        assert ms.stage == "consolidation"
+        assert ms.summary == "The user discussed hobbies and goals."
+        assert ms.period_start is not None
+        assert ms.period_end is not None
+        assert ms.created_at is not None
+
+    def test_old_hand_rolled_fields_gone(self) -> None:
+        """Hand-rolled had summary_text/timestamp/fact_count/confidence;
+        generated uses summary/summary_id/period_start/period_end/created_at."""
+        from sonzai import MemorySummary
+        assert "summary_id" in MemorySummary.model_fields
+        assert "summary" in MemorySummary.model_fields
+        assert "period_start" in MemorySummary.model_fields
+        assert "period_end" in MemorySummary.model_fields
+        assert "created_at" in MemorySummary.model_fields
+        assert "summary_text" not in MemorySummary.model_fields
+        assert "timestamp" not in MemorySummary.model_fields
+        assert "fact_count" not in MemorySummary.model_fields
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import MemorySummary
+        with pytest.raises(ValidationError):
+            MemorySummary.model_validate({
+                "summary_id": "x", "agent_id": "a1", "stage": "s",
+                "summary": "text",
+                "period_start": "2026-01-01T00:00:00Z",
+                "period_end": "2026-01-07T00:00:00Z",
+                "created_at": "2026-01-08T00:00:00Z",
+                "unknown_field": "boom",
+            })
+
+
+class TestSummariesResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import SummariesResponse
+        from sonzai._generated.models import SummariesResponse as GenSummariesResponse
+        assert SummariesResponse is GenSummariesResponse
+
+    def test_minimal_required_roundtrip_none(self) -> None:
+        from sonzai import SummariesResponse
+        resp = SummariesResponse.model_validate({"summaries": None})
+        assert resp.summaries is None
+
+    def test_with_summaries(self) -> None:
+        from sonzai import SummariesResponse
+        resp = SummariesResponse.model_validate({
+            "summaries": [{
+                "summary_id": "sum_1",
+                "agent_id": "a1",
+                "stage": "consolidation",
+                "summary": "text",
+                "period_start": "2026-01-01T00:00:00Z",
+                "period_end": "2026-01-07T00:00:00Z",
+                "created_at": "2026-01-08T00:00:00Z",
+            }],
+        })
+        assert resp.summaries is not None
+        assert len(resp.summaries) == 1
+        assert resp.summaries[0].summary_id == "sum_1"
+        assert resp.summaries[0].summary == "text"
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import SummariesResponse
+        resp = SummariesResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/SummariesResponse.json",
+            "summaries": None,
+        })
+        assert resp.field_schema is not None
+        assert "SummariesResponse" in str(resp.field_schema)

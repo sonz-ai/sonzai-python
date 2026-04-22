@@ -22,6 +22,8 @@ from ._generated.models import (  # noqa: F401
     ListAllFactsResponse,
     MemoryNode,
     MemoryResponse,
+    MemorySummary,
+    MoodAggregateResponse,
     MoodHistoryEntry,
     MoodHistoryResponse,
     MoodResponse,
@@ -30,6 +32,9 @@ from ._generated.models import (  # noqa: F401
     PersonalityDimensions,
     PersonalityProfile,
     PersonalityResponse,
+    SummariesResponse,
+    TimeMachineMoodSnapshot,
+    TimeMachineResponse,
     TimelineSession,
     TraitPrecision,
 )
@@ -538,18 +543,6 @@ class BreakthroughsResponse(BaseModel):
 class WakeupsResponse(BaseModel):
     # Forward reference: ScheduledWakeup is defined later in this module.
     wakeups: list["ScheduledWakeup"] = Field(default_factory=list)
-
-    model_config = {"extra": "allow"}
-
-
-class MoodAggregateResponse(BaseModel):
-    valence: float = 0.0
-    arousal: float = 0.0
-    tension: float = 0.0
-    affiliation: float = 0.0
-    label: str = ""
-    user_count: int = 0
-    days_window: int = 0
 
     model_config = {"extra": "allow"}
 
@@ -1289,29 +1282,6 @@ class GenerateAvatarResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Time Machine
-# ---------------------------------------------------------------------------
-
-
-class TimeMachineMoodSnapshot(BaseModel):
-    model_config = {"extra": "allow"}
-    valence: float = 0.0
-    arousal: float = 0.0
-    tension: float = 0.0
-    affiliation: float = 0.0
-    label: str = ""
-
-
-class TimeMachineResponse(BaseModel):
-    model_config = {"extra": "allow"}
-    personality_at: dict[str, Any] | None = None
-    current_personality: dict[str, Any] | None = None
-    evolution_events: list[PersonalityShift] = Field(default_factory=list)
-    mood_at: TimeMachineMoodSnapshot | None = None
-    requested_at: str = ""
-
-
-# ---------------------------------------------------------------------------
 # Agent Status
 # ---------------------------------------------------------------------------
 
@@ -1350,25 +1320,6 @@ class CustomToolListResponse(BaseModel):
 
 class ConsolidateResponse(BaseModel):
     success: bool = False
-
-
-# ---------------------------------------------------------------------------
-# Summaries
-# ---------------------------------------------------------------------------
-
-
-class MemorySummary(BaseModel):
-    model_config = {"extra": "allow"}
-    agent_id: str = ""
-    stage: str = ""
-    summary_text: str = ""
-    timestamp: str = ""
-    fact_count: int = 0
-    confidence: float = 0.0
-
-
-class SummariesResponse(BaseModel):
-    summaries: list[MemorySummary] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
