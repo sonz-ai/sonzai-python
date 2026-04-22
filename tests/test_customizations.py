@@ -504,3 +504,163 @@ class TestPersonalityResponseMigration:
         from sonzai import PersonalityDelta
         # old hand-rolled PersonalityDelta had delta_id; spec has trait_category
         assert "trait_category" in PersonalityDelta.model_fields
+
+
+# ---------------------------------------------------------------------------
+# Batch 3 — Agent Behavior (Goal, Habit, Interests)
+# ---------------------------------------------------------------------------
+
+
+class TestGoalMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import Goal
+        from sonzai._generated.models import Goal as GenGoal
+        assert Goal is GenGoal
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import Goal
+        payload = {
+            "goal_id": "g1",
+            "agent_id": "a1",
+            "type": "personal_growth",
+            "title": "Learn Python",
+            "description": "Become proficient in Python",
+            "priority": 1,
+            "status": "active",
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-02T00:00:00Z",
+        }
+        goal = Goal.model_validate(payload)
+        assert goal.goal_id == "g1"
+        assert goal.agent_id == "a1"
+        assert goal.type == "personal_growth"
+        assert goal.status == "active"
+        assert goal.priority == 1
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import Goal
+        with pytest.raises(ValidationError):
+            Goal.model_validate({
+                "goal_id": "g1",
+                "agent_id": "a1",
+                "type": "personal_growth",
+                "title": "Learn Python",
+                "description": "desc",
+                "priority": 1,
+                "status": "active",
+                "created_at": "2026-01-01T00:00:00Z",
+                "updated_at": "2026-01-02T00:00:00Z",
+                "unknown_field": "boom",
+            })
+
+
+class TestGoalsResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import GoalsResponse
+        from sonzai._generated.models import GoalsResponse as GenGoalsResponse
+        assert GoalsResponse is GenGoalsResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import GoalsResponse
+        resp = GoalsResponse.model_validate({"goals": None})
+        assert resp.goals is None
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import GoalsResponse
+        resp = GoalsResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/GoalsResponse.json",
+            "goals": None,
+        })
+        assert resp.field_schema is not None
+        assert "GoalsResponse" in str(resp.field_schema)
+
+
+class TestHabitMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import Habit
+        from sonzai._generated.models import Habit as GenHabit
+        assert Habit is GenHabit
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import Habit
+        payload = {
+            "agent_id": "a1",
+            "name": "morning-run",
+            "category": "fitness",
+            "description": "Run every morning",
+            "display_name": "Morning Run",
+            "strength": 0.75,
+            "formed": True,
+            "observation_count": 30,
+            "last_reinforced_at": "2026-01-15T08:00:00Z",
+            "daily_reinforced": 0.9,
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-15T08:00:00Z",
+        }
+        habit = Habit.model_validate(payload)
+        assert habit.agent_id == "a1"
+        assert habit.name == "morning-run"
+        assert habit.strength == 0.75
+        assert habit.formed is True
+        assert habit.observation_count == 30
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import Habit
+        with pytest.raises(ValidationError):
+            Habit.model_validate({
+                "agent_id": "a1",
+                "name": "morning-run",
+                "category": "fitness",
+                "description": "desc",
+                "display_name": "Morning Run",
+                "strength": 0.5,
+                "formed": False,
+                "observation_count": 0,
+                "last_reinforced_at": "2026-01-01T00:00:00Z",
+                "daily_reinforced": 0.0,
+                "created_at": "2026-01-01T00:00:00Z",
+                "updated_at": "2026-01-01T00:00:00Z",
+                "unknown_field": "boom",
+            })
+
+
+class TestHabitsResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import HabitsResponse
+        from sonzai._generated.models import HabitsResponse as GenHabitsResponse
+        assert HabitsResponse is GenHabitsResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import HabitsResponse
+        resp = HabitsResponse.model_validate({"habits": None})
+        assert resp.habits is None
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import HabitsResponse
+        resp = HabitsResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/HabitsResponse.json",
+            "habits": None,
+        })
+        assert resp.field_schema is not None
+        assert "HabitsResponse" in str(resp.field_schema)
+
+
+class TestInterestsResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import InterestsResponse
+        from sonzai._generated.models import InterestsResponse as GenInterestsResponse
+        assert InterestsResponse is GenInterestsResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import InterestsResponse
+        resp = InterestsResponse.model_validate({"interests": None})
+        assert resp.interests is None
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import InterestsResponse
+        resp = InterestsResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/InterestsResponse.json",
+            "interests": None,
+        })
+        assert resp.field_schema is not None
+        assert "InterestsResponse" in str(resp.field_schema)

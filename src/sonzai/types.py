@@ -12,6 +12,11 @@ from ._generated.models import (  # noqa: F401
     AtomicFact,
     Big5,
     Big5Trait,
+    Goal,
+    GoalsResponse,
+    Habit,
+    HabitsResponse,
+    InterestsResponse,
     ListAllFactsResponse,
     MemoryNode,
     MemoryResponse,
@@ -240,32 +245,6 @@ class HabitData(BaseModel):
     model_config = {"extra": "allow"}
 
 
-class HabitsResponse(BaseModel):
-    habits: list[HabitData] = Field(default_factory=list)
-
-    model_config = {"extra": "allow"}
-
-
-class Habit(BaseModel):
-    """Full habit entity returned from create/update endpoints."""
-
-    id: str = ""
-    agent_id: str = ""
-    user_id: str = ""
-    name: str = ""
-    category: str = ""
-    description: str = ""
-    display_name: str = ""
-    strength: float = 0.0
-    formed: bool = False
-    observation_count: int = 0
-    last_reinforced_at: str | None = None
-    formed_at: str | None = None
-    created_at: str | None = None
-    updated_at: str | None = None
-    model_config = {"extra": "allow"}
-
-
 class ConstellationNode(BaseModel):
     """Full constellation node entity returned from create/update endpoints."""
 
@@ -293,29 +272,6 @@ GoalStatus = str
 
 GoalPriority = int
 """0 = low, 1 = medium, 2 = high."""
-
-
-class Goal(BaseModel):
-    goal_id: str = ""
-    agent_id: str = ""
-    user_id: str = ""
-    type: str = ""
-    title: str = ""
-    description: str = ""
-    priority: int = 0
-    status: str = ""
-    related_traits: list[str] = Field(default_factory=list)
-    created_at: str | None = None
-    achieved_at: str | None = None
-    updated_at: str | None = None
-
-    model_config = {"extra": "allow"}
-
-
-class GoalsResponse(BaseModel):
-    goals: list[Goal] = Field(default_factory=list)
-
-    model_config = {"extra": "allow"}
 
 
 class InitialGoal(BaseModel):
@@ -346,12 +302,6 @@ class InterestData(BaseModel):
     last_mentioned_at: str = ""
     created_at: str = ""
     updated_at: str = ""
-
-    model_config = {"extra": "allow"}
-
-
-class InterestsResponse(BaseModel):
-    interests: list[InterestData] = Field(default_factory=list)
 
     model_config = {"extra": "allow"}
 
