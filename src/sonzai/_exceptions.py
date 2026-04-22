@@ -1,5 +1,32 @@
 from __future__ import annotations
 
+from pydantic import BaseModel, ConfigDict
+
+
+class FieldError(BaseModel):
+    """A single field-level validation error from a 422 response."""
+
+    model_config = ConfigDict(extra="allow")
+
+    field: str
+    message: str
+    code: str | None = None
+
+
+class ErrorBody(BaseModel):
+    """Parsed JSON body from an error response.
+
+    Preserves unknown top-level fields via pydantic `extra="allow"` so
+    server-side additions are visible on `exc.body.model_extra` without
+    needing an SDK regen.
+    """
+
+    model_config = ConfigDict(extra="allow")
+
+    code: str | None = None
+    message: str | None = None
+    errors: list[FieldError] | None = None
+
 
 class SonzaiError(Exception):
     """Base exception for all Sonzai SDK errors."""
