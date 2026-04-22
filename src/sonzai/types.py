@@ -3346,7 +3346,6 @@ class ProcessOptions(BaseModel):
     messages: list[ChatMessage] = Field(default_factory=list)
     provider: str | None = None
     model: str | None = None
-    include_extractions: bool | None = None
 
     model_config = {"extra": "allow"}
 

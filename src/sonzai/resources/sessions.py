@@ -51,6 +51,8 @@ class Sessions:
         total_messages: int = 0,
         duration_seconds: int = 0,
         messages: list[ChatMessage | dict[str, str]] | None = None,
+        user_display_name: str | None = None,
+        user_timezone: str | None = None,
     ) -> SessionResponse:
         """End a chat session."""
         body: dict[str, Any] = {
@@ -65,6 +67,10 @@ class Sessions:
             body["messages"] = [
                 m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
             ]
+        if user_display_name is not None:
+            body["user_display_name"] = user_display_name
+        if user_timezone is not None:
+            body["user_timezone"] = user_timezone
 
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/sessions/end", json_data=body
@@ -124,6 +130,8 @@ class AsyncSessions:
         duration_seconds: int = 0,
         messages: list[ChatMessage | dict[str, str]] | None = None,
         wait: bool = False,
+        user_display_name: str | None = None,
+        user_timezone: str | None = None,
     ) -> SessionResponse:
         """End a session and optionally wait for the CE pipeline.
 
@@ -146,6 +154,10 @@ class AsyncSessions:
             ]
         if wait:
             body["wait"] = True
+        if user_display_name is not None:
+            body["user_display_name"] = user_display_name
+        if user_timezone is not None:
+            body["user_timezone"] = user_timezone
 
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/sessions/end", json_data=body

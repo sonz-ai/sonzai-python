@@ -63,6 +63,7 @@ from .memory import AsyncMemory, Memory
 from .notifications import AsyncNotifications, Notifications
 from .personality import AsyncPersonality, Personality
 from .priming import AsyncPriming, Priming
+from .schedules import AsyncSchedules, Schedules
 from .sessions import AsyncSessions, Sessions
 from .voice import AsyncVoiceResource, VoiceResource
 
@@ -82,6 +83,7 @@ class Agents:
         self.voice = VoiceResource(http)
         self.priming = Priming(http)
         self.inventory = Inventory(http)
+        self.schedules = Schedules(http)
 
     # -- Agent CRUD --
 
@@ -426,16 +428,15 @@ class Agents:
         user_id: str,
         check_type: str,
         intent: str,
-        delay_hours: int | None = None,
+        delay_hours: int,
     ) -> ScheduledWakeup:
         """Schedule a wakeup for the agent."""
         body: dict[str, Any] = {
             "user_id": user_id,
             "check_type": check_type,
             "intent": intent,
+            "delay_hours": delay_hours,
         }
-        if delay_hours is not None:
-            body["delay_hours"] = delay_hours
 
         data = self._http.post(f"/api/v1/agents/{agent_id}/wakeups", json_data=body)
         return ScheduledWakeup.model_validate(data)
@@ -853,7 +854,7 @@ class Agents:
         """Delete (soft-abandon) a goal. Set user_id for per-user goals."""
         params: dict[str, Any] = {}
         if user_id is not None:
-            params["userId"] = user_id
+            params["user_id"] = user_id
         self._http.delete(f"/api/v1/agents/{agent_id}/goals/{goal_id}", params=params)
 
     def get_interests(
@@ -878,28 +879,26 @@ class Agents:
         data = self._http.get(f"/api/v1/agents/{agent_id}/diary", params=params)
         return DiaryResponse.model_validate(data)
 
-    def get_users(self, agent_id: str) -> UsersResponse:
-        data = self._http.get(f"/api/v1/agents/{agent_id}/users")
-        return UsersResponse.model_validate(data)
-
-    def respond_to_tool_call(
+    def get_users(
         self,
         agent_id: str,
         *,
-        session_id: str,
-        tool_call_id: str,
-        result: Any,
-        user_id: str | None = None,
-    ) -> ChatResponse:
-        body: dict[str, Any] = {
-            "session_id": session_id,
-            "tool_call_id": tool_call_id,
-            "result": result,
-        }
-        if user_id is not None:
-            body["user_id"] = user_id
-        data = self._http.post(f"/api/v1/agents/{agent_id}/tools/respond", json_data=body)
-        return ChatResponse.model_validate(data)
+        limit: int | None = None,
+        offset: int | None = None,
+        sort_by: str | None = None,
+        sort_order: str | None = None,
+    ) -> UsersResponse:
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+        if sort_by is not None:
+            params["sort_by"] = sort_by
+        if sort_order is not None:
+            params["sort_order"] = sort_order
+        data = self._http.get(f"/api/v1/agents/{agent_id}/users", params=params)
+        return UsersResponse.model_validate(data)
 
     def get_constellation(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -1209,7 +1208,6 @@ class Agents:
         instance_id: str | None = None,
         provider: str | None = None,
         model: str | None = None,
-        include_extractions: bool | None = None,
     ) -> ProcessResponse:
         """Run the full Context Engine pipeline without generating a chat response."""
         body: dict[str, Any] = {"userId": user_id, "messages": messages}
@@ -1221,8 +1219,6 @@ class Agents:
             body["provider"] = provider
         if model is not None:
             body["model"] = model
-        if include_extractions is not None:
-            body["include_extractions"] = include_extractions
         return ProcessResponse.model_validate(
             self._http.post(f"/api/v1/agents/{agent_id}/process", json_data=body)
         )
@@ -1460,6 +1456,7 @@ class AsyncAgents:
         self.voice = AsyncVoiceResource(http)
         self.priming = AsyncPriming(http)
         self.inventory = AsyncInventory(http)
+        self.schedules = AsyncSchedules(http)
 
     # -- Agent CRUD --
 
@@ -1780,16 +1777,15 @@ class AsyncAgents:
         user_id: str,
         check_type: str,
         intent: str,
-        delay_hours: int | None = None,
+        delay_hours: int,
     ) -> ScheduledWakeup:
         """Schedule a wakeup for the agent."""
         body: dict[str, Any] = {
             "user_id": user_id,
             "check_type": check_type,
             "intent": intent,
+            "delay_hours": delay_hours,
         }
-        if delay_hours is not None:
-            body["delay_hours"] = delay_hours
 
         data = await self._http.post(f"/api/v1/agents/{agent_id}/wakeups", json_data=body)
         return ScheduledWakeup.model_validate(data)
@@ -2212,7 +2208,7 @@ class AsyncAgents:
         """Delete (soft-abandon) a goal. Set user_id for per-user goals."""
         params: dict[str, Any] = {}
         if user_id is not None:
-            params["userId"] = user_id
+            params["user_id"] = user_id
         await self._http.delete(f"/api/v1/agents/{agent_id}/goals/{goal_id}", params=params)
 
     async def get_interests(
@@ -2237,28 +2233,26 @@ class AsyncAgents:
         data = await self._http.get(f"/api/v1/agents/{agent_id}/diary", params=params)
         return DiaryResponse.model_validate(data)
 
-    async def get_users(self, agent_id: str) -> UsersResponse:
-        data = await self._http.get(f"/api/v1/agents/{agent_id}/users")
-        return UsersResponse.model_validate(data)
-
-    async def respond_to_tool_call(
+    async def get_users(
         self,
         agent_id: str,
         *,
-        session_id: str,
-        tool_call_id: str,
-        result: Any,
-        user_id: str | None = None,
-    ) -> ChatResponse:
-        body: dict[str, Any] = {
-            "session_id": session_id,
-            "tool_call_id": tool_call_id,
-            "result": result,
-        }
-        if user_id is not None:
-            body["user_id"] = user_id
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/tools/respond", json_data=body)
-        return ChatResponse.model_validate(data)
+        limit: int | None = None,
+        offset: int | None = None,
+        sort_by: str | None = None,
+        sort_order: str | None = None,
+    ) -> UsersResponse:
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        if offset is not None:
+            params["offset"] = offset
+        if sort_by is not None:
+            params["sort_by"] = sort_by
+        if sort_order is not None:
+            params["sort_order"] = sort_order
+        data = await self._http.get(f"/api/v1/agents/{agent_id}/users", params=params)
+        return UsersResponse.model_validate(data)
 
     async def get_constellation(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
@@ -2565,7 +2559,6 @@ class AsyncAgents:
         instance_id: str | None = None,
         provider: str | None = None,
         model: str | None = None,
-        include_extractions: bool | None = None,
     ) -> ProcessResponse:
         """Run the full Context Engine pipeline without generating a chat response."""
         body: dict[str, Any] = {"userId": user_id, "messages": messages}
@@ -2577,8 +2570,6 @@ class AsyncAgents:
             body["provider"] = provider
         if model is not None:
             body["model"] = model
-        if include_extractions is not None:
-            body["include_extractions"] = include_extractions
         return ProcessResponse.model_validate(
             await self._http.post(f"/api/v1/agents/{agent_id}/process", json_data=body)
         )
