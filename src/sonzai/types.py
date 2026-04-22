@@ -78,7 +78,16 @@ from ._generated.models import (  # noqa: F401
     UserPersona,
     UserPersonaRecord,
     UsersResponse,
+    ForkResponse,
+    ForkStatusResponse,
+    SupportTicket,
+    SupportTicketComment,
+    SupportTicketHistory,
+    TicketDetailResponse,
+    TicketListResponse,
+    TicketSummary,
     WebhookDeliveryAttempt,
+    WisdomAuditResponse,
 )
 
 # ---------------------------------------------------------------------------
@@ -1997,26 +2006,6 @@ class VoiceListOptions(BaseModel):
     model_config = {"extra": "allow"}
 
 
-class ForkResponse(BaseModel):
-    agent_id: str = ""
-    source_agent_id: str = ""
-    status: str = ""
-    name: str = ""
-
-    model_config = {"extra": "allow"}
-
-
-class ForkStatusResponse(BaseModel):
-    status: str = ""
-    source_agent_id: str = ""
-    started_at: str | None = None
-    completed_at: str | None = None
-    tables_copied: int = 0
-    tables_total: int = 0
-    error_message: str | None = None
-
-    model_config = {"extra": "allow"}
-
 
 class DeleteWisdomResponse(BaseModel):
     success: bool = False
@@ -2024,17 +2013,6 @@ class DeleteWisdomResponse(BaseModel):
 
     model_config = {"extra": "allow"}
 
-
-class WisdomAuditResponse(BaseModel):
-    fact_id: str = ""
-    content: str = ""
-    target_path: str | None = None
-    derived_from_hashes: list[str] = Field(default_factory=list)
-    source_user_count: int = 0
-    promotion_confidence: float = 0.0
-    promoted_at: str | None = None
-
-    model_config = {"extra": "allow"}
 
 
 class AgentKBSearchOptions(BaseModel):
@@ -2786,97 +2764,6 @@ class AdvanceTimeResponse(BaseModel):
         # Go marshals empty slices as JSON `null` — coerce to [] for Python callers.
         return [] if v is None else v
 
-
-# ---------------------------------------------------------------------------
-# Support tickets
-# ---------------------------------------------------------------------------
-
-
-class SupportTicketComment(BaseModel):
-    """A single comment on a support ticket thread."""
-
-    comment_id: str = ""
-    ticket_id: str = ""
-    author_id: str = ""
-    author_email: str = ""
-    author_type: str = ""
-    content: str = ""
-    is_internal: bool = False
-    created_at: str | None = None
-
-    model_config = {"extra": "allow"}
-
-
-class SupportTicketHistory(BaseModel):
-    """A single audit-log entry describing a change to a support ticket."""
-
-    history_id: str = ""
-    ticket_id: str = ""
-    changed_by: str = ""
-    changed_by_email: str = ""
-    field_changed: str = ""
-    old_value: str = ""
-    new_value: str = ""
-    created_at: str | None = None
-
-    model_config = {"extra": "allow"}
-
-
-class SupportTicket(BaseModel):
-    """A support ticket owned by a tenant."""
-
-    ticket_id: str = ""
-    tenant_id: str = ""
-    created_by: str = ""
-    created_by_email: str = ""
-    assigned_to: str = ""
-    assigned_to_email: str = ""
-    title: str = ""
-    description: str = ""
-    type: str = ""
-    status: str = ""
-    priority: str = ""
-    comment_count: int = 0
-    comments: list[SupportTicketComment] | None = None
-    resolved_at: str | None = None
-    created_at: str | None = None
-    updated_at: str | None = None
-
-    model_config = {"extra": "allow"}
-
-
-class TicketSummary(BaseModel):
-    """Compact ticket representation used by list endpoints."""
-
-    ticket_id: str = ""
-    title: str = ""
-    type: str = ""
-    status: str = ""
-    priority: str = ""
-    created_by_email: str = ""
-    assigned_to_email: str = ""
-    comment_count: int = 0
-    created_at: str | None = None
-    updated_at: str | None = None
-
-    model_config = {"extra": "allow"}
-
-
-class TicketListResponse(BaseModel):
-    """Paginated list of the caller's support tickets."""
-
-    tickets: list[TicketSummary] = Field(default_factory=list)
-    total: int = 0
-    has_more: bool = False
-
-    model_config = {"extra": "allow"}
-
-
-class TicketDetailResponse(BaseModel):
-    """A single support ticket with its change history."""
-
-    ticket: SupportTicket = Field(default_factory=lambda: SupportTicket())
-    history: list[SupportTicketHistory] | None = None
 
 
 # ---------------------------------------------------------------------------

@@ -2541,3 +2541,263 @@ class TestUsersResponseMigration:
         from sonzai import UsersResponse
         for field in ("users", "total"):
             assert field in UsersResponse.model_fields
+
+
+# ---------------------------------------------------------------------------
+# Batch 12 (FINAL) — Support/Forks/Wisdom
+# ---------------------------------------------------------------------------
+
+
+class TestForkResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import ForkResponse
+        from sonzai._generated.models import ForkResponse as GenForkResponse
+        assert ForkResponse is GenForkResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import ForkResponse
+        payload = {
+            "agent_id": "agent-fork-1",
+            "source_agent_id": "agent-src-1",
+            "status": "pending",
+            "name": "My Forked Agent",
+        }
+        obj = ForkResponse.model_validate(payload)
+        assert obj.agent_id == "agent-fork-1"
+        assert obj.source_agent_id == "agent-src-1"
+        assert obj.status == "pending"
+        assert obj.name == "My Forked Agent"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import ForkResponse
+        for field in ("agent_id", "source_agent_id", "status", "name"):
+            assert field in ForkResponse.model_fields
+
+
+class TestForkStatusResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import ForkStatusResponse
+        from sonzai._generated.models import ForkStatusResponse as GenForkStatusResponse
+        assert ForkStatusResponse is GenForkStatusResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import ForkStatusResponse
+        payload = {
+            "status": "running",
+            "source_agent_id": "agent-src-1",
+            "tables_copied": 3,
+            "tables_total": 10,
+        }
+        obj = ForkStatusResponse.model_validate(payload)
+        assert obj.status == "running"
+        assert obj.source_agent_id == "agent-src-1"
+        assert obj.tables_copied == 3
+        assert obj.tables_total == 10
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import ForkStatusResponse
+        for field in ("status", "source_agent_id", "tables_copied", "tables_total"):
+            assert field in ForkStatusResponse.model_fields
+
+
+class TestSupportTicketCommentMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import SupportTicketComment
+        from sonzai._generated.models import SupportTicketComment as GenSupportTicketComment
+        assert SupportTicketComment is GenSupportTicketComment
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import SupportTicketComment
+        payload = {
+            "comment_id": "c-1",
+            "ticket_id": "t-1",
+            "author_id": "u-1",
+            "author_email": "user@example.com",
+            "author_type": "user",
+            "content": "Hello",
+            "is_internal": False,
+            "created_at": "2026-01-01T00:00:00Z",
+        }
+        obj = SupportTicketComment.model_validate(payload)
+        assert obj.comment_id == "c-1"
+        assert obj.ticket_id == "t-1"
+        assert obj.is_internal is False
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import SupportTicketComment
+        for field in ("comment_id", "ticket_id", "author_id", "author_email",
+                      "author_type", "content", "is_internal", "created_at"):
+            assert field in SupportTicketComment.model_fields
+
+
+class TestSupportTicketHistoryMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import SupportTicketHistory
+        from sonzai._generated.models import SupportTicketHistory as GenSupportTicketHistory
+        assert SupportTicketHistory is GenSupportTicketHistory
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import SupportTicketHistory
+        payload = {
+            "history_id": "h-1",
+            "ticket_id": "t-1",
+            "changed_by": "u-1",
+            "changed_by_email": "user@example.com",
+            "field_changed": "status",
+            "created_at": "2026-01-01T00:00:00Z",
+        }
+        obj = SupportTicketHistory.model_validate(payload)
+        assert obj.history_id == "h-1"
+        assert obj.field_changed == "status"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import SupportTicketHistory
+        for field in ("history_id", "ticket_id", "changed_by", "changed_by_email",
+                      "field_changed", "created_at"):
+            assert field in SupportTicketHistory.model_fields
+
+
+class TestSupportTicketMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import SupportTicket
+        from sonzai._generated.models import SupportTicket as GenSupportTicket
+        assert SupportTicket is GenSupportTicket
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import SupportTicket
+        payload = {
+            "ticket_id": "t-1",
+            "tenant_id": "tenant-1",
+            "created_by": "u-1",
+            "created_by_email": "user@example.com",
+            "title": "Something broke",
+            "description": "It stopped working",
+            "type": "bug",
+            "status": "open",
+            "priority": "high",
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
+        obj = SupportTicket.model_validate(payload)
+        assert obj.ticket_id == "t-1"
+        assert obj.title == "Something broke"
+        assert obj.status == "open"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import SupportTicket
+        for field in ("ticket_id", "tenant_id", "created_by", "created_by_email",
+                      "title", "description", "type", "status", "priority",
+                      "created_at", "updated_at"):
+            assert field in SupportTicket.model_fields
+
+
+class TestTicketDetailResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import TicketDetailResponse
+        from sonzai._generated.models import TicketDetailResponse as GenTicketDetailResponse
+        assert TicketDetailResponse is GenTicketDetailResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import TicketDetailResponse
+        payload = {
+            "ticket": {
+                "ticket_id": "t-1",
+                "tenant_id": "tenant-1",
+                "created_by": "u-1",
+                "created_by_email": "user@example.com",
+                "title": "Issue",
+                "description": "Details",
+                "type": "support",
+                "status": "open",
+                "priority": "medium",
+                "created_at": "2026-01-01T00:00:00Z",
+                "updated_at": "2026-01-01T00:00:00Z",
+            }
+        }
+        obj = TicketDetailResponse.model_validate(payload)
+        assert obj.ticket.ticket_id == "t-1"
+        assert obj.history is None
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import TicketDetailResponse
+        assert "ticket" in TicketDetailResponse.model_fields
+
+
+class TestTicketListResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import TicketListResponse
+        from sonzai._generated.models import TicketListResponse as GenTicketListResponse
+        assert TicketListResponse is GenTicketListResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import TicketListResponse
+        payload = {
+            "tickets": [],
+            "total": 0,
+            "has_more": False,
+        }
+        obj = TicketListResponse.model_validate(payload)
+        assert obj.total == 0
+        assert obj.has_more is False
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import TicketListResponse
+        for field in ("tickets", "total", "has_more"):
+            assert field in TicketListResponse.model_fields
+
+
+class TestTicketSummaryMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import TicketSummary
+        from sonzai._generated.models import TicketSummary as GenTicketSummary
+        assert TicketSummary is GenTicketSummary
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import TicketSummary
+        payload = {
+            "ticket_id": "t-1",
+            "title": "Login issue",
+            "type": "support",
+            "status": "open",
+            "priority": "medium",
+            "created_by_email": "user@example.com",
+            "comment_count": 0,
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
+        obj = TicketSummary.model_validate(payload)
+        assert obj.ticket_id == "t-1"
+        assert obj.title == "Login issue"
+        assert obj.comment_count == 0
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import TicketSummary
+        for field in ("ticket_id", "title", "type", "status", "priority",
+                      "created_by_email", "comment_count", "created_at", "updated_at"):
+            assert field in TicketSummary.model_fields
+
+
+class TestWisdomAuditResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import WisdomAuditResponse
+        from sonzai._generated.models import WisdomAuditResponse as GenWisdomAuditResponse
+        assert WisdomAuditResponse is GenWisdomAuditResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import WisdomAuditResponse
+        payload = {
+            "fact_id": "fact-1",
+            "content": "Users prefer dark mode",
+            "source_user_count": 42,
+            "promotion_confidence": 0.87,
+        }
+        obj = WisdomAuditResponse.model_validate(payload)
+        assert obj.fact_id == "fact-1"
+        assert obj.content == "Users prefer dark mode"
+        assert obj.source_user_count == 42
+        assert obj.promotion_confidence == 0.87
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import WisdomAuditResponse
+        for field in ("fact_id", "content", "source_user_count", "promotion_confidence"):
+            assert field in WisdomAuditResponse.model_fields
