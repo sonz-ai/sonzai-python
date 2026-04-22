@@ -196,3 +196,25 @@ class TestRaiseForStatus:
                 client.projects.list()
             exc = exc_info.value
             assert exc.resource == "project:foo"
+
+
+class TestPublicImports:
+    def test_all_error_classes_importable_from_sonzai(self) -> None:
+        from sonzai import (
+            APIError,
+            AuthenticationError,
+            BadRequestError,
+            ConflictError,
+            ErrorBody,
+            FieldError,
+            InternalServerError,
+            NotFoundError,
+            PermissionDeniedError,
+            RateLimitError,
+            SonzaiError,
+            StreamError,
+            ValidationError,
+        )
+        # All importable, no AttributeError.
+        assert issubclass(ValidationError, APIError)
+        assert issubclass(ConflictError, APIError)
