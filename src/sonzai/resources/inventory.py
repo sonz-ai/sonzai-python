@@ -56,6 +56,46 @@ class Inventory:
             )
         )
 
+    def create(
+        self,
+        agent_id: str,
+        user_id: str,
+        *,
+        item_type: str,
+        description: str | None = None,
+        label: str | None = None,
+        kb_node_id: str | None = None,
+        properties: dict[str, Any] | None = None,
+        project_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> InventoryUpdateResponse:
+        """Create a new inventory item via the dedicated add endpoint.
+
+        Equivalent to ``update(action="add", ...)`` but without requiring the
+        action field — the route itself encodes the "add" semantic.
+        """
+        body: dict[str, Any] = {"item_type": item_type}
+        if description is not None:
+            body["description"] = description
+        if label is not None:
+            body["label"] = label
+        if kb_node_id is not None:
+            body["kb_node_id"] = kb_node_id
+        if properties is not None:
+            body["properties"] = properties
+        if project_id is not None:
+            body["project_id"] = project_id
+        params: dict[str, str] | None = None
+        if instance_id is not None:
+            params = {"instance_id": instance_id}
+        return InventoryUpdateResponse.model_validate(
+            self._http.post(
+                f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/inventory/items",
+                json_data=body,
+                params=params,
+            )
+        )
+
     def query(
         self,
         agent_id: str,
@@ -248,6 +288,46 @@ class AsyncInventory:
         return InventoryUpdateResponse.model_validate(
             await self._http.post(
                 f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/inventory",
+                json_data=body,
+                params=params,
+            )
+        )
+
+    async def create(
+        self,
+        agent_id: str,
+        user_id: str,
+        *,
+        item_type: str,
+        description: str | None = None,
+        label: str | None = None,
+        kb_node_id: str | None = None,
+        properties: dict[str, Any] | None = None,
+        project_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> InventoryUpdateResponse:
+        """Create a new inventory item via the dedicated add endpoint.
+
+        Equivalent to ``update(action="add", ...)`` but without requiring the
+        action field — the route itself encodes the "add" semantic.
+        """
+        body: dict[str, Any] = {"item_type": item_type}
+        if description is not None:
+            body["description"] = description
+        if label is not None:
+            body["label"] = label
+        if kb_node_id is not None:
+            body["kb_node_id"] = kb_node_id
+        if properties is not None:
+            body["properties"] = properties
+        if project_id is not None:
+            body["project_id"] = project_id
+        params: dict[str, str] | None = None
+        if instance_id is not None:
+            params = {"instance_id": instance_id}
+        return InventoryUpdateResponse.model_validate(
+            await self._http.post(
+                f"/api/v1/agents/{agent_id}/users/{quote(user_id, safe='')}/inventory/items",
                 json_data=body,
                 params=params,
             )
