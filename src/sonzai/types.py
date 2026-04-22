@@ -7,6 +7,8 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
+from ._customizations import StoredFact
+
 # ---------------------------------------------------------------------------
 # Chat
 # ---------------------------------------------------------------------------
@@ -2048,22 +2050,6 @@ class InventoryDirectUpdateResponse(BaseModel):
     status: str = ""
     fact_id: str = ""
     error: str = ""
-
-
-class StoredFact(BaseModel):
-    fact_id: str = ""
-    content: str = ""
-    fact_type: str = ""
-    importance: float = 0.0
-    confidence: float = 0.0
-    entity: str = ""
-    source_type: str = ""
-    mention_count: int = 0
-    session_id: str = ""
-    source_id: str = ""
-    metadata: dict[str, Any] | None = None
-    created_at: str = ""
-    updated_at: str = ""
 
 
 class ListAllFactsResponse(BaseModel):

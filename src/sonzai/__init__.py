@@ -140,7 +140,6 @@ from .types import (
     SignificantMoment,
     SignificantMomentsResponse,
     SimulationEvent,
-    StoredFact,
     StructuredColumnMapping,
     StructuredImportSpec,
     SummariesResponse,
@@ -189,6 +188,7 @@ from .types import (
     DiaryEntry,
     WakeupExecution,
 )
+from ._customizations import StoredFact
 
 __version__ = "1.3.0"
 
