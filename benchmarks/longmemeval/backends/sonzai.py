@@ -162,14 +162,40 @@ async def _retrieve(
         client, agent_id=agent_id, user_id=user_id
     )
 
+    # Filter agent-level metadata fact_ids (comm_style / side_effect / interest:*)
+    # from the ranked results before scoring. These are per-(agent, user) "shared
+    # interaction" and speech-style entries — useful to the chat prompt compiler,
+    # but they carry no session attribution and outrank the specific session facts
+    # that LongMemEval is graded on. Keeping them in the ranking wastes slots in
+    # the top-k window; the correct answer-bearing session facts then fall past
+    # R@10 / R@30. The fact IDs follow a deterministic suffix pattern:
+    #   <agentID>:<userID>:comm_style
+    #   <agentID>:<userID>:side_effect:<hash>
+    #   <agentID>:<userID>:interest:<topic>
+    # Filter by scanning for those three markers anywhere after the userID segment.
+    _META_MARKERS = (":comm_style", ":side_effect:", ":interest:")
+
+    def _is_metadata_fact(fact_id: str) -> bool:
+        return any(m in fact_id for m in _META_MARKERS)
+
     seen: set[str] = set()
     ranked_sessions: list[str] = []
     ranked_facts: list[str] = []
     ranked_items: list[RankedItem] = []
+    dropped_metadata = 0
     for r in results.results:
+        if _is_metadata_fact(r.fact_id):
+            dropped_metadata += 1
+            continue
         if r.content:
             ranked_facts.append(r.content)
-        sid = fact_to_session.get(r.fact_id, "")
+        # Server now populates session_id directly on the result for
+        # verbatim-turn hits (the SP4 per-turn index) and for any fact
+        # whose provenance it can surface without a timeline round-trip.
+        # Prefer that; fall back to the timeline map when the server
+        # leaves it empty.
+        server_sid = str(getattr(r, "session_id", "") or "")
+        sid = server_sid or fact_to_session.get(r.fact_id, "")
         corpus_id = sid or r.fact_id
         ranked_items.append(
             RankedItem(
@@ -181,6 +207,11 @@ async def _retrieve(
         if sid and sid not in seen:
             seen.add(sid)
             ranked_sessions.append(sid)
+    if dropped_metadata:
+        logger.debug(
+            "memory.search: filtered %d metadata fact(s) (comm_style/side_effect/interest)",
+            dropped_metadata,
+        )
     return ranked_sessions, ranked_facts, ranked_items
 
 
