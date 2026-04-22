@@ -2,7 +2,27 @@
 
 from __future__ import annotations
 
-from sonzai._exceptions import ErrorBody, FieldError
+from datetime import datetime
+
+import httpx
+import pytest
+import respx
+
+from sonzai import Sonzai
+from sonzai._exceptions import (
+    APIError,
+    AuthenticationError,
+    BadRequestError,
+    ConflictError,
+    ErrorBody,
+    FieldError,
+    InternalServerError,
+    NotFoundError,
+    PermissionDeniedError,
+    RateLimitError,
+    StreamError,
+    ValidationError,
+)
 
 
 class TestErrorBody:
@@ -37,22 +57,6 @@ class TestFieldError:
     def test_code_optional(self) -> None:
         err = FieldError.model_validate({"field": "x", "message": "bad"})
         assert err.code is None
-
-
-from datetime import datetime
-
-from sonzai._exceptions import (
-    APIError,
-    AuthenticationError,
-    BadRequestError,
-    ConflictError,
-    InternalServerError,
-    NotFoundError,
-    PermissionDeniedError,
-    RateLimitError,
-    StreamError,
-    ValidationError,
-)
 
 
 class TestAugmentedExceptions:
@@ -100,3 +104,95 @@ class TestAugmentedExceptions:
     def test_stream_error_carries_cause(self) -> None:
         exc = StreamError("stream broke", cause="connection_reset")
         assert exc.cause == "connection_reset"
+
+
+class TestRaiseForStatus:
+    def test_429_populates_retry_after(self) -> None:
+        with respx.mock() as router:
+            router.get("https://api.sonz.ai/api/v1/projects").mock(
+                return_value=httpx.Response(
+                    429,
+                    headers={
+                        "Retry-After": "30",
+                        "X-RateLimit-Limit": "60",
+                        "X-RateLimit-Remaining": "0",
+                        "X-RateLimit-Reset": "1735689600",
+                    },
+                    json={"code": "rate_limited", "message": "Too many requests"},
+                )
+            )
+            client = Sonzai(api_key="test-key")
+            with pytest.raises(RateLimitError) as exc_info:
+                client.projects.list()
+            exc = exc_info.value
+            assert exc.retry_after == 30
+            assert exc.limit == 60
+            assert exc.remaining == 0
+            assert exc.reset_at == datetime.fromtimestamp(1735689600)
+            assert exc.code == "rate_limited"
+            assert exc.body is not None
+            assert exc.body.message == "Too many requests"
+
+    def test_422_populates_field_errors(self) -> None:
+        with respx.mock() as router:
+            router.get("https://api.sonz.ai/api/v1/projects").mock(
+                return_value=httpx.Response(
+                    422,
+                    json={
+                        "code": "validation_failed",
+                        "message": "Invalid input",
+                        "errors": [
+                            {"field": "email", "message": "bad", "code": "invalid_email"},
+                            {"field": "name", "message": "required"},
+                        ],
+                    },
+                )
+            )
+            client = Sonzai(api_key="test-key")
+            with pytest.raises(ValidationError) as exc_info:
+                client.projects.list()
+            exc = exc_info.value
+            assert len(exc.errors) == 2
+            assert exc.errors[0].field == "email"
+            assert exc.errors[0].code == "invalid_email"
+            assert exc.errors[1].field == "name"
+
+    def test_403_populates_required_scope(self) -> None:
+        with respx.mock() as router:
+            router.get("https://api.sonz.ai/api/v1/projects").mock(
+                return_value=httpx.Response(
+                    403,
+                    json={"code": "forbidden", "message": "need scope", "required_scope": "admin"},
+                )
+            )
+            client = Sonzai(api_key="test-key")
+            with pytest.raises(PermissionDeniedError) as exc_info:
+                client.projects.list()
+            exc = exc_info.value
+            assert exc.required_scope == "admin"
+
+    def test_non_json_body_parses_gracefully(self) -> None:
+        with respx.mock() as router:
+            router.get("https://api.sonz.ai/api/v1/projects").mock(
+                return_value=httpx.Response(500, content=b"<html>nope</html>")
+            )
+            client = Sonzai(api_key="test-key")
+            with pytest.raises(InternalServerError) as exc_info:
+                client.projects.list()
+            exc = exc_info.value
+            assert exc.body is None
+            assert exc.status_code == 500
+
+    def test_409_raises_conflict(self) -> None:
+        with respx.mock() as router:
+            router.get("https://api.sonz.ai/api/v1/projects").mock(
+                return_value=httpx.Response(
+                    409,
+                    json={"code": "already_exists", "message": "duplicate", "resource": "project:foo"},
+                )
+            )
+            client = Sonzai(api_key="test-key")
+            with pytest.raises(ConflictError) as exc_info:
+                client.projects.list()
+            exc = exc_info.value
+            assert exc.resource == "project:foo"

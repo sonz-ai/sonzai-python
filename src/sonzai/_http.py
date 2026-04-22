@@ -6,9 +6,11 @@ import json
 import logging
 import time
 from collections.abc import AsyncIterator, Generator, Iterator
+from datetime import datetime
 from typing import Any
 
 import httpx
+from pydantic import ValidationError as _PydanticValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -16,14 +18,18 @@ from ._exceptions import (
     APIError,
     AuthenticationError,
     BadRequestError,
+    ConflictError,
+    ErrorBody,
     InternalServerError,
     NotFoundError,
     PermissionDeniedError,
     RateLimitError,
+    ValidationError,
 )
 
 
 def _raise_for_status(response: httpx.Response) -> None:
+    """Raise the typed exception matching the response status. Never returns on failure."""
     if response.is_success:
         return
 
@@ -34,32 +40,80 @@ def _raise_for_status(response: httpx.Response) -> None:
         except Exception as e:
             logger.debug("Failed to read response: %s", e)
 
-    try:
-        body = response.json()
-        message = body.get("error", response.text)
-    except Exception as e:
-        logger.debug("Failed to read response: %s", e)
-        try:
-            message = response.text
-        except Exception as e:
-            logger.debug("Failed to read response: %s", e)
-            message = f"HTTP {response.status_code}"
-
     status = response.status_code
+    body = _parse_error_body(response)
+    message = _message_from(body, default=f"HTTP {status}")
+    code = body.code if body else None
+
     if status == 401:
-        raise AuthenticationError(message)
-    elif status == 403:
-        raise PermissionDeniedError(message)
-    elif status == 404:
-        raise NotFoundError(message)
-    elif status == 400:
-        raise BadRequestError(message)
-    elif status == 429:
-        raise RateLimitError(message)
-    elif status >= 500:
-        raise InternalServerError(message)
-    else:
-        raise APIError(status, message)
+        raise AuthenticationError(message, code=code, body=body)
+    if status == 403:
+        scope = body.model_extra.get("required_scope") if body and body.model_extra else None
+        raise PermissionDeniedError(message, required_scope=scope, code=code, body=body)
+    if status == 404:
+        resource = body.model_extra.get("resource") if body and body.model_extra else None
+        raise NotFoundError(message, resource=resource, code=code, body=body)
+    if status == 409:
+        resource = body.model_extra.get("resource") if body and body.model_extra else None
+        raise ConflictError(message, resource=resource, code=code, body=body)
+    if status == 422:
+        errors = body.errors if body else None
+        raise ValidationError(message, errors=errors, body=body)
+    if status == 429:
+        raise RateLimitError(
+            message,
+            retry_after=_parse_int(response.headers.get("Retry-After")),
+            limit=_parse_int(response.headers.get("X-RateLimit-Limit")),
+            remaining=_parse_int(response.headers.get("X-RateLimit-Remaining")),
+            reset_at=_parse_reset(response.headers.get("X-RateLimit-Reset")),
+            code=code,
+            body=body,
+        )
+    if status == 400:
+        raise BadRequestError(message, code=code, body=body)
+    if 500 <= status < 600:
+        raise InternalServerError(message, status_code=status, code=code, body=body)
+    raise APIError(status, message, code=code, body=body)
+
+
+def _parse_error_body(response: httpx.Response) -> ErrorBody | None:
+    if not response.content:
+        return None
+    try:
+        data = response.json()
+    except Exception:
+        return None
+    if not isinstance(data, dict):
+        return None
+    try:
+        return ErrorBody.model_validate(data)
+    except _PydanticValidationError:
+        return None
+
+
+def _message_from(body: ErrorBody | None, *, default: str) -> str:
+    if body and body.message:
+        return body.message
+    return default
+
+
+def _parse_int(value: str | None) -> int | None:
+    if value is None:
+        return None
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _parse_reset(value: str | None) -> datetime | None:
+    ts = _parse_int(value)
+    if ts is None:
+        return None
+    try:
+        return datetime.fromtimestamp(ts)
+    except (OSError, OverflowError, ValueError):
+        return None
 
 
 class HTTPClient:
