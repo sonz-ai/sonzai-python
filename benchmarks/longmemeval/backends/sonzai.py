@@ -8,14 +8,17 @@ time had passed. Without this, self-learning would only fire on the real clock.
 Flow per question:
 
 1. ``agents.create`` — fresh agent so memory state is scoped to this question.
-2. For each haystack session (in date order):
+2. For each haystack session (grouped by calendar date, in order):
    a. ``sessions.start`` with a deterministic session_id.
    b. Replay the canned user+assistant transcript via ``sessions.end(messages=...)``
       — no new text is generated; we're feeding LongMemEval's scripted history
       verbatim into the CE pipeline for fact extraction.
-   c. ``workbench.advance_time`` with the gap to the next session (floor 25h so
-      at least one full day of CE workers runs).
-3. Final ``advance_time(25h)`` to flush consolidation for the last session.
+   c. At date boundaries only, ``workbench.advance_time`` runs
+      ``((next_date - prev_date).days * 24h)`` simulated hours. Multiple
+      sessions on the same calendar day share one clock tick — matches
+      the real CE worker cadence (daily jobs per 24h, weekly consolidation
+      per 7 days) without inflating the advance-time budget.
+3. Final ``advance_time(24h)`` so the last day's diary/consolidation fires.
 4. Retrieval: ``memory.search`` → map fact_ids to session_ids via ``memory.timeline``
    → Recall@5 / NDCG@5.
 5. QA: ``agents.chat`` with the question → Gemini judge vs ground truth.
@@ -31,15 +34,14 @@ from sonzai import AsyncSonzai
 
 from ...common.sdk_extras import async_memory, async_sessions
 from ...common.workbench_compat import advance_time_chunked_async
-from ..dataset import LongMemEvalQuestion, Session, hours_between
+from ..dataset import LongMemEvalQuestion, Session
 from . import BackendResult, RankedItem
 
 logger = logging.getLogger(__name__)
 
-# Ensures at least one full simulated day elapses per gap so daily CE workers
-# (diary, consolidation, decay) actually run. LongMemEval's haystacks are
-# typically days apart anyway, but clamp defensively.
-MIN_GAP_HOURS = 25.0
+# Flush budget after the last ingested session so the final day's daily
+# jobs (diary, consolidation, decay) fire at least once before retrieval.
+FINAL_FLUSH_HOURS = 24.0
 
 
 async def _replay_session(
@@ -272,7 +274,7 @@ async def run_question(
     client: AsyncSonzai,
     question: LongMemEvalQuestion,
     *,
-    min_gap_hours: float = MIN_GAP_HOURS,
+    final_flush_hours: float = FINAL_FLUSH_HOURS,
     retrieval_limit: int = 50,
     include_qa: bool = True,
     skip_advance_time: bool = False,
@@ -398,11 +400,21 @@ async def run_question(
         # memory state from the original ingest is still the authoritative
         # corpus for retrieval + QA on this question.
         if not reuse:
-            prev_session: Session | None = None
+            # Group sessions by calendar date. advance_time runs only at date
+            # boundaries, in whole-day increments. Same-day sessions share one
+            # simulated clock — matches the CE worker model (daily jobs per
+            # 24h of advance, weekly consolidation every 7 days) without
+            # inflating the advance-time budget when the haystack contains
+            # morning+evening chats on the same date.
+            prev_date = None
             for session in haystack:
-                if prev_session is not None:
-                    gap = max(min_gap_hours, hours_between(prev_session, session))
-                    await _try_advance(gap)
+                sess_date = session.parsed_date.date()
+                if prev_date is not None and sess_date != prev_date:
+                    day_gap = (sess_date - prev_date).days
+                    # advance_time_chunked_async splits into 24h chunks — an
+                    # N-day gap yields N daily worker passes and triggers
+                    # the weekly consolidation every 7 cumulative days.
+                    await _try_advance(float(day_gap) * 24.0)
 
                 # Use LongMemEval's own session IDs (e.g., "answer_280352e9",
                 # "sharegpt_xxx_0") so memory.timeline groups extracted facts
@@ -415,10 +427,10 @@ async def run_question(
                     session_id=session.session_id,
                     session=session,
                 )
-                prev_session = session
+                prev_date = sess_date
 
-            # Final advance-time lets the last session's consolidation/diary fire.
-            await _try_advance(min_gap_hours)
+            # Final flush: one more day so the last date's diary/consolidation fires.
+            await _try_advance(final_flush_hours)
 
         session_dates = {s.session_id: s.date for s in haystack}
         ranked_sessions, ranked_facts, ranked_items = await _retrieve(

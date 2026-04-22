@@ -132,8 +132,11 @@ recall_at_k = recall_any_at_k
 _NORM = re.compile(r"[^a-z0-9 ]+")
 
 
-def _normalize(s: str) -> str:
-    return _NORM.sub("", s.lower()).strip()
+def _normalize(s) -> str:
+    # LongMemEval answers are usually strings but a subset (e.g. counting
+    # questions) are raw ints/floats in the dataset. Coerce to str before
+    # casefolding so the scorer doesn't crash mid-run.
+    return _NORM.sub("", str(s).lower()).strip()
 
 
 def _contains_answer(fact_text: str, answer: str) -> bool:
