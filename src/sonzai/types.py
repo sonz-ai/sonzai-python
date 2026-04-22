@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
-from ._customizations import StoredFact
+from ._customizations import AgentCapabilities, StoredFact
 
 # ---------------------------------------------------------------------------
 # Chat
@@ -1594,27 +1594,6 @@ class PendingCapability(BaseModel):
     capability: str = ""
     context: str = ""
     model_config = {"extra": "allow"}
-
-
-class AgentCapabilities(BaseModel):
-    model_config = {"extra": "allow"}
-    webSearch: bool = False
-    rememberName: bool = False
-    imageGeneration: bool = False
-    inventory: bool = False
-    knowledgeBase: bool = False
-    knowledgeBaseProjectId: str = ""
-    voiceGeneration: bool = False
-    voiceId: str = ""
-    voiceTier: int = 0
-    voiceUnlockedAt: str | None = None
-    imageUnlockedAt: str | None = None
-    musicGeneration: bool = False
-    musicUnlockedAt: str | None = None
-    videoGeneration: bool = False
-    videoUnlockedAt: str | None = None
-    pendingCapabilities: list[PendingCapability] = Field(default_factory=list)
-    customTools: list[CustomToolDefinition] = Field(default_factory=list)
 
 
 class CustomToolListResponse(BaseModel):

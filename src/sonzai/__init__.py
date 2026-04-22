@@ -19,7 +19,6 @@ from .types import (
     CreateAPIKeyResponse,
     DeleteProjectResponse,
     DeleteUserPersonaResponse,
-    AgentCapabilities,
     AgentKBSearchResponse,
     AgentKBSearchResult,
     AgentIndex,
@@ -188,7 +187,7 @@ from .types import (
     DiaryEntry,
     WakeupExecution,
 )
-from ._customizations import StoredFact
+from ._customizations import AgentCapabilities, StoredFact
 
 __version__ = "1.3.0"
 

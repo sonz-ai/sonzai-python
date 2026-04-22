@@ -55,3 +55,60 @@ class TestStoredFact:
                 "future_field_that_does_not_exist_yet": "foo",
             })
         assert "future_field_that_does_not_exist_yet" in str(exc.value)
+
+
+class TestAgentCapabilities:
+    # Required fields in the generated spec: imageGeneration, musicGeneration,
+    # videoGeneration, voiceGeneration (no defaults → must always be present).
+    _REQUIRED = {
+        "imageGeneration": False,
+        "musicGeneration": False,
+        "videoGeneration": False,
+        "voiceGeneration": False,
+    }
+    # Same required fields in snake_case form (for populate_by_name=True tests).
+    _REQUIRED_SNAKE = {
+        "image_generation": False,
+        "music_generation": False,
+        "video_generation": False,
+        "voice_generation": False,
+    }
+
+    def test_imports_from_customizations(self) -> None:
+        from sonzai._customizations import AgentCapabilities as CustAgentCapabilities
+
+        assert AgentCapabilities is CustAgentCapabilities
+
+    def test_camel_case_alias_input(self) -> None:
+        """Server sends camelCase; SDK exposes snake_case with aliases."""
+        payload = {
+            **self._REQUIRED,
+            "imageGeneration": True,
+            "memoryMode": "full",
+            "musicGeneration": False,
+        }
+        caps = AgentCapabilities.model_validate(payload)
+        assert caps.custom_tools is None
+        assert caps.image_generation is True
+        assert caps.memory_mode == "full"
+
+    def test_snake_case_input_also_works(self) -> None:
+        """populate_by_name=True lets users pass either form."""
+        payload = {
+            **self._REQUIRED_SNAKE,
+            "image_generation": True,
+            "memory_mode": "summary",
+        }
+        caps = AgentCapabilities.model_validate(payload)
+        assert caps.image_generation is True
+
+    def test_dump_round_trips_to_camel(self) -> None:
+        caps = AgentCapabilities.model_validate({
+            **self._REQUIRED,
+            "imageGeneration": True,
+            "memoryMode": "full",
+        })
+        dumped = caps.model_dump(by_alias=True, exclude_none=True)
+        assert "imageGeneration" in dumped
+        assert "musicGeneration" in dumped
+        assert "memoryMode" in dumped
