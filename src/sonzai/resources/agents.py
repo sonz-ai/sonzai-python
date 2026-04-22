@@ -429,6 +429,10 @@ class Agents:
         check_type: str,
         intent: str,
         delay_hours: int,
+        scheduled_at: str | None = None,
+        occasion: str | None = None,
+        interest_topic: str | None = None,
+        event_description: str | None = None,
     ) -> ScheduledWakeup:
         """Schedule a wakeup for the agent."""
         body: dict[str, Any] = {
@@ -437,6 +441,14 @@ class Agents:
             "intent": intent,
             "delay_hours": delay_hours,
         }
+        if scheduled_at is not None:
+            body["scheduled_at"] = scheduled_at
+        if occasion is not None:
+            body["occasion"] = occasion
+        if interest_topic is not None:
+            body["interest_topic"] = interest_topic
+        if event_description is not None:
+            body["event_description"] = event_description
 
         data = self._http.post(f"/api/v1/agents/{agent_id}/wakeups", json_data=body)
         return ScheduledWakeup.model_validate(data)
@@ -1778,6 +1790,10 @@ class AsyncAgents:
         check_type: str,
         intent: str,
         delay_hours: int,
+        scheduled_at: str | None = None,
+        occasion: str | None = None,
+        interest_topic: str | None = None,
+        event_description: str | None = None,
     ) -> ScheduledWakeup:
         """Schedule a wakeup for the agent."""
         body: dict[str, Any] = {
@@ -1786,6 +1802,14 @@ class AsyncAgents:
             "intent": intent,
             "delay_hours": delay_hours,
         }
+        if scheduled_at is not None:
+            body["scheduled_at"] = scheduled_at
+        if occasion is not None:
+            body["occasion"] = occasion
+        if interest_topic is not None:
+            body["interest_topic"] = interest_topic
+        if event_description is not None:
+            body["event_description"] = event_description
 
         data = await self._http.post(f"/api/v1/agents/{agent_id}/wakeups", json_data=body)
         return ScheduledWakeup.model_validate(data)

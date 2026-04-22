@@ -182,10 +182,18 @@ class Knowledge:
     # -- Schemas --
 
     def create_schema(
-        self, project_id: str, *, entity_type: str, fields: list[dict[str, Any]], **kwargs: Any
+        self,
+        project_id: str,
+        *,
+        entity_type: str,
+        fields: list[dict[str, Any]],
+        display_name: str | None = None,
+        **kwargs: Any,
     ) -> KBEntitySchema:
         """Create an entity type schema."""
         body: dict[str, Any] = {"entity_type": entity_type, "fields": fields}
+        if display_name is not None:
+            body["display_name"] = display_name
         body.update(kwargs)
         data = self._http.post(f"/api/v1/projects/{project_id}/knowledge/schemas", json_data=body)
         return KBEntitySchema.model_validate(data)
@@ -344,11 +352,14 @@ class Knowledge:
         *,
         updates: list[dict[str, Any]],
         source: str | None = None,
+        upsert: bool | None = None,
     ) -> KBBulkUpdateResponse:
         """Batch-update KB node properties. Sync for <=100 items; async for larger."""
         body: dict[str, Any] = {"updates": updates}
         if source is not None:
             body["source"] = source
+        if upsert is not None:
+            body["upsert"] = upsert
         return KBBulkUpdateResponse.model_validate(
             self._http.patch(
                 f"/api/v1/projects/{project_id}/knowledge/bulk-update",
@@ -542,9 +553,17 @@ class AsyncKnowledge:
     # -- Schemas --
 
     async def create_schema(
-        self, project_id: str, *, entity_type: str, fields: list[dict[str, Any]], **kwargs: Any
+        self,
+        project_id: str,
+        *,
+        entity_type: str,
+        fields: list[dict[str, Any]],
+        display_name: str | None = None,
+        **kwargs: Any,
     ) -> KBEntitySchema:
         body: dict[str, Any] = {"entity_type": entity_type, "fields": fields}
+        if display_name is not None:
+            body["display_name"] = display_name
         body.update(kwargs)
         data = await self._http.post(
             f"/api/v1/projects/{project_id}/knowledge/schemas", json_data=body
@@ -692,11 +711,14 @@ class AsyncKnowledge:
         *,
         updates: list[dict[str, Any]],
         source: str | None = None,
+        upsert: bool | None = None,
     ) -> KBBulkUpdateResponse:
         """Batch-update KB node properties. Sync for <=100 items; async for larger."""
         body: dict[str, Any] = {"updates": updates}
         if source is not None:
             body["source"] = source
+        if upsert is not None:
+            body["upsert"] = upsert
         return KBBulkUpdateResponse.model_validate(
             await self._http.patch(
                 f"/api/v1/projects/{project_id}/knowledge/bulk-update",

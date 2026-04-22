@@ -31,6 +31,7 @@ class Inventory:
         properties: dict[str, Any] | None = None,
         project_id: str | None = None,
         instance_id: str | None = None,
+        label: str | None = None,
     ) -> InventoryUpdateResponse:
         """Add, update, or remove an inventory item."""
         body: dict[str, Any] = {"action": action, "item_type": item_type}
@@ -42,6 +43,8 @@ class Inventory:
             body["properties"] = properties
         if project_id is not None:
             body["project_id"] = project_id
+        if label is not None:
+            body["label"] = label
         params: dict[str, str] | None = None
         if instance_id is not None:
             params = {"instance_id": instance_id}
@@ -124,11 +127,14 @@ class Inventory:
         items: list[dict[str, Any]],
         project_id: str | None = None,
         instance_id: str | None = None,
+        label: str | None = None,
     ) -> InventoryBatchImportResponse:
         """Batch-import inventory items (up to 1000)."""
         body: dict[str, Any] = {"items": items}
         if project_id is not None:
             body["project_id"] = project_id
+        if label is not None:
+            body["label"] = label
         params: dict[str, str] | None = None
         if instance_id is not None:
             params = {"instance_id": instance_id}
@@ -222,6 +228,7 @@ class AsyncInventory:
         properties: dict[str, Any] | None = None,
         project_id: str | None = None,
         instance_id: str | None = None,
+        label: str | None = None,
     ) -> InventoryUpdateResponse:
         """Add, update, or remove an inventory item."""
         body: dict[str, Any] = {"action": action, "item_type": item_type}
@@ -233,6 +240,8 @@ class AsyncInventory:
             body["properties"] = properties
         if project_id is not None:
             body["project_id"] = project_id
+        if label is not None:
+            body["label"] = label
         params: dict[str, str] | None = None
         if instance_id is not None:
             params = {"instance_id": instance_id}
@@ -315,11 +324,14 @@ class AsyncInventory:
         items: list[dict[str, Any]],
         project_id: str | None = None,
         instance_id: str | None = None,
+        label: str | None = None,
     ) -> InventoryBatchImportResponse:
         """Batch-import inventory items (up to 1000)."""
         body: dict[str, Any] = {"items": items}
         if project_id is not None:
             body["project_id"] = project_id
+        if label is not None:
+            body["label"] = label
         params: dict[str, str] | None = None
         if instance_id is not None:
             params = {"instance_id": instance_id}

@@ -1628,6 +1628,7 @@ class KBEntitySchema(BaseModel):
     project_id: str = ""
     schema_id: str = ""
     entity_type: str = ""
+    display_name: str | None = None
     fields: list[dict[str, Any]] = Field(default_factory=list)
     description: str = ""
     similarity_config: dict[str, Any] | None = None
@@ -1843,6 +1844,7 @@ class KBCandidate(BaseModel):
 class InventoryUpdateResponse(BaseModel):
     status: str = ""
     fact_id: str = ""
+    inventory_item_id: str | None = None
     kb_resolution: KBResolutionInfo | None = None
     candidates: list[KBCandidate] = Field(default_factory=list)
     error: str = ""
@@ -1850,6 +1852,7 @@ class InventoryUpdateResponse(BaseModel):
 
 class InventoryItem(BaseModel):
     fact_id: str = ""
+    inventory_item_id: str | None = None
     item_label: str = ""
     kb_node_id: str = ""
     user_properties: dict[str, Any] = Field(default_factory=dict)
