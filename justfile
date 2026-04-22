@@ -16,30 +16,39 @@ install-hooks:
     git config core.hooksPath .githooks
     @echo "✓ Hooks enabled: .githooks/pre-push will run on git push."
 
-# Regenerate src/sonzai/_generated/ from the committed OpenAPI spec.
+# Regenerate src/sonzai/_generated/models.py from the committed OpenAPI spec.
 #
-# The generated package is consumed by the hand-written resources/* layer
-# (which remains the public API). We refresh the spec first so the
-# generator sees whatever the live platform is currently serving.
+# Outputs a single pydantic v2 models file — no API clients, no per-class
+# modules. The hand-written resources/* layer consumes these models by
+# subclassing them in src/sonzai/_customizations/ (see that package for the
+# migration pattern).
 #
-# Requires `openapi-python-client` on PATH (install with
-# `uv tool install openapi-python-client`).
+# Requires `datamodel-code-generator` (installed via `uv sync --extra dev`).
 regenerate-sdk:
     @echo "Step 1/3: sync OpenAPI spec from production..."
     @just sync-spec
-    @echo "Step 2/3: regenerate src/sonzai/_generated/ ..."
-    @rm -rf src/sonzai/_generated _gen_tmp
-    @mkdir -p _gen_tmp
-    cd _gen_tmp && openapi-python-client generate \
-        --path ../openapi.json \
-        --config ../openapi-codegen.yaml \
-        --meta none \
-        --overwrite
-    @mv _gen_tmp/sonzai_generated src/sonzai/_generated
-    @rmdir _gen_tmp
+    @echo "Step 2/3: regenerate src/sonzai/_generated/models.py ..."
+    @rm -rf src/sonzai/_generated
+    @mkdir -p src/sonzai/_generated
+    uv run --extra dev datamodel-codegen \
+        --input openapi.json \
+        --input-file-type openapi \
+        --output src/sonzai/_generated/models.py \
+        --output-model-type pydantic_v2.BaseModel \
+        --target-python-version 3.11 \
+        --snake-case-field \
+        --use-annotated \
+        --use-standard-collections \
+        --use-union-operator \
+        --use-field-description \
+        --allow-population-by-field-name \
+        --enum-field-as-literal all \
+        --collapse-root-models \
+        --use-schema-description
+    @printf '"""Spec-derived pydantic models. Do not edit by hand.\n\nRegenerate with `just regenerate-sdk`. Hand-written customizations live in\n`src/sonzai/_customizations/`.\n"""\n\nfrom .models import *  # noqa: F401,F403\n' > src/sonzai/_generated/__init__.py
     @echo "Step 3/3: refreshing parity audit..."
     @uv run --extra dev python scripts/parity_audit.py
-    @echo "✓ SDK regenerated. Review src/sonzai/_generated/ and SDK_PARITY_AUDIT.md."
+    @echo "✓ SDK regenerated."
 
 # Bump patch (x.y.Z+1) from pyproject.toml and deploy.
 patch:
