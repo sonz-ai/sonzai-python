@@ -93,6 +93,14 @@ from .types import (
     KBBulkUpdateEntry,
     KBBulkUpdateResponse,
     KBCandidate,
+    KBDocument,
+    KBEdge,
+    KBEntitySchema,
+    KBNode,
+    KBNodeHistory,
+    KBRelatedNode,
+    KBSchemaField,
+    KBSimilarityConfig,
     KBResolutionInfo,
     # KB — organization-global scope
     KBScope,
@@ -393,6 +401,15 @@ __all__ = [
     # Types - KB Bulk Update
     "KBBulkUpdateEntry",
     "KBBulkUpdateResponse",
+    # Types - KB Core
+    "KBDocument",
+    "KBEdge",
+    "KBEntitySchema",
+    "KBNode",
+    "KBNodeHistory",
+    "KBRelatedNode",
+    "KBSchemaField",
+    "KBSimilarityConfig",
     # Types - Organization-global KB
     "KBScope",
     "KBNodeWithScope",

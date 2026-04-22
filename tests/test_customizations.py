@@ -1475,3 +1475,257 @@ class TestConstellationResponseMigration:
     def test_extra_fields_forbidden(self) -> None:
         from sonzai import ConstellationResponse
         assert ConstellationResponse.model_config.get("extra") == "forbid"
+
+
+# ---------------------------------------------------------------------------
+# Batch 8 — KB Core migration tests
+# ---------------------------------------------------------------------------
+
+
+class TestKBDocumentMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBDocument
+        from sonzai._generated.models import KBDocument as GenKBDocument
+        assert KBDocument is GenKBDocument
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBDocument
+        payload = {
+            "project_id": "proj-1",
+            "document_id": "doc-1",
+            "file_name": "report.pdf",
+            "content_type": "application/pdf",
+            "file_size": 1024,
+            "gcs_path": "gs://bucket/report.pdf",
+            "checksum": "abc123",
+            "status": "processed",
+            "node_count": 10,
+            "edge_count": 5,
+            "extraction_tokens": 500,
+            "uploaded_by": "user-1",
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
+        doc = KBDocument.model_validate(payload)
+        assert doc.project_id == "proj-1"
+        assert doc.document_id == "doc-1"
+        assert doc.node_count == 10
+        assert doc.edge_count == 5
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import KBDocument
+        # node_count and edge_count are spec fields absent in hand-rolled
+        assert "node_count" in KBDocument.model_fields
+        assert "edge_count" in KBDocument.model_fields
+
+
+class TestKBNodeMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBNode
+        from sonzai._generated.models import KBNode as GenKBNode
+        assert KBNode is GenKBNode
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBNode
+        payload = {
+            "project_id": "proj-1",
+            "node_id": "node-1",
+            "node_type": "Person",
+            "label": "Alice",
+            "norm_label": "alice",
+            "properties": {"age": 30},
+            "source_docs": ["doc-1"],
+            "source_type": "manual",
+            "version": 1,
+            "is_active": True,
+            "confidence": 0.9,
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
+        node = KBNode.model_validate(payload)
+        assert node.node_id == "node-1"
+        assert node.label == "Alice"
+        assert node.source_docs == ["doc-1"]
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import KBNode
+        # source_docs (list) is spec-generated; hand-rolled lacked it
+        assert "source_docs" in KBNode.model_fields
+        assert "property_sources" in KBNode.model_fields
+
+
+class TestKBNodeHistoryMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBNodeHistory
+        from sonzai._generated.models import KBNodeHistory as GenKBNodeHistory
+        assert KBNodeHistory is GenKBNodeHistory
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBNodeHistory
+        payload = {
+            "project_id": "proj-1",
+            "node_id": "node-1",
+            "version": 2,
+            "properties": {"key": "val"},
+            "changed_by": "user-1",
+            "change_type": "update",
+            "changed_at": "2026-01-01T00:00:00Z",
+        }
+        hist = KBNodeHistory.model_validate(payload)
+        assert hist.node_id == "node-1"
+        assert hist.version == 2
+        assert hist.change_type == "update"
+
+
+class TestKBEdgeMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBEdge
+        from sonzai._generated.models import KBEdge as GenKBEdge
+        assert KBEdge is GenKBEdge
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBEdge
+        payload = {
+            "project_id": "proj-1",
+            "edge_id": "edge-1",
+            "from_node_id": "node-1",
+            "to_node_id": "node-2",
+            "edge_type": "KNOWS",
+            "confidence": 0.85,
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
+        edge = KBEdge.model_validate(payload)
+        assert edge.edge_id == "edge-1"
+        assert edge.from_node_id == "node-1"
+        assert edge.confidence == 0.85
+
+
+class TestKBSchemaFieldMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBSchemaField
+        from sonzai._generated.models import KBSchemaField as GenKBSchemaField
+        assert KBSchemaField is GenKBSchemaField
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBSchemaField
+        payload = {
+            "name": "age",
+            "type": "integer",
+            "required": True,
+        }
+        field = KBSchemaField.model_validate(payload)
+        assert field.name == "age"
+        assert field.type == "integer"
+        assert field.required is True
+
+    def test_optional_fields(self) -> None:
+        from sonzai import KBSchemaField
+        payload = {
+            "name": "bio",
+            "type": "string",
+            "required": False,
+            "description": "User biography",
+            "enum_values": ["short", "long"],
+        }
+        field = KBSchemaField.model_validate(payload)
+        assert field.description == "User biography"
+        assert field.enum_values == ["short", "long"]
+
+
+class TestKBEntitySchemaMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBEntitySchema
+        from sonzai._generated.models import KBEntitySchema as GenKBEntitySchema
+        assert KBEntitySchema is GenKBEntitySchema
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBEntitySchema
+        payload = {
+            "project_id": "proj-1",
+            "schema_id": "schema-1",
+            "entity_type": "Person",
+            "fields": None,
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
+        schema = KBEntitySchema.model_validate(payload)
+        assert schema.schema_id == "schema-1"
+        assert schema.entity_type == "Person"
+        assert schema.fields is None
+
+    def test_with_fields_and_similarity_config(self) -> None:
+        from sonzai import KBEntitySchema
+        payload = {
+            "project_id": "proj-1",
+            "schema_id": "schema-2",
+            "entity_type": "Company",
+            "fields": [{"name": "revenue", "type": "float", "required": False}],
+            "similarity_config": {
+                "enabled": True,
+                "threshold": 0.8,
+                "max_edges_per_node": 5,
+                "field_weights": {"revenue": 1.0},
+            },
+            "created_at": "2026-01-01T00:00:00Z",
+            "updated_at": "2026-01-01T00:00:00Z",
+        }
+        schema = KBEntitySchema.model_validate(payload)
+        assert schema.fields is not None
+        assert len(schema.fields) == 1
+        assert schema.similarity_config is not None
+        assert schema.similarity_config.enabled is True
+
+
+class TestKBSimilarityConfigMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBSimilarityConfig
+        from sonzai._generated.models import KBSimilarityConfig as GenKBSimilarityConfig
+        assert KBSimilarityConfig is GenKBSimilarityConfig
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBSimilarityConfig
+        payload = {
+            "enabled": True,
+            "threshold": 0.75,
+            "max_edges_per_node": 10,
+            "field_weights": {"label": 2.0, "type": 1.0},
+        }
+        cfg = KBSimilarityConfig.model_validate(payload)
+        assert cfg.enabled is True
+        assert cfg.threshold == 0.75
+        assert cfg.max_edges_per_node == 10
+        assert cfg.field_weights["label"] == 2.0
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import KBSimilarityConfig
+        # Hand-rolled had match_fields; spec has field_weights + enabled
+        assert "enabled" in KBSimilarityConfig.model_fields
+        assert "field_weights" in KBSimilarityConfig.model_fields
+        assert "max_edges_per_node" in KBSimilarityConfig.model_fields
+
+
+class TestKBRelatedNodeMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBRelatedNode
+        from sonzai._generated.models import KBRelatedNode as GenKBRelatedNode
+        assert KBRelatedNode is GenKBRelatedNode
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBRelatedNode
+        payload = {
+            "node_id": "node-2",
+            "label": "Bob",
+            "type": "Person",
+            "edge": "KNOWS",
+        }
+        rel = KBRelatedNode.model_validate(payload)
+        assert rel.node_id == "node-2"
+        assert rel.label == "Bob"
+        assert rel.edge == "KNOWS"
+
+    def test_spec_field_edge_string(self) -> None:
+        from sonzai import KBRelatedNode
+        # Spec uses `edge: str`; hand-rolled had `edge_type: str` and `node_type: str`
+        assert "edge" in KBRelatedNode.model_fields
+        assert "type" in KBRelatedNode.model_fields

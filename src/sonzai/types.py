@@ -23,6 +23,14 @@ from ._generated.models import (  # noqa: F401
     Habit,
     HabitsResponse,
     InterestsResponse,
+    KBDocument,
+    KBEdge,
+    KBEntitySchema,
+    KBNode,
+    KBNodeHistory,
+    KBRelatedNode,
+    KBSchemaField,
+    KBSimilarityConfig,
     ListAllFactsResponse,
     MemoryNode,
     MemoryResponse,
@@ -1249,56 +1257,15 @@ class UpdateProjectResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class KBDocument(BaseModel):
-    project_id: str = ""
-    document_id: str = ""
-    file_name: str = ""
-    content_type: str = ""
-    file_size: int = 0
-    gcs_path: str = ""
-    checksum: str = ""
-    status: str = ""
-    uploaded_by: str = ""
-    extraction_tokens: int = 0
-    created_at: str = ""
-    updated_at: str = ""
-
-
 class KBDocumentListResponse(BaseModel):
     documents: list[KBDocument] = Field(default_factory=list)
     total: int = 0
-
-
-class KBNode(BaseModel):
-    project_id: str = ""
-    node_id: str = ""
-    node_type: str = ""
-    label: str = ""
-    norm_label: str = ""
-    properties: dict[str, Any] = Field(default_factory=dict)
-    source_type: str = ""
-    version: int = 0
-    is_active: bool = True
-    confidence: float = 0.0
-    created_at: str = ""
-    updated_at: str = ""
 
 
 class KBNodeListResponse(BaseModel):
     nodes: list[KBNode] = Field(default_factory=list)
     total: int = 0
     next_cursor: str = ""
-
-
-class KBEdge(BaseModel):
-    project_id: str = ""
-    edge_id: str = ""
-    from_node_id: str = ""
-    to_node_id: str = ""
-    edge_type: str = ""
-    confidence: float = 0.0
-    created_at: str = ""
-    updated_at: str = ""
 
 
 # ----------------------------------------------------------------------------
@@ -1336,16 +1303,6 @@ class KBNodeWithScope(KBNode):
     relevance: float = 0.0
 
 
-class KBNodeHistory(BaseModel):
-    project_id: str = ""
-    node_id: str = ""
-    version: int = 0
-    properties: dict[str, Any] = Field(default_factory=dict)
-    changed_by: str = ""
-    change_type: str = ""
-    changed_at: str = ""
-
-
 class KBNodeDetailResponse(BaseModel):
     node: KBNode | None = None
     outgoing: list[KBEdge] = Field(default_factory=list)
@@ -1374,18 +1331,6 @@ class KBSearchResponse(BaseModel):
     query: str = ""
     results: list[KBSearchResult] = Field(default_factory=list)
     total: int = 0
-
-
-class KBEntitySchema(BaseModel):
-    project_id: str = ""
-    schema_id: str = ""
-    entity_type: str = ""
-    display_name: str | None = None
-    fields: list[dict[str, Any]] = Field(default_factory=list)
-    description: str = ""
-    similarity_config: dict[str, Any] | None = None
-    created_at: str = ""
-    updated_at: str = ""
 
 
 class KBSchemaListResponse(BaseModel):
@@ -2321,22 +2266,6 @@ class UpdateProjectOptions(BaseModel):
 # --- Knowledge Base ---
 
 
-class KBSchemaField(BaseModel):
-    name: str = ""
-    type: str = ""
-    required: bool | None = None
-    indexed: bool | None = None
-
-    model_config = {"extra": "allow"}
-
-
-class KBSimilarityConfig(BaseModel):
-    match_fields: list[str] = Field(default_factory=list)
-    threshold: float | None = None
-
-    model_config = {"extra": "allow"}
-
-
 class InsertFactEntry(BaseModel):
     entity_type: str = ""
     label: str = ""
@@ -2428,16 +2357,6 @@ class ListAllFactsOptions(BaseModel):
 
 
 # --- KB response/data types needed as field types ---
-
-
-class KBRelatedNode(BaseModel):
-    node_id: str = ""
-    label: str = ""
-    node_type: str = ""
-    edge_type: str = ""
-    properties: dict[str, Any] = Field(default_factory=dict)
-
-    model_config = {"extra": "allow"}
 
 
 class KBTrendAggregation(BaseModel):
