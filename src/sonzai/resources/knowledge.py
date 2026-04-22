@@ -331,17 +331,21 @@ class Knowledge:
         rule_id: str,
         converted: bool,
         score_at_time: float,
+        action: str | None = None,
     ) -> None:
         """Record recommendation feedback."""
+        payload: dict[str, Any] = {
+            "source_node_id": source_node_id,
+            "target_node_id": target_node_id,
+            "rule_id": rule_id,
+            "converted": converted,
+            "score_at_time": score_at_time,
+        }
+        if action is not None:
+            payload["action"] = action
         self._http.post(
             f"/api/v1/projects/{project_id}/knowledge/analytics/feedback",
-            json_data={
-                "source_node_id": source_node_id,
-                "target_node_id": target_node_id,
-                "rule_id": rule_id,
-                "converted": converted,
-                "score_at_time": score_at_time,
-            },
+            json_data=payload,
         )
 
     # -- Bulk Update --
@@ -691,16 +695,20 @@ class AsyncKnowledge:
         rule_id: str,
         converted: bool,
         score_at_time: float,
+        action: str | None = None,
     ) -> None:
+        payload: dict[str, Any] = {
+            "source_node_id": source_node_id,
+            "target_node_id": target_node_id,
+            "rule_id": rule_id,
+            "converted": converted,
+            "score_at_time": score_at_time,
+        }
+        if action is not None:
+            payload["action"] = action
         await self._http.post(
             f"/api/v1/projects/{project_id}/knowledge/analytics/feedback",
-            json_data={
-                "source_node_id": source_node_id,
-                "target_node_id": target_node_id,
-                "rule_id": rule_id,
-                "converted": converted,
-                "score_at_time": score_at_time,
-            },
+            json_data=payload,
         )
 
     # -- Bulk Update --

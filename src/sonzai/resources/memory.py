@@ -39,6 +39,7 @@ class Memory:
         include_contents: bool = False,
         limit: int = 50,
         scope: str | None = None,
+        memory_type: str | None = None,
     ) -> MemoryResponse:
         """Get the memory tree for an agent."""
         params: dict[str, Any] = {"limit": limit}
@@ -52,6 +53,8 @@ class Memory:
             params["include_contents"] = "true"
         if scope is not None:
             params["scope"] = scope
+        if memory_type is not None:
+            params["memory_type"] = memory_type
 
         data = self._http.get(f"/api/v1/agents/{agent_id}/memory", params=params)
         return MemoryResponse.model_validate(data)
@@ -285,6 +288,7 @@ class AsyncMemory:
         include_contents: bool = False,
         limit: int = 50,
         scope: str | None = None,
+        memory_type: str | None = None,
     ) -> MemoryResponse:
         params: dict[str, Any] = {"limit": limit}
         if user_id:
@@ -297,6 +301,8 @@ class AsyncMemory:
             params["include_contents"] = "true"
         if scope is not None:
             params["scope"] = scope
+        if memory_type is not None:
+            params["memory_type"] = memory_type
 
         data = await self._http.get(
             f"/api/v1/agents/{agent_id}/memory", params=params
