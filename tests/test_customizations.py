@@ -1952,3 +1952,471 @@ class TestKBTrendRankingMigration:
             "rank", "node_id", "node_label", "value", "computed_at",
         ):
             assert field in KBTrendRanking.model_fields
+
+
+# ---------------------------------------------------------------------------
+# Batch 10 — Agents/Evals/Inventory/Projects
+# ---------------------------------------------------------------------------
+
+
+class TestAgentIndexMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import AgentIndex
+        from sonzai._generated.models import AgentIndex as GenAgentIndex
+        assert AgentIndex is GenAgentIndex
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import AgentIndex
+        payload = {
+            "agent_id": "agt-1",
+            "tenant_id": "tnt-1",
+            "owner_user_id": "usr-1",
+            "instance_count": 2,
+            "is_active": True,
+            "created_at": "2024-01-01T00:00:00Z",
+        }
+        obj = AgentIndex.model_validate(payload)
+        assert obj.agent_id == "agt-1"
+        assert obj.instance_count == 2
+        assert obj.is_active is True
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import AgentIndex
+        for field in ("agent_id", "tenant_id", "owner_user_id", "instance_count", "is_active", "created_at"):
+            assert field in AgentIndex.model_fields
+
+
+class TestAgentInstanceMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import AgentInstance
+        from sonzai._generated.models import AgentInstance as GenAgentInstance
+        assert AgentInstance is GenAgentInstance
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import AgentInstance
+        payload = {
+            "instance_id": "inst-1",
+            "agent_id": "agt-1",
+            "name": "Default",
+            "status": "active",
+            "is_default": True,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-02T00:00:00Z",
+        }
+        obj = AgentInstance.model_validate(payload)
+        assert obj.instance_id == "inst-1"
+        assert obj.name == "Default"
+        assert obj.is_default is True
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import AgentInstance
+        for field in ("instance_id", "agent_id", "name", "status", "is_default", "created_at", "updated_at"):
+            assert field in AgentInstance.model_fields
+
+
+class TestEvalCategoryMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import EvalCategory
+        from sonzai._generated.models import EvalCategory as GenEvalCategory
+        assert EvalCategory is GenEvalCategory
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import EvalCategory
+        payload = {
+            "key": "empathy",
+            "label": "Empathy",
+            "prompt_instructions": "Evaluate emotional awareness.",
+        }
+        obj = EvalCategory.model_validate(payload)
+        assert obj.key == "empathy"
+        assert obj.label == "Empathy"
+        assert obj.prompt_instructions == "Evaluate emotional awareness."
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import EvalCategory
+        for field in ("key", "label", "prompt_instructions"):
+            assert field in EvalCategory.model_fields
+
+
+class TestEvalTemplateMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import EvalTemplate
+        from sonzai._generated.models import EvalTemplate as GenEvalTemplate
+        assert EvalTemplate is GenEvalTemplate
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import EvalTemplate
+        payload = {
+            "template_id": "tpl-1",
+            "name": "Quality Check",
+            "description": "Checks quality",
+            "template_type": "quality",
+            "judge_model": "gpt-4",
+            "temperature": 0.3,
+            "max_tokens": 8192,
+            "scoring_rubric": "Rate 1-10",
+            "categories": None,
+            "is_system": False,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-02T00:00:00Z",
+        }
+        obj = EvalTemplate.model_validate(payload)
+        assert obj.template_id == "tpl-1"
+        assert obj.name == "Quality Check"
+        assert obj.template_type == "quality"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import EvalTemplate
+        for field in ("template_id", "name", "description", "template_type", "judge_model",
+                      "temperature", "max_tokens", "scoring_rubric", "created_at", "updated_at"):
+            assert field in EvalTemplate.model_fields
+
+
+class TestEvalRunMigration:
+    def test_imports_from_customization(self) -> None:
+        from sonzai import EvalRun
+        from sonzai._customizations import EvalRun as CustEvalRun
+        from sonzai._generated.models import EvalRun as GenEvalRun
+        assert EvalRun is CustEvalRun
+        assert EvalRun is not GenEvalRun
+        assert issubclass(EvalRun, GenEvalRun)
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import EvalRun
+        payload = {
+            "run_id": "run-1",
+            "tenant_id": "tnt-1",
+            "project_id": "proj-1",
+            "agent_id": "agt-1",
+            "agent_name": "Agent",
+            "status": "completed",
+            "character_config": {},
+            "template_id": "tpl-1",
+            "template_snapshot": {},
+            "simulation_config": {},
+            "simulation_model": "gpt-4",
+            "user_persona": {},
+            "transcript": [],
+            "evaluation_result": {},
+            "adaptation_result": {},
+            "simulation_state": {},
+            "total_sessions": 1,
+            "total_turns": 5,
+            "simulated_minutes": 30,
+            "total_cost_usd": 0.5,
+            "simulation_cost_usd": 0.3,
+            "evaluation_cost_usd": 0.2,
+            "adaptation_template_id": "adapt-1",
+            "adaptation_template_snapshot": None,
+            "started_at": "2024-01-01T00:00:00Z",
+            "created_at": "2024-01-01T00:00:00Z",
+            "completed_at": None,
+        }
+        obj = EvalRun.model_validate(payload)
+        assert obj.run_id == "run-1"
+        assert obj.agent_id == "agt-1"
+        assert obj.total_turns == 5
+
+    def test_id_alias_returns_run_id(self) -> None:
+        from sonzai import EvalRun
+        payload = {
+            "run_id": "run-42",
+            "agent_id": "agt-1",
+            "agent_name": "Agent",
+            "status": "completed",
+            "character_config": {},
+            "template_id": "tpl-1",
+            "template_snapshot": {},
+            "simulation_config": {},
+            "simulation_model": "gpt-4",
+            "user_persona": {},
+            "transcript": [],
+            "evaluation_result": {},
+            "adaptation_result": {},
+            "simulation_state": {},
+            "total_sessions": 1,
+            "total_turns": 5,
+            "simulated_minutes": 30,
+            "total_cost_usd": 0.5,
+            "simulation_cost_usd": 0.3,
+            "evaluation_cost_usd": 0.2,
+            "adaptation_template_id": "adapt-1",
+            "adaptation_template_snapshot": None,
+            "started_at": "2024-01-01T00:00:00Z",
+            "created_at": "2024-01-01T00:00:00Z",
+            "completed_at": None,
+        }
+        obj = EvalRun.model_validate(payload)
+        assert obj.id == "run-42"
+        assert obj.id == obj.run_id
+
+
+class TestImportJobMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import ImportJob
+        from sonzai._generated.models import ImportJob as GenImportJob
+        assert ImportJob is GenImportJob
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import ImportJob
+        payload = {
+            "job_id": "job-1",
+            "tenant_id": "tnt-1",
+            "agent_id": "agt-1",
+            "job_type": "batch",
+            "status": "pending",
+            "source_type": "csv",
+            "total_users": 10,
+            "processed_users": 5,
+            "facts_stored": 45,
+            "facts_deduped": 5,
+            "facts_extracted": 50,
+            "errors": 0,
+            "warmth_score": 3,
+            "constellation_nodes": 2,
+            "error_details": None,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-02T00:00:00Z",
+        }
+        obj = ImportJob.model_validate(payload)
+        assert obj.job_id == "job-1"
+        assert obj.status == "pending"
+        assert obj.total_users == 10
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import ImportJob
+        for field in ("job_id", "tenant_id", "agent_id", "job_type", "status",
+                      "total_users", "processed_users", "created_at", "updated_at"):
+            assert field in ImportJob.model_fields
+
+
+class TestJobUserMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import JobUser
+        from sonzai._generated.models import JobUser as GenJobUser
+        assert JobUser is GenJobUser
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import JobUser
+        payload = {
+            "job_id": "job-1",
+            "user_id": "usr-1",
+            "status": "completed",
+            "facts_stored": 10,
+            "facts_deduped": 2,
+            "warmth_score": 5,
+            "updated_at": "2024-01-02T00:00:00Z",
+        }
+        obj = JobUser.model_validate(payload)
+        assert obj.job_id == "job-1"
+        assert obj.user_id == "usr-1"
+        assert obj.facts_stored == 10
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import JobUser
+        for field in ("job_id", "user_id", "status", "facts_stored", "facts_deduped", "warmth_score", "updated_at"):
+            assert field in JobUser.model_fields
+
+
+class TestBatchImportUserMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import BatchImportUser
+        from sonzai._generated.models import BatchImportUser as GenBatchImportUser
+        assert BatchImportUser is GenBatchImportUser
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import BatchImportUser
+        payload = {"user_id": "usr-1"}
+        obj = BatchImportUser.model_validate(payload)
+        assert obj.user_id == "usr-1"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import BatchImportUser
+        assert "user_id" in BatchImportUser.model_fields
+
+
+class TestInventoryItemMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import InventoryItem
+        from sonzai._generated.models import InventoryItem as GenInventoryItem
+        assert InventoryItem is GenInventoryItem
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import InventoryItem
+        payload = {
+            "fact_id": "fact-1",
+            "item_label": "Widget",
+            "user_properties": {"color": "red"},
+        }
+        obj = InventoryItem.model_validate(payload)
+        assert obj.fact_id == "fact-1"
+        assert obj.item_label == "Widget"
+        assert obj.user_properties == {"color": "red"}
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import InventoryItem
+        for field in ("fact_id", "item_label", "user_properties"):
+            assert field in InventoryItem.model_fields
+
+
+class TestCustomStateMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import CustomState
+        from sonzai._generated.models import CustomState as GenCustomState
+        assert CustomState is GenCustomState
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import CustomState
+        payload = {
+            "state_id": "st-1",
+            "agent_id": "agt-1",
+            "scope": "user",
+            "key": "mood",
+            "value": "happy",
+            "content_type": "text",
+            "user_id": None,
+            "instance_id": None,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-02T00:00:00Z",
+        }
+        obj = CustomState.model_validate(payload)
+        assert obj.state_id == "st-1"
+        assert obj.key == "mood"
+        assert obj.value == "happy"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import CustomState
+        for field in ("state_id", "agent_id", "scope", "key", "value", "content_type",
+                      "created_at", "updated_at"):
+            assert field in CustomState.model_fields
+
+
+class TestCustomToolDefinitionMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import CustomToolDefinition
+        from sonzai._generated.models import CustomToolDefinition as GenCustomToolDefinition
+        assert CustomToolDefinition is GenCustomToolDefinition
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import CustomToolDefinition
+        payload = {
+            "name": "get_weather",
+            "description": "Fetches weather for a location",
+            "parameters": {"type": "object", "properties": {"location": {"type": "string"}}},
+        }
+        obj = CustomToolDefinition.model_validate(payload)
+        assert obj.name == "get_weather"
+        assert obj.description == "Fetches weather for a location"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import CustomToolDefinition
+        for field in ("name", "description", "parameters"):
+            assert field in CustomToolDefinition.model_fields
+
+
+class TestPendingCapabilityMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import PendingCapability
+        from sonzai._generated.models import PendingCapability as GenPendingCapability
+        assert PendingCapability is GenPendingCapability
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import PendingCapability
+        payload = {"capability": "vision"}
+        obj = PendingCapability.model_validate(payload)
+        assert obj.capability == "vision"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import PendingCapability
+        assert "capability" in PendingCapability.model_fields
+
+
+class TestProjectMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import Project
+        from sonzai._generated.models import Project as GenProject
+        assert Project is GenProject
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import Project
+        payload = {
+            "project_id": "proj-1",
+            "tenant_id": "tnt-1",
+            "name": "My Game",
+            "game_name": "FantasyRPG",
+            "environment": "production",
+            "created_at": "2024-01-01T00:00:00Z",
+            "is_active": True,
+        }
+        obj = Project.model_validate(payload)
+        assert obj.project_id == "proj-1"
+        assert obj.name == "My Game"
+        assert obj.is_active is True
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import Project
+        for field in ("project_id", "tenant_id", "name", "game_name", "environment", "created_at", "is_active"):
+            assert field in Project.model_fields
+
+
+class TestProjectAPIKeyMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import ProjectAPIKey
+        from sonzai._generated.models import ProjectAPIKey as GenProjectAPIKey
+        assert ProjectAPIKey is GenProjectAPIKey
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import ProjectAPIKey
+        payload = {
+            "key_id": "key-1",
+            "project_id": "proj-1",
+            "tenant_id": "tnt-1",
+            "name": "API Key",
+            "key_prefix": "sk-",
+            "created_by": "usr-1",
+            "created_at": "2024-01-01T00:00:00Z",
+            "is_active": True,
+            "is_admin_managed": False,
+            "scopes": ["read"],
+        }
+        obj = ProjectAPIKey.model_validate(payload)
+        assert obj.key_id == "key-1"
+        assert obj.project_id == "proj-1"
+        assert obj.is_active is True
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import ProjectAPIKey
+        for field in ("key_id", "project_id", "tenant_id", "name", "key_prefix",
+                      "created_by", "created_at", "is_active", "is_admin_managed"):
+            assert field in ProjectAPIKey.model_fields
+
+
+class TestWebhookDeliveryAttemptMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import WebhookDeliveryAttempt
+        from sonzai._generated.models import WebhookDeliveryAttempt as GenWebhookDeliveryAttempt
+        assert WebhookDeliveryAttempt is GenWebhookDeliveryAttempt
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import WebhookDeliveryAttempt
+        payload = {
+            "attempt_id": "att-1",
+            "event_type": "message.created",
+            "webhook_url": "https://example.com/hook",
+            "response_code": 200,
+            "duration_ms": 150,
+            "attempt_number": 1,
+            "status": "success",
+            "created_at": "2024-01-01T00:00:00Z",
+            "project_id": "proj-1",
+        }
+        obj = WebhookDeliveryAttempt.model_validate(payload)
+        assert obj.attempt_id == "att-1"
+        assert obj.response_code == 200
+        assert obj.status == "success"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import WebhookDeliveryAttempt
+        for field in ("attempt_id", "event_type", "webhook_url", "response_code",
+                      "duration_ms", "attempt_number", "status", "created_at"):
+            assert field in WebhookDeliveryAttempt.model_fields

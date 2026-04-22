@@ -25,6 +25,7 @@ from .types import (
     AgentIndex,
     AgentInstance,
     AgentListResponse,
+    BatchImportUser,
     BatchPersonalityEntry,
     BatchPersonalityResponse,
     Big5,
@@ -78,6 +79,7 @@ from .types import (
     Habit,
     HabitsResponse,
     ImageGenerateResponse,
+    ImportJob,
     InitialGoal,
     InstanceListResponse,
     ListAllFactsResponse,
@@ -89,6 +91,7 @@ from .types import (
     InventoryQueryResponse,
     # Inventory
     InventoryUpdateResponse,
+    JobUser,
     KBAnalyticsRule,
     # KB Bulk Update
     KBBulkUpdateEntry,
@@ -137,6 +140,7 @@ from .types import (
     PersonalityShift,
     TraitPrecision,
     PersonalityUpdateResponse,
+    PendingCapability,
     PlatformModelsResponse,
     ProcessResponse,
     ProcessSideEffectsSummary,
@@ -349,6 +353,7 @@ __all__ = [
     # Types - Capabilities
     "CustomToolDefinition",
     "CustomToolListResponse",
+    "PendingCapability",
     # Types - Process / Extractions
     "ProcessResponse",
     "ProcessSideEffectsSummary",
@@ -393,12 +398,15 @@ __all__ = [
     "RevokeAPIKeyResponse",
     "DeleteProjectResponse",
     # Types - Inventory
+    "BatchImportUser",
+    "ImportJob",
     "InventoryUpdateResponse",
     "InventoryQueryResponse",
     "InventoryItem",
     "InventoryGroupResult",
     "InventoryBatchImportResponse",
     "InventoryDirectUpdateResponse",
+    "JobUser",
     "KBResolutionInfo",
     "KBCandidate",
     "StoredFact",

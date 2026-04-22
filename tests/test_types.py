@@ -169,15 +169,23 @@ class TestPersonalityResponse:
 class TestEvalTemplate:
     def test_parse_template(self):
         data = {
-            "id": "tpl-1",
+            "template_id": "tpl-1",
             "name": "Empathy Check",
+            "description": "Evaluates empathy in responses",
+            "template_type": "quality",
+            "judge_model": "gpt-4",
+            "temperature": 0.3,
+            "max_tokens": 8192,
             "scoring_rubric": "Evaluate empathy",
+            "is_system": False,
             "categories": [
-                {"name": "Emotional Awareness", "weight": 0.5, "criteria": "Shows understanding"},
-                {"name": "Response Quality", "weight": 0.5, "criteria": "Appropriate response"},
+                {"key": "emotional_awareness", "label": "Emotional Awareness", "prompt_instructions": "Shows understanding"},
+                {"key": "response_quality", "label": "Response Quality", "prompt_instructions": "Appropriate response"},
             ],
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-02T00:00:00Z",
         }
         result = EvalTemplate.model_validate(data)
         assert result.name == "Empathy Check"
         assert len(result.categories) == 2
-        assert result.categories[0].weight == 0.5
+        assert result.categories[0].key == "emotional_awareness"

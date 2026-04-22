@@ -20,10 +20,12 @@ in scope for this package.
 
 from .agents import AgentCapabilities
 from .chat import ChatStreamEvent
+from .evaluation import EvalRun
 from .memory import StoredFact
 
 __all__ = [
     "AgentCapabilities",
     "ChatStreamEvent",
+    "EvalRun",
     "StoredFact",
 ]

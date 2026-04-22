@@ -7,22 +7,32 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact  # noqa: F401
+from ._customizations import AgentCapabilities, ChatStreamEvent, EvalRun, StoredFact  # noqa: F401
 from ._generated.models import (  # noqa: F401
     AdvanceTimeDiaryEntry,
+    AgentIndex,
+    AgentInstance,
     AtomicFact,
+    BatchImportUser,
     BatchPersonalityEntry,
     Big5,
     Big5Trait,
     Breakthrough,
     BreakthroughsResponse,
     ConstellationResponse,
+    CustomState,
+    CustomToolDefinition,
     DiaryEntry,
+    EvalCategory,
+    EvalTemplate,
     Goal,
     GoalsResponse,
     Habit,
     HabitsResponse,
+    ImportJob,
     InterestsResponse,
+    InventoryItem,
+    JobUser,
     KBAnalyticsRule,
     KBConversionStats,
     KBDocument,
@@ -47,11 +57,14 @@ from ._generated.models import (  # noqa: F401
     MoodHistoryResponse,
     MoodResponse,
     MoodState,
+    PendingCapability,
     PersonalityDelta,
     PersonalityDimensions,
     PersonalityProfile,
     PersonalityResponse,
     PersonalityShift,
+    Project,
+    ProjectAPIKey,
     RecentShiftsResponse,
     SignificantMoment,
     SignificantMomentsResponse,
@@ -60,6 +73,7 @@ from ._generated.models import (  # noqa: F401
     TimeMachineResponse,
     TimelineSession,
     TraitPrecision,
+    WebhookDeliveryAttempt,
 )
 
 # ---------------------------------------------------------------------------
@@ -167,17 +181,6 @@ class SessionResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Instances
 # ---------------------------------------------------------------------------
-
-
-class AgentInstance(BaseModel):
-    instance_id: str = ""
-    agent_id: str = ""
-    name: str = ""
-    description: str = ""
-    status: str = ""
-    is_default: bool = False
-    created_at: str | None = None
-    updated_at: str | None = None
 
 
 class InstanceListResponse(BaseModel):
@@ -325,16 +328,10 @@ class UsersResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class EvalCategory(BaseModel):
-    name: str = ""
-    score: float = 0.0
-    feedback: str = ""
-
-
 class EvaluationResult(BaseModel):
     score: float = 0.0
     feedback: str = ""
-    categories: list[EvalCategory] = Field(default_factory=list)
+    categories: list[Any] = Field(default_factory=list)
 
 
 class EvalTemplateCategory(BaseModel):
@@ -343,56 +340,8 @@ class EvalTemplateCategory(BaseModel):
     criteria: str = ""
 
 
-class EvalTemplate(BaseModel):
-    id: str = ""
-    tenant_id: str = ""
-    name: str = ""
-    description: str = ""
-    template_type: str = ""
-    judge_model: str = ""
-    temperature: float = 0.3
-    max_tokens: int = 8192
-    scoring_rubric: str = ""
-    categories: list[EvalTemplateCategory] = Field(default_factory=list)
-    created_at: str | None = None
-    updated_at: str | None = None
-
-
 class EvalTemplateListResponse(BaseModel):
     templates: list[EvalTemplate] = Field(default_factory=list)
-
-
-class EvalRun(BaseModel):
-    id: str = ""
-    """SDK alias. The spec wire name is run_id."""
-    run_id: str = ""
-    tenant_id: str = ""
-    project_id: str = ""
-    agent_id: str = ""
-    agent_name: str = ""
-    status: str = ""
-    character_config: dict[str, Any] = Field(default_factory=dict)
-    template_id: str = ""
-    template_snapshot: dict[str, Any] = Field(default_factory=dict)
-    simulation_config: dict[str, Any] = Field(default_factory=dict)
-    simulation_model: str = ""
-    user_persona: dict[str, Any] = Field(default_factory=dict)
-    transcript: list[Any] = Field(default_factory=list)
-    evaluation_result: dict[str, Any] = Field(default_factory=dict)
-    adaptation_result: dict[str, Any] = Field(default_factory=dict)
-    simulation_state: dict[str, Any] = Field(default_factory=dict)
-    total_sessions: int = 0
-    total_turns: int = 0
-    simulated_minutes: int = 0
-    total_cost_usd: float = 0.0
-    error_reason: str = ""
-    simulation_cost_usd: float = 0.0
-    evaluation_cost_usd: float = 0.0
-    adaptation_template_id: str = ""
-    adaptation_template_snapshot: Any = None
-    started_at: str | None = None
-    created_at: str | None = None
-    completed_at: str | None = None
 
 
 class EvalRunListResponse(BaseModel):
@@ -743,23 +692,8 @@ class GenerateSeedMemoriesResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class CustomState(BaseModel):
-    state_id: str = ""
-    agent_id: str = ""
-    scope: str = ""
-    key: str = ""
-    value: Any = None
-    content_type: str = ""
-    user_id: str = ""
-    instance_id: str = ""
-    created_at: str | None = None
-    updated_at: str | None = None
-
-    model_config = {"extra": "allow"}
-
-
 class CustomStateListResponse(BaseModel):
-    states: list[CustomState] = Field(default_factory=list)
+    states: list[Any] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -788,23 +722,8 @@ class WebhookListResponse(BaseModel):
     webhooks: list[WebhookEndpoint] = Field(default_factory=list)
 
 
-class WebhookDeliveryAttempt(BaseModel):
-    attempt_id: str = ""
-    event_type: str = ""
-    webhook_url: str = ""
-    response_code: int = 0
-    response_body: str = ""
-    error_message: str = ""
-    duration_ms: int = 0
-    attempt_number: int = 0
-    status: str = ""
-    created_at: str = ""
-
-    model_config = {"extra": "allow"}
-
-
 class DeliveryAttemptsResponse(BaseModel):
-    attempts: list[WebhookDeliveryAttempt] = Field(default_factory=list)
+    attempts: list[Any] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -938,28 +857,8 @@ class ScheduleUpcomingResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class AgentIndex(BaseModel):
-    model_config = {"extra": "allow"}
-    id: str = ""
-    agent_id: str = ""
-    tenant_id: str = ""
-    name: str = ""
-    bio: str = ""
-    gender: str = ""
-    avatar_url: str = ""
-    status: str = ""
-    is_active: bool = False
-    project_id: str = ""
-    instance_count: int = 0
-    last_seen_at: str = ""
-    owner_user_id: str = ""
-    owner_display_name: str = ""
-    owner_email: str = ""
-    created_at: str = ""
-
-
 class AgentListResponse(BaseModel):
-    items: list[AgentIndex] = Field(default_factory=list)
+    items: list[Any] = Field(default_factory=list)
     next_cursor: str | None = None
     has_more: bool = False
     total_count: int = 0
@@ -1223,20 +1122,8 @@ class SetStatusResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class CustomToolDefinition(BaseModel):
-    name: str = ""
-    description: str = ""
-    parameters: dict[str, Any] | None = None
-
-
-class PendingCapability(BaseModel):
-    capability: str = ""
-    context: str = ""
-    model_config = {"extra": "allow"}
-
-
 class CustomToolListResponse(BaseModel):
-    tools: list[CustomToolDefinition] = Field(default_factory=list)
+    tools: list[Any] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -1431,42 +1318,13 @@ class BatchImportResponse(BaseModel):
     facts_created: int = 0
 
 
-class ImportJob(BaseModel):
-    job_id: str = ""
-    tenant_id: str = ""
-    agent_id: str = ""
-    job_type: str = ""
-    user_id: str = ""
-    source: str = ""
-    status: str = ""
-    total_users: int = 0
-    processed_users: int = 0
-    facts_created: int = 0
-    error_message: str = ""
-    created_at: str = ""
-    updated_at: str = ""
-
-
 class ImportJobListResponse(BaseModel):
-    jobs: list[ImportJob] = Field(default_factory=list)
+    jobs: list[Any] = Field(default_factory=list)
     count: int = 0
 
 
-class JobUser(BaseModel):
-    job_id: str = ""
-    user_id: str = ""
-    status: str = ""
-    facts_stored: int = 0
-    facts_deduped: int = 0
-    warmth_score: int = 0
-    updated_at: str = ""
-    started_at: str = ""
-    completed_at: str = ""
-    error_message: str = ""
-
-
 class ListImportJobUsersResponse(BaseModel):
-    users: list[JobUser] = Field(default_factory=list)
+    users: list[Any] = Field(default_factory=list)
     count: int = 0
 
 
@@ -1515,23 +1373,13 @@ class InventoryUpdateResponse(BaseModel):
     error: str = ""
 
 
-class InventoryItem(BaseModel):
-    fact_id: str = ""
-    inventory_item_id: str | None = None
-    item_label: str = ""
-    kb_node_id: str = ""
-    user_properties: dict[str, Any] = Field(default_factory=dict)
-    market_properties: dict[str, Any] = Field(default_factory=dict)
-    gain_loss: float | None = None
-
-
 class InventoryGroupResult(BaseModel):
     group: str = ""
     values: dict[str, Any] = Field(default_factory=dict)
 
 
 class InventoryQueryResponse(BaseModel):
-    items: list[InventoryItem] = Field(default_factory=list)
+    items: list[Any] = Field(default_factory=list)
     total_items: int = 0
     next_cursor: str = ""
     totals: dict[str, Any] = Field(default_factory=dict)
@@ -2373,17 +2221,8 @@ class AddContentOptions(BaseModel):
     model_config = {"extra": "allow"}
 
 
-class BatchImportUser(BaseModel):
-    user_id: str = ""
-    display_name: str | None = None
-    metadata: PrimeUserMetadata | None = None
-    content: list[PrimeContentBlock] = Field(default_factory=list)
-
-    model_config = {"extra": "allow"}
-
-
 class BatchImportOptions(BaseModel):
-    users: list[BatchImportUser] = Field(default_factory=list)
+    users: list[Any] = Field(default_factory=list)
     source: str | None = None
 
     model_config = {"extra": "allow"}
@@ -2851,43 +2690,14 @@ class ToolDefinition(BaseModel):
 # Projects
 # ---------------------------------------------------------------------------
 
-class Project(BaseModel):
-    project_id: str = ""
-    tenant_id: str = ""
-    name: str = ""
-    game_name: str = ""
-    environment: str = ""
-    created_at: str = ""
-    is_active: bool = True
-
-    model_config = {"extra": "allow"}
-
-
 class ProjectList(BaseModel):
-    projects: list[Project] = Field(default_factory=list)
-
-    model_config = {"extra": "allow"}
-
-
-class ProjectAPIKey(BaseModel):
-    key_id: str = ""
-    project_id: str = ""
-    tenant_id: str = ""
-    name: str = ""
-    key_prefix: str = ""
-    created_by: str = ""
-    created_at: str = ""
-    expires_at: str | None = None
-    last_used_at: str | None = None
-    is_active: bool = True
-    is_admin_managed: bool = False
-    scopes: list[str] = Field(default_factory=list)
+    projects: list[Any] = Field(default_factory=list)
 
     model_config = {"extra": "allow"}
 
 
 class ProjectAPIKeyList(BaseModel):
-    keys: list[ProjectAPIKey] = Field(default_factory=list)
+    keys: list[Any] = Field(default_factory=list)
 
     model_config = {"extra": "allow"}
 

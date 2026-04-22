@@ -255,6 +255,8 @@ class TestInstances:
                             "name": "Default",
                             "status": "active",
                             "is_default": True,
+                            "created_at": "2024-01-01T00:00:00Z",
+                            "updated_at": "2024-01-02T00:00:00Z",
                         }
                     ]
                 },
@@ -276,6 +278,8 @@ class TestInstances:
                     "name": "Test",
                     "status": "active",
                     "is_default": False,
+                    "created_at": "2024-01-01T00:00:00Z",
+                    "updated_at": "2024-01-02T00:00:00Z",
                 },
             )
         )
@@ -318,21 +322,57 @@ class TestNotifications:
         assert result.success
 
 
+_EVAL_TEMPLATE_FIXTURE = {
+    "template_id": "tpl-1",
+    "name": "Quality Check",
+    "description": "Evaluates quality",
+    "template_type": "quality",
+    "judge_model": "gpt-4",
+    "temperature": 0.3,
+    "max_tokens": 8192,
+    "scoring_rubric": "Be helpful",
+    "is_system": False,
+    "categories": None,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-02T00:00:00Z",
+}
+
+_EVAL_RUN_FIXTURE = {
+    "run_id": "run-1",
+    "agent_id": "agent-1",
+    "agent_name": "Agent",
+    "status": "completed",
+    "character_config": {},
+    "template_id": "tpl-1",
+    "template_snapshot": {},
+    "simulation_config": {},
+    "simulation_model": "gpt-4",
+    "user_persona": {},
+    "transcript": [],
+    "evaluation_result": {},
+    "adaptation_result": {},
+    "simulation_state": {},
+    "total_sessions": 1,
+    "total_turns": 20,
+    "simulated_minutes": 30,
+    "total_cost_usd": 0.5,
+    "simulation_cost_usd": 0.3,
+    "evaluation_cost_usd": 0.2,
+    "adaptation_template_id": "adapt-1",
+    "adaptation_template_snapshot": None,
+    "started_at": "2024-01-01T00:00:00Z",
+    "created_at": "2024-01-01T00:00:00Z",
+    "completed_at": None,
+}
+
+
 class TestEvalTemplates:
     @respx.mock
     def test_list_templates(self, client, base_url):
         respx.get(f"{base_url}/api/v1/eval-templates").mock(
             return_value=httpx.Response(
                 200,
-                json={
-                    "templates": [
-                        {
-                            "id": "tpl-1",
-                            "name": "Quality Check",
-                            "scoring_rubric": "Be helpful",
-                        }
-                    ]
-                },
+                json={"templates": [_EVAL_TEMPLATE_FIXTURE]},
             )
         )
 
@@ -342,21 +382,15 @@ class TestEvalTemplates:
 
     @respx.mock
     def test_create_template(self, client, base_url):
+        fixture = {**_EVAL_TEMPLATE_FIXTURE, "template_id": "tpl-2", "name": "New Template"}
         respx.post(f"{base_url}/api/v1/eval-templates").mock(
-            return_value=httpx.Response(
-                201,
-                json={
-                    "id": "tpl-2",
-                    "name": "New Template",
-                    "scoring_rubric": "Score well",
-                },
-            )
+            return_value=httpx.Response(201, json=fixture)
         )
 
         result = client.eval_templates.create(
             name="New Template", scoring_rubric="Score well"
         )
-        assert result.id == "tpl-2"
+        assert result.template_id == "tpl-2"
 
 
 class TestEvalRuns:
@@ -365,17 +399,7 @@ class TestEvalRuns:
         respx.get(f"{base_url}/api/v1/eval-runs").mock(
             return_value=httpx.Response(
                 200,
-                json={
-                    "runs": [
-                        {
-                            "id": "run-1",
-                            "agent_id": "agent-1",
-                            "status": "completed",
-                            "total_turns": 20,
-                        }
-                    ],
-                    "total_count": 1,
-                },
+                json={"runs": [_EVAL_RUN_FIXTURE], "total_count": 1},
             )
         )
 
