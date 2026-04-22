@@ -14,9 +14,12 @@ class ChatStreamEvent(_GenChatSSEChunk):
 
     @property
     def content(self) -> str:
-        if self.choices:
-            return self.choices[0].delta.get("content", "") if self.choices[0].delta else ""
-        return ""
+        if not self.choices:
+            return ""
+        delta = self.choices[0].delta
+        if delta is None:
+            return ""
+        return delta.content or ""
 
     @property
     def is_finished(self) -> bool:
