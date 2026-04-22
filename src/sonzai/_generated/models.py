@@ -397,6 +397,7 @@ class BatchInventoryItem(BaseModel):
     description: str | None = None
     item_type: str
     kb_node_id: str | None = None
+    label: str | None = None
     properties: dict[str, Any] | None = None
 
 
@@ -1175,6 +1176,47 @@ class CreateInstanceInputBody(BaseModel):
     """
 
 
+class CreateInventoryItemHumaInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CreateInventoryItemHumaInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    description: str | None = None
+    """
+    Natural-language description used for KB search
+    """
+    item_type: str
+    """
+    Item type key (e.g. medication, pokemon_card)
+    """
+    kb_node_id: str | None = None
+    """
+    Pre-resolved KB node ID; skips search when set
+    """
+    label: str | None = None
+    """
+    Short display label; takes priority over Description
+    """
+    project_id: str | None = None
+    """
+    KB project scope for node resolution
+    """
+    properties: dict[str, Any] | None = None
+    """
+    Additional metadata properties
+    """
+
+
 class CreateProjectInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1651,6 +1693,7 @@ class DirectUpdateResponse(BaseModel):
     """
     error: str | None = None
     fact_id: str | None = None
+    inventory_item_id: str | None = None
     status: str
 
 
@@ -2599,6 +2642,7 @@ class InventoryItem(BaseModel):
     )
     fact_id: str
     gain_loss: float | None = None
+    inventory_item_id: str | None = None
     item_label: str
     kb_node_id: str | None = None
     market_properties: dict[str, Any] | None = None
@@ -2640,6 +2684,7 @@ class InventoryWriteRequest(BaseModel):
     description: str | None = None
     item_type: str
     kb_node_id: str | None = None
+    label: str | None = None
     project_id: str | None = None
     properties: dict[str, Any] | None = None
 
@@ -2804,6 +2849,7 @@ class KBSchemaField(BaseModel):
     )
     description: str | None = None
     enum_values: list[str] | None = None
+    indexed: bool | None = None
     name: str
     required: bool
     type: str
@@ -2888,6 +2934,10 @@ class KbBulkUpdateInputBody(BaseModel):
     updates: list[BulkUpdateEntry] | None
     """
     Entries to upsert
+    """
+    upsert: bool | None = None
+    """
+    When false, skip entries without an existing node (default true)
     """
 
 
@@ -3028,9 +3078,13 @@ class KbCreateSchemaInputBody(BaseModel):
     """
     Human-readable description
     """
+    display_name: str | None = None
+    """
+    Human-readable label shown in UIs (e.g. 'Medication')
+    """
     entity_type: str
     """
-    Entity type name
+    Entity type name (slug, e.g. 'medication')
     """
     fields: list[KBSchemaField] | None
     """
@@ -3341,9 +3395,13 @@ class KbRecordFeedbackInputBody(BaseModel):
     """
     A URL to the JSON Schema for this object.
     """
+    action: str | None = None
+    """
+    Feedback action enum: converted, dismissed, clicked, ignored, etc.
+    """
     converted: bool
     """
-    Whether the recommendation converted
+    Whether the recommendation converted (legacy; prefer action)
     """
     rule_id: str
     """
@@ -3487,6 +3545,10 @@ class KbUpdateSchemaInputBody(BaseModel):
     description: str | None = None
     """
     Updated description
+    """
+    display_name: str | None = None
+    """
+    Updated human-readable label
     """
     entity_type: str | None = None
     """
@@ -4648,11 +4710,27 @@ class ScheduleWakeupInputBody(BaseModel):
     """
     delay_hours: int
     """
-    Hours to delay before wakeup fires
+    Hours to delay before wakeup fires (ignored when scheduled_at is provided)
+    """
+    event_description: str | None = None
+    """
+    Narrative describing the event that motivated the wakeup
     """
     intent: str
     """
     Intent/reason for the wakeup
+    """
+    interest_topic: str | None = None
+    """
+    Topic the user mentioned earlier worth revisiting
+    """
+    occasion: str | None = None
+    """
+    Free-form occasion hint (e.g. 'their 30th birthday')
+    """
+    scheduled_at: str | None = None
+    """
+    RFC3339 absolute time; overrides delay_hours when set
     """
     user_id: str
     """
@@ -4693,6 +4771,7 @@ class SearchResult(BaseModel):
     fact_id: str
     fact_type: str
     score: float
+    session_id: str | None = None
 
 
 class SeedGeneratedMemory(BaseModel):
@@ -7733,6 +7812,7 @@ class InventoryWriteResponse(BaseModel):
     candidates: list[KbCandidate] | None = None
     error: str | None = None
     fact_id: str | None = None
+    inventory_item_id: str | None = None
     kb_resolution: KbResolutionInfo | None = None
     status: str
 
@@ -7751,6 +7831,7 @@ class KBEntitySchema(BaseModel):
     """
     created_at: AwareDatetime
     description: str | None = None
+    display_name: str | None = None
     entity_type: str
     fields: list[KBSchemaField] | None
     project_id: str
