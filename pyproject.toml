@@ -25,13 +25,6 @@ classifiers = [
 dependencies = [
     "httpx>=0.25.0",
     "pydantic>=2.0.0",
-    # Runtime dependency for classes emitted by openapi-python-client into
-    # src/sonzai/_generated/. The hand-written public surface does not import
-    # attrs directly, but a user poking at _generated.* will need it.
-    "attrs>=23.1.0",
-    # python-dateutil is emitted by the generator for datetime parsing in
-    # _generated.models.*.
-    "python-dateutil>=2.8.0",
 ]
 keywords = ["sonzai", "ai", "mind-layer", "agents", "llm"]
 
@@ -61,6 +54,7 @@ dev = [
     # copy. This is the scientifically rigorous posture: if they update their
     # scoring, our test sees it immediately.
     "chromadb>=0.5",
+    "datamodel-code-generator>=0.25",
 ]
 
 [tool.hatch.build.targets.wheel]
