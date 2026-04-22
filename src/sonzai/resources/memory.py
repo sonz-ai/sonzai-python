@@ -134,6 +134,10 @@ class Memory:
         if instance_id is not None:
             body["instance_id"] = instance_id
 
+        # NOTE: not routed through encode_body — the spec's
+        # GenerateSeedMemoriesInputBody under this path maps to a different
+        # endpoint variant (generate vs. seed); the actual seed body shape
+        # (user_id + memories list) has no matching InputBody class.
         data = self._http.post(
             f"/api/v1/agents/{agent_id}/memory/seed", json_data=body
         )
@@ -383,6 +387,7 @@ class AsyncMemory:
         if instance_id is not None:
             body["instance_id"] = instance_id
 
+        # NOTE: not routed through encode_body — see sync `seed()` above.
         data = await self._http.post(
             f"/api/v1/agents/{agent_id}/memory/seed", json_data=body
         )

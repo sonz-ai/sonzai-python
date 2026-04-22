@@ -244,6 +244,9 @@ class Agents:
         if tool_capabilities is not None:
             body["tool_capabilities"] = tool_capabilities
 
+        # NOTE: not routed through encode_body — UpdateAgentProfileInputBody
+        # in the spec lacks avatar_url/big5/dimensions/tool_capabilities
+        # fields the server accepts. Unblock once spec catches up.
         data = self._http.patch(f"/api/v1/agents/{agent_id}/profile", json_data=body)
         return Agent.model_validate(data)
 
@@ -1642,6 +1645,7 @@ class AsyncAgents:
         if tool_capabilities is not None:
             body["tool_capabilities"] = tool_capabilities
 
+        # NOTE: not routed through encode_body — see sync `update()` above.
         data = await self._http.patch(f"/api/v1/agents/{agent_id}/profile", json_data=body)
         return Agent.model_validate(data)
 
