@@ -32,6 +32,7 @@ from .types import (
     Big5Trait,
     Breakthrough,
     BreakthroughsResponse,
+    ChatChoice,
     ChatMessage,
     ChatResponse,
     ChatUsage,
@@ -48,6 +49,7 @@ from .types import (
     DeliveryAttemptsResponse,
     DialogueResponse,
     DiaryResponse,
+    ExternalToolCall,
     ExtractionDimensionDelta,
     ExtractionFact,
     ExtractionHabit,
@@ -242,10 +244,12 @@ __all__ = [
     "SetStatusResponse",
     "UpdateProjectResponse",
     # Types - Chat
+    "ChatChoice",
     "ChatMessage",
     "ChatResponse",
     "ChatStreamEvent",
     "ChatUsage",
+    "ExternalToolCall",
     # Types - Dialogue / Events
     "DialogueResponse",
     "TriggerEventResponse",
