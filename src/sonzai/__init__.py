@@ -29,6 +29,7 @@ from .types import (
     BatchPersonalityResponse,
     Big5,
     Big5Trait,
+    Breakthrough,
     BreakthroughsResponse,
     ChatMessage,
     ChatResponse,
@@ -264,6 +265,7 @@ __all__ = [
     "UserOverlaysListResponse",
     "UserPersonalityOverlay",
     # Types - Context Engine
+    "Breakthrough",
     "BreakthroughsResponse",
     "ConstellationNode",
     "ConstellationResponse",

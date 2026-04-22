@@ -1267,3 +1267,211 @@ class TestBatchPersonalityEntryMigration:
         from sonzai import BatchPersonalityEntry
         # model_config should have extra='forbid'
         assert BatchPersonalityEntry.model_config.get("extra") == "forbid"
+
+
+class TestBreakthroughMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai._generated.models import Breakthrough as GenBreakthrough
+        from sonzai.types import Breakthrough
+        assert Breakthrough is GenBreakthrough
+
+    def test_required_fields_roundtrip(self) -> None:
+        from sonzai.types import Breakthrough
+        bt = Breakthrough.model_validate({
+            "breakthrough_id": "bt-1",
+            "agent_id": "agent-1",
+            "user_id": "user-1",
+            "breakthrough_number": 3,
+            "level_at_breakthrough": 5,
+            "narrative": "A major breakthrough occurred.",
+            "personality_shifts": ["became more empathetic"],
+            "new_goals": ["help others"],
+            "achieved_goals": ["overcome fear"],
+            "skill_points_awarded": 100,
+            "acknowledged": True,
+            "created_at": "2026-04-01T00:00:00Z",
+        })
+        assert bt.breakthrough_id == "bt-1"
+        assert bt.agent_id == "agent-1"
+        assert bt.user_id == "user-1"
+        assert bt.breakthrough_number == 3
+        assert bt.level_at_breakthrough == 5
+        assert bt.narrative == "A major breakthrough occurred."
+        assert bt.personality_shifts == ["became more empathetic"]
+        assert bt.new_goals == ["help others"]
+        assert bt.achieved_goals == ["overcome fear"]
+        assert bt.skill_points_awarded == 100
+        assert bt.acknowledged is True
+
+    def test_nullable_list_fields(self) -> None:
+        from sonzai.types import Breakthrough
+        bt = Breakthrough.model_validate({
+            "breakthrough_id": "bt-2",
+            "agent_id": "agent-1",
+            "user_id": "user-1",
+            "breakthrough_number": 1,
+            "level_at_breakthrough": 2,
+            "narrative": "Small shift.",
+            "personality_shifts": None,
+            "new_goals": None,
+            "achieved_goals": None,
+            "skill_points_awarded": 10,
+            "acknowledged": False,
+            "created_at": "2026-04-01T00:00:00Z",
+        })
+        assert bt.personality_shifts is None
+        assert bt.new_goals is None
+        assert bt.achieved_goals is None
+
+    def test_optional_trait_evolved(self) -> None:
+        from sonzai.types import Breakthrough
+        bt = Breakthrough.model_validate({
+            "breakthrough_id": "bt-3",
+            "agent_id": "agent-1",
+            "user_id": "user-1",
+            "breakthrough_number": 2,
+            "level_at_breakthrough": 4,
+            "narrative": "Openness grew.",
+            "personality_shifts": [],
+            "new_goals": [],
+            "achieved_goals": [],
+            "skill_points_awarded": 50,
+            "acknowledged": False,
+            "created_at": "2026-04-01T00:00:00Z",
+            "trait_evolved": "openness",
+        })
+        assert bt.trait_evolved == "openness"
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai.types import Breakthrough
+        assert Breakthrough.model_config.get("extra") == "forbid"
+
+
+class TestBreakthroughsResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import BreakthroughsResponse
+        from sonzai._generated.models import BreakthroughsResponse as GenBreakthroughsResponse
+        assert BreakthroughsResponse is GenBreakthroughsResponse
+
+    def test_minimal_required_roundtrip_none(self) -> None:
+        from sonzai import BreakthroughsResponse
+        resp = BreakthroughsResponse.model_validate({"breakthroughs": None})
+        assert resp.breakthroughs is None
+
+    def test_with_breakthroughs(self) -> None:
+        from sonzai import BreakthroughsResponse
+        resp = BreakthroughsResponse.model_validate({
+            "breakthroughs": [{
+                "breakthrough_id": "bt-1",
+                "agent_id": "agent-1",
+                "user_id": "user-1",
+                "breakthrough_number": 1,
+                "level_at_breakthrough": 3,
+                "narrative": "First breakthrough.",
+                "personality_shifts": ["more open"],
+                "new_goals": ["explore"],
+                "achieved_goals": [],
+                "skill_points_awarded": 75,
+                "acknowledged": False,
+                "created_at": "2026-04-01T00:00:00Z",
+            }],
+        })
+        assert resp.breakthroughs is not None
+        assert len(resp.breakthroughs) == 1
+        assert resp.breakthroughs[0].breakthrough_id == "bt-1"
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import BreakthroughsResponse
+        resp = BreakthroughsResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/BreakthroughsResponse.json",
+            "breakthroughs": None,
+        })
+        assert resp.field_schema is not None
+        assert "BreakthroughsResponse" in str(resp.field_schema)
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import BreakthroughsResponse
+        assert BreakthroughsResponse.model_config.get("extra") == "forbid"
+
+
+class TestConstellationResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import ConstellationResponse
+        from sonzai._generated.models import ConstellationResponse as GenConstellationResponse
+        assert ConstellationResponse is GenConstellationResponse
+
+    def test_minimal_required_roundtrip_none(self) -> None:
+        from sonzai import ConstellationResponse
+        resp = ConstellationResponse.model_validate({
+            "nodes": None,
+            "edges": None,
+            "insights": None,
+        })
+        assert resp.nodes is None
+        assert resp.edges is None
+        assert resp.insights is None
+
+    def test_with_nodes_edges_insights(self) -> None:
+        from sonzai import ConstellationResponse
+        resp = ConstellationResponse.model_validate({
+            "nodes": [{
+                "AgentID": "agent-1",
+                "Brightness": 0.8,
+                "CreatedAt": "2026-04-01T00:00:00Z",
+                "Description": "A key person",
+                "FirstMentionedAt": "2026-03-01T00:00:00Z",
+                "Label": "Alice",
+                "LastMentionedAt": "2026-04-01T00:00:00Z",
+                "MentionCount": 5,
+                "NodeID": "node-1",
+                "NodeType": "person",
+                "Significance": 0.9,
+                "UpdatedAt": "2026-04-01T00:00:00Z",
+                "UserID": "user-1",
+            }],
+            "edges": [{
+                "AgentID": "agent-1",
+                "CoOccurrenceCount": 3,
+                "CreatedAt": "2026-04-01T00:00:00Z",
+                "EdgeID": "edge-1",
+                "EdgeType": "friend",
+                "FromNodeID": "node-1",
+                "Strength": 0.7,
+                "ToNodeID": "node-2",
+                "UpdatedAt": "2026-04-01T00:00:00Z",
+            }],
+            "insights": [{
+                "AgentID": "agent-1",
+                "Confidence": 0.85,
+                "Content": "Alice is a close friend.",
+                "CreatedAt": "2026-04-01T00:00:00Z",
+                "InsightID": "insight-1",
+                "InsightType": "relationship",
+                "Priority": 1,
+                "RelatedNodes": ["node-1"],
+                "Surfaced": False,
+                "UpdatedAt": "2026-04-01T00:00:00Z",
+                "UserID": "user-1",
+            }],
+        })
+        assert resp.nodes is not None
+        assert len(resp.nodes) == 1
+        assert resp.edges is not None
+        assert len(resp.edges) == 1
+        assert resp.insights is not None
+        assert len(resp.insights) == 1
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import ConstellationResponse
+        resp = ConstellationResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/ConstellationResponse.json",
+            "nodes": None,
+            "edges": None,
+            "insights": None,
+        })
+        assert resp.field_schema is not None
+        assert "ConstellationResponse" in str(resp.field_schema)
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import ConstellationResponse
+        assert ConstellationResponse.model_config.get("extra") == "forbid"

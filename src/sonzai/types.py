@@ -14,6 +14,9 @@ from ._generated.models import (  # noqa: F401
     BatchPersonalityEntry,
     Big5,
     Big5Trait,
+    Breakthrough,
+    BreakthroughsResponse,
+    ConstellationResponse,
     DiaryEntry,
     Goal,
     GoalsResponse,
@@ -481,68 +484,6 @@ class DialogueResponse(BaseModel):
 # Constellation / Breakthroughs / Wakeups / Mood Aggregate
 # ---------------------------------------------------------------------------
 
-
-class ConstellationEdge(BaseModel):
-    """An edge between two constellation nodes."""
-
-    edge_id: str = ""
-    agent_id: str = ""
-    source_id: str = ""
-    target_id: str = ""
-    relation: str = ""
-    weight: float = 0.0
-    metadata: dict = Field(default_factory=dict)
-
-    model_config = {"extra": "allow"}
-
-
-class ConstellationInsight(BaseModel):
-    """An insight derived from the knowledge graph."""
-
-    insight_id: str = ""
-    agent_id: str = ""
-    user_id: str = ""
-    content: str = ""
-    type: str = ""
-    surfaced: bool = False
-    metadata: dict = Field(default_factory=dict)
-    created_at: str = ""
-
-    model_config = {"extra": "allow"}
-
-
-class ConstellationResponse(BaseModel):
-    nodes: list[ConstellationNode] = Field(default_factory=list)
-    edges: list[ConstellationEdge] = Field(default_factory=list)
-    insights: list[ConstellationInsight] = Field(default_factory=list)
-
-    model_config = {"extra": "allow"}
-
-
-class Breakthrough(BaseModel):
-    """A personality breakthrough moment for an agent."""
-
-    breakthrough_id: str = ""
-    agent_id: str = ""
-    user_id: str = ""
-    breakthrough_number: int = 0
-    level_at_breakthrough: int = 0
-    narrative: str = ""
-    personality_shifts: list[str] = Field(default_factory=list)
-    trait_evolved: str = ""
-    new_goals: list[str] = Field(default_factory=list)
-    achieved_goals: list[str] = Field(default_factory=list)
-    skill_points_awarded: int = 0
-    acknowledged: bool = False
-    created_at: str = ""
-
-    model_config = {"extra": "allow"}
-
-
-class BreakthroughsResponse(BaseModel):
-    breakthroughs: list[Breakthrough] = Field(default_factory=list)
-
-    model_config = {"extra": "allow"}
 
 
 class WakeupsResponse(BaseModel):
