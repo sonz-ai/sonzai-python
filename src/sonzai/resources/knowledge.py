@@ -5,6 +5,18 @@ from __future__ import annotations
 from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
+from .._generated.models import (
+    KbBulkUpdateInputBody,
+    KbCreateAnalyticsRuleInputBody,
+    KbCreateOrgNodeInputBody,
+    KbCreateSchemaInputBody,
+    KbInsertFactsInputBody,
+    KbPromoteNodeInputBody,
+    KbRecordFeedbackInputBody,
+    KbUpdateAnalyticsRuleInputBody,
+    KbUpdateSchemaInputBody,
+)
 from ..types import (
     CreateOrgNodeOptions,
     KBAnalyticsRule,
@@ -89,7 +101,7 @@ class Knowledge:
             body["relationships"] = relationships
         if source is not None:
             body["source"] = source
-        data = self._http.post(f"/api/v1/projects/{project_id}/knowledge/facts", json_data=body)
+        data = self._http.post(f"/api/v1/projects/{project_id}/knowledge/facts", json_data=encode_body(KbInsertFactsInputBody, body))
         return InsertFactsResponse.model_validate(data)
 
     def list_nodes(
@@ -195,7 +207,7 @@ class Knowledge:
         if display_name is not None:
             body["display_name"] = display_name
         body.update(kwargs)
-        data = self._http.post(f"/api/v1/projects/{project_id}/knowledge/schemas", json_data=body)
+        data = self._http.post(f"/api/v1/projects/{project_id}/knowledge/schemas", json_data=encode_body(KbCreateSchemaInputBody, body))
         return KBEntitySchema.model_validate(data)
 
     def list_schemas(self, project_id: str) -> KBSchemaListResponse:
@@ -207,7 +219,7 @@ class Knowledge:
         """Update an entity schema."""
         data = self._http.put(
             f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}",
-            json_data=kwargs,
+            json_data=encode_body(KbUpdateSchemaInputBody, kwargs),
         )
         return KBEntitySchema.model_validate(data)
 
@@ -228,7 +240,7 @@ class Knowledge:
         """Create an analytics rule."""
         data = self._http.post(
             f"/api/v1/projects/{project_id}/knowledge/analytics/rules",
-            json_data=kwargs,
+            json_data=encode_body(KbCreateAnalyticsRuleInputBody, kwargs),
         )
         return KBAnalyticsRule.model_validate(data)
 
@@ -248,7 +260,7 @@ class Knowledge:
         """Update an analytics rule."""
         data = self._http.put(
             f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}",
-            json_data=kwargs,
+            json_data=encode_body(KbUpdateAnalyticsRuleInputBody, kwargs),
         )
         return KBAnalyticsRule.model_validate(data)
 
@@ -345,7 +357,7 @@ class Knowledge:
             payload["action"] = action
         self._http.post(
             f"/api/v1/projects/{project_id}/knowledge/analytics/feedback",
-            json_data=payload,
+            json_data=encode_body(KbRecordFeedbackInputBody, payload),
         )
 
     # -- Bulk Update --
@@ -367,7 +379,7 @@ class Knowledge:
         return KBBulkUpdateResponse.model_validate(
             self._http.patch(
                 f"/api/v1/projects/{project_id}/knowledge/bulk-update",
-                json_data=body,
+                json_data=encode_body(KbBulkUpdateInputBody, body),
             )
         )
 
@@ -391,7 +403,7 @@ class Knowledge:
         return KBNode.model_validate(
             self._http.post(
                 f"/api/v1/tenants/{tenant_id}/knowledge/org-nodes",
-                json_data=body,
+                json_data=encode_body(KbCreateOrgNodeInputBody, body),
             )
         )
 
@@ -410,7 +422,7 @@ class Knowledge:
         return KBNodeWithScope.model_validate(
             self._http.post(
                 f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}/promote-to-org",
-                json_data={"tenant_id": tenant_id},
+                json_data=encode_body(KbPromoteNodeInputBody, {"tenant_id": tenant_id}),
             )
         )
 
@@ -469,7 +481,7 @@ class AsyncKnowledge:
         if source is not None:
             body["source"] = source
         data = await self._http.post(
-            f"/api/v1/projects/{project_id}/knowledge/facts", json_data=body
+            f"/api/v1/projects/{project_id}/knowledge/facts", json_data=encode_body(KbInsertFactsInputBody, body)
         )
         return InsertFactsResponse.model_validate(data)
 
@@ -570,7 +582,7 @@ class AsyncKnowledge:
             body["display_name"] = display_name
         body.update(kwargs)
         data = await self._http.post(
-            f"/api/v1/projects/{project_id}/knowledge/schemas", json_data=body
+            f"/api/v1/projects/{project_id}/knowledge/schemas", json_data=encode_body(KbCreateSchemaInputBody, body)
         )
         return KBEntitySchema.model_validate(data)
 
@@ -581,7 +593,7 @@ class AsyncKnowledge:
     async def update_schema(self, project_id: str, schema_id: str, **kwargs: Any) -> KBEntitySchema:
         data = await self._http.put(
             f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}",
-            json_data=kwargs,
+            json_data=encode_body(KbUpdateSchemaInputBody, kwargs),
         )
         return KBEntitySchema.model_validate(data)
 
@@ -597,7 +609,7 @@ class AsyncKnowledge:
     async def create_analytics_rule(self, project_id: str, **kwargs: Any) -> KBAnalyticsRule:
         data = await self._http.post(
             f"/api/v1/projects/{project_id}/knowledge/analytics/rules",
-            json_data=kwargs,
+            json_data=encode_body(KbCreateAnalyticsRuleInputBody, kwargs),
         )
         return KBAnalyticsRule.model_validate(data)
 
@@ -616,7 +628,7 @@ class AsyncKnowledge:
     ) -> KBAnalyticsRule:
         data = await self._http.put(
             f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}",
-            json_data=kwargs,
+            json_data=encode_body(KbUpdateAnalyticsRuleInputBody, kwargs),
         )
         return KBAnalyticsRule.model_validate(data)
 
@@ -708,7 +720,7 @@ class AsyncKnowledge:
             payload["action"] = action
         await self._http.post(
             f"/api/v1/projects/{project_id}/knowledge/analytics/feedback",
-            json_data=payload,
+            json_data=encode_body(KbRecordFeedbackInputBody, payload),
         )
 
     # -- Bulk Update --
@@ -730,7 +742,7 @@ class AsyncKnowledge:
         return KBBulkUpdateResponse.model_validate(
             await self._http.patch(
                 f"/api/v1/projects/{project_id}/knowledge/bulk-update",
-                json_data=body,
+                json_data=encode_body(KbBulkUpdateInputBody, body),
             )
         )
 
@@ -749,7 +761,7 @@ class AsyncKnowledge:
         return KBNode.model_validate(
             await self._http.post(
                 f"/api/v1/tenants/{tenant_id}/knowledge/org-nodes",
-                json_data=body,
+                json_data=encode_body(KbCreateOrgNodeInputBody, body),
             )
         )
 
@@ -763,6 +775,6 @@ class AsyncKnowledge:
         return KBNodeWithScope.model_validate(
             await self._http.post(
                 f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}/promote-to-org",
-                json_data={"tenant_id": tenant_id},
+                json_data=encode_body(KbPromoteNodeInputBody, {"tenant_id": tenant_id}),
             )
         )

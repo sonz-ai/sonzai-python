@@ -9,6 +9,11 @@ from urllib.parse import quote
 _list = builtins.list
 
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
+from .._generated.models import (
+    CreateFactInputBody,
+    UpdateFactInputBody,
+)
 from ..types import (
     AtomicFact,
     DeleteWisdomResponse,
@@ -209,7 +214,7 @@ class Memory:
         if metadata is not None:
             body["metadata"] = metadata
         data = self._http.post(
-            f"/api/v1/agents/{agent_id}/memory/facts", json_data=body
+            f"/api/v1/agents/{agent_id}/memory/facts", json_data=encode_body(CreateFactInputBody, body)
         )
         return AtomicFact.model_validate(data)
 
@@ -240,7 +245,7 @@ class Memory:
         if metadata is not None:
             body["metadata"] = metadata
         data = self._http.put(
-            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}", json_data=body
+            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}", json_data=encode_body(UpdateFactInputBody, body)
         )
         return AtomicFact.model_validate(data)
 
@@ -458,7 +463,7 @@ class AsyncMemory:
         if metadata is not None:
             body["metadata"] = metadata
         data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/memory/facts", json_data=body
+            f"/api/v1/agents/{agent_id}/memory/facts", json_data=encode_body(CreateFactInputBody, body)
         )
         return AtomicFact.model_validate(data)
 
@@ -489,7 +494,7 @@ class AsyncMemory:
         if metadata is not None:
             body["metadata"] = metadata
         data = await self._http.put(
-            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}", json_data=body
+            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}", json_data=encode_body(UpdateFactInputBody, body)
         )
         return AtomicFact.model_validate(data)
 

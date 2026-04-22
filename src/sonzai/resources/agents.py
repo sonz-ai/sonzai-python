@@ -7,6 +7,34 @@ from typing import Any, Literal
 from urllib.parse import quote
 
 from .._http import AsyncHTTPClient, HTTPClient
+from .._request_helpers import encode_body
+from .._generated.models import (
+    AgentDialogueInputBody,
+    AgentKBSearchInputBody,
+    CreateAgentBody,
+    CreateConstellationNodeInputBody,
+    CreateCustomToolInputBody,
+    CreateGoalInputBody,
+    CreateHabitInputBody,
+    EvalOnlyRequest,
+    EvaluateRequest,
+    ForkAgentInputBody,
+    ProcessInputBody,
+    RegenerateAvatarInputBody,
+    RunEvalRequest,
+    ScheduleWakeupInputBody,
+    SetAgentStatusInputBody,
+    SimulateRequest,
+    TriggerConsolidationInputBody,
+    TriggerEventInputBody,
+    UpdateAgentPostProcessingModelInputBody,
+    UpdateAgentProjectInputBody,
+    UpdateCapabilitiesInputBody,
+    UpdateConstellationNodeInputBody,
+    UpdateCustomToolInputBody,
+    UpdateGoalInputBody,
+    UpdateHabitInputBody,
+)
 from ..types import (
     Agent,
     AgentCapabilities,
@@ -170,7 +198,7 @@ class Agents:
         if capabilities is not None:
             body["capabilities"] = capabilities
 
-        data = self._http.post("/api/v1/agents", json_data=body)
+        data = self._http.post("/api/v1/agents", json_data=encode_body(CreateAgentBody, body))
         return Agent.model_validate(data)
 
     def get(self, agent_id: str) -> Agent:
@@ -373,7 +401,7 @@ class Agents:
         if instance_id is not None:
             body["instance_id"] = instance_id
 
-        data = self._http.post(f"/api/v1/agents/{agent_id}/dialogue", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/dialogue", json_data=encode_body(AgentDialogueInputBody, body))
         return DialogueResponse.model_validate(data)
 
     # -- Events --
@@ -416,7 +444,7 @@ class Agents:
                 m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
             ]
 
-        data = self._http.post(f"/api/v1/agents/{agent_id}/events", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/events", json_data=encode_body(TriggerEventInputBody, body))
         return TriggerEventResponse.model_validate(data)
 
     # -- Wakeup Scheduling --
@@ -450,7 +478,7 @@ class Agents:
         if event_description is not None:
             body["event_description"] = event_description
 
-        data = self._http.post(f"/api/v1/agents/{agent_id}/wakeups", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/wakeups", json_data=encode_body(ScheduleWakeupInputBody, body))
         return ScheduledWakeup.model_validate(data)
 
     # -- Evaluate / Simulate --
@@ -469,7 +497,7 @@ class Agents:
         if config_override:
             body["config_override"] = config_override
 
-        data = self._http.post(f"/api/v1/agents/{agent_id}/evaluate", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/evaluate", json_data=encode_body(EvaluateRequest, body))
         return EvaluationResult.model_validate(data)
 
     def simulate(
@@ -496,7 +524,7 @@ class Agents:
             body["config_override"] = config_override
 
         # Step 1: POST to start the run
-        data = self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=encode_body(SimulateRequest, body))
         ref = RunRef.model_validate(data)
         # Step 2: Stream events from the run
         for event in self._http.stream_sse("GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"):
@@ -525,7 +553,7 @@ class Agents:
         if config_override is not None:
             body["config_override"] = config_override
 
-        data = self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=encode_body(SimulateRequest, body))
         return RunRef.model_validate(data)
 
     def run_eval(
@@ -559,7 +587,7 @@ class Agents:
             body["quality_only"] = quality_only
 
         # Step 1: POST to start the run
-        data = self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=encode_body(RunEvalRequest, body))
         ref = RunRef.model_validate(data)
         # Step 2: Stream events from the run
         for event in self._http.stream_sse("GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"):
@@ -595,7 +623,7 @@ class Agents:
         if quality_only is not None:
             body["quality_only"] = quality_only
 
-        data = self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=encode_body(RunEvalRequest, body))
         return RunRef.model_validate(data)
 
     def eval_only(
@@ -618,7 +646,7 @@ class Agents:
             body["quality_only"] = quality_only
 
         # Step 1: POST to start the eval
-        data = self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=encode_body(EvalOnlyRequest, body))
         ref = RunRef.model_validate(data)
         # Step 2: Stream events from the run
         for event in self._http.stream_sse("GET", f"/api/v1/eval-runs/{ref.run_id}/events?from=0"):
@@ -643,7 +671,7 @@ class Agents:
         if quality_only is not None:
             body["quality_only"] = quality_only
 
-        data = self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=encode_body(EvalOnlyRequest, body))
         return RunRef.model_validate(data)
 
     # -- Context Engine convenience accessors --
@@ -734,7 +762,7 @@ class Agents:
             body["display_name"] = display_name
         if strength is not None:
             body["strength"] = strength
-        data = self._http.post(f"/api/v1/agents/{agent_id}/habits", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/habits", json_data=encode_body(CreateHabitInputBody, body))
         return Habit.model_validate(data)
 
     def update_habit(
@@ -761,7 +789,7 @@ class Agents:
         if strength is not None:
             body["strength"] = strength
         data = self._http.put(
-            f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", json_data=body
+            f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", json_data=encode_body(UpdateHabitInputBody, body)
         )
         return Habit.model_validate(data)
 
@@ -823,7 +851,7 @@ class Agents:
         if related_traits is not None:
             body["related_traits"] = related_traits
 
-        data = self._http.post(f"/api/v1/agents/{agent_id}/goals", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/goals", json_data=encode_body(CreateGoalInputBody, body))
         return Goal.model_validate(data)
 
     def update_goal(
@@ -853,7 +881,7 @@ class Agents:
         if related_traits is not None:
             body["related_traits"] = related_traits
 
-        data = self._http.put(f"/api/v1/agents/{agent_id}/goals/{goal_id}", json_data=body)
+        data = self._http.put(f"/api/v1/agents/{agent_id}/goals/{goal_id}", json_data=encode_body(UpdateGoalInputBody, body))
         return Goal.model_validate(data)
 
     def delete_goal(
@@ -944,7 +972,7 @@ class Agents:
             body["description"] = description
         if significance is not None:
             body["significance"] = significance
-        data = self._http.post(f"/api/v1/agents/{agent_id}/constellation/nodes", json_data=body)
+        data = self._http.post(f"/api/v1/agents/{agent_id}/constellation/nodes", json_data=encode_body(CreateConstellationNodeInputBody, body))
         return ConstellationNode.model_validate(data)
 
     def update_constellation_node(
@@ -969,7 +997,7 @@ class Agents:
             body["node_type"] = node_type
         data = self._http.put(
             f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}",
-            json_data=body,
+            json_data=encode_body(UpdateConstellationNodeInputBody, body),
         )
         return ConstellationNode.model_validate(data)
 
@@ -1039,7 +1067,8 @@ class Agents:
         """Set an agent's active status."""
         return SetStatusResponse.model_validate(
             self._http.patch(
-                f"/api/v1/agents/{agent_id}/status", json_data={"is_active": is_active}
+                f"/api/v1/agents/{agent_id}/status",
+                json_data=encode_body(SetAgentStatusInputBody, {"is_active": is_active}),
             )
         )
 
@@ -1049,7 +1078,8 @@ class Agents:
         """Update the project assignment for an agent."""
         return UpdateProjectResponse.model_validate(
             self._http.patch(
-                f"/api/v1/agents/{agent_id}/project", json_data={"project_id": project_id}
+                f"/api/v1/agents/{agent_id}/project",
+                json_data=encode_body(UpdateAgentProjectInputBody, {"project_id": project_id}),
             )
         )
 
@@ -1092,7 +1122,7 @@ class Agents:
         if memory_mode is not None:
             body["memoryMode"] = memory_mode
         return AgentCapabilities.model_validate(
-            self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
+            self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=encode_body(UpdateCapabilitiesInputBody, body))
         )
 
     # -- Post-processing model override (layer 1 of cascade) --
@@ -1112,10 +1142,10 @@ class Agents:
         """
         return self._http.patch(  # type: ignore[return-value]
             f"/api/v1/agents/{agent_id}/post-processing-model",
-            json_data={
+            json_data=encode_body(UpdateAgentPostProcessingModelInputBody, {
                 "post_processing_provider": provider,
                 "post_processing_model": model,
-            },
+            }),
         )
 
     def clear_post_processing_model(self, agent_id: str) -> dict[str, Any]:
@@ -1160,7 +1190,7 @@ class Agents:
         if parameters is not None:
             body["parameters"] = parameters
         return CustomToolDefinition.model_validate(
-            self._http.post(f"/api/v1/agents/{agent_id}/tools", json_data=body)
+            self._http.post(f"/api/v1/agents/{agent_id}/tools", json_data=encode_body(CreateCustomToolInputBody, body))
         )
 
     def update_custom_tool(
@@ -1177,7 +1207,7 @@ class Agents:
             body["description"] = description
         if parameters is not None:
             body["parameters"] = parameters
-        return self._http.put(f"/api/v1/agents/{agent_id}/tools/{tool_name}", json_data=body)
+        return self._http.put(f"/api/v1/agents/{agent_id}/tools/{tool_name}", json_data=encode_body(UpdateCustomToolInputBody, body))
 
     def delete_custom_tool(self, agent_id: str, tool_name: str) -> None:
         """Delete a custom tool from an agent."""
@@ -1197,7 +1227,7 @@ class Agents:
         if user_id is not None:
             body["user_id"] = user_id
         return ConsolidateResponse.model_validate(
-            self._http.post(f"/api/v1/agents/{agent_id}/memory/consolidate", json_data=body)
+            self._http.post(f"/api/v1/agents/{agent_id}/memory/consolidate", json_data=encode_body(TriggerConsolidationInputBody, body))
         )
 
     # -- Summaries --
@@ -1243,7 +1273,7 @@ class Agents:
         if model is not None:
             body["model"] = model
         return ProcessResponse.model_validate(
-            self._http.post(f"/api/v1/agents/{agent_id}/process", json_data=body)
+            self._http.post(f"/api/v1/agents/{agent_id}/process", json_data=encode_body(ProcessInputBody, body))
         )
 
     # -- Models --
@@ -1294,7 +1324,7 @@ class Agents:
         if style is not None:
             body["style"] = style
         return GenerateAvatarResponse.model_validate(
-            self._http.post(f"/api/v1/agents/{agent_id}/avatar/generate", json_data=body)
+            self._http.post(f"/api/v1/agents/{agent_id}/avatar/generate", json_data=encode_body(RegenerateAvatarInputBody, body))
         )
 
     # -- Time Machine --
@@ -1333,7 +1363,7 @@ class Agents:
         return AgentKBSearchResponse.model_validate(
             self._http.post(
                 f"/api/v1/agents/{agent_id}/tools/kb-search",
-                json_data=body,
+                json_data=encode_body(AgentKBSearchInputBody, body),
             )
         )
 
@@ -1364,7 +1394,7 @@ class Agents:
         if name is not None:
             body["name"] = name
         return ForkResponse.model_validate(
-            self._http.post(f"/api/v1/agents/{agent_id}/fork", json_data=body)
+            self._http.post(f"/api/v1/agents/{agent_id}/fork", json_data=encode_body(ForkAgentInputBody, body))
         )
 
     def get_fork_status(self, agent_id: str) -> ForkStatusResponse:
@@ -1566,7 +1596,7 @@ class AsyncAgents:
         if capabilities is not None:
             body["capabilities"] = capabilities
 
-        data = await self._http.post("/api/v1/agents", json_data=body)
+        data = await self._http.post("/api/v1/agents", json_data=encode_body(CreateAgentBody, body))
         return Agent.model_validate(data)
 
     async def get(self, agent_id: str) -> Agent:
@@ -1745,7 +1775,7 @@ class AsyncAgents:
         if instance_id is not None:
             body["instance_id"] = instance_id
 
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/dialogue", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/dialogue", json_data=encode_body(AgentDialogueInputBody, body))
         return DialogueResponse.model_validate(data)
 
     # -- Events --
@@ -1788,7 +1818,7 @@ class AsyncAgents:
                 m.model_dump() if isinstance(m, ChatMessage) else m for m in messages
             ]
 
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/events", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/events", json_data=encode_body(TriggerEventInputBody, body))
         return TriggerEventResponse.model_validate(data)
 
     # -- Wakeup Scheduling --
@@ -1822,7 +1852,7 @@ class AsyncAgents:
         if event_description is not None:
             body["event_description"] = event_description
 
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/wakeups", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/wakeups", json_data=encode_body(ScheduleWakeupInputBody, body))
         return ScheduledWakeup.model_validate(data)
 
     # -- Evaluate / Simulate --
@@ -1840,7 +1870,7 @@ class AsyncAgents:
         if config_override:
             body["config_override"] = config_override
 
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/evaluate", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/evaluate", json_data=encode_body(EvaluateRequest, body))
         return EvaluationResult.model_validate(data)
 
     async def simulate(
@@ -1867,7 +1897,7 @@ class AsyncAgents:
             body["config_override"] = config_override
 
         # Step 1: POST to start the run
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=encode_body(SimulateRequest, body))
         ref = RunRef.model_validate(data)
         # Step 2: Stream events from the run
         async for event in self._http.stream_sse(
@@ -1898,7 +1928,7 @@ class AsyncAgents:
         if config_override is not None:
             body["config_override"] = config_override
 
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/simulate", json_data=encode_body(SimulateRequest, body))
         return RunRef.model_validate(data)
 
     async def run_eval(
@@ -1932,7 +1962,7 @@ class AsyncAgents:
             body["quality_only"] = quality_only
 
         # Step 1: POST to start the run
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=encode_body(RunEvalRequest, body))
         ref = RunRef.model_validate(data)
         # Step 2: Stream events from the run
         async for event in self._http.stream_sse(
@@ -1970,7 +2000,7 @@ class AsyncAgents:
         if quality_only is not None:
             body["quality_only"] = quality_only
 
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/run-eval", json_data=encode_body(RunEvalRequest, body))
         return RunRef.model_validate(data)
 
     async def eval_only(
@@ -1993,7 +2023,7 @@ class AsyncAgents:
             body["quality_only"] = quality_only
 
         # Step 1: POST to start the eval
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=encode_body(EvalOnlyRequest, body))
         ref = RunRef.model_validate(data)
         # Step 2: Stream events from the run
         async for event in self._http.stream_sse(
@@ -2020,7 +2050,7 @@ class AsyncAgents:
         if quality_only is not None:
             body["quality_only"] = quality_only
 
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/eval-only", json_data=encode_body(EvalOnlyRequest, body))
         return RunRef.model_validate(data)
 
     # -- Context Engine convenience accessors --
@@ -2111,7 +2141,7 @@ class AsyncAgents:
             body["display_name"] = display_name
         if strength is not None:
             body["strength"] = strength
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/habits", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/habits", json_data=encode_body(CreateHabitInputBody, body))
         return Habit.model_validate(data)
 
     async def update_habit(
@@ -2138,7 +2168,7 @@ class AsyncAgents:
         if strength is not None:
             body["strength"] = strength
         data = await self._http.put(
-            f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", json_data=body
+            f"/api/v1/agents/{agent_id}/habits/{quote(habit_name, safe='')}", json_data=encode_body(UpdateHabitInputBody, body)
         )
         return Habit.model_validate(data)
 
@@ -2200,7 +2230,7 @@ class AsyncAgents:
         if related_traits is not None:
             body["related_traits"] = related_traits
 
-        data = await self._http.post(f"/api/v1/agents/{agent_id}/goals", json_data=body)
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/goals", json_data=encode_body(CreateGoalInputBody, body))
         return Goal.model_validate(data)
 
     async def update_goal(
@@ -2230,7 +2260,7 @@ class AsyncAgents:
         if related_traits is not None:
             body["related_traits"] = related_traits
 
-        data = await self._http.put(f"/api/v1/agents/{agent_id}/goals/{goal_id}", json_data=body)
+        data = await self._http.put(f"/api/v1/agents/{agent_id}/goals/{goal_id}", json_data=encode_body(UpdateGoalInputBody, body))
         return Goal.model_validate(data)
 
     async def delete_goal(
@@ -2322,7 +2352,7 @@ class AsyncAgents:
         if significance is not None:
             body["significance"] = significance
         data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/constellation/nodes", json_data=body
+            f"/api/v1/agents/{agent_id}/constellation/nodes", json_data=encode_body(CreateConstellationNodeInputBody, body)
         )
         return ConstellationNode.model_validate(data)
 
@@ -2348,7 +2378,7 @@ class AsyncAgents:
             body["node_type"] = node_type
         data = await self._http.put(
             f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}",
-            json_data=body,
+            json_data=encode_body(UpdateConstellationNodeInputBody, body),
         )
         return ConstellationNode.model_validate(data)
 
@@ -2420,7 +2450,8 @@ class AsyncAgents:
         """Set an agent's active status."""
         return SetStatusResponse.model_validate(
             await self._http.patch(
-                f"/api/v1/agents/{agent_id}/status", json_data={"is_active": is_active}
+                f"/api/v1/agents/{agent_id}/status",
+                json_data=encode_body(SetAgentStatusInputBody, {"is_active": is_active}),
             )
         )
 
@@ -2430,7 +2461,8 @@ class AsyncAgents:
         """Update the project assignment for an agent."""
         return UpdateProjectResponse.model_validate(
             await self._http.patch(
-                f"/api/v1/agents/{agent_id}/project", json_data={"project_id": project_id}
+                f"/api/v1/agents/{agent_id}/project",
+                json_data=encode_body(UpdateAgentProjectInputBody, {"project_id": project_id}),
             )
         )
 
@@ -2473,7 +2505,7 @@ class AsyncAgents:
         if memory_mode is not None:
             body["memoryMode"] = memory_mode
         return AgentCapabilities.model_validate(
-            await self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
+            await self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=encode_body(UpdateCapabilitiesInputBody, body))
         )
 
     # -- Post-processing model override (layer 1 of cascade) --
@@ -2491,10 +2523,10 @@ class AsyncAgents:
         """
         return await self._http.patch(  # type: ignore[return-value]
             f"/api/v1/agents/{agent_id}/post-processing-model",
-            json_data={
+            json_data=encode_body(UpdateAgentPostProcessingModelInputBody, {
                 "post_processing_provider": provider,
                 "post_processing_model": model,
-            },
+            }),
         )
 
     async def clear_post_processing_model(self, agent_id: str) -> dict[str, Any]:
@@ -2534,7 +2566,7 @@ class AsyncAgents:
         if parameters is not None:
             body["parameters"] = parameters
         return CustomToolDefinition.model_validate(
-            await self._http.post(f"/api/v1/agents/{agent_id}/tools", json_data=body)
+            await self._http.post(f"/api/v1/agents/{agent_id}/tools", json_data=encode_body(CreateCustomToolInputBody, body))
         )
 
     async def update_custom_tool(
@@ -2551,7 +2583,7 @@ class AsyncAgents:
             body["description"] = description
         if parameters is not None:
             body["parameters"] = parameters
-        return await self._http.put(f"/api/v1/agents/{agent_id}/tools/{tool_name}", json_data=body)
+        return await self._http.put(f"/api/v1/agents/{agent_id}/tools/{tool_name}", json_data=encode_body(UpdateCustomToolInputBody, body))
 
     async def delete_custom_tool(self, agent_id: str, tool_name: str) -> None:
         """Delete a custom tool from an agent."""
@@ -2571,7 +2603,7 @@ class AsyncAgents:
         if user_id is not None:
             body["user_id"] = user_id
         return ConsolidateResponse.model_validate(
-            await self._http.post(f"/api/v1/agents/{agent_id}/memory/consolidate", json_data=body)
+            await self._http.post(f"/api/v1/agents/{agent_id}/memory/consolidate", json_data=encode_body(TriggerConsolidationInputBody, body))
         )
 
     # -- Summaries --
@@ -2617,7 +2649,7 @@ class AsyncAgents:
         if model is not None:
             body["model"] = model
         return ProcessResponse.model_validate(
-            await self._http.post(f"/api/v1/agents/{agent_id}/process", json_data=body)
+            await self._http.post(f"/api/v1/agents/{agent_id}/process", json_data=encode_body(ProcessInputBody, body))
         )
 
     # -- Models --
@@ -2670,7 +2702,7 @@ class AsyncAgents:
         if style is not None:
             body["style"] = style
         return GenerateAvatarResponse.model_validate(
-            await self._http.post(f"/api/v1/agents/{agent_id}/avatar/generate", json_data=body)
+            await self._http.post(f"/api/v1/agents/{agent_id}/avatar/generate", json_data=encode_body(RegenerateAvatarInputBody, body))
         )
 
     # -- Time Machine --
@@ -2709,7 +2741,7 @@ class AsyncAgents:
         return AgentKBSearchResponse.model_validate(
             await self._http.post(
                 f"/api/v1/agents/{agent_id}/tools/kb-search",
-                json_data=body,
+                json_data=encode_body(AgentKBSearchInputBody, body),
             )
         )
 
@@ -2740,7 +2772,7 @@ class AsyncAgents:
         if name is not None:
             body["name"] = name
         return ForkResponse.model_validate(
-            await self._http.post(f"/api/v1/agents/{agent_id}/fork", json_data=body)
+            await self._http.post(f"/api/v1/agents/{agent_id}/fork", json_data=encode_body(ForkAgentInputBody, body))
         )
 
     async def get_fork_status(self, agent_id: str) -> ForkStatusResponse:
