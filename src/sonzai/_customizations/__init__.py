@@ -19,11 +19,12 @@ in scope for this package.
 """
 
 from .agents import AgentCapabilities
-from .chat import ChatStreamEvent
+from .chat import ChatStreamEvent, ChatUsage
 from .memory import StoredFact
 
 __all__ = [
     "AgentCapabilities",
     "ChatStreamEvent",
+    "ChatUsage",
     "StoredFact",
 ]

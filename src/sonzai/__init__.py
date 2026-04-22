@@ -32,7 +32,6 @@ from .types import (
     BreakthroughsResponse,
     ChatMessage,
     ChatResponse,
-    ChatStreamEvent,
     ChatUsage,
     ConsolidateResponse,
     ConstellationNode,
@@ -187,7 +186,7 @@ from .types import (
     DiaryEntry,
     WakeupExecution,
 )
-from ._customizations import AgentCapabilities, StoredFact
+from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact
 
 __version__ = "1.3.0"
 

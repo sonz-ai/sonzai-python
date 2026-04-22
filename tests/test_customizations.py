@@ -112,3 +112,53 @@ class TestAgentCapabilities:
         assert "imageGeneration" in dumped
         assert "musicGeneration" in dumped
         assert "memoryMode" in dumped
+
+
+class TestChatStreamEvent:
+    def test_imports_from_customizations(self) -> None:
+        from sonzai._customizations import ChatStreamEvent as CustChatStreamEvent
+
+        assert ChatStreamEvent is CustChatStreamEvent
+
+    def test_content_property_on_delta_frame(self) -> None:
+        event = ChatStreamEvent.model_validate(
+            {"choices": [{"delta": {"content": "Hello"}, "index": 0}]}
+        )
+        assert event.content == "Hello"
+
+    def test_empty_event_has_no_content(self) -> None:
+        event = ChatStreamEvent.model_validate({})
+        assert event.content == ""
+        assert not event.is_finished
+
+    def test_is_finished_on_stop_frame(self) -> None:
+        event = ChatStreamEvent.model_validate(
+            {"choices": [{"delta": {"content": "."}, "finish_reason": "stop", "index": 0}]}
+        )
+        assert event.is_finished
+
+    def test_client_extension_fields_default_empty(self) -> None:
+        event = ChatStreamEvent.model_validate({})
+        assert event.full_content == ""
+        assert event.finish_reason == ""
+        assert event.external_tool_calls == []
+        assert event.is_token_error is False
+
+    def test_client_extension_fields_round_trip(self) -> None:
+        event = ChatStreamEvent(
+            full_content="done",
+            finish_reason="stop",
+            continuation_token="abc",
+            is_token_error=True,
+        )
+        assert event.full_content == "done"
+        assert event.continuation_token == "abc"
+        assert event.is_token_error is True
+
+    def test_free_form_data_preserved(self) -> None:
+        """`data` on side_effects frames is free-form per spec — must survive."""
+        event = ChatStreamEvent.model_validate(
+            {"type": "side_effects", "data": {"facts": [{"content": "x"}]}}
+        )
+        assert event.type == "side_effects"
+        assert event.data == {"facts": [{"content": "x"}]}

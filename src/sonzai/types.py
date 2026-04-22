@@ -7,7 +7,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
 
-from ._customizations import AgentCapabilities, StoredFact
+from ._customizations import AgentCapabilities, ChatStreamEvent, ChatUsage, StoredFact
 
 # ---------------------------------------------------------------------------
 # Chat
@@ -23,54 +23,6 @@ class ChatChoice(BaseModel):
     delta: dict[str, str] = Field(default_factory=dict)
     finish_reason: str | None = None
     index: int = 0
-
-
-class ChatUsage(BaseModel):
-    prompt_tokens: int = Field(alias="promptTokens", default=0)
-    completion_tokens: int = Field(alias="completionTokens", default=0)
-    total_tokens: int = Field(alias="totalTokens", default=0)
-
-    model_config = {"populate_by_name": True}
-
-
-class ChatStreamEvent(BaseModel):
-    """A single SSE event from the chat stream."""
-
-    choices: list[ChatChoice] = Field(default_factory=list)
-    usage: ChatUsage | None = None
-    type: str | None = None
-    data: dict[str, Any] | None = None
-    error: dict[str, str] | None = None
-
-    # Rich event fields (populated based on type)
-    message_index: int = 0
-    is_follow_up: bool = False
-    replacement: bool = False
-    full_content: str = ""
-    finish_reason: str = ""
-    continuation_token: str = ""
-    response_cookie: str = ""
-    message_count: int = 0
-    side_effects: dict[str, Any] | None = None
-    external_tool_calls: list[ExternalToolCall] = Field(default_factory=list)
-    enriched_context: dict[str, Any] | None = None
-    build_duration_ms: int = 0
-    used_fast_path: bool = False
-    error_message: str = ""
-    error_code: str = ""
-    is_token_error: bool = False
-
-    model_config = {"extra": "allow"}
-
-    @property
-    def content(self) -> str:
-        if self.choices:
-            return self.choices[0].delta.get("content", "")
-        return ""
-
-    @property
-    def is_finished(self) -> bool:
-        return bool(self.choices and self.choices[0].finish_reason == "stop")
 
 
 class ChatResponse(BaseModel):
