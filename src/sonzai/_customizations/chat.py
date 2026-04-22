@@ -63,4 +63,8 @@ class ChatStreamEvent(_GenChatSSEChunk):
 
     @property
     def is_finished(self) -> bool:
-        return bool(self.choices and self.choices[0].finish_reason == "stop")
+        # Any non-empty `finish_reason` is a terminal frame:
+        # "stop" (natural end), "length" (max tokens), "content_filter"
+        # (safety), "tool_calls"/"function_call" (OpenAI-style). Matching
+        # only "stop" would leave stream readers spinning past the others.
+        return bool(self.choices and self.choices[0].finish_reason)

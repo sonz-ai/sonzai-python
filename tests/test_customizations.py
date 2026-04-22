@@ -137,6 +137,30 @@ class TestChatStreamEvent:
         )
         assert event.is_finished
 
+    def test_is_finished_on_length_frame(self) -> None:
+        event = ChatStreamEvent.model_validate(
+            {"choices": [{"delta": {}, "finish_reason": "length", "index": 0}]}
+        )
+        assert event.is_finished
+
+    def test_is_finished_on_content_filter_frame(self) -> None:
+        event = ChatStreamEvent.model_validate(
+            {"choices": [{"delta": {}, "finish_reason": "content_filter", "index": 0}]}
+        )
+        assert event.is_finished
+
+    def test_is_finished_on_tool_calls_frame(self) -> None:
+        event = ChatStreamEvent.model_validate(
+            {"choices": [{"delta": {}, "finish_reason": "tool_calls", "index": 0}]}
+        )
+        assert event.is_finished
+
+    def test_not_finished_on_empty_finish_reason(self) -> None:
+        event = ChatStreamEvent.model_validate(
+            {"choices": [{"delta": {"content": "x"}, "finish_reason": None, "index": 0}]}
+        )
+        assert not event.is_finished
+
     def test_client_extension_fields_default_empty(self) -> None:
         event = ChatStreamEvent.model_validate({})
         assert event.full_content == ""
