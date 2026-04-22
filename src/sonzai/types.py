@@ -7,8 +7,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact
-from ._generated.models import (
+from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact  # noqa: F401
+from ._generated.models import (  # noqa: F401
     AtomicFact,
     ListAllFactsResponse,
     MemoryNode,

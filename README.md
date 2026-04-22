@@ -101,7 +101,7 @@ response = client.agents.chat(
 # Get memory tree
 memory = client.agents.memory.list("agent-id", user_id="user-123")
 for node in memory.nodes:
-    print(f"{node.title} (importance: {node.importance})")
+    print(f"{node.name} (importance: {node.importance})")
 
 # Search memories
 results = client.agents.memory.search("agent-id", query="favorite food")

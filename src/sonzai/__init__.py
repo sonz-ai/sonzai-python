@@ -16,6 +16,7 @@ from ._exceptions import (
 from .types import (
     AcknowledgeResponse,
     Agent,
+    AtomicFact,
     CreateAPIKeyResponse,
     DeleteProjectResponse,
     DeleteUserPersonaResponse,
@@ -78,6 +79,7 @@ from .types import (
     ImageGenerateResponse,
     InitialGoal,
     InstanceListResponse,
+    ListAllFactsResponse,
     InterestsResponse,
     InventoryBatchImportResponse,
     InventoryDirectUpdateResponse,
@@ -95,7 +97,9 @@ from .types import (
     KBScope,
     KBNodeWithScope,
     CreateOrgNodeOptions,
+    MemoryNode,
     MemoryResetResponse,
+    MemoryResponse,
     MemorySearchResponse,
     MemorySearchResult,
     MemorySummary,
@@ -156,6 +160,7 @@ from .types import (
     UserPersonaRecord,
     TimeMachineMoodSnapshot,
     TimeMachineResponse,
+    TimelineSession,
     TriggerEventResponse,
     UpdateProjectResponse,
     UserOverlayDetailResponse,
@@ -182,13 +187,6 @@ from .types import (
     WakeupExecution,
 )
 from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact
-from ._generated.models import (
-    AtomicFact,
-    ListAllFactsResponse,
-    MemoryNode,
-    MemoryResponse,
-    TimelineSession,
-)
 
 __version__ = "1.3.0"
 
