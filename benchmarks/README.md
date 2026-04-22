@@ -23,6 +23,51 @@ passed — without it, self-learning only fires on the real clock.
 If you replace `advance_time` with `time.sleep`, the benchmarks still pass —
 they'd just take days.
 
+## A note on what's being measured
+
+LongMemEval is a **retrieval benchmark**: each question's answer is a literal
+span that appears somewhere in the haystack transcripts. The optimal strategy
+for this specific benchmark is to store every user turn verbatim, embed it,
+and do hybrid BM25+vector lookup at query time — which is exactly what
+MemPalace does. That design scores well here because the benchmark is built
+that way.
+
+Sonzai is built for a different target: **long-horizon chat where the same
+agent talks to the same person across hundreds or thousands of sessions,
+maintaining a coherent personality the whole time**. That target pushes the
+architecture in the opposite direction from "store everything":
+
+- **Fact extraction + dedup** (`DedupGate`). Instead of storing 200 verbatim
+  mentions of "the user drinks coffee" across three years of chats, Sonzai
+  extracts and dedupes to one consolidated fact with rising confidence.
+  Memory footprint stays sub-linear in session count. A pure-verbatim index
+  grows linearly forever — acceptable on a 50-session benchmark, infeasible
+  after a few thousand real sessions, and it inflates the cost of every
+  retrieval and every context injection along the way.
+- **Personality as first-class memory**. Big5 traits, behavioral tendencies,
+  speech patterns, and emotional continuity are explicit state that shapes
+  both fact ranking and response generation. Across a 90-session SOTOPIA
+  trajectory, this is what keeps the agent from drifting into
+  off-character answers. It's not something a verbatim transcript index can
+  represent at all.
+- **Consolidation and decay**. Older memories lose salience unless reinforced,
+  mirroring how human recall behaves. A chat assistant that can still quote a
+  throwaway remark from session 47 two years later isn't realistic — and the
+  infra bill to keep it is nontrivial.
+
+So Sonzai accepts a structural handicap on a benchmark like LongMemEval —
+the compression step can drop a detail that a verbatim index would keep —
+and *still* matches or beats MemPalace on QA accuracy in our head-to-head
+runs. The SOTOPIA longitudinal bench below is the complement: it measures
+the thing LongMemEval can't, which is whether the agent still behaves like
+itself 90 sessions later. Neither system looks the same on both axes, and
+that's the point.
+
+We report Sonzai numbers here in full, including the ones where we give up
+ground to a simpler architecture. If you're picking a memory layer, match the
+benchmark's shape to your product's shape — snapshot Q&A vs. long-running
+relationship — before anchoring on a single score.
+
 ## Install
 
 ```bash
