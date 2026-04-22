@@ -11,6 +11,7 @@ from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact  # n
 from ._generated.models import (  # noqa: F401
     AdvanceTimeDiaryEntry,
     AtomicFact,
+    BatchPersonalityEntry,
     Big5,
     Big5Trait,
     DiaryEntry,
@@ -32,6 +33,10 @@ from ._generated.models import (  # noqa: F401
     PersonalityDimensions,
     PersonalityProfile,
     PersonalityResponse,
+    PersonalityShift,
+    RecentShiftsResponse,
+    SignificantMoment,
+    SignificantMomentsResponse,
     SummariesResponse,
     TimeMachineMoodSnapshot,
     TimeMachineResponse,
@@ -1009,12 +1014,6 @@ class AgentListResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-class BatchPersonalityEntry(BaseModel):
-    model_config = {"extra": "allow"}
-    profile: PersonalityProfile = Field(default_factory=PersonalityProfile)
-    evolution_count: int = 0
-
-
 class BatchPersonalityResponse(BaseModel):
     personalities: dict[str, BatchPersonalityEntry] = Field(default_factory=dict)
 
@@ -1022,35 +1021,6 @@ class BatchPersonalityResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Personality Extensions
 # ---------------------------------------------------------------------------
-
-
-class SignificantMoment(BaseModel):
-    model_config = {"extra": "allow"}
-    agent_id: str = ""
-    moment_id: str = ""
-    timestamp: str = ""
-    description: str = ""
-    significance_score: float = 0.0
-
-
-class SignificantMomentsResponse(BaseModel):
-    moments: list[SignificantMoment] = Field(default_factory=list)
-
-
-class PersonalityShift(BaseModel):
-    model_config = {"extra": "allow"}
-    agent_id: str = ""
-    trait_name: str = ""
-    trait_category: str = ""
-    old_value: float = 0.0
-    new_value: float = 0.0
-    delta: float = 0.0
-    timestamp: str = ""
-    reason: str = ""
-
-
-class RecentShiftsResponse(BaseModel):
-    shifts: list[PersonalityShift] = Field(default_factory=list)
 
 
 class UserPersonalityOverlay(BaseModel):

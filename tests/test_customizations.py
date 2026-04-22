@@ -1084,3 +1084,186 @@ class TestSummariesResponseMigration:
         })
         assert resp.field_schema is not None
         assert "SummariesResponse" in str(resp.field_schema)
+
+
+class TestPersonalityShiftMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import PersonalityShift
+        from sonzai._generated.models import PersonalityShift as GenPersonalityShift
+        assert PersonalityShift is GenPersonalityShift
+
+    def test_required_fields_roundtrip(self) -> None:
+        from sonzai import PersonalityShift
+        shift = PersonalityShift.model_validate({
+            "trait_name": "openness",
+            "direction": "increase",
+            "magnitude": "moderate",
+            "trigger_types": ["conversation"],
+            "timeframe_days": 30,
+        })
+        assert shift.trait_name == "openness"
+        assert shift.direction == "increase"
+        assert shift.magnitude == "moderate"
+        assert shift.trigger_types == ["conversation"]
+        assert shift.timeframe_days == 30
+
+    def test_optional_fields(self) -> None:
+        from sonzai import PersonalityShift
+        shift = PersonalityShift.model_validate({
+            "trait_name": "conscientiousness",
+            "direction": "decrease",
+            "magnitude": "slight",
+            "trigger_types": None,
+            "timeframe_days": 7,
+            "reasoning": "gradual change",
+            "timestamp": "2026-04-01T00:00:00Z",
+        })
+        assert shift.reasoning == "gradual change"
+        assert shift.trigger_types is None
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import PersonalityShift
+        with pytest.raises(ValidationError):
+            PersonalityShift.model_validate({
+                "trait_name": "openness",
+                "direction": "increase",
+                "magnitude": "moderate",
+                "trigger_types": [],
+                "timeframe_days": 10,
+                "unknown": "boom",
+            })
+
+
+class TestRecentShiftsResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import RecentShiftsResponse
+        from sonzai._generated.models import RecentShiftsResponse as GenRecentShiftsResponse
+        assert RecentShiftsResponse is GenRecentShiftsResponse
+
+    def test_minimal_required_roundtrip_none(self) -> None:
+        from sonzai import RecentShiftsResponse
+        resp = RecentShiftsResponse.model_validate({"shifts": None})
+        assert resp.shifts is None
+
+    def test_with_shifts(self) -> None:
+        from sonzai import RecentShiftsResponse
+        resp = RecentShiftsResponse.model_validate({
+            "shifts": [{
+                "trait_name": "openness",
+                "direction": "increase",
+                "magnitude": "moderate",
+                "trigger_types": ["event"],
+                "timeframe_days": 14,
+            }],
+        })
+        assert resp.shifts is not None
+        assert len(resp.shifts) == 1
+        assert resp.shifts[0].trait_name == "openness"
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import RecentShiftsResponse
+        resp = RecentShiftsResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/RecentShiftsResponse.json",
+            "shifts": None,
+        })
+        assert resp.field_schema is not None
+        assert "RecentShiftsResponse" in str(resp.field_schema)
+
+
+class TestSignificantMomentMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import SignificantMoment
+        from sonzai._generated.models import SignificantMoment as GenSignificantMoment
+        assert SignificantMoment is GenSignificantMoment
+
+    def test_required_fields_roundtrip(self) -> None:
+        from sonzai import SignificantMoment
+        moment = SignificantMoment.model_validate({
+            "description": "First meeting",
+            "reasoning": "Strong emotional impact",
+            "trigger_type": "conversation",
+            "created_at": "2026-04-01T00:00:00Z",
+        })
+        assert moment.description == "First meeting"
+        assert moment.reasoning == "Strong emotional impact"
+        assert moment.trigger_type == "conversation"
+        assert moment.created_at == "2026-04-01T00:00:00Z"
+
+    def test_optional_fields(self) -> None:
+        from sonzai import SignificantMoment
+        moment = SignificantMoment.model_validate({
+            "description": "A walk in the park",
+            "reasoning": "Shared experience",
+            "trigger_type": "event",
+            "created_at": "2026-04-10T00:00:00Z",
+            "emotional_impact": "positive",
+            "location": "Central Park",
+            "partner_name": "Alex",
+            "traits_affected": ["openness", "agreeableness"],
+        })
+        assert moment.emotional_impact == "positive"
+        assert moment.location == "Central Park"
+        assert moment.traits_affected == ["openness", "agreeableness"]
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import SignificantMoment
+        with pytest.raises(ValidationError):
+            SignificantMoment.model_validate({
+                "description": "x",
+                "reasoning": "y",
+                "trigger_type": "z",
+                "created_at": "2026-01-01T00:00:00Z",
+                "unknown": "boom",
+            })
+
+
+class TestSignificantMomentsResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import SignificantMomentsResponse
+        from sonzai._generated.models import SignificantMomentsResponse as GenSignificantMomentsResponse
+        assert SignificantMomentsResponse is GenSignificantMomentsResponse
+
+    def test_minimal_required_roundtrip_none(self) -> None:
+        from sonzai import SignificantMomentsResponse
+        resp = SignificantMomentsResponse.model_validate({"moments": None})
+        assert resp.moments is None
+
+    def test_with_moments(self) -> None:
+        from sonzai import SignificantMomentsResponse
+        resp = SignificantMomentsResponse.model_validate({
+            "moments": [{
+                "description": "First meeting",
+                "reasoning": "Impact",
+                "trigger_type": "conversation",
+                "created_at": "2026-04-01T00:00:00Z",
+            }],
+        })
+        assert resp.moments is not None
+        assert len(resp.moments) == 1
+        assert resp.moments[0].description == "First meeting"
+
+    def test_schema_field_aliased(self) -> None:
+        from sonzai import SignificantMomentsResponse
+        resp = SignificantMomentsResponse.model_validate({
+            "$schema": "https://api.sonz.ai/api/v1/schemas/SignificantMomentsResponse.json",
+            "moments": None,
+        })
+        assert resp.field_schema is not None
+        assert "SignificantMomentsResponse" in str(resp.field_schema)
+
+
+class TestBatchPersonalityEntryMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import BatchPersonalityEntry
+        from sonzai._generated.models import BatchPersonalityEntry as GenBatchPersonalityEntry
+        assert BatchPersonalityEntry is GenBatchPersonalityEntry
+
+    def test_required_fields_present(self) -> None:
+        from sonzai import BatchPersonalityEntry
+        assert "profile" in BatchPersonalityEntry.model_fields
+        assert "evolution_count" in BatchPersonalityEntry.model_fields
+
+    def test_extra_fields_forbidden(self) -> None:
+        from sonzai import BatchPersonalityEntry
+        # model_config should have extra='forbid'
+        assert BatchPersonalityEntry.model_config.get("extra") == "forbid"
