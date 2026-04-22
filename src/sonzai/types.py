@@ -153,6 +153,7 @@ class MemorySearchResult(BaseModel):
     content: str = ""
     fact_type: str = ""
     score: float = 0.0
+    session_id: str = ""
 
 
 class MemorySearchResponse(BaseModel):
