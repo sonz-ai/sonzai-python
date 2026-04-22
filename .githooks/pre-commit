@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Pre-commit drift check: block manual edits to src/sonzai/_generated/.
+#
+# The _generated/ tree is a build artifact of `just regenerate-sdk`,
+# which reads openapi.json. If a commit touches _generated/ WITHOUT also
+# touching openapi.json, that is almost certainly an accidental hand edit
+# and will be overwritten on the next regen.
+#
+# Escape hatch: `git commit --no-verify` (only reach for this if you are
+# deliberately shipping a generator-output tweak while the generator is
+# itself being iterated on — which is rare).
+
+set -e
+
+staged="$(git diff --cached --name-only)"
+
+touches_generated=0
+touches_spec=0
+
+while IFS= read -r f; do
+  case "$f" in
+    src/sonzai/_generated/*) touches_generated=1 ;;
+    openapi.json)            touches_spec=1 ;;
+  esac
+done <<< "$staged"
+
+if [ "$touches_generated" = "1" ] && [ "$touches_spec" = "0" ]; then
+  echo ""
+  echo "⚠️  Refusing to commit: staged changes touch src/sonzai/_generated/"
+  echo "   but openapi.json is unchanged."
+  echo ""
+  echo "   src/sonzai/_generated/ is a regenerable build artifact. Hand"
+  echo "   edits there will be wiped on the next \`just regenerate-sdk\`."
+  echo ""
+  echo "   → If you meant to change a model, edit openapi.json (or the"
+  echo "     upstream API spec) and run: just regenerate-sdk"
+  echo "   → If you meant to add a computed property / convenience method,"
+  echo "     put it in src/sonzai/_customizations/ instead."
+  echo "   → To bypass (rare, ill-advised): git commit --no-verify"
+  echo ""
+  exit 1
+fi
+
+exit 0
