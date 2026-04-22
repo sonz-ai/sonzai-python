@@ -180,6 +180,37 @@ client.agents.notifications.consume("agent-id", n.message_id)
 history = client.agents.notifications.history("agent-id")
 ```
 
+### Capabilities (sync/async memory recall)
+
+Supplementary memory recall can run **synchronously** (blocks context build until recall returns — every fact lands in the current turn) or **asynchronously** (races a deadline — slow hits spill to the next turn for lower first-token latency). Default is `sync`.
+
+`memory_mode` is an agent-wide capability — set it once, every subsequent chat uses that mode until you change it.
+
+```python
+# Read the current capabilities
+caps = client.agents.get_capabilities("agent-id")
+print(caps.memory_mode)  # "sync" or "async"
+
+# Switch to async for lower first-token latency
+client.agents.update_capabilities("agent-id", memory_mode="async")
+
+# Switch back to sync
+client.agents.update_capabilities("agent-id", memory_mode="sync")
+
+# Other capabilities (all optional, PATCH-style — omitted fields are left unchanged)
+client.agents.update_capabilities(
+    "agent-id",
+    memory_mode="async",
+    knowledge_base=True,
+    web_search=True,
+    remember_name=True,
+    image_generation=False,
+    inventory=False,
+)
+```
+
+> `memory_mode` is only settable on an existing agent via `update_capabilities()` — there's no equivalent at agent-creation time. Create the agent first, then flip the mode.
+
 ### Context Engine Data
 
 ```python

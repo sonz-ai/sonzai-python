@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Iterator
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import quote
 
 from .._http import AsyncHTTPClient, HTTPClient
@@ -230,8 +230,8 @@ class Agents:
 
     def chat(
         self,
-        *,
         agent_id: str,  # UUID or agent name (names resolved server-side)
+        *,
         messages: list[ChatMessage | dict[str, str]],
         user_id: str | None = None,
         user_display_name: str | None = None,
@@ -1069,8 +1069,15 @@ class Agents:
         remember_name: bool | None = None,
         image_generation: bool | None = None,
         inventory: bool | None = None,
+        knowledge_base: bool | None = None,
+        memory_mode: Literal["sync", "async"] | None = None,
     ) -> AgentCapabilities:
-        """Update an agent's capabilities."""
+        """Update an agent's capabilities.
+
+        ``memory_mode`` controls supplementary memory recall timing:
+        ``"sync"`` (default) blocks context build until recall returns;
+        ``"async"`` lets recall race a deadline for lower first-token latency.
+        """
         body: dict[str, Any] = {}
         if web_search is not None:
             body["webSearch"] = web_search
@@ -1080,6 +1087,10 @@ class Agents:
             body["imageGeneration"] = image_generation
         if inventory is not None:
             body["inventory"] = inventory
+        if knowledge_base is not None:
+            body["knowledgeBase"] = knowledge_base
+        if memory_mode is not None:
+            body["memoryMode"] = memory_mode
         return AgentCapabilities.model_validate(
             self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
         )
@@ -2439,8 +2450,15 @@ class AsyncAgents:
         remember_name: bool | None = None,
         image_generation: bool | None = None,
         inventory: bool | None = None,
+        knowledge_base: bool | None = None,
+        memory_mode: Literal["sync", "async"] | None = None,
     ) -> AgentCapabilities:
-        """Update an agent's capabilities."""
+        """Update an agent's capabilities.
+
+        ``memory_mode`` controls supplementary memory recall timing:
+        ``"sync"`` (default) blocks context build until recall returns;
+        ``"async"`` lets recall race a deadline for lower first-token latency.
+        """
         body: dict[str, Any] = {}
         if web_search is not None:
             body["webSearch"] = web_search
@@ -2450,6 +2468,10 @@ class AsyncAgents:
             body["imageGeneration"] = image_generation
         if inventory is not None:
             body["inventory"] = inventory
+        if knowledge_base is not None:
+            body["knowledgeBase"] = knowledge_base
+        if memory_mode is not None:
+            body["memoryMode"] = memory_mode
         return AgentCapabilities.model_validate(
             await self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=body)
         )

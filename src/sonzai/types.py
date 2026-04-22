@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -2411,6 +2411,7 @@ class UpdateCapabilitiesOptions(BaseModel):
     image_generation: bool | None = None
     inventory: bool | None = None
     knowledge_base: bool | None = None
+    memory_mode: Literal["sync", "async"] | None = None
 
     model_config = {"extra": "allow"}
 
