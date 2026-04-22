@@ -89,18 +89,25 @@ from .types import (
     InventoryQueryResponse,
     # Inventory
     InventoryUpdateResponse,
+    KBAnalyticsRule,
     # KB Bulk Update
     KBBulkUpdateEntry,
     KBBulkUpdateResponse,
     KBCandidate,
+    KBConversionStats,
     KBDocument,
     KBEdge,
     KBEntitySchema,
     KBNode,
     KBNodeHistory,
+    KBRecommendationScore,
     KBRelatedNode,
     KBSchemaField,
+    KBSearchResponse,
+    KBSearchResult,
     KBSimilarityConfig,
+    KBTrendAggregation,
+    KBTrendRanking,
     KBResolutionInfo,
     # KB — organization-global scope
     KBScope,
@@ -401,6 +408,14 @@ __all__ = [
     # Types - KB Bulk Update
     "KBBulkUpdateEntry",
     "KBBulkUpdateResponse",
+    # Types - KB Analytics
+    "KBAnalyticsRule",
+    "KBConversionStats",
+    "KBRecommendationScore",
+    "KBSearchResponse",
+    "KBSearchResult",
+    "KBTrendAggregation",
+    "KBTrendRanking",
     # Types - KB Core
     "KBDocument",
     "KBEdge",

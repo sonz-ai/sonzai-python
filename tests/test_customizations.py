@@ -1729,3 +1729,226 @@ class TestKBRelatedNodeMigration:
         # Spec uses `edge: str`; hand-rolled had `edge_type: str` and `node_type: str`
         assert "edge" in KBRelatedNode.model_fields
         assert "type" in KBRelatedNode.model_fields
+
+
+class TestKBSearchResultMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBSearchResult
+        from sonzai._generated.models import KBSearchResult as GenKBSearchResult
+        assert KBSearchResult is GenKBSearchResult
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBSearchResult
+        payload = {
+            "node_id": "node-abc",
+            "type": "Person",
+            "label": "Alice",
+            "properties": {"age": 30},
+            "updated_at": "2024-01-01T00:00:00Z",
+            "version": 1,
+        }
+        result = KBSearchResult.model_validate(payload)
+        assert result.node_id == "node-abc"
+        assert result.type == "Person"
+        assert result.label == "Alice"
+        assert result.version == 1
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import KBSearchResult
+        for field in ("node_id", "type", "label", "properties", "updated_at", "version"):
+            assert field in KBSearchResult.model_fields
+
+
+class TestKBSearchResponseMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBSearchResponse
+        from sonzai._generated.models import KBSearchResponse as GenKBSearchResponse
+        assert KBSearchResponse is GenKBSearchResponse
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBSearchResponse
+        payload = {
+            "query": "find Alice",
+            "results": None,
+            "total": 0,
+        }
+        resp = KBSearchResponse.model_validate(payload)
+        assert resp.query == "find Alice"
+        assert resp.total == 0
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import KBSearchResponse
+        for field in ("query", "results", "total"):
+            assert field in KBSearchResponse.model_fields
+
+
+class TestKBAnalyticsRuleMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBAnalyticsRule
+        from sonzai._generated.models import KBAnalyticsRule as GenKBAnalyticsRule
+        assert KBAnalyticsRule is GenKBAnalyticsRule
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBAnalyticsRule
+        payload = {
+            "project_id": "proj-1",
+            "rule_id": "rule-1",
+            "rule_type": "recommendation",
+            "name": "Top Products",
+            "config": {"k": 5},
+            "enabled": True,
+            "schedule": "0 * * * *",
+            "last_run_at": "2024-01-01T00:00:00Z",
+            "last_run_status": "success",
+            "last_run_duration_ms": 120,
+            "created_at": "2024-01-01T00:00:00Z",
+            "updated_at": "2024-01-01T00:00:00Z",
+        }
+        rule = KBAnalyticsRule.model_validate(payload)
+        assert rule.project_id == "proj-1"
+        assert rule.rule_id == "rule-1"
+        assert rule.enabled is True
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import KBAnalyticsRule
+        for field in (
+            "project_id", "rule_id", "rule_type", "name", "config",
+            "enabled", "schedule", "last_run_at", "last_run_status",
+            "last_run_duration_ms", "created_at", "updated_at",
+        ):
+            assert field in KBAnalyticsRule.model_fields
+
+
+class TestKBRecommendationScoreMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBRecommendationScore
+        from sonzai._generated.models import KBRecommendationScore as GenKBRecommendationScore
+        assert KBRecommendationScore is GenKBRecommendationScore
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBRecommendationScore
+        payload = {
+            "project_id": "proj-1",
+            "rule_id": "rule-1",
+            "source_node_id": "node-src",
+            "score": 0.95,
+            "target_node_id": "node-tgt",
+            "target_label": "Widget",
+            "target_type": "Product",
+            "reasoning": {"why": "high similarity"},
+            "computed_at": "2024-01-01T00:00:00Z",
+        }
+        rec = KBRecommendationScore.model_validate(payload)
+        assert rec.project_id == "proj-1"
+        assert rec.score == 0.95
+        assert rec.target_node_id == "node-tgt"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import KBRecommendationScore
+        for field in (
+            "project_id", "rule_id", "source_node_id", "score",
+            "target_node_id", "target_label", "target_type", "reasoning", "computed_at",
+        ):
+            assert field in KBRecommendationScore.model_fields
+
+
+class TestKBConversionStatsMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBConversionStats
+        from sonzai._generated.models import KBConversionStats as GenKBConversionStats
+        assert KBConversionStats is GenKBConversionStats
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBConversionStats
+        payload = {
+            "project_id": "proj-1",
+            "rule_id": "rule-1",
+            "segment_key": "seg-A",
+            "target_type": "Product",
+            "conversion_count": 10,
+            "total_leads": 100,
+            "shown_count": 200,
+            "conversion_rate": 0.05,
+            "avg_days_to_convert": 3.5,
+            "top_features": {"price": 0.8},
+            "computed_at": "2024-01-01T00:00:00Z",
+        }
+        stats = KBConversionStats.model_validate(payload)
+        assert stats.project_id == "proj-1"
+        assert stats.conversion_count == 10
+        assert stats.conversion_rate == 0.05
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import KBConversionStats
+        for field in (
+            "project_id", "rule_id", "segment_key", "target_type",
+            "conversion_count", "total_leads", "shown_count", "conversion_rate",
+            "avg_days_to_convert", "top_features", "computed_at",
+        ):
+            assert field in KBConversionStats.model_fields
+
+
+class TestKBTrendAggregationMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBTrendAggregation
+        from sonzai._generated.models import KBTrendAggregation as GenKBTrendAggregation
+        assert KBTrendAggregation is GenKBTrendAggregation
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBTrendAggregation
+        payload = {
+            "project_id": "proj-1",
+            "node_id": "node-1",
+            "metric_name": "page_views",
+            "window": "7d",
+            "value": 42.0,
+            "sample_count": 7,
+            "min_value": 5.0,
+            "max_value": 10.0,
+            "computed_at": "2024-01-01T00:00:00Z",
+        }
+        agg = KBTrendAggregation.model_validate(payload)
+        assert agg.project_id == "proj-1"
+        assert agg.metric_name == "page_views"
+        assert agg.value == 42.0
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import KBTrendAggregation
+        for field in (
+            "project_id", "node_id", "metric_name", "window",
+            "value", "sample_count", "min_value", "max_value", "computed_at",
+        ):
+            assert field in KBTrendAggregation.model_fields
+
+
+class TestKBTrendRankingMigration:
+    def test_imports_from_generated(self) -> None:
+        from sonzai import KBTrendRanking
+        from sonzai._generated.models import KBTrendRanking as GenKBTrendRanking
+        assert KBTrendRanking is GenKBTrendRanking
+
+    def test_minimal_required_roundtrip(self) -> None:
+        from sonzai import KBTrendRanking
+        payload = {
+            "project_id": "proj-1",
+            "rule_id": "rule-1",
+            "ranking_type": "trending",
+            "window": "7d",
+            "rank": 1,
+            "node_id": "node-1",
+            "node_label": "Widget A",
+            "value": 99.5,
+            "computed_at": "2024-01-01T00:00:00Z",
+        }
+        ranking = KBTrendRanking.model_validate(payload)
+        assert ranking.project_id == "proj-1"
+        assert ranking.rank == 1
+        assert ranking.node_label == "Widget A"
+
+    def test_spec_fields_present(self) -> None:
+        from sonzai import KBTrendRanking
+        for field in (
+            "project_id", "rule_id", "ranking_type", "window",
+            "rank", "node_id", "node_label", "value", "computed_at",
+        ):
+            assert field in KBTrendRanking.model_fields

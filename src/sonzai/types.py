@@ -23,14 +23,21 @@ from ._generated.models import (  # noqa: F401
     Habit,
     HabitsResponse,
     InterestsResponse,
+    KBAnalyticsRule,
+    KBConversionStats,
     KBDocument,
     KBEdge,
     KBEntitySchema,
     KBNode,
     KBNodeHistory,
+    KBRecommendationScore,
     KBRelatedNode,
     KBSchemaField,
+    KBSearchResponse,
+    KBSearchResult,
     KBSimilarityConfig,
+    KBTrendAggregation,
+    KBTrendRanking,
     ListAllFactsResponse,
     MemoryNode,
     MemoryResponse,
@@ -1315,23 +1322,6 @@ class KBNodeHistoryResponse(BaseModel):
     total: int = 0
 
 
-class KBSearchResult(BaseModel):
-    node_id: str = ""
-    node_type: str = ""
-    label: str = ""
-    properties: dict[str, Any] = Field(default_factory=dict)
-    source: str = ""
-    updated_at: str = ""
-    score: float = 0.0
-    related: list[dict[str, Any]] = Field(default_factory=list)
-    history: list[KBNodeHistory] = Field(default_factory=list)
-
-
-class KBSearchResponse(BaseModel):
-    query: str = ""
-    results: list[KBSearchResult] = Field(default_factory=list)
-    total: int = 0
-
 
 class KBSchemaListResponse(BaseModel):
     schemas: list[KBEntitySchema] = Field(default_factory=list)
@@ -1368,33 +1358,11 @@ class InsertFactsResponse(BaseModel):
     edges: list[InsertFactEdgeDetail] = Field(default_factory=list)
 
 
-class KBAnalyticsRule(BaseModel):
-    project_id: str = ""
-    rule_id: str = ""
-    rule_type: str = ""
-    name: str = ""
-    config: Any = None
-    enabled: bool = False
-    schedule: str = ""
-    last_run_at: str = ""
-    last_run_status: str = ""
-    last_run_duration_ms: int = 0
-    created_at: str = ""
-    updated_at: str = ""
-
 
 class KBAnalyticsRuleListResponse(BaseModel):
     rules: list[KBAnalyticsRule] = Field(default_factory=list)
     total: int = 0
 
-
-class KBRecommendationScore(BaseModel):
-    project_id: str = ""
-    rule_id: str = ""
-    source_id: str = ""
-    target_id: str = ""
-    target_type: str = ""
-    score: float = 0.0
 
 
 class KBRecommendationsResponse(BaseModel):
@@ -2352,44 +2320,6 @@ class ListAllFactsOptions(BaseModel):
     item_type: str | None = None
     limit: int | None = None
     instance_id: str | None = None
-
-    model_config = {"extra": "allow"}
-
-
-# --- KB response/data types needed as field types ---
-
-
-class KBTrendAggregation(BaseModel):
-    project_id: str = ""
-    node_id: str = ""
-    rule_id: str = ""
-    window: str = ""
-    value: float = 0.0
-    direction: str = ""
-
-    model_config = {"extra": "allow"}
-
-
-class KBTrendRanking(BaseModel):
-    project_id: str = ""
-    node_id: str = ""
-    rule_id: str = ""
-    type: str = ""
-    window: str = ""
-    rank: int = 0
-    score: float = 0.0
-
-    model_config = {"extra": "allow"}
-
-
-class KBConversionStats(BaseModel):
-    project_id: str = ""
-    rule_id: str = ""
-    segment_key: str = ""
-    target_type: str = ""
-    shown_count: int = 0
-    conversion_count: int = 0
-    conversion_rate: float = 0.0
 
     model_config = {"extra": "allow"}
 
