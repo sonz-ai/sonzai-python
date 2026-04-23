@@ -8,6 +8,8 @@ from typing import Any
 from urllib.parse import quote
 from sonzai._generated.models import (
     AtomicFact,
+    BulkCreateFactsInputBody,
+    BulkCreateFactsOutputBody,
     CreateFactInputBody,
     FactHistoryResponse,
     ListAllFactsResponse,
@@ -124,23 +126,26 @@ class Memory(_MemoryBase):
         user_id: str | None = None,
         instance_id: str | None = None,
         fact_type: str | None = None,
+        page_token: str | None = None,
         limit: int = 100,
     ) -> Page[StoredFact]:
         """List facts for an agent"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {"limit": limit, "cursor": None}
         if user_id is not None:
             params["user_id"] = user_id
         if instance_id is not None:
             params["instance_id"] = instance_id
         if fact_type is not None:
             params["fact_type"] = fact_type
+        if page_token is not None:
+            params["page_token"] = page_token
         return Page(
             fetcher=lambda p: self._http.get(path, params=p),
             params=params,
             item_key="facts",
             item_parser=StoredFact.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     def create_fact(
@@ -182,6 +187,28 @@ class Memory(_MemoryBase):
         body = encode_body(CreateFactInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return AtomicFact.model_validate(data)
+
+    def bulk_create_facts(
+        self,
+        agent_id: str,
+        *,
+        instance_id: str | None = None,
+        facts: list[Any],
+        user_id: str | None = None,
+    ) -> BulkCreateFactsOutputBody:
+        """Bulk create facts for an agent"""
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts/bulk"
+        params: dict[str, Any] = {}
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+        _raw: dict[str, Any] = {}
+        if facts is not None:
+            _raw["facts"] = facts
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(BulkCreateFactsInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return BulkCreateFactsOutputBody.model_validate(data)
 
     def delete_fact(
         self,
@@ -433,17 +460,20 @@ class AsyncMemory(_MemoryBase):
         user_id: str | None = None,
         instance_id: str | None = None,
         fact_type: str | None = None,
+        page_token: str | None = None,
         limit: int = 100,
     ) -> AsyncPage[StoredFact]:
         """List facts for an agent"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {"limit": limit, "cursor": None}
         if user_id is not None:
             params["user_id"] = user_id
         if instance_id is not None:
             params["instance_id"] = instance_id
         if fact_type is not None:
             params["fact_type"] = fact_type
+        if page_token is not None:
+            params["page_token"] = page_token
 
         async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
             return await self._http.get(path, params=p)
@@ -453,7 +483,7 @@ class AsyncMemory(_MemoryBase):
             params=params,
             item_key="facts",
             item_parser=StoredFact.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     async def create_fact(
@@ -495,6 +525,28 @@ class AsyncMemory(_MemoryBase):
         body = encode_body(CreateFactInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return AtomicFact.model_validate(data)
+
+    async def bulk_create_facts(
+        self,
+        agent_id: str,
+        *,
+        instance_id: str | None = None,
+        facts: list[Any],
+        user_id: str | None = None,
+    ) -> BulkCreateFactsOutputBody:
+        """Bulk create facts for an agent"""
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts/bulk"
+        params: dict[str, Any] = {}
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+        _raw: dict[str, Any] = {}
+        if facts is not None:
+            _raw["facts"] = facts
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(BulkCreateFactsInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return BulkCreateFactsOutputBody.model_validate(data)
 
     async def delete_fact(
         self,

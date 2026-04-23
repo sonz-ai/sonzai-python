@@ -18,6 +18,27 @@ This SDK tracks `https://api.sonz.ai/docs/openapi.json`. A git pre-push hook
 checks for drift; run `just install-hooks` once after cloning. To refresh the
 committed spec snapshot, run `just sync-spec` and commit the diff.
 
+## Benchmarks
+
+Sonzai beats MemPalace on LongMemEval — the retrieval benchmark MemPalace was
+purpose-built to win — while running on the cheap end of the LLM stack:
+
+| Metric | Sonzai | MemPalace (hybrid_v4) |
+|---|---:|---:|
+| R@G (overall recall) | **0.773** | 0.741 |
+| R@1 (top-hit accuracy) | **0.800** | 0.770 |
+| Recall@10, multi-session | **1.000** | 1.000 |
+
+Chat, judge, and partner agent all run on **Gemini 3.1 Flash Lite** — no
+frontier-model arms race propping up the numbers. The lift is from the memory
+architecture, not from spending more on inference. Drop in a heavier model and
+the ceiling goes up from there.
+
+Full scores, methodology, per-question-type breakdown, and reproduction steps
+(including comparison against MemPalace's canonical `longmemeval_bench.py`):
+
+→ [benchmarks/README.md](benchmarks/README.md)
+
 ## Quick Start
 
 ```python

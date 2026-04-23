@@ -41,7 +41,10 @@ specifically for this shape and topped the leaderboard last year.
 
 **Sonzai matches MemPalace on this benchmark while being built for the
 much harder problem.** Our architecture goes in the opposite direction
-from "store everything":
+from "store everything": Sonzai is built for a different target — **long-horizon chat where the same
+agent talks to the same person across hundreds or thousands of sessions,
+maintaining a coherent personality the whole time**. That target pushes the
+architecture in the opposite direction from "store everything":
 
 - **Fact extraction + dedup** (`DedupGate`). Instead of storing 200 verbatim
   mentions of "the user drinks coffee" across three years of chats, Sonzai
