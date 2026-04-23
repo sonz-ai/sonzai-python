@@ -26,6 +26,14 @@ from ._exceptions import (
     RateLimitError,
     ValidationError,
 )
+from ._customizations.chat import (
+    ChatCompleteEvent,
+    ChatContextReadyEvent,
+    ChatDeltaEvent,
+    ChatErrorEvent,
+    ChatMessageBoundaryEvent,
+    ChatSideEffectsEvent,
+)
 
 
 def _raise_for_status(response: httpx.Response) -> None:
@@ -74,6 +82,25 @@ def _raise_for_status(response: httpx.Response) -> None:
     if 500 <= status < 600:
         raise InternalServerError(message, status_code=status, code=code, body=body)
     raise APIError(status, message, code=code, body=body)
+
+
+def _classify_chat_frame(frame: dict[str, Any]) -> Any:
+    """Classify a raw SSE frame dict into the correct ChatXxxEvent subclass."""
+    if frame.get("error"):
+        return ChatErrorEvent.model_validate(frame)
+    frame_type = frame.get("type")
+    if frame_type == "context_ready":
+        return ChatContextReadyEvent.model_validate(frame)
+    if frame_type == "side_effects":
+        return ChatSideEffectsEvent.model_validate(frame)
+    if frame_type == "message_boundary":
+        return ChatMessageBoundaryEvent.model_validate(frame)
+    if frame.get("finish_reason") or frame.get("full_content"):
+        return ChatCompleteEvent.model_validate(frame)
+    choices = frame.get("choices") or []
+    if choices and isinstance(choices[0], dict) and choices[0].get("finish_reason"):
+        return ChatCompleteEvent.model_validate(frame)
+    return ChatDeltaEvent.model_validate(frame)
 
 
 def _parse_error_body(response: httpx.Response) -> ErrorBody | None:

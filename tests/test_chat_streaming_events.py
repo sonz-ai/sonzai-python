@@ -86,3 +86,34 @@ class TestChatErrorEvent:
         assert e.error_message == "Rate limit exceeded"
         assert e.error_code == "rate_limited"
         assert e.is_token_error is False
+
+
+from sonzai._http import _classify_chat_frame
+
+
+class TestClassifier:
+    def test_context_ready(self) -> None:
+        e = _classify_chat_frame({"type": "context_ready", "build_duration_ms": 10})
+        assert isinstance(e, ChatContextReadyEvent)
+
+    def test_side_effects(self) -> None:
+        e = _classify_chat_frame({"type": "side_effects", "data": {}})
+        assert isinstance(e, ChatSideEffectsEvent)
+
+    def test_message_boundary(self) -> None:
+        e = _classify_chat_frame({"type": "message_boundary", "message_index": 1})
+        assert isinstance(e, ChatMessageBoundaryEvent)
+
+    def test_error_frame(self) -> None:
+        e = _classify_chat_frame({"error": {"message": "boom", "code": "x"}})
+        assert isinstance(e, ChatErrorEvent)
+
+    def test_complete_frame_from_finish_reason(self) -> None:
+        e = _classify_chat_frame({
+            "choices": [{"delta": {}, "finish_reason": "stop", "index": 0}],
+        })
+        assert isinstance(e, ChatCompleteEvent)
+
+    def test_default_is_delta(self) -> None:
+        e = _classify_chat_frame({"choices": [{"delta": {"content": "a"}, "index": 0}]})
+        assert isinstance(e, ChatDeltaEvent)

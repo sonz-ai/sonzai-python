@@ -6,7 +6,7 @@ from collections.abc import AsyncIterator, Iterator
 from typing import Any, Literal
 from urllib.parse import quote
 
-from .._http import AsyncHTTPClient, HTTPClient
+from .._http import AsyncHTTPClient, HTTPClient, _classify_chat_frame
 from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
 from .._generated.models import (
@@ -352,7 +352,7 @@ class Agents:
         session_id = ""
 
         for event in self._http.stream_sse("POST", path, json_data=body):
-            parsed = ChatStreamEvent.model_validate(event)
+            parsed = _classify_chat_frame(event)
             if parsed.content:
                 content_parts.append(parsed.content)
             if parsed.usage:
@@ -375,7 +375,7 @@ class Agents:
 
     def _stream_chat(self, path: str, body: dict[str, Any]) -> Iterator[ChatStreamEvent]:
         for event in self._http.stream_sse("POST", path, json_data=body):
-            yield ChatStreamEvent.model_validate(event)
+            yield _classify_chat_frame(event)
 
     # -- Dialogue --
 
@@ -1444,7 +1444,7 @@ class Agents:
         for event in self._http.stream_sse(
             "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
         ):
-            parsed = ChatStreamEvent.model_validate(event)
+            parsed = _classify_chat_frame(event)
             if parsed.choices and parsed.choices[0].delta.get("content"):
                 parts.append(parsed.choices[0].delta["content"])
         return ChatResponse(content="".join(parts))
@@ -1479,7 +1479,7 @@ class Agents:
         for event in self._http.stream_sse(
             "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
         ):
-            yield ChatStreamEvent.model_validate(event)
+            yield _classify_chat_frame(event)
 
     # -- Knowledge Search GET --
 
@@ -1732,7 +1732,7 @@ class AsyncAgents:
         session_id = ""
 
         async for event in self._http.stream_sse("POST", path, json_data=body):
-            parsed = ChatStreamEvent.model_validate(event)
+            parsed = _classify_chat_frame(event)
             if parsed.content:
                 content_parts.append(parsed.content)
             if parsed.usage:
@@ -1752,7 +1752,7 @@ class AsyncAgents:
 
     async def _stream_chat(self, path: str, body: dict[str, Any]) -> AsyncIterator[ChatStreamEvent]:
         async for event in self._http.stream_sse("POST", path, json_data=body):
-            yield ChatStreamEvent.model_validate(event)
+            yield _classify_chat_frame(event)
 
     # -- Dialogue --
 
@@ -2831,7 +2831,7 @@ class AsyncAgents:
         async for event in self._http.stream_sse(
             "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
         ):
-            parsed = ChatStreamEvent.model_validate(event)
+            parsed = _classify_chat_frame(event)
             if parsed.choices and parsed.choices[0].delta.get("content"):
                 parts.append(parsed.choices[0].delta["content"])
         return ChatResponse(content="".join(parts))
@@ -2866,7 +2866,7 @@ class AsyncAgents:
         async for event in self._http.stream_sse(
             "POST", f"/api/v1/agents/{agent_id}/playground/chat", json_data=body
         ):
-            yield ChatStreamEvent.model_validate(event)
+            yield _classify_chat_frame(event)
 
     # -- Knowledge Search GET --
 
