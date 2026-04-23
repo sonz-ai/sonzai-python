@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-"""Parity audit: compare OpenAPI paths to hand-written SDK method paths.
+"""Parity audit: compare OpenAPI paths to SDK method paths.
 
-Walks every resource file under ``src/sonzai/resources/`` (plus ``_client.py``)
-with the AST module, tracks every call to ``self._http.<verb>(...)`` (and
-``stream_sse`` / ``upload_file`` / ``request``), recovers the URL path
-literal via f-string reconstruction and local/class-wide variable tracking,
-then cross-references the result with the operations declared in
-``openapi.json``.
+Walks every resource file under ``src/sonzai/resources/`` and
+``src/sonzai/_generated/resources/`` (plus ``_client.py``) with the AST
+module, tracks every call to ``self._http.<verb>(...)`` (and ``stream_sse`` /
+``upload_file`` / ``request``), recovers the URL path literal via f-string
+reconstruction and local/class-wide variable tracking, then cross-references
+the result with the operations declared in ``openapi.json``.
+
+An endpoint is "covered" if it's bound in either the hand-written or the
+generated resource — hand-written wrappers subclass the generated ones, so
+methods missing from the hand-written file are still reachable on the
+public client via inheritance.
 
 Writes ``SDK_PARITY_AUDIT.md`` at the repo root summarizing coverage.
 Run via ``just regenerate-sdk`` or directly::
@@ -27,6 +32,7 @@ from pathlib import Path
 SDK_ROOT = Path(__file__).resolve().parent.parent
 SPEC = SDK_ROOT / "openapi.json"
 RESOURCES_DIR = SDK_ROOT / "src/sonzai/resources"
+GENERATED_RESOURCES_DIR = SDK_ROOT / "src/sonzai/_generated/resources"
 CLIENT_PATH = SDK_ROOT / "src/sonzai/_client.py"
 
 
@@ -154,7 +160,13 @@ def _class_wide_string_bindings(cls: ast.ClassDef) -> dict[str, list[str]]:
 
 def scan_resources() -> list[dict]:
     records: list[dict] = []
-    for py in sorted(RESOURCES_DIR.glob("*.py")):
+    # Scan hand-written resources plus generated resources. Hand-written files
+    # override or add to the generated ones via inheritance — an endpoint is
+    # "covered" if either file binds it.
+    resource_files = list(RESOURCES_DIR.glob("*.py"))
+    if GENERATED_RESOURCES_DIR.exists():
+        resource_files.extend(GENERATED_RESOURCES_DIR.glob("*.py"))
+    for py in sorted(resource_files):
         if py.name == "__init__.py":
             continue
         tree = ast.parse(py.read_text())
@@ -279,7 +291,7 @@ def main() -> int:
     out.append(f"- Missing: **{len(missing)}**")
     out.append(f"- Extras (in SDK not spec): **{len(extras)}**")
     out.append("")
-    out.append("## Missing (declared in OpenAPI, not bound in hand-written SDK)")
+    out.append("## Missing (declared in OpenAPI, not bound in either hand-written or generated SDK)")
     out.append("")
     if missing:
         out.append("| Method | Path |")

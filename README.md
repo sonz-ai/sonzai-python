@@ -136,6 +136,29 @@ timeline = client.agents.memory.timeline(
     start="2026-01-01",
     end="2026-03-01",
 )
+
+# Bulk create up to 1000 pre-formed facts in one request.
+# source_type="manual" — no LLM extraction.
+client.agents.memory.bulk_create_facts(
+    "agent-id",
+    user_id="user-123",
+    facts=[
+        {"content": "prefers espresso"},
+        {"content": "based in Singapore", "fact_type": "location"},
+    ],
+)
+
+# Single-call enriched context — fact retrieval runs query-conditioned
+# (two-pass: entity-filtered + raw-text vector). recent_turns surfaces this
+# session's raw messages before consolidation has run, so mid-session
+# "remember what I just said" works immediately.
+ctx = client.agents.get_context(
+    "agent-id",
+    user_id="user-123",
+    query="what did we discuss earlier about espresso?",
+)
+for turn in ctx.recent_turns or []:
+    print(f"[{turn.timestamp}] {turn.role}: {turn.content}")
 ```
 
 ### Personality
