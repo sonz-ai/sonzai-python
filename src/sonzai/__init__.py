@@ -230,7 +230,7 @@ from ._customizations.chat import (
     ChatSideEffectsEvent,
 )
 
-__version__ = "1.4.2"
+__version__ = "1.4.3"
 
 __all__ = [
     # Clients
