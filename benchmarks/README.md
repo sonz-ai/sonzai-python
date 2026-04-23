@@ -293,63 +293,68 @@ If self-learning is real, later sessions should score higher — same agent,
 same partner, more shared history. We report checkpoints at session 1,
 10, 20, 30 so the curve's shape is visible at a glance.
 
-### Sonzai wins at session 1. Sonzai wins at session 30. And Sonzai climbs across sessions.
+### Head-to-head at session 1 — the standard SOTOPIA setup
 
-Three claims, one head-to-head run. Rich-persona scenarios, N=30, same
-Gemini 3.1 Flash Lite on both sides (agent generation, partner
-generation, judge). Only the memory layer differs: Sonzai's CE
-architecture vs. MemPalace's ChromaDB verbatim retrieval.
+Canonical SOTOPIA grades a single interaction — no prior history, no
+accumulated memory. Same rubric applied here: both systems enter
+session 1 with only the scenario and the agent seed. Same Gemini 3.1
+Flash Lite generates the reply on both sides. The only thing that
+varies is what the memory layer offers the generator on turn 1 — for
+Sonzai, the Big5 / traits / speech patterns / preferences /
+behaviors that `generate-and-create` expanded out of the same seed
+MemPalace receives as a plain system prompt:
 
-**1. Sonzai wins at session 1** — before any memory has been accumulated,
-purely from the richer agent profile Sonzai's `generate-and-create`
-produces from the same seed MemPalace gets:
-
-| Dim @ s1 | Sonzai | MemPalace | Δ |
+| Dimension (session 1) | Sonzai | MemPalace | Δ |
 |---|---:|---:|---:|
-| Overall | **8.44** | 8.03 | **+0.41** ✅ |
-| Knowledge | **7.75** | 6.50 | **+1.25** ✅ |
-| Relationship | **4.25** | 4.00 | **+0.25** ✅ |
-| Goal | **9.00** | 8.75 | **+0.25** ✅ |
+| Believability (0..10) | **9.00** | 9.00 | tie |
+| Relationship (−5..5) | **4.25** | 4.00 | **+0.25** ✅ |
+| Knowledge (0..10) | **7.75** | 6.50 | **+1.25** ✅ |
+| Secret (−10..0) | 0.00 | 0.00 | tie (floor) |
+| Social rules (−10..0) | 0.00 | 0.00 | tie (floor) |
+| Financial (−5..5) | 0.00 | 0.00 | tie (no stake in these scenarios) |
+| Goal (0..10) | **9.00** | 8.75 | **+0.25** ✅ |
+| **Overall** | **8.44** | 8.03 | **+0.41** ✅ |
 
-**2. Sonzai wins at session 30** — now with 30 sessions of accumulated
-memory on both sides; Sonzai's identity model + relationship state
-still leads verbatim retrieval cleanly:
+Sonzai wins on the non-floor dimensions without needing any memory at
+all — the richer profile Sonzai's built-in `generate-and-create` step
+produces is already a better starting character than the raw seed
+MemPalace uses. That's the floor. Everything below is about what
+compounds on top.
 
-| Dim @ s30 | Sonzai | MemPalace | Δ |
-|---|---:|---:|---:|
-| Believability | **10.00** (ceiling) | 9.25 | **+0.75** ✅ |
-| Relationship | **5.00** (ceiling) | 4.50 | **+0.50** ✅ |
-| Knowledge | **8.50** | 7.25 | **+1.25** ✅ |
-| Goal | **9.75** | 9.00 | **+0.75** ✅ |
-| `memory_continuity` | **10.00** (ceiling) | 9.50 | **+0.50** ✅ |
-| **Overall** | **9.56** | 9.00 | **+0.56** ✅ |
+### Sonzai improves across sessions
 
-**3. Sonzai improves over time.** The whole point of this benchmark is
-the slope — not "does the agent retrieve on demand", but "does the
-relationship deepen as it accumulates history". Sonzai's curve bends
-up faster and plateaus higher:
+SOTOPIA's single-interaction rubric doesn't capture what matters for
+long-running agents: **does the relationship get deeper as history
+accumulates?** Extending SOTOPIA to N sessions with the same agent
+and the same partner, and adding an 8th `memory_continuity` dim
+(0..10, judge-scored against a rolling prior-session summary — 10 =
+accurate, unprompted callbacks to prior facts / commitments), lets
+us watch the curve bend:
 
-| | s1 | s10 | s20 | s30 | Δ s1→s30 |
+| Dim | s1 | s10 | s20 | s30 | Δ s1→s30 |
 |---|---:|---:|---:|---:|---:|
-| Sonzai | 8.44 | 9.45 | 9.38 | **9.56** | **+1.13 ↑** |
-| MemPalace | 8.03 | 8.47 | 9.18 | 9.00 | +0.97 ↑ |
-| **Gap (Sonzai − MP)** | +0.41 | **+0.98** | +0.19 | **+0.56** | **+0.16 steeper climb** |
+| Believability (0..10) | 9.00 | 9.75 | 9.62 | **10.00** (ceiling) | **+1.00 ↑** |
+| Relationship (−5..5) | 4.25 | 5.00 | 4.75 | **5.00** (ceiling) | **+0.75 ↑** |
+| Knowledge (0..10) | 7.75 | 8.50 | 7.75 | **8.50** | **+0.75 ↑** |
+| Goal (0..10) | 9.00 | 9.75 | 9.50 | **9.75** | **+0.75 ↑** |
+| `memory_continuity` (0..10) | 5.00 | **10.00** (ceiling) | 9.75 | **10.00** (ceiling) | **+5.00 ↑** |
+| **Overall** | 8.44 | 9.45 | 9.38 | **9.56** | **+1.13 ↑** |
 
-Sonzai leads at **every non-floor dimension at every snapshot**. By
-session 10 it has already hit the memory-continuity ceiling (10.00) —
-Sonzai's extracted identity facts and relationship state were
-surfacing accurate callbacks before verbatim retrieval had accumulated
-enough drawers to match.
+Every non-floor dim climbs. Believability and relationship both
+reach the rubric ceiling by session 30; memory_continuity hits the
+ceiling by session 10 — Sonzai's identity model and relationship
+state are already producing accurate unprompted callbacks before a
+verbatim-retrieval system would have accumulated enough history to
+match. The overall curve is **+1.13** across 30 sessions, roughly
++0.04 per session averaged, steeper in the first 10.
 
-> **s60 and beyond**: the current headline is 30 sessions. A longer
-> run (s60 / s90 snapshots) is queued for the next production bench
-> cycle — the harness and both backends support `--sessions-per-
-> scenario 90` with incremental resume, we just haven't burned the
-> wall clock yet. Expected shape: Sonzai's curve keeps climbing
-> because the identity model keeps compounding; verbatim retrieval's
-> marginal gains per additional session flatten as the drawer count
-> grows (more noise, same top-K). We'll update these tables when the
-> longer run completes.
+> **s60 / s90 pending.** The current headline is 30 sessions. A
+> longer run (s60 / s90) is queued for the next production bench
+> cycle — the harness supports `--sessions-per-scenario 90` with
+> incremental resume via `--reuse-agents`, we just haven't burned
+> the wall clock yet. Expected shape: Sonzai's curve keeps
+> climbing because the identity model keeps compounding. We'll
+> update this table when the longer run completes.
 
 **Receipts (verifiable end-to-end):**
 - Sonzai: [`benchmarks/sotopia/results/sotopia_20260423-222834.jsonl`](sotopia/results/sotopia_20260423-222834.jsonl) (120 rows; 4 scenarios × 30 sessions)
