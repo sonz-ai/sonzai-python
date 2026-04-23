@@ -1,32 +1,32 @@
     def {{ op.method_name }}(
         self,
-{%- for pp in op.path_params %}
+{% for pp in op.path_params %}
         {{ pp.python_name }}: {{ pp.type_hint }},
-{%- endfor %}
+{% endfor %}
         *,
-{%- for qp in op.query_params %}
-{%- if qp.name not in ("limit", "offset", "cursor") %}
+{% for qp in op.query_params %}
+{% if qp.name not in ("limit", "offset", "cursor") %}
         {{ qp.python_name }}: {{ qp.type_hint }}{% if qp.default is not none %} = {{ qp.default | tojson }}{% elif not qp.required %} = None{% endif %},
-{%- endif %}
-{%- endfor %}
+{% endif %}
+{% endfor %}
         limit: int = 100,
     ) -> Page[{{ op.pagination_item_type }}]:
         """{{ op.description or "Auto-generated paginated list." }}"""
         path = f"{{ op.path }}"
         params: dict[str, Any] = {"limit": limit{% if op.pagination_mode == "offset" %}, "offset": 0{% else %}, "cursor": None{% endif %}}
-{%- for qp in op.query_params %}
-{%- if qp.name not in ("limit", "offset", "cursor") %}
+{% for qp in op.query_params %}
+{% if qp.name not in ("limit", "offset", "cursor") %}
         if {{ qp.python_name }} is not None:
             params["{{ qp.name }}"] = {{ qp.python_name }}
-{%- endif %}
-{%- endfor %}
+{% endif %}
+{% endfor %}
         return Page(
             fetcher=lambda p: self._http.get(path, params=p),
             params=params,
             item_key="{{ op.pagination_item_key }}",
             item_parser={{ op.pagination_item_type }}.model_validate,
             mode="{{ op.pagination_mode }}",
-{%- if op.pagination_total_key %}
+{% if op.pagination_total_key %}
             total_key="{{ op.pagination_total_key }}",
-{%- endif %}
+{% endif %}
         )

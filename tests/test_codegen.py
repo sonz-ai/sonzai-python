@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.codegen._emit import emit_module
 from scripts.codegen._parse import Operation, Parameter, parse_spec
 
 FIXTURES = Path(__file__).resolve().parent.parent / "scripts/codegen/fixtures"
@@ -50,3 +51,12 @@ class TestSpecParse:
         list_op = next(o for o in by_tag["memory"] if o.operation_id == "listAllFacts")
         limit = next(p for p in list_op.query_params if p.name == "limit")
         assert limit.default == 50
+
+
+class TestEmit:
+    def test_memory_tag_matches_golden(self) -> None:
+        spec = json.loads((FIXTURES / "mini_spec.json").read_text())
+        by_tag = parse_spec(spec)
+        output = emit_module("memory", by_tag["memory"])
+        expected = (FIXTURES / "expected_memory.py").read_text()
+        assert output.rstrip() == expected.rstrip()

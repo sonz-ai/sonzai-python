@@ -7,9 +7,9 @@ from __future__ import annotations
 from typing import Any
 
 from sonzai._generated.models import (
-{%- for cls in referenced_classes | sort %}
+{% for cls in referenced_classes | sort %}
     {{ cls }},
-{%- endfor %}
+{% endfor %}
 )
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
@@ -21,12 +21,12 @@ class _{{ class_base }}Base:
 
 
 class {{ class_base }}(_{{ class_base }}Base):
-{%- for op in operations %}
+{% for op in operations %}
     {% include op.method_template %}
 {% endfor %}
 
 
 class Async{{ class_base }}(_{{ class_base }}Base):
-{%- for op in operations %}
+{% for op in operations %}
     {% include op.async_method_template %}
 {% endfor %}

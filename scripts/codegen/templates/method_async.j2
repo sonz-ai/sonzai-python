@@ -1,39 +1,39 @@
     async def {{ op.method_name }}(
         self,
-{%- for pp in op.path_params %}
+{% for pp in op.path_params %}
         {{ pp.python_name }}: {{ pp.type_hint }},
-{%- endfor %}
-{%- if op.query_params or op.input_body_class %}
+{% endfor %}
+{% if op.query_params %}
         *,
-{%- endif %}
-{%- for qp in op.query_params %}
+{% endif %}
+{% for qp in op.query_params %}
         {{ qp.python_name }}: {{ qp.type_hint }}{% if qp.default is not none %} = {{ qp.default | tojson }}{% elif not qp.required %} = None{% endif %},
-{%- endfor %}
-{%- if op.input_body_class %}
+{% endfor %}
+{% if op.input_body_class %}
         **body_fields: Any,
-{%- endif %}
+{% endif %}
     ) -> {{ op.response_class or "Any" }}:
         """{{ op.description or "Auto-generated." }}"""
         path = f"{{ op.path }}"
-{%- if op.query_params %}
+{% if op.query_params %}
         params: dict[str, Any] = {}
-{%- for qp in op.query_params %}
+{% for qp in op.query_params %}
         if {{ qp.python_name }} is not None:
             params["{{ qp.name }}"] = {{ qp.python_name }}
-{%- endfor %}
-{%- else %}
+{% endfor %}
+{% else %}
         params = None
-{%- endif %}
-{%- if op.input_body_class %}
+{% endif %}
+{% if op.input_body_class %}
         body = encode_body({{ op.input_body_class }}, body_fields)
         data = await self._http.{{ op.http_method | lower }}(path, params=params, body=body)
-{%- elif op.http_method == "GET" or op.http_method == "DELETE" %}
+{% elif op.http_method == "GET" or op.http_method == "DELETE" %}
         data = await self._http.{{ op.http_method | lower }}(path, params=params)
-{%- else %}
+{% else %}
         data = await self._http.{{ op.http_method | lower }}(path, params=params, body=None)
-{%- endif %}
-{%- if op.response_class %}
+{% endif %}
+{% if op.response_class %}
         return {{ op.response_class }}.model_validate(data)
-{%- else %}
+{% else %}
         return data
-{%- endif %}
+{% endif %}
