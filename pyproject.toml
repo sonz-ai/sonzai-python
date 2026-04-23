@@ -55,6 +55,7 @@ dev = [
     # scoring, our test sees it immediately.
     "chromadb>=0.5",
     "datamodel-code-generator>=0.25",
+    "jinja2>=3.1",
 ]
 
 [tool.hatch.build.targets.wheel]
