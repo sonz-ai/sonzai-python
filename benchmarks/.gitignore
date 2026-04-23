@@ -1,5 +1,16 @@
-results/
+# Iteration outputs are gitignored by default — too bulky and too noisy
+# for normal commits. Use `*/results/*` so the directories themselves
+# stay tracked (needed for per-file allow-listing below).
+longmemeval/results/*
+sotopia/results/*
 *.jsonl
 *.png
 __pycache__/
 *.pyc
+
+# Headline receipts — intentionally checked in so the numbers cited in
+# benchmarks/README.md are verifiable from the public repo. Add one
+# line per published result (JSONL + optional trajectory PNG). Keep
+# this list short; everything else stays ignored.
+!longmemeval/results/sonzai_20260423-073411.jsonl
+!longmemeval/results/mempalace_20260422-105717.jsonl

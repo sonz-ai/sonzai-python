@@ -385,13 +385,13 @@ benchmarks/
 │   ├── backends/
 │   │   ├── sonzai.py         real Sonzai production-flow + advance_time
 │   │   └── mempalace.py      shells out to MemPalace's own script
-│   └── results/              JSONL outputs (gitignored)
+│   └── results/              JSONL outputs — iteration runs gitignored; headline receipts checked in
 └── sotopia/
     ├── __main__.py           python -m benchmarks.sotopia
     ├── run.py                longitudinal orchestrator
     ├── scenarios.py          HF loader + bundled seeds
     ├── scoring.py            trajectory + snapshot helpers
-    └── results/              JSONL + PNG outputs (gitignored)
+    └── results/              JSONL + PNG outputs — iteration runs gitignored; headline receipts checked in
 ```
 
 ## Contributing a new memory system
