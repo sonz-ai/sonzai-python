@@ -24,12 +24,14 @@ from .resources.project_notifications import (
 )
 from .resources.projects import AsyncProjects, Projects
 from .resources.schedules import AsyncSchedules, Schedules
+from .resources.skills import AsyncSkills, Skills
 from .resources.storefront import AsyncStorefront, Storefront
 from .resources.support import AsyncSupport, Support
 from .resources.tenants import AsyncTenants, Tenants
 from .resources.user_personas import AsyncUserPersonas, UserPersonas
 from .resources.voice import AsyncVoices, Voices
 from .resources.webhooks import AsyncWebhooks, Webhooks
+from .resources.wisdom import AsyncWisdom, Wisdom
 from .resources.workbench import AsyncWorkbench, Workbench
 
 DEFAULT_BASE_URL = "https://api.sonz.ai"
@@ -150,6 +152,8 @@ class Sonzai:
         self.custom_llm = CustomLLM(self._http)
         self.project_notifications = ProjectNotifications(self._http)
         self.schedules = Schedules(self._http)
+        self.skills = Skills(self._http)
+        self.wisdom = Wisdom(self._http)
         self.workbench = Workbench(self._http)
         self.org = Org(self._http)
         self.storefront = Storefront(self._http)
@@ -276,6 +280,8 @@ class AsyncSonzai:
         self.custom_llm = AsyncCustomLLM(self._http)
         self.project_notifications = AsyncProjectNotifications(self._http)
         self.schedules = AsyncSchedules(self._http)
+        self.skills = AsyncSkills(self._http)
+        self.wisdom = AsyncWisdom(self._http)
         self.workbench = AsyncWorkbench(self._http)
         self.org = AsyncOrg(self._http)
         self.storefront = AsyncStorefront(self._http)

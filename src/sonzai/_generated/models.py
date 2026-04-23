@@ -335,6 +335,40 @@ class AtomicFact(BaseModel):
     user_id: str | None = None
 
 
+class AttributedFact(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    category: str
+    confidence: float | None = None
+    entity_display_name: str | None = None
+    entity_id: str
+    entity_type: str
+    expires_at: AwareDatetime | None = None
+    observed_at: AwareDatetime
+    source: str
+    source_ref: str | None = None
+    value: str
+
+
+class AttributedRelation(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    edge_type: str
+    from_id: str
+    from_type: str
+    id: str | None = None
+    metadata: dict[str, str] | None = None
+    observed_at: AwareDatetime
+    source: str
+    source_ref: str | None = None
+    to_id: str
+    to_type: str
+
+
 class BatchGetPersonalitiesInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1441,6 +1475,92 @@ class CreateUserPersonaInputBody(BaseModel):
     """
 
 
+class CreateWisdomAttributedBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CreateWisdomAttributedBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    category: str
+    confidence: float | None = None
+    entity_display_name: str | None = None
+    entity_id: str
+    entity_type: str
+    expires_at: AwareDatetime | None = None
+    observed_at: AwareDatetime | None = None
+    source_ref: str | None = None
+    value: str
+
+
+class CreateWisdomAttributedOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CreateWisdomAttributedOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    fact: AttributedFact
+
+
+class CreateWisdomRelationBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/CreateWisdomRelationBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    edge_type: str
+    from_id: str
+    from_type: str
+    metadata: dict[str, str] | None = None
+    observed_at: AwareDatetime | None = None
+    source_ref: str | None = None
+    to_id: str
+    to_type: str
+
+
+class CreateWisdomRelationOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CreateWisdomRelationOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    relation: AttributedRelation
+
+
 class CustomLLMConfigResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1792,6 +1912,23 @@ class DirectUpdateResponse(BaseModel):
     fact_id: str | None = None
     inventory_item_id: str | None = None
     status: str
+
+
+class DisclosureEntry(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    agent_id: str
+    category: str
+    decision: str
+    decision_why: str | None = None
+    entity_id: str
+    entity_type: str
+    fact: AttributedFact
+    recorded_at: AwareDatetime
+    turn_id: str
+    user_id: str | None = None
 
 
 class Edge(BaseModel):
@@ -2496,6 +2633,25 @@ class GetAgentModelsOutputBody(BaseModel):
     """
     Available provider/model combinations
     """
+
+
+class GetSkillLoadCountOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/GetSkillLoadCountOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    count: int
+    skill_name: str
 
 
 class Goal(BaseModel):
@@ -3743,6 +3899,24 @@ class ListCustomToolsOutputBody(BaseModel):
     """
 
 
+class ListEnabledSkillsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListEnabledSkillsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    skills: list[str] | None
+
+
 class ListEvalRunsOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3855,6 +4029,84 @@ class ListInstancesOutputBody(BaseModel):
     """
     List of agent instances
     """
+
+
+class ListWisdomAttributedOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListWisdomAttributedOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    facts: list[AttributedFact] | None
+
+
+class ListWisdomAuditOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ListWisdomAuditOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    entries: list[DisclosureEntry] | None
+
+
+class ListWisdomRelationsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListWisdomRelationsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    relations: list[AttributedRelation] | None
+
+
+class LoadSkillInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    session_id: str
+    """
+    Session the skill is being loaded into (used for next-turn cache keying)
+    """
+    skill_name: str
+    """
+    Skill to load
+    """
+
+
+class LoadSkillOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    content: str
+    name: str
+    when_to_use: str | None = None
 
 
 class MemoryNode(BaseModel):
@@ -4522,6 +4774,36 @@ class ProjectServiceCharge(BaseModel):
     updated_at: Annotated[AwareDatetime, Field(alias='updatedAt')]
 
 
+class ProjectSkillBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ProjectSkillBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    content: str
+    """
+    Full markdown playbook body
+    """
+    description: str
+    """
+    Short summary used in the skills index
+    """
+    name: str
+    """
+    Skill name (stable identifier within the project)
+    """
+    when_to_use: str | None = None
+    """
+    Optional trigger hint rendered alongside the description
+    """
+
+
 class PropertySource(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -4661,6 +4943,47 @@ class RelationshipsResponse(BaseModel):
     A URL to the JSON Schema for this object.
     """
     relationships: list[RelationshipEntry] | None
+
+
+class ReplaceWisdomAttributedInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ReplaceWisdomAttributedInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    confidence: float | None = None
+    entity_display_name: str | None = None
+    expires_at: AwareDatetime | None = None
+    observed_at: AwareDatetime | None = None
+    source_ref: str | None = None
+    value: str
+
+
+class ReplaceWisdomAttributedOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ReplaceWisdomAttributedOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    fact: AttributedFact
 
 
 class ResetInstanceOutputBody(BaseModel):
@@ -5231,6 +5554,31 @@ class SimulateRunningBody(BaseModel):
     """
 
 
+class Skill(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Skill.json'])
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    author: str
+    author_agent_id: str | None = None
+    author_user_id: str | None = None
+    content: str
+    created_at: AwareDatetime
+    description: str
+    name: str
+    project_id: str
+    tenant_id: str
+    updated_at: AwareDatetime
+    version: int
+    when_to_use: str | None = None
+
+
 class SpeechToTextInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5724,6 +6072,50 @@ class TimelineSession(BaseModel):
     first_fact_at: str
     last_fact_at: str
     session_id: str
+
+
+class ToggleEnabledSkillInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ToggleEnabledSkillInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    enabled: bool
+    """
+    Target state — true = enabled, false = disabled
+    """
+    skill_name: str
+    """
+    Skill name to toggle
+    """
+
+
+class ToggleEnabledSkillOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ToggleEnabledSkillOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    enabled: bool
+    skill_name: str
 
 
 class ToolSchemaEntry(BaseModel):
@@ -6457,6 +6849,35 @@ class UpdateProjectInputBody(BaseModel):
     """
 
 
+class UpdateProjectSkillInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/UpdateProjectSkillInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    content: str | None = None
+    """
+    Updated markdown body; unchanged if omitted
+    """
+    description: str | None = None
+    """
+    Updated description; unchanged if omitted
+    """
+    when_to_use: str | None = None
+    """
+    Updated trigger hint; unchanged if omitted
+    """
+
+
 class UpdateUserPersonaInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6877,6 +7298,93 @@ class WisdomAuditResponse(BaseModel):
     target_path: str | None = None
 
 
+class WisdomDisclosureHookInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    decision: Literal['disclosed', 'redacted'] | None = None
+    """
+    Decision type; defaults to "disclosed" when empty
+    """
+    facts: list[AttributedFact] | None
+    """
+    Attributed facts that fed this turn's context; empty is a no-op
+    """
+    reason: str | None = None
+    """
+    Discretion-clause verdict or capability-gate explanation
+    """
+    turn_id: str
+    """
+    Turn ID — outer cluster key for the audit partition
+    """
+    user_id: str | None = None
+    """
+    User who drove the turn, if applicable
+    """
+
+
+class WisdomDisclosureHookOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    recorded: int
+
+
+class WisdomImportInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/WisdomImportInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    data: str
+    """
+    JSON array or CSV string (verbatim). Column order for CSV: entity_type,entity_id,category,value,confidence,entity_display_name,source_ref
+    """
+    dry_run: bool | None = None
+    """
+    When true, validate each row but do not persist; response carries accept/reject counts as normal.
+    """
+    format: Literal['json', 'csv']
+    """
+    Payload encoding
+    """
+
+
+class WisdomImportReject(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    reason: str
+    row: int
+
+
+class WisdomImportResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/WisdomImportResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    accepted: int
+    rejected: list[WisdomImportReject] | None
+    total: int
+
+
 class WorkbenchAdvanceTimeResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -7198,6 +7706,8 @@ class AgentCapabilities(BaseModel):
     """
     A URL to the JSON Schema for this object.
     """
+    auto_learn_skills: Annotated[bool | None, Field(alias='autoLearnSkills')] = None
+    composio: bool | None = None
     custom_tools: Annotated[
         list[CustomToolDefinition] | None, Field(alias='customTools')
     ] = None
@@ -7222,6 +7732,7 @@ class AgentCapabilities(BaseModel):
         list[PendingCapability] | None, Field(alias='pendingCapabilities')
     ] = None
     remember_name: Annotated[bool | None, Field(alias='rememberName')] = None
+    skills: bool | None = None
     video_generation: Annotated[bool, Field(alias='videoGeneration')]
     video_unlocked_at: Annotated[
         AwareDatetime | None, Field(alias='videoUnlockedAt')
@@ -7233,6 +7744,10 @@ class AgentCapabilities(BaseModel):
         AwareDatetime | None, Field(alias='voiceUnlockedAt')
     ] = None
     web_search: Annotated[bool | None, Field(alias='webSearch')] = None
+    wisdom: bool | None = None
+    wisdom_public_sharing: Annotated[
+        bool | None, Field(alias='wisdomPublicSharing')
+    ] = None
 
 
 class AgentDialogueInputBody(BaseModel):
@@ -8196,6 +8711,24 @@ class ListFactsResponse(BaseModel):
     facts: list[StoredFact] | None
     next_page_token: str | None = None
     total_count: int
+
+
+class ListProjectSkillsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListProjectSkillsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    skills: list[Skill] | None
 
 
 class ListSchedulesOutputBody(BaseModel):
