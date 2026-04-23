@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     ScheduleWakeupInputBody,
     ScheduleWakeupOutputBody,
@@ -37,6 +36,7 @@ class Wakeups(_WakeupsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return WakeupsResponse.model_validate(data)
+
     def schedule_wakeup(
         self,
         agent_id: str,
@@ -67,6 +67,7 @@ class AsyncWakeups(_WakeupsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return WakeupsResponse.model_validate(data)
+
     async def schedule_wakeup(
         self,
         agent_id: str,

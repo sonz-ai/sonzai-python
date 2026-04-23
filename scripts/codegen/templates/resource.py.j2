@@ -5,12 +5,13 @@
 from __future__ import annotations
 
 from typing import Any
-
+{% if referenced_classes %}
 from sonzai._generated.models import (
 {% for cls in referenced_classes | sort %}
     {{ cls }},
 {% endfor %}
 )
+{% endif %}
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
 

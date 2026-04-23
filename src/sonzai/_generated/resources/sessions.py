@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     EndSessionInputBody,
     EndSessionOutputBody,
@@ -34,6 +33,7 @@ class Sessions(_SessionsBase):
         body = encode_body(EndSessionInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return EndSessionOutputBody.model_validate(data)
+
     def start_session(
         self,
         agent_id: str,
@@ -45,6 +45,7 @@ class Sessions(_SessionsBase):
         body = encode_body(StartSessionInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return StartSessionOutputBody.model_validate(data)
+
     def set_session_tools(
         self,
         agent_id: str,
@@ -69,6 +70,7 @@ class AsyncSessions(_SessionsBase):
         body = encode_body(EndSessionInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return EndSessionOutputBody.model_validate(data)
+
     async def start_session(
         self,
         agent_id: str,
@@ -80,6 +82,7 @@ class AsyncSessions(_SessionsBase):
         body = encode_body(StartSessionInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return StartSessionOutputBody.model_validate(data)
+
     async def set_session_tools(
         self,
         agent_id: str,

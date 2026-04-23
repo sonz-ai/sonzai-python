@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     AtomicFact,
     CreateFactInputBody,
@@ -49,6 +48,7 @@ class Memory(_MemoryBase):
             params["instance_id"] = instance_id
         data = self._http.delete(path, params=params)
         return ResetMemoryResponse.model_validate(data)
+
     def get_memory_tree(
         self,
         agent_id: str,
@@ -80,6 +80,7 @@ class Memory(_MemoryBase):
             params["memory_type"] = memory_type
         data = self._http.get(path, params=params)
         return MemoryResponse.model_validate(data)
+
     def consolidate_memory(
         self,
         agent_id: str,
@@ -91,6 +92,7 @@ class Memory(_MemoryBase):
         body = encode_body(TriggerConsolidationInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return TriggerConsolidationOutputBody.model_validate(data)
+
     def get_fact_history(
         self,
         agent_id: str,
@@ -101,6 +103,7 @@ class Memory(_MemoryBase):
         params = None
         data = self._http.get(path, params=params)
         return FactHistoryResponse.model_validate(data)
+
     def list_facts(
         self,
         agent_id: str,
@@ -123,6 +126,7 @@ class Memory(_MemoryBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ListFactsResponse.model_validate(data)
+
     def create_fact(
         self,
         agent_id: str,
@@ -138,6 +142,7 @@ class Memory(_MemoryBase):
         body = encode_body(CreateFactInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return AtomicFact.model_validate(data)
+
     def delete_fact(
         self,
         agent_id: str,
@@ -148,6 +153,7 @@ class Memory(_MemoryBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def update_fact(
         self,
         agent_id: str,
@@ -160,6 +166,7 @@ class Memory(_MemoryBase):
         body = encode_body(UpdateFactInputBody, body_fields)
         data = self._http.put(path, params=params, body=body)
         return AtomicFact.model_validate(data)
+
     def search_memories(
         self,
         agent_id: str,
@@ -188,6 +195,7 @@ class Memory(_MemoryBase):
             params["include_verbatim"] = include_verbatim
         data = self._http.get(path, params=params)
         return SearchResponse.model_validate(data)
+
     def list_summaries(
         self,
         agent_id: str,
@@ -204,6 +212,7 @@ class Memory(_MemoryBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return SummariesResponse.model_validate(data)
+
     def get_memory_timeline(
         self,
         agent_id: str,
@@ -226,6 +235,7 @@ class Memory(_MemoryBase):
             params["end"] = end
         data = self._http.get(path, params=params)
         return TimelineResponse.model_validate(data)
+
     def get_wisdom_audit(
         self,
         agent_id: str,
@@ -236,6 +246,7 @@ class Memory(_MemoryBase):
         params = None
         data = self._http.get(path, params=params)
         return WisdomAuditResponse.model_validate(data)
+
     def delete_wisdom_fact(
         self,
         agent_id: str,
@@ -246,6 +257,7 @@ class Memory(_MemoryBase):
         params = None
         data = self._http.delete(path, params=params)
         return DeleteWisdomResponse.model_validate(data)
+
     def list_user_facts(
         self,
         agent_id: str,
@@ -254,7 +266,7 @@ class Memory(_MemoryBase):
         instance_id: str | None = None,
         limit: str | None = None,
         has_metadata: str | None = None,
-        metadata.item_type: str | None = None,
+        metadata_item_type: str | None = None,
     ) -> ListAllFactsResponse:
         """List all active facts for a specific user"""
         path = f"/agents/{agentId}/users/{userId}/facts"
@@ -265,8 +277,8 @@ class Memory(_MemoryBase):
             params["limit"] = limit
         if has_metadata is not None:
             params["has_metadata"] = has_metadata
-        if metadata.item_type is not None:
-            params["metadata.item_type"] = metadata.item_type
+        if metadata_item_type is not None:
+            params["metadata.item_type"] = metadata_item_type
         data = self._http.get(path, params=params)
         return ListAllFactsResponse.model_validate(data)
 
@@ -288,6 +300,7 @@ class AsyncMemory(_MemoryBase):
             params["instance_id"] = instance_id
         data = await self._http.delete(path, params=params)
         return ResetMemoryResponse.model_validate(data)
+
     async def get_memory_tree(
         self,
         agent_id: str,
@@ -319,6 +332,7 @@ class AsyncMemory(_MemoryBase):
             params["memory_type"] = memory_type
         data = await self._http.get(path, params=params)
         return MemoryResponse.model_validate(data)
+
     async def consolidate_memory(
         self,
         agent_id: str,
@@ -330,6 +344,7 @@ class AsyncMemory(_MemoryBase):
         body = encode_body(TriggerConsolidationInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return TriggerConsolidationOutputBody.model_validate(data)
+
     async def get_fact_history(
         self,
         agent_id: str,
@@ -340,6 +355,7 @@ class AsyncMemory(_MemoryBase):
         params = None
         data = await self._http.get(path, params=params)
         return FactHistoryResponse.model_validate(data)
+
     async def list_facts(
         self,
         agent_id: str,
@@ -362,6 +378,7 @@ class AsyncMemory(_MemoryBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ListFactsResponse.model_validate(data)
+
     async def create_fact(
         self,
         agent_id: str,
@@ -377,6 +394,7 @@ class AsyncMemory(_MemoryBase):
         body = encode_body(CreateFactInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return AtomicFact.model_validate(data)
+
     async def delete_fact(
         self,
         agent_id: str,
@@ -387,6 +405,7 @@ class AsyncMemory(_MemoryBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def update_fact(
         self,
         agent_id: str,
@@ -399,6 +418,7 @@ class AsyncMemory(_MemoryBase):
         body = encode_body(UpdateFactInputBody, body_fields)
         data = await self._http.put(path, params=params, body=body)
         return AtomicFact.model_validate(data)
+
     async def search_memories(
         self,
         agent_id: str,
@@ -427,6 +447,7 @@ class AsyncMemory(_MemoryBase):
             params["include_verbatim"] = include_verbatim
         data = await self._http.get(path, params=params)
         return SearchResponse.model_validate(data)
+
     async def list_summaries(
         self,
         agent_id: str,
@@ -443,6 +464,7 @@ class AsyncMemory(_MemoryBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return SummariesResponse.model_validate(data)
+
     async def get_memory_timeline(
         self,
         agent_id: str,
@@ -465,6 +487,7 @@ class AsyncMemory(_MemoryBase):
             params["end"] = end
         data = await self._http.get(path, params=params)
         return TimelineResponse.model_validate(data)
+
     async def get_wisdom_audit(
         self,
         agent_id: str,
@@ -475,6 +498,7 @@ class AsyncMemory(_MemoryBase):
         params = None
         data = await self._http.get(path, params=params)
         return WisdomAuditResponse.model_validate(data)
+
     async def delete_wisdom_fact(
         self,
         agent_id: str,
@@ -485,6 +509,7 @@ class AsyncMemory(_MemoryBase):
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteWisdomResponse.model_validate(data)
+
     async def list_user_facts(
         self,
         agent_id: str,
@@ -493,7 +518,7 @@ class AsyncMemory(_MemoryBase):
         instance_id: str | None = None,
         limit: str | None = None,
         has_metadata: str | None = None,
-        metadata.item_type: str | None = None,
+        metadata_item_type: str | None = None,
     ) -> ListAllFactsResponse:
         """List all active facts for a specific user"""
         path = f"/agents/{agentId}/users/{userId}/facts"
@@ -504,7 +529,7 @@ class AsyncMemory(_MemoryBase):
             params["limit"] = limit
         if has_metadata is not None:
             params["has_metadata"] = has_metadata
-        if metadata.item_type is not None:
-            params["metadata.item_type"] = metadata.item_type
+        if metadata_item_type is not None:
+            params["metadata.item_type"] = metadata_item_type
         data = await self._http.get(path, params=params)
         return ListAllFactsResponse.model_validate(data)

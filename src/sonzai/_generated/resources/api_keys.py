@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     CreateAPIKeyInputBody,
     CreateAPIKeyOutputBody,
@@ -30,6 +29,7 @@ class ApiKeys(_ApiKeysBase):
         params = None
         data = self._http.get(path, params=params)
         return data
+
     def create_api_key(
         self,
         project_id: str,
@@ -41,6 +41,7 @@ class ApiKeys(_ApiKeysBase):
         body = encode_body(CreateAPIKeyInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return CreateAPIKeyOutputBody.model_validate(data)
+
     def revoke_api_key(
         self,
         project_id: str,
@@ -63,6 +64,7 @@ class AsyncApiKeys(_ApiKeysBase):
         params = None
         data = await self._http.get(path, params=params)
         return data
+
     async def create_api_key(
         self,
         project_id: str,
@@ -74,6 +76,7 @@ class AsyncApiKeys(_ApiKeysBase):
         body = encode_body(CreateAPIKeyInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return CreateAPIKeyOutputBody.model_validate(data)
+
     async def revoke_api_key(
         self,
         project_id: str,

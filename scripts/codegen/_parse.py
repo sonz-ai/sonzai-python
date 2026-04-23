@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import keyword
 import re
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -143,9 +144,12 @@ def _build_parameter(p: dict[str, Any]) -> Parameter:
     schema = p.get("schema", {})
     py_type = _type_hint(schema.get("type"), required)
     default = schema.get("default")
+    python_name = _snake(name).replace(".", "_")
+    if keyword.iskeyword(python_name):
+        python_name = f"{python_name}_"
     return Parameter(
         name=name,
-        python_name=_snake(name),
+        python_name=python_name,
         location=location,
         required=required,
         type_hint=py_type,
@@ -176,7 +180,7 @@ def _type_hint(openapi_type: str | list[str] | None, required: bool) -> str:
 def _snake(name: str) -> str:
     s1 = re.sub(r"([A-Z]+)([A-Z][a-z])", r"\1_\2", name)
     s2 = re.sub(r"([a-z\d])([A-Z])", r"\1_\2", s1)
-    return s2.replace("-", "_").lower()
+    return s2.replace("-", "_").replace(" ", "_").lower()
 
 
 def _op_id_from_path(verb: str, path: str) -> str:

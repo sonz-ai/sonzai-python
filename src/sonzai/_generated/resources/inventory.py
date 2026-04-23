@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     BatchInventoryRequest,
     BatchInventoryResponse,
@@ -74,6 +73,7 @@ class Inventory(_InventoryBase):
             item_parser=GroupResult.model_validate,
             mode="offset",
         )
+
     def update_inventory(
         self,
         agent_id: str,
@@ -90,6 +90,7 @@ class Inventory(_InventoryBase):
         body = encode_body(InventoryWriteRequest, body_fields)
         data = self._http.post(path, params=params, body=body)
         return InventoryWriteResponse.model_validate(data)
+
     def batch_import_inventory(
         self,
         agent_id: str,
@@ -106,6 +107,7 @@ class Inventory(_InventoryBase):
         body = encode_body(BatchInventoryRequest, body_fields)
         data = self._http.post(path, params=params, body=body)
         return BatchInventoryResponse.model_validate(data)
+
     def create_inventory_item(
         self,
         agent_id: str,
@@ -122,6 +124,7 @@ class Inventory(_InventoryBase):
         body = encode_body(CreateInventoryItemHumaInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return InventoryWriteResponse.model_validate(data)
+
     def direct_delete_inventory(
         self,
         agent_id: str,
@@ -137,6 +140,7 @@ class Inventory(_InventoryBase):
             params["instance_id"] = instance_id
         data = self._http.delete(path, params=params)
         return DirectUpdateResponse.model_validate(data)
+
     def direct_update_inventory(
         self,
         agent_id: str,
@@ -208,6 +212,7 @@ class AsyncInventory(_InventoryBase):
             item_parser=GroupResult.model_validate,
             mode="offset",
         )
+
     async def update_inventory(
         self,
         agent_id: str,
@@ -224,6 +229,7 @@ class AsyncInventory(_InventoryBase):
         body = encode_body(InventoryWriteRequest, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return InventoryWriteResponse.model_validate(data)
+
     async def batch_import_inventory(
         self,
         agent_id: str,
@@ -240,6 +246,7 @@ class AsyncInventory(_InventoryBase):
         body = encode_body(BatchInventoryRequest, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return BatchInventoryResponse.model_validate(data)
+
     async def create_inventory_item(
         self,
         agent_id: str,
@@ -256,6 +263,7 @@ class AsyncInventory(_InventoryBase):
         body = encode_body(CreateInventoryItemHumaInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return InventoryWriteResponse.model_validate(data)
+
     async def direct_delete_inventory(
         self,
         agent_id: str,
@@ -271,6 +279,7 @@ class AsyncInventory(_InventoryBase):
             params["instance_id"] = instance_id
         data = await self._http.delete(path, params=params)
         return DirectUpdateResponse.model_validate(data)
+
     async def direct_update_inventory(
         self,
         agent_id: str,

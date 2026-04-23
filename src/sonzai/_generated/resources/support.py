@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     AddCommentRequest,
     CreateTicketRequest,
@@ -47,6 +46,7 @@ class Support(_SupportBase):
             mode="offset",
             total_key="total",
         )
+
     def create_support_ticket(
         self,
         **body_fields: Any,
@@ -57,6 +57,7 @@ class Support(_SupportBase):
         body = encode_body(CreateTicketRequest, body_fields)
         data = self._http.post(path, params=params, body=body)
         return SupportTicket.model_validate(data)
+
     def get_support_ticket(
         self,
         ticket_id: str,
@@ -66,6 +67,7 @@ class Support(_SupportBase):
         params = None
         data = self._http.get(path, params=params)
         return TicketDetailResponse.model_validate(data)
+
     def close_support_ticket(
         self,
         ticket_id: str,
@@ -75,6 +77,7 @@ class Support(_SupportBase):
         params = None
         data = self._http.post(path, params=params, body=None)
         return SupportTicket.model_validate(data)
+
     def add_support_ticket_comment(
         self,
         ticket_id: str,
@@ -115,6 +118,7 @@ class AsyncSupport(_SupportBase):
             mode="offset",
             total_key="total",
         )
+
     async def create_support_ticket(
         self,
         **body_fields: Any,
@@ -125,6 +129,7 @@ class AsyncSupport(_SupportBase):
         body = encode_body(CreateTicketRequest, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return SupportTicket.model_validate(data)
+
     async def get_support_ticket(
         self,
         ticket_id: str,
@@ -134,6 +139,7 @@ class AsyncSupport(_SupportBase):
         params = None
         data = await self._http.get(path, params=params)
         return TicketDetailResponse.model_validate(data)
+
     async def close_support_ticket(
         self,
         ticket_id: str,
@@ -143,6 +149,7 @@ class AsyncSupport(_SupportBase):
         params = None
         data = await self._http.post(path, params=params, body=None)
         return SupportTicket.model_validate(data)
+
     async def add_support_ticket_comment(
         self,
         ticket_id: str,

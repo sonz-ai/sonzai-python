@@ -5,9 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
-from sonzai._generated.models import (
-)
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
 
@@ -27,6 +24,7 @@ class Chat(_ChatBase):
         params = None
         data = self._http.post(path, params=params, body=None)
         return data
+
     def playground_chat(
         self,
         agent_id: str,
@@ -48,6 +46,7 @@ class AsyncChat(_ChatBase):
         params = None
         data = await self._http.post(path, params=params, body=None)
         return data
+
     async def playground_chat(
         self,
         agent_id: str,

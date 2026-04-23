@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     CreateHabitInputBody,
     Habit,
@@ -38,6 +37,7 @@ class Habits(_HabitsBase):
             params["instance_id"] = instance_id
         data = self._http.get(path, params=params)
         return HabitsResponse.model_validate(data)
+
     def create_habit(
         self,
         agent_id: str,
@@ -53,6 +53,7 @@ class Habits(_HabitsBase):
         body = encode_body(CreateHabitInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return Habit.model_validate(data)
+
     def delete_habit(
         self,
         agent_id: str,
@@ -70,6 +71,7 @@ class Habits(_HabitsBase):
             params["instance_id"] = instance_id
         data = self._http.delete(path, params=params)
         return data
+
     def update_habit(
         self,
         agent_id: str,
@@ -105,6 +107,7 @@ class AsyncHabits(_HabitsBase):
             params["instance_id"] = instance_id
         data = await self._http.get(path, params=params)
         return HabitsResponse.model_validate(data)
+
     async def create_habit(
         self,
         agent_id: str,
@@ -120,6 +123,7 @@ class AsyncHabits(_HabitsBase):
         body = encode_body(CreateHabitInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return Habit.model_validate(data)
+
     async def delete_habit(
         self,
         agent_id: str,
@@ -137,6 +141,7 @@ class AsyncHabits(_HabitsBase):
             params["instance_id"] = instance_id
         data = await self._http.delete(path, params=params)
         return data
+
     async def update_habit(
         self,
         agent_id: str,

@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     ListDeliveryAttemptsOutputBody,
     ListWebhooksOutputBody,
@@ -34,6 +33,7 @@ class Webhooks(_WebhooksBase):
         params = None
         data = self._http.get(path, params=params)
         return ListWebhooksOutputBody.model_validate(data)
+
     def delete_webhook(
         self,
         project_id: str,
@@ -44,6 +44,7 @@ class Webhooks(_WebhooksBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def upsert_webhook(
         self,
         project_id: str,
@@ -56,6 +57,7 @@ class Webhooks(_WebhooksBase):
         body = encode_body(UpsertWebhookInputBody, body_fields)
         data = self._http.put(path, params=params, body=body)
         return UpsertWebhookOutputBody.model_validate(data)
+
     def list_delivery_attempts(
         self,
         project_id: str,
@@ -73,6 +75,7 @@ class Webhooks(_WebhooksBase):
             item_parser=WebhookDeliveryAttempt.model_validate,
             mode="offset",
         )
+
     def rotate_webhook_signing_secret(
         self,
         project_id: str,
@@ -83,6 +86,7 @@ class Webhooks(_WebhooksBase):
         params = None
         data = self._http.post(path, params=params, body=None)
         return RotateSigningSecretOutputBody.model_validate(data)
+
     def list_webhooks_for_tenant(
         self,
     ) -> ListWebhooksOutputBody:
@@ -91,6 +95,7 @@ class Webhooks(_WebhooksBase):
         params = None
         data = self._http.get(path, params=params)
         return ListWebhooksOutputBody.model_validate(data)
+
     def delete_webhook_for_tenant(
         self,
         event_type: str,
@@ -100,6 +105,7 @@ class Webhooks(_WebhooksBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def upsert_webhook_for_tenant(
         self,
         event_type: str,
@@ -111,6 +117,7 @@ class Webhooks(_WebhooksBase):
         body = encode_body(UpsertWebhookForTenantInputBody, body_fields)
         data = self._http.put(path, params=params, body=body)
         return UpsertWebhookOutputBody.model_validate(data)
+
     def list_delivery_attempts_for_tenant(
         self,
         event_type: str,
@@ -127,6 +134,7 @@ class Webhooks(_WebhooksBase):
             item_parser=WebhookDeliveryAttempt.model_validate,
             mode="offset",
         )
+
     def rotate_webhook_signing_secret_for_tenant(
         self,
         event_type: str,
@@ -148,6 +156,7 @@ class AsyncWebhooks(_WebhooksBase):
         params = None
         data = await self._http.get(path, params=params)
         return ListWebhooksOutputBody.model_validate(data)
+
     async def delete_webhook(
         self,
         project_id: str,
@@ -158,6 +167,7 @@ class AsyncWebhooks(_WebhooksBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def upsert_webhook(
         self,
         project_id: str,
@@ -170,6 +180,7 @@ class AsyncWebhooks(_WebhooksBase):
         body = encode_body(UpsertWebhookInputBody, body_fields)
         data = await self._http.put(path, params=params, body=body)
         return UpsertWebhookOutputBody.model_validate(data)
+
     async def list_delivery_attempts(
         self,
         project_id: str,
@@ -191,6 +202,7 @@ class AsyncWebhooks(_WebhooksBase):
             item_parser=WebhookDeliveryAttempt.model_validate,
             mode="offset",
         )
+
     async def rotate_webhook_signing_secret(
         self,
         project_id: str,
@@ -201,6 +213,7 @@ class AsyncWebhooks(_WebhooksBase):
         params = None
         data = await self._http.post(path, params=params, body=None)
         return RotateSigningSecretOutputBody.model_validate(data)
+
     async def list_webhooks_for_tenant(
         self,
     ) -> ListWebhooksOutputBody:
@@ -209,6 +222,7 @@ class AsyncWebhooks(_WebhooksBase):
         params = None
         data = await self._http.get(path, params=params)
         return ListWebhooksOutputBody.model_validate(data)
+
     async def delete_webhook_for_tenant(
         self,
         event_type: str,
@@ -218,6 +232,7 @@ class AsyncWebhooks(_WebhooksBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def upsert_webhook_for_tenant(
         self,
         event_type: str,
@@ -229,6 +244,7 @@ class AsyncWebhooks(_WebhooksBase):
         body = encode_body(UpsertWebhookForTenantInputBody, body_fields)
         data = await self._http.put(path, params=params, body=body)
         return UpsertWebhookOutputBody.model_validate(data)
+
     async def list_delivery_attempts_for_tenant(
         self,
         event_type: str,
@@ -249,6 +265,7 @@ class AsyncWebhooks(_WebhooksBase):
             item_parser=WebhookDeliveryAttempt.model_validate,
             mode="offset",
         )
+
     async def rotate_webhook_signing_secret_for_tenant(
         self,
         event_type: str,

@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     AddContentRequest,
     AddUserContentHumaOutputBody,
@@ -40,6 +39,7 @@ class Priming(_PrimingBase):
         body = encode_body(BatchImportRequest, body_fields)
         data = self._http.post(path, params=params, body=body)
         return BatchImportUsersHumaOutputBody.model_validate(data)
+
     def get_import_status(
         self,
         agent_id: str,
@@ -50,6 +50,7 @@ class Priming(_PrimingBase):
         params = None
         data = self._http.get(path, params=params)
         return ImportJob.model_validate(data)
+
     def list_import_job_users(
         self,
         agent_id: str,
@@ -64,6 +65,7 @@ class Priming(_PrimingBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ListImportJobUsersOutputBody.model_validate(data)
+
     def list_import_jobs(
         self,
         agent_id: str,
@@ -77,6 +79,7 @@ class Priming(_PrimingBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ListImportJobsOutputBody.model_validate(data)
+
     def add_user_content(
         self,
         agent_id: str,
@@ -89,6 +92,7 @@ class Priming(_PrimingBase):
         body = encode_body(AddContentRequest, body_fields)
         data = self._http.post(path, params=params, body=body)
         return AddUserContentHumaOutputBody.model_validate(data)
+
     def get_user_metadata(
         self,
         agent_id: str,
@@ -99,6 +103,7 @@ class Priming(_PrimingBase):
         params = None
         data = self._http.get(path, params=params)
         return UserPrimingMetadata.model_validate(data)
+
     def update_user_metadata(
         self,
         agent_id: str,
@@ -111,6 +116,7 @@ class Priming(_PrimingBase):
         body = encode_body(UpdateMetadataRequest, body_fields)
         data = self._http.patch(path, params=params, body=body)
         return UpdateUserMetadataHumaOutputBody.model_validate(data)
+
     def prime_user(
         self,
         agent_id: str,
@@ -123,6 +129,7 @@ class Priming(_PrimingBase):
         body = encode_body(PrimeUserRequest, body_fields)
         data = self._http.post(path, params=params, body=body)
         return data
+
     def get_prime_status(
         self,
         agent_id: str,
@@ -148,6 +155,7 @@ class AsyncPriming(_PrimingBase):
         body = encode_body(BatchImportRequest, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return BatchImportUsersHumaOutputBody.model_validate(data)
+
     async def get_import_status(
         self,
         agent_id: str,
@@ -158,6 +166,7 @@ class AsyncPriming(_PrimingBase):
         params = None
         data = await self._http.get(path, params=params)
         return ImportJob.model_validate(data)
+
     async def list_import_job_users(
         self,
         agent_id: str,
@@ -172,6 +181,7 @@ class AsyncPriming(_PrimingBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ListImportJobUsersOutputBody.model_validate(data)
+
     async def list_import_jobs(
         self,
         agent_id: str,
@@ -185,6 +195,7 @@ class AsyncPriming(_PrimingBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ListImportJobsOutputBody.model_validate(data)
+
     async def add_user_content(
         self,
         agent_id: str,
@@ -197,6 +208,7 @@ class AsyncPriming(_PrimingBase):
         body = encode_body(AddContentRequest, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return AddUserContentHumaOutputBody.model_validate(data)
+
     async def get_user_metadata(
         self,
         agent_id: str,
@@ -207,6 +219,7 @@ class AsyncPriming(_PrimingBase):
         params = None
         data = await self._http.get(path, params=params)
         return UserPrimingMetadata.model_validate(data)
+
     async def update_user_metadata(
         self,
         agent_id: str,
@@ -219,6 +232,7 @@ class AsyncPriming(_PrimingBase):
         body = encode_body(UpdateMetadataRequest, body_fields)
         data = await self._http.patch(path, params=params, body=body)
         return UpdateUserMetadataHumaOutputBody.model_validate(data)
+
     async def prime_user(
         self,
         agent_id: str,
@@ -231,6 +245,7 @@ class AsyncPriming(_PrimingBase):
         body = encode_body(PrimeUserRequest, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return data
+
     async def get_prime_status(
         self,
         agent_id: str,

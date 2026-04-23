@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     SetAccountConfigOutputBody,
 )
@@ -27,6 +26,7 @@ class AccountConfig(_AccountConfigBase):
         params = None
         data = self._http.get(path, params=params)
         return data
+
     def delete_account_config(
         self,
         key: str,
@@ -36,6 +36,7 @@ class AccountConfig(_AccountConfigBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def get_account_config(
         self,
         key: str,
@@ -45,6 +46,7 @@ class AccountConfig(_AccountConfigBase):
         params = None
         data = self._http.get(path, params=params)
         return data
+
     def set_account_config(
         self,
         key: str,
@@ -65,6 +67,7 @@ class AsyncAccountConfig(_AccountConfigBase):
         params = None
         data = await self._http.get(path, params=params)
         return data
+
     async def delete_account_config(
         self,
         key: str,
@@ -74,6 +77,7 @@ class AsyncAccountConfig(_AccountConfigBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def get_account_config(
         self,
         key: str,
@@ -83,6 +87,7 @@ class AsyncAccountConfig(_AccountConfigBase):
         params = None
         data = await self._http.get(path, params=params)
         return data
+
     async def set_account_config(
         self,
         key: str,

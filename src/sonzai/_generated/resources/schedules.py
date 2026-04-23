@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     CreateScheduleInputBody,
     CreateScheduleOutputBody,
@@ -34,6 +33,7 @@ class Schedules(_SchedulesBase):
         params = None
         data = self._http.get(path, params=params)
         return ListSchedulesOutputBody.model_validate(data)
+
     def create_schedule(
         self,
         agent_id: str,
@@ -46,6 +46,7 @@ class Schedules(_SchedulesBase):
         body = encode_body(CreateScheduleInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return CreateScheduleOutputBody.model_validate(data)
+
     def delete_schedule(
         self,
         agent_id: str,
@@ -57,6 +58,7 @@ class Schedules(_SchedulesBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def get_schedule(
         self,
         agent_id: str,
@@ -68,6 +70,7 @@ class Schedules(_SchedulesBase):
         params = None
         data = self._http.get(path, params=params)
         return ScheduleDTO.model_validate(data)
+
     def patch_schedule(
         self,
         agent_id: str,
@@ -81,6 +84,7 @@ class Schedules(_SchedulesBase):
         body = encode_body(PatchScheduleInputBody, body_fields)
         data = self._http.patch(path, params=params, body=body)
         return ScheduleDTO.model_validate(data)
+
     def upcoming_schedule(
         self,
         agent_id: str,
@@ -109,6 +113,7 @@ class AsyncSchedules(_SchedulesBase):
         params = None
         data = await self._http.get(path, params=params)
         return ListSchedulesOutputBody.model_validate(data)
+
     async def create_schedule(
         self,
         agent_id: str,
@@ -121,6 +126,7 @@ class AsyncSchedules(_SchedulesBase):
         body = encode_body(CreateScheduleInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return CreateScheduleOutputBody.model_validate(data)
+
     async def delete_schedule(
         self,
         agent_id: str,
@@ -132,6 +138,7 @@ class AsyncSchedules(_SchedulesBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def get_schedule(
         self,
         agent_id: str,
@@ -143,6 +150,7 @@ class AsyncSchedules(_SchedulesBase):
         params = None
         data = await self._http.get(path, params=params)
         return ScheduleDTO.model_validate(data)
+
     async def patch_schedule(
         self,
         agent_id: str,
@@ -156,6 +164,7 @@ class AsyncSchedules(_SchedulesBase):
         body = encode_body(PatchScheduleInputBody, body_fields)
         data = await self._http.patch(path, params=params, body=body)
         return ScheduleDTO.model_validate(data)
+
     async def upcoming_schedule(
         self,
         agent_id: str,

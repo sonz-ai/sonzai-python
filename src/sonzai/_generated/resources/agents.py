@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     AgentCapabilities,
     AgentDetailResponse,
@@ -70,6 +69,7 @@ class Agents(_AgentsBase):
             item_parser=AgentIndex.model_validate,
             mode="offset",
         )
+
     def create_agent(
         self,
         **body_fields: Any,
@@ -80,6 +80,7 @@ class Agents(_AgentsBase):
         body = encode_body(CreateAgentBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return AgentDetailResponse.model_validate(data)
+
     def delete_agent(
         self,
         agent_id: str,
@@ -89,6 +90,7 @@ class Agents(_AgentsBase):
         params = None
         data = self._http.delete(path, params=params)
         return DeleteAgentOutputBody.model_validate(data)
+
     def get_agent(
         self,
         agent_id: str,
@@ -98,6 +100,7 @@ class Agents(_AgentsBase):
         params = None
         data = self._http.get(path, params=params)
         return AgentDetailResponse.model_validate(data)
+
     def get_capabilities(
         self,
         agent_id: str,
@@ -107,6 +110,7 @@ class Agents(_AgentsBase):
         params = None
         data = self._http.get(path, params=params)
         return AgentCapabilities.model_validate(data)
+
     def update_capabilities(
         self,
         agent_id: str,
@@ -118,6 +122,7 @@ class Agents(_AgentsBase):
         body = encode_body(UpdateCapabilitiesInputBody, body_fields)
         data = self._http.put(path, params=params, body=body)
         return AgentCapabilities.model_validate(data)
+
     def get_effective_post_processing_model(
         self,
         agent_id: str,
@@ -131,6 +136,7 @@ class Agents(_AgentsBase):
             params["chat_model"] = chat_model
         data = self._http.get(path, params=params)
         return EffectivePostProcessingModelOutputBody.model_validate(data)
+
     def fork_agent(
         self,
         agent_id: str,
@@ -142,6 +148,7 @@ class Agents(_AgentsBase):
         body = encode_body(ForkAgentInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return ForkResponse.model_validate(data)
+
     def get_fork_status(
         self,
         agent_id: str,
@@ -151,6 +158,7 @@ class Agents(_AgentsBase):
         params = None
         data = self._http.get(path, params=params)
         return ForkStatusResponse.model_validate(data)
+
     def update_agent_post_processing_model(
         self,
         agent_id: str,
@@ -162,6 +170,7 @@ class Agents(_AgentsBase):
         body = encode_body(UpdateAgentPostProcessingModelInputBody, body_fields)
         data = self._http.patch(path, params=params, body=body)
         return UpdateAgentPostProcessingModelOutputBody.model_validate(data)
+
     def update_agent_profile(
         self,
         agent_id: str,
@@ -173,6 +182,7 @@ class Agents(_AgentsBase):
         body = encode_body(UpdateAgentProfileInputBody, body_fields)
         data = self._http.patch(path, params=params, body=body)
         return UpdateAgentProfileOutputBody.model_validate(data)
+
     def update_agent_project(
         self,
         agent_id: str,
@@ -184,6 +194,7 @@ class Agents(_AgentsBase):
         body = encode_body(UpdateAgentProjectInputBody, body_fields)
         data = self._http.patch(path, params=params, body=body)
         return UpdateAgentProjectOutputBody.model_validate(data)
+
     def set_agent_status(
         self,
         agent_id: str,
@@ -195,6 +206,7 @@ class Agents(_AgentsBase):
         body = encode_body(SetAgentStatusInputBody, body_fields)
         data = self._http.patch(path, params=params, body=body)
         return SetAgentStatusOutputBody.model_validate(data)
+
     def list_custom_tools(
         self,
         agent_id: str,
@@ -204,6 +216,7 @@ class Agents(_AgentsBase):
         params = None
         data = self._http.get(path, params=params)
         return ListCustomToolsOutputBody.model_validate(data)
+
     def create_custom_tool(
         self,
         agent_id: str,
@@ -215,6 +228,7 @@ class Agents(_AgentsBase):
         body = encode_body(CreateCustomToolInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return CustomToolDefinition.model_validate(data)
+
     def delete_custom_tool(
         self,
         agent_id: str,
@@ -225,6 +239,7 @@ class Agents(_AgentsBase):
         params = None
         data = self._http.delete(path, params=params)
         return DeleteCustomToolOutputBody.model_validate(data)
+
     def update_custom_tool(
         self,
         agent_id: str,
@@ -271,6 +286,7 @@ class AsyncAgents(_AgentsBase):
             item_parser=AgentIndex.model_validate,
             mode="offset",
         )
+
     async def create_agent(
         self,
         **body_fields: Any,
@@ -281,6 +297,7 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(CreateAgentBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return AgentDetailResponse.model_validate(data)
+
     async def delete_agent(
         self,
         agent_id: str,
@@ -290,6 +307,7 @@ class AsyncAgents(_AgentsBase):
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteAgentOutputBody.model_validate(data)
+
     async def get_agent(
         self,
         agent_id: str,
@@ -299,6 +317,7 @@ class AsyncAgents(_AgentsBase):
         params = None
         data = await self._http.get(path, params=params)
         return AgentDetailResponse.model_validate(data)
+
     async def get_capabilities(
         self,
         agent_id: str,
@@ -308,6 +327,7 @@ class AsyncAgents(_AgentsBase):
         params = None
         data = await self._http.get(path, params=params)
         return AgentCapabilities.model_validate(data)
+
     async def update_capabilities(
         self,
         agent_id: str,
@@ -319,6 +339,7 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(UpdateCapabilitiesInputBody, body_fields)
         data = await self._http.put(path, params=params, body=body)
         return AgentCapabilities.model_validate(data)
+
     async def get_effective_post_processing_model(
         self,
         agent_id: str,
@@ -332,6 +353,7 @@ class AsyncAgents(_AgentsBase):
             params["chat_model"] = chat_model
         data = await self._http.get(path, params=params)
         return EffectivePostProcessingModelOutputBody.model_validate(data)
+
     async def fork_agent(
         self,
         agent_id: str,
@@ -343,6 +365,7 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(ForkAgentInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return ForkResponse.model_validate(data)
+
     async def get_fork_status(
         self,
         agent_id: str,
@@ -352,6 +375,7 @@ class AsyncAgents(_AgentsBase):
         params = None
         data = await self._http.get(path, params=params)
         return ForkStatusResponse.model_validate(data)
+
     async def update_agent_post_processing_model(
         self,
         agent_id: str,
@@ -363,6 +387,7 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(UpdateAgentPostProcessingModelInputBody, body_fields)
         data = await self._http.patch(path, params=params, body=body)
         return UpdateAgentPostProcessingModelOutputBody.model_validate(data)
+
     async def update_agent_profile(
         self,
         agent_id: str,
@@ -374,6 +399,7 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(UpdateAgentProfileInputBody, body_fields)
         data = await self._http.patch(path, params=params, body=body)
         return UpdateAgentProfileOutputBody.model_validate(data)
+
     async def update_agent_project(
         self,
         agent_id: str,
@@ -385,6 +411,7 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(UpdateAgentProjectInputBody, body_fields)
         data = await self._http.patch(path, params=params, body=body)
         return UpdateAgentProjectOutputBody.model_validate(data)
+
     async def set_agent_status(
         self,
         agent_id: str,
@@ -396,6 +423,7 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(SetAgentStatusInputBody, body_fields)
         data = await self._http.patch(path, params=params, body=body)
         return SetAgentStatusOutputBody.model_validate(data)
+
     async def list_custom_tools(
         self,
         agent_id: str,
@@ -405,6 +433,7 @@ class AsyncAgents(_AgentsBase):
         params = None
         data = await self._http.get(path, params=params)
         return ListCustomToolsOutputBody.model_validate(data)
+
     async def create_custom_tool(
         self,
         agent_id: str,
@@ -416,6 +445,7 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(CreateCustomToolInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return CustomToolDefinition.model_validate(data)
+
     async def delete_custom_tool(
         self,
         agent_id: str,
@@ -426,6 +456,7 @@ class AsyncAgents(_AgentsBase):
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteCustomToolOutputBody.model_validate(data)
+
     async def update_custom_tool(
         self,
         agent_id: str,

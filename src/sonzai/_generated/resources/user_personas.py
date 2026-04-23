@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     CreateUserPersonaInputBody,
     DeleteUserPersonaOutputBody,
@@ -31,6 +30,7 @@ class UserPersonas(_UserPersonasBase):
         params = None
         data = self._http.get(path, params=params)
         return ListUserPersonasOutputBody.model_validate(data)
+
     def create_user_persona(
         self,
         **body_fields: Any,
@@ -41,6 +41,7 @@ class UserPersonas(_UserPersonasBase):
         body = encode_body(CreateUserPersonaInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return UserPersonaRecord.model_validate(data)
+
     def delete_user_persona(
         self,
         persona_id: str,
@@ -50,6 +51,7 @@ class UserPersonas(_UserPersonasBase):
         params = None
         data = self._http.delete(path, params=params)
         return DeleteUserPersonaOutputBody.model_validate(data)
+
     def get_user_persona(
         self,
         persona_id: str,
@@ -59,6 +61,7 @@ class UserPersonas(_UserPersonasBase):
         params = None
         data = self._http.get(path, params=params)
         return UserPersonaRecord.model_validate(data)
+
     def update_user_persona(
         self,
         persona_id: str,
@@ -81,6 +84,7 @@ class AsyncUserPersonas(_UserPersonasBase):
         params = None
         data = await self._http.get(path, params=params)
         return ListUserPersonasOutputBody.model_validate(data)
+
     async def create_user_persona(
         self,
         **body_fields: Any,
@@ -91,6 +95,7 @@ class AsyncUserPersonas(_UserPersonasBase):
         body = encode_body(CreateUserPersonaInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return UserPersonaRecord.model_validate(data)
+
     async def delete_user_persona(
         self,
         persona_id: str,
@@ -100,6 +105,7 @@ class AsyncUserPersonas(_UserPersonasBase):
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteUserPersonaOutputBody.model_validate(data)
+
     async def get_user_persona(
         self,
         persona_id: str,
@@ -109,6 +115,7 @@ class AsyncUserPersonas(_UserPersonasBase):
         params = None
         data = await self._http.get(path, params=params)
         return UserPersonaRecord.model_validate(data)
+
     async def update_user_persona(
         self,
         persona_id: str,

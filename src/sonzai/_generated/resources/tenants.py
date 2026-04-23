@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     Tenant,
 )
@@ -27,6 +26,7 @@ class Tenants(_TenantsBase):
         params = None
         data = self._http.get(path, params=params)
         return data
+
     def get_tenant(
         self,
         tenant_id: str,
@@ -47,6 +47,7 @@ class AsyncTenants(_TenantsBase):
         params = None
         data = await self._http.get(path, params=params)
         return data
+
     async def get_tenant(
         self,
         tenant_id: str,

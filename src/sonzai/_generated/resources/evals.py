@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     CreateEvalTemplateInputBody,
     DeleteEvalRunOutputBody,
@@ -44,6 +43,7 @@ class Evals(_EvalsBase):
         body = encode_body(EvalOnlyRequest, body_fields)
         data = self._http.post(path, params=params, body=body)
         return RunningBody.model_validate(data)
+
     def evaluate_agent(
         self,
         agent_id: str,
@@ -55,6 +55,7 @@ class Evals(_EvalsBase):
         body = encode_body(EvaluateRequest, body_fields)
         data = self._http.post(path, params=params, body=body)
         return EvaluateAcceptedBody.model_validate(data)
+
     def run_eval(
         self,
         agent_id: str,
@@ -66,6 +67,7 @@ class Evals(_EvalsBase):
         body = encode_body(RunEvalRequest, body_fields)
         data = self._http.post(path, params=params, body=body)
         return RunningBody.model_validate(data)
+
     def simulate_agent(
         self,
         agent_id: str,
@@ -77,6 +79,7 @@ class Evals(_EvalsBase):
         body = encode_body(SimulateRequest, body_fields)
         data = self._http.post(path, params=params, body=body)
         return SimulateRunningBody.model_validate(data)
+
     def list_eval_runs(
         self,
         *,
@@ -95,6 +98,7 @@ class Evals(_EvalsBase):
             item_parser=EvalRun.model_validate,
             mode="offset",
         )
+
     def delete_eval_run(
         self,
         run_id: str,
@@ -104,6 +108,7 @@ class Evals(_EvalsBase):
         params = None
         data = self._http.delete(path, params=params)
         return DeleteEvalRunOutputBody.model_validate(data)
+
     def get_eval_run(
         self,
         run_id: str,
@@ -113,19 +118,21 @@ class Evals(_EvalsBase):
         params = None
         data = self._http.get(path, params=params)
         return EvalRun.model_validate(data)
+
     def stream_eval_events(
         self,
         run_id: str,
         *,
-        from: int | None = 0,
+        from_: int | None = 0,
     ) -> Any:
         """Stream eval run events (SSE)"""
         path = f"/eval-runs/{runId}/events"
         params: dict[str, Any] = {}
-        if from is not None:
-            params["from"] = from
+        if from_ is not None:
+            params["from"] = from_
         data = self._http.get(path, params=params)
         return data
+
     def list_eval_templates(
         self,
         *,
@@ -138,6 +145,7 @@ class Evals(_EvalsBase):
             params["type"] = type
         data = self._http.get(path, params=params)
         return ListEvalTemplatesOutputBody.model_validate(data)
+
     def create_eval_template(
         self,
         **body_fields: Any,
@@ -148,6 +156,7 @@ class Evals(_EvalsBase):
         body = encode_body(CreateEvalTemplateInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return EvalTemplate.model_validate(data)
+
     def delete_eval_template(
         self,
         template_id: str,
@@ -157,6 +166,7 @@ class Evals(_EvalsBase):
         params = None
         data = self._http.delete(path, params=params)
         return DeleteEvalTemplateOutputBody.model_validate(data)
+
     def get_eval_template(
         self,
         template_id: str,
@@ -166,6 +176,7 @@ class Evals(_EvalsBase):
         params = None
         data = self._http.get(path, params=params)
         return EvalTemplate.model_validate(data)
+
     def update_eval_template(
         self,
         template_id: str,
@@ -191,6 +202,7 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(EvalOnlyRequest, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return RunningBody.model_validate(data)
+
     async def evaluate_agent(
         self,
         agent_id: str,
@@ -202,6 +214,7 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(EvaluateRequest, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return EvaluateAcceptedBody.model_validate(data)
+
     async def run_eval(
         self,
         agent_id: str,
@@ -213,6 +226,7 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(RunEvalRequest, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return RunningBody.model_validate(data)
+
     async def simulate_agent(
         self,
         agent_id: str,
@@ -224,6 +238,7 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(SimulateRequest, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return SimulateRunningBody.model_validate(data)
+
     async def list_eval_runs(
         self,
         *,
@@ -246,6 +261,7 @@ class AsyncEvals(_EvalsBase):
             item_parser=EvalRun.model_validate,
             mode="offset",
         )
+
     async def delete_eval_run(
         self,
         run_id: str,
@@ -255,6 +271,7 @@ class AsyncEvals(_EvalsBase):
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteEvalRunOutputBody.model_validate(data)
+
     async def get_eval_run(
         self,
         run_id: str,
@@ -264,19 +281,21 @@ class AsyncEvals(_EvalsBase):
         params = None
         data = await self._http.get(path, params=params)
         return EvalRun.model_validate(data)
+
     async def stream_eval_events(
         self,
         run_id: str,
         *,
-        from: int | None = 0,
+        from_: int | None = 0,
     ) -> Any:
         """Stream eval run events (SSE)"""
         path = f"/eval-runs/{runId}/events"
         params: dict[str, Any] = {}
-        if from is not None:
-            params["from"] = from
+        if from_ is not None:
+            params["from"] = from_
         data = await self._http.get(path, params=params)
         return data
+
     async def list_eval_templates(
         self,
         *,
@@ -289,6 +308,7 @@ class AsyncEvals(_EvalsBase):
             params["type"] = type
         data = await self._http.get(path, params=params)
         return ListEvalTemplatesOutputBody.model_validate(data)
+
     async def create_eval_template(
         self,
         **body_fields: Any,
@@ -299,6 +319,7 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(CreateEvalTemplateInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return EvalTemplate.model_validate(data)
+
     async def delete_eval_template(
         self,
         template_id: str,
@@ -308,6 +329,7 @@ class AsyncEvals(_EvalsBase):
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteEvalTemplateOutputBody.model_validate(data)
+
     async def get_eval_template(
         self,
         template_id: str,
@@ -317,6 +339,7 @@ class AsyncEvals(_EvalsBase):
         params = None
         data = await self._http.get(path, params=params)
         return EvalTemplate.model_validate(data)
+
     async def update_eval_template(
         self,
         template_id: str,

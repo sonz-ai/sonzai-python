@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     AcknowledgeAllProjectNotificationsOutputBody,
     AcknowledgeProjectNotificationsInputBody,
@@ -43,6 +42,7 @@ class Notifications(_NotificationsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ProactiveNotificationsResponse.model_validate(data)
+
     def get_notification_history(
         self,
         agent_id: str,
@@ -56,6 +56,7 @@ class Notifications(_NotificationsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ProactiveNotificationsResponse.model_validate(data)
+
     def consume_notification(
         self,
         agent_id: str,
@@ -66,6 +67,7 @@ class Notifications(_NotificationsBase):
         params = None
         data = self._http.post(path, params=params, body=None)
         return ConsumeNotificationOutputBody.model_validate(data)
+
     def list_project_notifications(
         self,
         project_id: str,
@@ -85,6 +87,7 @@ class Notifications(_NotificationsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ProjectNotificationsListOutputBody.model_validate(data)
+
     def acknowledge_project_notifications(
         self,
         project_id: str,
@@ -96,6 +99,7 @@ class Notifications(_NotificationsBase):
         body = encode_body(AcknowledgeProjectNotificationsInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return AcknowledgeProjectNotificationsOutputBody.model_validate(data)
+
     def acknowledge_all_project_notifications(
         self,
         project_id: str,
@@ -134,6 +138,7 @@ class AsyncNotifications(_NotificationsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ProactiveNotificationsResponse.model_validate(data)
+
     async def get_notification_history(
         self,
         agent_id: str,
@@ -147,6 +152,7 @@ class AsyncNotifications(_NotificationsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ProactiveNotificationsResponse.model_validate(data)
+
     async def consume_notification(
         self,
         agent_id: str,
@@ -157,6 +163,7 @@ class AsyncNotifications(_NotificationsBase):
         params = None
         data = await self._http.post(path, params=params, body=None)
         return ConsumeNotificationOutputBody.model_validate(data)
+
     async def list_project_notifications(
         self,
         project_id: str,
@@ -176,6 +183,7 @@ class AsyncNotifications(_NotificationsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ProjectNotificationsListOutputBody.model_validate(data)
+
     async def acknowledge_project_notifications(
         self,
         project_id: str,
@@ -187,6 +195,7 @@ class AsyncNotifications(_NotificationsBase):
         body = encode_body(AcknowledgeProjectNotificationsInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return AcknowledgeProjectNotificationsOutputBody.model_validate(data)
+
     async def acknowledge_all_project_notifications(
         self,
         project_id: str,

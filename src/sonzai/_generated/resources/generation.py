@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     GenerateAndCreateInputBody,
     GenerateBioInputBody,
@@ -38,6 +37,7 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateAndCreateInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return data
+
     def generate_character(
         self,
         **body_fields: Any,
@@ -48,6 +48,7 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateCharacterInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return data
+
     def regenerate_avatar(
         self,
         agent_id: str,
@@ -59,6 +60,7 @@ class Generation(_GenerationBase):
         body = encode_body(RegenerateAvatarInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return RegenerateAvatarOutputBody.model_validate(data)
+
     def generate_bio(
         self,
         agent_id: str,
@@ -70,6 +72,7 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateBioInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return GenerateBioOutputBody.model_validate(data)
+
     def generate_image(
         self,
         agent_id: str,
@@ -81,6 +84,7 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateImageInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return GenerateImageOutputBody.model_validate(data)
+
     def generate_seed_memories(
         self,
         agent_id: str,
@@ -105,6 +109,7 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateAndCreateInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return data
+
     async def generate_character(
         self,
         **body_fields: Any,
@@ -115,6 +120,7 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateCharacterInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return data
+
     async def regenerate_avatar(
         self,
         agent_id: str,
@@ -126,6 +132,7 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(RegenerateAvatarInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return RegenerateAvatarOutputBody.model_validate(data)
+
     async def generate_bio(
         self,
         agent_id: str,
@@ -137,6 +144,7 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateBioInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return GenerateBioOutputBody.model_validate(data)
+
     async def generate_image(
         self,
         agent_id: str,
@@ -148,6 +156,7 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateImageInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return GenerateImageOutputBody.model_validate(data)
+
     async def generate_seed_memories(
         self,
         agent_id: str,

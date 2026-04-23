@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     ConstellationResponse,
     CreateConstellationNodeInputBody,
@@ -35,6 +34,7 @@ class Constellation(_ConstellationBase):
             params["user_id"] = user_id
         data = self._http.get(path, params=params)
         return ConstellationResponse.model_validate(data)
+
     def create_constellation_node(
         self,
         agent_id: str,
@@ -46,6 +46,7 @@ class Constellation(_ConstellationBase):
         body = encode_body(CreateConstellationNodeInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return Node.model_validate(data)
+
     def delete_constellation_node(
         self,
         agent_id: str,
@@ -56,6 +57,7 @@ class Constellation(_ConstellationBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def update_constellation_node(
         self,
         agent_id: str,
@@ -84,6 +86,7 @@ class AsyncConstellation(_ConstellationBase):
             params["user_id"] = user_id
         data = await self._http.get(path, params=params)
         return ConstellationResponse.model_validate(data)
+
     async def create_constellation_node(
         self,
         agent_id: str,
@@ -95,6 +98,7 @@ class AsyncConstellation(_ConstellationBase):
         body = encode_body(CreateConstellationNodeInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return Node.model_validate(data)
+
     async def delete_constellation_node(
         self,
         agent_id: str,
@@ -105,6 +109,7 @@ class AsyncConstellation(_ConstellationBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def update_constellation_node(
         self,
         agent_id: str,

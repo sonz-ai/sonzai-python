@@ -5,9 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
-from sonzai._generated.models import (
-)
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
 

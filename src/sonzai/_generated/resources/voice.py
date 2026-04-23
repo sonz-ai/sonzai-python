@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     ListVoicesResponse,
     SpeechToTextInputBody,
@@ -34,6 +33,7 @@ class Voice(_VoiceBase):
         body = encode_body(VoiceLiveWSTokenInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return VoiceLiveWSTokenOutputBody.model_validate(data)
+
     def speech_to_text(
         self,
         agent_id: str,
@@ -45,6 +45,7 @@ class Voice(_VoiceBase):
         body = encode_body(SpeechToTextInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return data
+
     def text_to_speech(
         self,
         agent_id: str,
@@ -56,6 +57,7 @@ class Voice(_VoiceBase):
         body = encode_body(TextToSpeechInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return data
+
     def list_voices(
         self,
         *,
@@ -82,6 +84,7 @@ class AsyncVoice(_VoiceBase):
         body = encode_body(VoiceLiveWSTokenInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return VoiceLiveWSTokenOutputBody.model_validate(data)
+
     async def speech_to_text(
         self,
         agent_id: str,
@@ -93,6 +96,7 @@ class AsyncVoice(_VoiceBase):
         body = encode_body(SpeechToTextInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return data
+
     async def text_to_speech(
         self,
         agent_id: str,
@@ -104,6 +108,7 @@ class AsyncVoice(_VoiceBase):
         body = encode_body(TextToSpeechInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return data
+
     async def list_voices(
         self,
         *,

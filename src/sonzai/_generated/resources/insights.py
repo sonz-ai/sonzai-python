@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     RecentShiftsResponse,
     SignificantMomentsResponse,
@@ -32,6 +31,7 @@ class Insights(_InsightsBase):
         params = None
         data = self._http.get(path, params=params)
         return RecentShiftsResponse.model_validate(data)
+
     def get_significant_moments(
         self,
         agent_id: str,
@@ -45,6 +45,7 @@ class Insights(_InsightsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return SignificantMomentsResponse.model_validate(data)
+
     def list_user_overlays(
         self,
         agent_id: str,
@@ -54,6 +55,7 @@ class Insights(_InsightsBase):
         params = None
         data = self._http.get(path, params=params)
         return UserOverlaysListResponse.model_validate(data)
+
     def get_user_personality_overlay(
         self,
         agent_id: str,
@@ -71,6 +73,7 @@ class Insights(_InsightsBase):
             params["since"] = since
         data = self._http.get(path, params=params)
         return UserOverlayDetailResponse.model_validate(data)
+
     def get_time_machine(
         self,
         agent_id: str,
@@ -96,6 +99,7 @@ class AsyncInsights(_InsightsBase):
         params = None
         data = await self._http.get(path, params=params)
         return RecentShiftsResponse.model_validate(data)
+
     async def get_significant_moments(
         self,
         agent_id: str,
@@ -109,6 +113,7 @@ class AsyncInsights(_InsightsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return SignificantMomentsResponse.model_validate(data)
+
     async def list_user_overlays(
         self,
         agent_id: str,
@@ -118,6 +123,7 @@ class AsyncInsights(_InsightsBase):
         params = None
         data = await self._http.get(path, params=params)
         return UserOverlaysListResponse.model_validate(data)
+
     async def get_user_personality_overlay(
         self,
         agent_id: str,
@@ -135,6 +141,7 @@ class AsyncInsights(_InsightsBase):
             params["since"] = since
         data = await self._http.get(path, params=params)
         return UserOverlayDetailResponse.model_validate(data)
+
     async def get_time_machine(
         self,
         agent_id: str,

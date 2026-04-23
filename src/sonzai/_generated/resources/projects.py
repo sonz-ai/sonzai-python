@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     CreateProjectInputBody,
     DeleteProjectOutputBody,
@@ -37,6 +36,7 @@ class Projects(_ProjectsBase):
             params["offset"] = offset
         data = self._http.get(path, params=params)
         return data
+
     def create_project(
         self,
         **body_fields: Any,
@@ -47,6 +47,7 @@ class Projects(_ProjectsBase):
         body = encode_body(CreateProjectInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return Project.model_validate(data)
+
     def delete_project(
         self,
         project_id: str,
@@ -56,6 +57,7 @@ class Projects(_ProjectsBase):
         params = None
         data = self._http.delete(path, params=params)
         return DeleteProjectOutputBody.model_validate(data)
+
     def get_project(
         self,
         project_id: str,
@@ -65,6 +67,7 @@ class Projects(_ProjectsBase):
         params = None
         data = self._http.get(path, params=params)
         return Project.model_validate(data)
+
     def update_project(
         self,
         project_id: str,
@@ -94,6 +97,7 @@ class AsyncProjects(_ProjectsBase):
             params["offset"] = offset
         data = await self._http.get(path, params=params)
         return data
+
     async def create_project(
         self,
         **body_fields: Any,
@@ -104,6 +108,7 @@ class AsyncProjects(_ProjectsBase):
         body = encode_body(CreateProjectInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return Project.model_validate(data)
+
     async def delete_project(
         self,
         project_id: str,
@@ -113,6 +118,7 @@ class AsyncProjects(_ProjectsBase):
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteProjectOutputBody.model_validate(data)
+
     async def get_project(
         self,
         project_id: str,
@@ -122,6 +128,7 @@ class AsyncProjects(_ProjectsBase):
         params = None
         data = await self._http.get(path, params=params)
         return Project.model_validate(data)
+
     async def update_project(
         self,
         project_id: str,

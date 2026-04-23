@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     BatchGetPersonalitiesInputBody,
     BatchPersonalityResponse,
@@ -33,6 +32,7 @@ class Personality(_PersonalityBase):
         body = encode_body(BatchGetPersonalitiesInputBody, body_fields)
         data = self._http.post(path, params=params, body=body)
         return BatchPersonalityResponse.model_validate(data)
+
     def get_personality(
         self,
         agent_id: str,
@@ -49,6 +49,7 @@ class Personality(_PersonalityBase):
             params["since"] = since
         data = self._http.get(path, params=params)
         return PersonalityResponse.model_validate(data)
+
     def update_personality(
         self,
         agent_id: str,
@@ -73,6 +74,7 @@ class AsyncPersonality(_PersonalityBase):
         body = encode_body(BatchGetPersonalitiesInputBody, body_fields)
         data = await self._http.post(path, params=params, body=body)
         return BatchPersonalityResponse.model_validate(data)
+
     async def get_personality(
         self,
         agent_id: str,
@@ -89,6 +91,7 @@ class AsyncPersonality(_PersonalityBase):
             params["since"] = since
         data = await self._http.get(path, params=params)
         return PersonalityResponse.model_validate(data)
+
     async def update_personality(
         self,
         agent_id: str,

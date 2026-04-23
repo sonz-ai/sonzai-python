@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from typing import Any
-
 from sonzai._generated.models import (
     CustomLLMConfigResponse,
     SetCustomLLMConfigInputBody,
@@ -29,6 +28,7 @@ class CustomLlm(_CustomLlmBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def get_custom_llm_config(
         self,
         project_id: str,
@@ -38,6 +38,7 @@ class CustomLlm(_CustomLlmBase):
         params = None
         data = self._http.get(path, params=params)
         return CustomLLMConfigResponse.model_validate(data)
+
     def set_custom_llm_config(
         self,
         project_id: str,
@@ -61,6 +62,7 @@ class AsyncCustomLlm(_CustomLlmBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def get_custom_llm_config(
         self,
         project_id: str,
@@ -70,6 +72,7 @@ class AsyncCustomLlm(_CustomLlmBase):
         params = None
         data = await self._http.get(path, params=params)
         return CustomLLMConfigResponse.model_validate(data)
+
     async def set_custom_llm_config(
         self,
         project_id: str,
