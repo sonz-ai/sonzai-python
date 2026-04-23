@@ -18,7 +18,7 @@ class AcknowledgeAllProjectNotificationsOutputBody(BaseModel):
         Field(
             alias='$schema',
             examples=[
-                '/api/v1/schemas/AcknowledgeAllProjectNotificationsOutputBody.json'
+                'https://api.sonz.ai/api/v1/schemas/AcknowledgeAllProjectNotificationsOutputBody.json'
             ],
         ),
     ] = None
@@ -40,7 +40,9 @@ class AcknowledgeProjectNotificationsInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/AcknowledgeProjectNotificationsInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/AcknowledgeProjectNotificationsInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -61,7 +63,9 @@ class AcknowledgeProjectNotificationsOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/AcknowledgeProjectNotificationsOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/AcknowledgeProjectNotificationsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -81,7 +85,8 @@ class ActiveCharacterSummary(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ActiveCharacterSummary.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ActiveCharacterSummary.json'],
         ),
     ] = None
     """
@@ -101,7 +106,10 @@ class AddCommentRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AddCommentRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/AddCommentRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -119,7 +127,9 @@ class AddUserContentHumaOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/AddUserContentHumaOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/AddUserContentHumaOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -167,7 +177,10 @@ class AgentDialogueOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/AgentDialogueOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/AgentDialogueOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -208,7 +221,10 @@ class AgentInstance(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AgentInstance.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/AgentInstance.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -231,7 +247,8 @@ class AgentKBSearchInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/AgentKBSearchInputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/AgentKBSearchInputBody.json'],
         ),
     ] = None
     """
@@ -273,7 +290,10 @@ class AnalyticsOverview(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AnalyticsOverview.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/AnalyticsOverview.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -292,7 +312,10 @@ class AtomicFact(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AtomicFact.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/AtomicFact.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -344,7 +367,9 @@ class BatchGetPersonalitiesInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/BatchGetPersonalitiesInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/BatchGetPersonalitiesInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -365,7 +390,9 @@ class BatchImportUsersHumaOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/BatchImportUsersHumaOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/BatchImportUsersHumaOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -408,7 +435,10 @@ class BatchInventoryRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/BatchInventoryRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/BatchInventoryRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -425,7 +455,8 @@ class BatchInventoryResponse(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/BatchInventoryResponse.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/BatchInventoryResponse.json'],
         ),
     ] = None
     """
@@ -522,7 +553,10 @@ class BreakthroughsResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/BreakthroughsResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/BreakthroughsResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -547,7 +581,10 @@ class CachedModelsPayload(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CachedModelsPayload.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CachedModelsPayload.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -597,7 +634,9 @@ class ConsumeNotificationOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/ConsumeNotificationOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ConsumeNotificationOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -628,7 +667,10 @@ class ContextEngineEventSummary(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ContextEngineEventSummary.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ContextEngineEventSummary.json'
+            ],
         ),
     ] = None
     """
@@ -771,7 +813,10 @@ class CreateAPIKeyInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateAPIKeyInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CreateAPIKeyInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -798,7 +843,8 @@ class CreateAPIKeyOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateAPIKeyOutputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CreateAPIKeyOutputBody.json'],
         ),
     ] = None
     """
@@ -941,7 +987,9 @@ class CreateConstellationNodeInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/CreateConstellationNodeInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CreateConstellationNodeInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -978,7 +1026,9 @@ class CreateCustomStateInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/CreateCustomStateInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CreateCustomStateInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1018,7 +1068,10 @@ class CreateCustomToolInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateCustomToolInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CreateCustomToolInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1045,7 +1098,10 @@ class CreateFactInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateFactInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CreateFactInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1062,9 +1118,9 @@ class CreateFactInputBody(BaseModel):
     """
     Related entity names
     """
-    fact_type: str
+    fact_type: str | None = None
     """
-    Fact type (defaults to user_fact)
+    Fact type (defaults to user_fact when omitted)
     """
     importance: float | None = None
     """
@@ -1091,7 +1147,10 @@ class CreateGoalInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateGoalInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CreateGoalInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1129,7 +1188,10 @@ class CreateHabitInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateHabitInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CreateHabitInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1168,7 +1230,10 @@ class CreateInstanceInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateInstanceInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CreateInstanceInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1193,7 +1258,9 @@ class CreateInventoryItemHumaInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/CreateInventoryItemHumaInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CreateInventoryItemHumaInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1233,7 +1300,8 @@ class CreateProjectInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateProjectInputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CreateProjectInputBody.json'],
         ),
     ] = None
     """
@@ -1257,7 +1325,10 @@ class CreateScheduleInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateScheduleInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CreateScheduleInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1293,7 +1364,10 @@ class CreateScheduleOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateScheduleOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CreateScheduleOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1312,7 +1386,10 @@ class CreateTicketRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateTicketRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CreateTicketRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1332,7 +1409,9 @@ class CreateUserPersonaInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/CreateUserPersonaInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CreateUserPersonaInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1360,7 +1439,10 @@ class CustomLLMConfigResponse(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/CustomLLMConfigResponse.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CustomLLMConfigResponse.json'
+            ],
         ),
     ] = None
     """
@@ -1381,7 +1463,10 @@ class CustomState(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CustomState.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CustomState.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1405,7 +1490,10 @@ class CustomToolDefinition(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CustomToolDefinition.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CustomToolDefinition.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1432,7 +1520,10 @@ class DeleteAgentOutputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/DeleteAgentOutputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/DeleteAgentOutputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1464,7 +1555,9 @@ class DeleteCustomToolOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/DeleteCustomToolOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/DeleteCustomToolOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1481,7 +1574,10 @@ class DeleteEvalRunOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/DeleteEvalRunOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/DeleteEvalRunOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1499,7 +1595,9 @@ class DeleteEvalTemplateOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/DeleteEvalTemplateOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/DeleteEvalTemplateOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1516,7 +1614,10 @@ class DeleteInstanceOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/DeleteInstanceOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/DeleteInstanceOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1536,7 +1637,10 @@ class DeleteProjectOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/DeleteProjectOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/DeleteProjectOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1557,7 +1661,9 @@ class DeleteUserPersonaOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/DeleteUserPersonaOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/DeleteUserPersonaOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1573,7 +1679,10 @@ class DeleteWisdomResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/DeleteWisdomResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/DeleteWisdomResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1628,7 +1737,10 @@ class DiaryPolymorphicResponse(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/DiaryPolymorphicResponse.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/DiaryPolymorphicResponse.json'
+            ],
         ),
     ] = None
     """
@@ -1679,7 +1791,10 @@ class DirectUpdateRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/DirectUpdateRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/DirectUpdateRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1694,7 +1809,10 @@ class DirectUpdateResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/DirectUpdateResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/DirectUpdateResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1730,7 +1848,9 @@ class EffectivePostProcessingModelOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/EffectivePostProcessingModelOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/EffectivePostProcessingModelOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -1749,7 +1869,10 @@ class EndSessionOutputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EndSessionOutputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/EndSessionOutputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1771,7 +1894,10 @@ class EnterpriseContract(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EnterpriseContract.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/EnterpriseContract.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1838,7 +1964,10 @@ class ErrorModel(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ErrorModel.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ErrorModel.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1892,7 +2021,10 @@ class EvalOnlyRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EvalOnlyRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/EvalOnlyRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1921,7 +2053,11 @@ class EvalRun(BaseModel):
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/EvalRun.json'])
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/EvalRun.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1963,7 +2099,10 @@ class EvalRunEvent(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EvalRunEvent.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/EvalRunEvent.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1997,7 +2136,10 @@ class EvalTemplate(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EvalTemplate.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/EvalTemplate.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2024,7 +2166,10 @@ class EvaluateAcceptedBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EvaluateAcceptedBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/EvaluateAcceptedBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2065,7 +2210,10 @@ class FactHistoryResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/FactHistoryResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/FactHistoryResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2081,7 +2229,10 @@ class ForkAgentInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ForkAgentInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ForkAgentInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2099,7 +2250,10 @@ class ForkResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ForkResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ForkResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2117,7 +2271,10 @@ class ForkStatusResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ForkStatusResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ForkStatusResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2140,7 +2297,9 @@ class GenerateAndCreateInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/GenerateAndCreateInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/GenerateAndCreateInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -2191,7 +2350,10 @@ class GenerateBioInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/GenerateBioInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/GenerateBioInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2237,7 +2399,10 @@ class GenerateBioOutputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/GenerateBioOutputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/GenerateBioOutputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2265,7 +2430,9 @@ class GenerateCharacterInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/GenerateCharacterInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/GenerateCharacterInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -2313,7 +2480,8 @@ class GenerateImageInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/GenerateImageInputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/GenerateImageInputBody.json'],
         ),
     ] = None
     """
@@ -2349,7 +2517,10 @@ class GenerateImageOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/GenerateImageOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/GenerateImageOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -2389,7 +2560,10 @@ class GetAgentModelsOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/GetAgentModelsOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/GetAgentModelsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -2415,7 +2589,10 @@ class Goal(BaseModel):
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Goal.json'])
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['https://api.sonz.ai/api/v1/schemas/Goal.json']
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2441,7 +2618,10 @@ class GoalsResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/GoalsResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/GoalsResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2464,7 +2644,10 @@ class Habit(BaseModel):
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Habit.json'])
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['https://api.sonz.ai/api/v1/schemas/Habit.json']
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2493,7 +2676,10 @@ class HabitsResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/HabitsResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/HabitsResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2508,7 +2694,10 @@ class ImportJob(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ImportJob.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ImportJob.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2635,7 +2824,10 @@ class InterestsResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/InterestsResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/InterestsResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2664,7 +2856,10 @@ class InventoryReadResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/InventoryReadResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/InventoryReadResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2683,7 +2878,10 @@ class InventoryWriteRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/InventoryWriteRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/InventoryWriteRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2721,7 +2919,10 @@ class KBAnalyticsRule(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KBAnalyticsRule.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KBAnalyticsRule.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2765,7 +2966,10 @@ class KBDocument(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KBDocument.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KBDocument.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2930,7 +3134,10 @@ class KbBulkUpdateInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbBulkUpdateInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KbBulkUpdateInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2957,7 +3164,8 @@ class KbBulkUpdateOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbBulkUpdateOutputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KbBulkUpdateOutputBody.json'],
         ),
     ] = None
     """
@@ -3008,7 +3216,9 @@ class KbCreateAnalyticsRuleInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/KbCreateAnalyticsRuleInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbCreateAnalyticsRuleInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3044,7 +3254,10 @@ class KbCreateOrgNodeInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbCreateOrgNodeInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbCreateOrgNodeInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3076,7 +3289,10 @@ class KbCreateSchemaInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbCreateSchemaInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbCreateSchemaInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3113,7 +3329,9 @@ class KbGetConversionStatsOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/KbGetConversionStatsOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbGetConversionStatsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3138,7 +3356,9 @@ class KbGetNodeHistoryOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/KbGetNodeHistoryOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbGetNodeHistoryOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3163,7 +3383,9 @@ class KbGetRecommendationsOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/KbGetRecommendationsOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbGetRecommendationsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3186,7 +3408,10 @@ class KbGetStatsOutputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbGetStatsOutputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KbGetStatsOutputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3218,7 +3443,9 @@ class KbGetTrendRankingsOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/KbGetTrendRankingsOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbGetTrendRankingsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3241,7 +3468,10 @@ class KbGetTrendsOutputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbGetTrendsOutputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KbGetTrendsOutputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3264,7 +3494,8 @@ class KbInsertFactsInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbInsertFactsInputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KbInsertFactsInputBody.json'],
         ),
     ] = None
     """
@@ -3292,7 +3523,10 @@ class KbInsertFactsOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbInsertFactsOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbInsertFactsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3329,7 +3563,9 @@ class KbListAnalyticsRulesOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/KbListAnalyticsRulesOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbListAnalyticsRulesOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3353,7 +3589,10 @@ class KbListDocumentsOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbListDocumentsOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbListDocumentsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3377,7 +3616,8 @@ class KbPromoteNodeInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbPromoteNodeInputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KbPromoteNodeInputBody.json'],
         ),
     ] = None
     """
@@ -3397,7 +3637,10 @@ class KbRecordFeedbackInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbRecordFeedbackInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbRecordFeedbackInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3438,7 +3681,9 @@ class KbRecordFeedbackOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/KbRecordFeedbackOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbRecordFeedbackOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3470,7 +3715,9 @@ class KbRunAnalyticsRuleOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/KbRunAnalyticsRuleOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbRunAnalyticsRuleOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3512,7 +3759,9 @@ class KbUpdateAnalyticsRuleInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/KbUpdateAnalyticsRuleInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbUpdateAnalyticsRuleInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3544,7 +3793,10 @@ class KbUpdateSchemaInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbUpdateSchemaInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbUpdateSchemaInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3581,7 +3833,9 @@ class KbUploadDocumentOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/KbUploadDocumentOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbUploadDocumentOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3622,7 +3876,9 @@ class ListCustomStatesOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/ListCustomStatesOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListCustomStatesOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3642,7 +3898,10 @@ class ListCustomToolsOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ListCustomToolsOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListCustomToolsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3662,7 +3921,8 @@ class ListEvalRunsOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ListEvalRunsOutputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ListEvalRunsOutputBody.json'],
         ),
     ] = None
     """
@@ -3687,7 +3947,9 @@ class ListEvalTemplatesOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/ListEvalTemplatesOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListEvalTemplatesOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3708,7 +3970,9 @@ class ListImportJobUsersOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/ListImportJobUsersOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListImportJobUsersOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3732,7 +3996,10 @@ class ListImportJobsOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ListImportJobsOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListImportJobsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3756,7 +4023,10 @@ class ListInstancesOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ListInstancesOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListInstancesOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3804,7 +4074,10 @@ class MemoryResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MemoryResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/MemoryResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3837,7 +4110,10 @@ class MoodAggregateResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MoodAggregateResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/MoodAggregateResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3877,7 +4153,10 @@ class MoodHistoryResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MoodHistoryResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/MoodHistoryResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3913,7 +4192,10 @@ class Node(BaseModel):
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Node.json'])
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['https://api.sonz.ai/api/v1/schemas/Node.json']
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3959,7 +4241,9 @@ class OrgBillingCheckoutInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/OrgBillingCheckoutInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/OrgBillingCheckoutInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -3984,7 +4268,9 @@ class OrgBillingSubscribeInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/OrgBillingSubscribeInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/OrgBillingSubscribeInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4003,7 +4289,10 @@ class OrgBillingURLBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/OrgBillingURLBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/OrgBillingURLBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4020,7 +4309,9 @@ class OrgBillingVoucherInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/OrgBillingVoucherInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/OrgBillingVoucherInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4062,7 +4353,10 @@ class OrgUsageSummaryBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/OrgUsageSummaryBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/OrgUsageSummaryBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4094,7 +4388,10 @@ class PaginatedAgentsResponse(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/PaginatedAgentsResponse.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/PaginatedAgentsResponse.json'
+            ],
         ),
     ] = None
     """
@@ -4114,7 +4411,8 @@ class PatchScheduleInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/PatchScheduleInputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/PatchScheduleInputBody.json'],
         ),
     ] = None
     """
@@ -4321,7 +4619,9 @@ class ProactiveNotificationsResponse(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/ProactiveNotificationsResponse.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ProactiveNotificationsResponse.json'
+            ],
         ),
     ] = None
     """
@@ -4356,7 +4656,11 @@ class Project(BaseModel):
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Project.json'])
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/Project.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4398,7 +4702,9 @@ class ProjectNotificationsListOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/ProjectNotificationsListOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ProjectNotificationsListOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4449,12 +4755,34 @@ class RecentShiftsResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/RecentShiftsResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/RecentShiftsResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
     shifts: list[PersonalityShift] | None
+
+
+class RecentTurn(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    content: str
+    """
+    Raw message content, as sent by the plugin
+    """
+    role: str
+    """
+    Speaker role — one of user|assistant|system
+    """
+    timestamp: str
+    """
+    RFC3339 UTC timestamp of when /process received the turn
+    """
 
 
 class RedeemVoucherResponse(BaseModel):
@@ -4464,7 +4792,10 @@ class RedeemVoucherResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/RedeemVoucherResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/RedeemVoucherResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4483,7 +4814,10 @@ class RegenerateAvatarInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/RegenerateAvatarInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/RegenerateAvatarInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4504,7 +4838,9 @@ class RegenerateAvatarOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/RegenerateAvatarOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/RegenerateAvatarOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4547,7 +4883,10 @@ class RelationshipsResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/RelationshipsResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/RelationshipsResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4563,7 +4902,10 @@ class ResetInstanceOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ResetInstanceOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ResetInstanceOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4590,7 +4932,10 @@ class ResetMemoryResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ResetMemoryResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ResetMemoryResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4613,7 +4958,8 @@ class RevokeAPIKeyOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/RevokeAPIKeyOutputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/RevokeAPIKeyOutputBody.json'],
         ),
     ] = None
     """
@@ -4631,7 +4977,9 @@ class RotateSigningSecretOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/RotateSigningSecretOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/RotateSigningSecretOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4654,7 +5002,10 @@ class RunningBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/RunningBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/RunningBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4676,7 +5027,10 @@ class ScheduleDTO(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ScheduleDTO.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ScheduleDTO.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4706,7 +5060,10 @@ class ScheduleWakeupInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ScheduleWakeupInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ScheduleWakeupInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4754,7 +5111,10 @@ class ScheduleWakeupOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ScheduleWakeupOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ScheduleWakeupOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4874,7 +5234,10 @@ class ServiceUsageSummary(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ServiceUsageSummary.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ServiceUsageSummary.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4928,7 +5291,9 @@ class SetAccountConfigOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/SetAccountConfigOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/SetAccountConfigOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4945,7 +5310,10 @@ class SetAgentStatusInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/SetAgentStatusInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/SetAgentStatusInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4965,7 +5333,10 @@ class SetAgentStatusOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/SetAgentStatusOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/SetAgentStatusOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -4985,7 +5356,9 @@ class SetCustomLLMConfigInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/SetCustomLLMConfigInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/SetCustomLLMConfigInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5022,7 +5395,9 @@ class SetProjectConfigOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/SetProjectConfigOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/SetProjectConfigOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5039,7 +5414,10 @@ class SetSessionToolsOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/SetSessionToolsOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/SetSessionToolsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5075,7 +5453,9 @@ class SignificantMomentsResponse(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/SignificantMomentsResponse.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/SignificantMomentsResponse.json'
+            ],
         ),
     ] = None
     """
@@ -5108,7 +5488,10 @@ class SimulateRunningBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SimulateRunningBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/SimulateRunningBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5130,7 +5513,10 @@ class SpeechToTextInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SpeechToTextInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/SpeechToTextInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5156,7 +5542,10 @@ class StartSessionInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/StartSessionInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/StartSessionInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5191,7 +5580,8 @@ class StartSessionOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/StartSessionOutputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/StartSessionOutputBody.json'],
         ),
     ] = None
     """
@@ -5230,7 +5620,10 @@ class Storefront(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/Storefront.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/Storefront.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5263,7 +5656,10 @@ class StorefrontAgent(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/StorefrontAgent.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/StorefrontAgent.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5293,7 +5689,10 @@ class StorefrontGetOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/StorefrontGetOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/StorefrontGetOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5312,7 +5711,9 @@ class StorefrontListAgentsOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/StorefrontListAgentsOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/StorefrontListAgentsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5329,7 +5730,10 @@ class StorefrontUpdateInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/StorefrontUpdateInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/StorefrontUpdateInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5382,7 +5786,9 @@ class StorefrontUpsertAgentInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/StorefrontUpsertAgentInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/StorefrontUpsertAgentInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5432,7 +5838,10 @@ class SummariesResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SummariesResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/SummariesResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5447,7 +5856,10 @@ class SupportTicketComment(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SupportTicketComment.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/SupportTicketComment.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5483,7 +5895,10 @@ class Tenant(BaseModel):
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Tenant.json'])
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['https://api.sonz.ai/api/v1/schemas/Tenant.json']
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5521,7 +5936,10 @@ class TenantBillingProfile(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TenantBillingProfile.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/TenantBillingProfile.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5554,7 +5972,10 @@ class TextToSpeechInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TextToSpeechInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/TextToSpeechInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5660,7 +6081,9 @@ class TriggerConsolidationInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/TriggerConsolidationInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/TriggerConsolidationInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5685,7 +6108,9 @@ class TriggerConsolidationOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/TriggerConsolidationOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/TriggerConsolidationOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5704,7 +6129,10 @@ class TriggerEventInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TriggerEventInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/TriggerEventInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5747,7 +6175,8 @@ class TriggerEventOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/TriggerEventOutputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/TriggerEventOutputBody.json'],
         ),
     ] = None
     """
@@ -5780,7 +6209,9 @@ class UpcomingScheduleOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpcomingScheduleOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpcomingScheduleOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5798,7 +6229,9 @@ class UpdateAgentPostProcessingModelInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentPostProcessingModelInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateAgentPostProcessingModelInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5823,7 +6256,9 @@ class UpdateAgentPostProcessingModelOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentPostProcessingModelOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateAgentPostProcessingModelOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5843,7 +6278,9 @@ class UpdateAgentProfileInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentProfileInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateAgentProfileInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5884,7 +6321,9 @@ class UpdateAgentProfileOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentProfileOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateAgentProfileOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5902,7 +6341,9 @@ class UpdateAgentProjectInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentProjectInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateAgentProjectInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5923,7 +6364,9 @@ class UpdateAgentProjectOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentProjectOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateAgentProjectOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5941,7 +6384,9 @@ class UpdateCapabilitiesInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateCapabilitiesInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateCapabilitiesInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -5984,7 +6429,9 @@ class UpdateConstellationNodeInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateConstellationNodeInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateConstellationNodeInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6017,7 +6464,9 @@ class UpdateCustomStateInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateCustomStateInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateCustomStateInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6041,7 +6490,10 @@ class UpdateCustomToolInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/UpdateCustomToolInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateCustomToolInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6066,7 +6518,9 @@ class UpdateCustomToolOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateCustomToolOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateCustomToolOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6084,7 +6538,9 @@ class UpdateEvalTemplateInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateEvalTemplateInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateEvalTemplateInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6127,7 +6583,10 @@ class UpdateFactInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdateFactInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UpdateFactInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6165,7 +6624,10 @@ class UpdateGoalInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdateGoalInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UpdateGoalInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6203,7 +6665,10 @@ class UpdateHabitInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdateHabitInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UpdateHabitInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6238,7 +6703,10 @@ class UpdateInstanceInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/UpdateInstanceInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateInstanceInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6265,7 +6733,10 @@ class UpdateMetadataRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdateMetadataRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UpdateMetadataRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6285,7 +6756,10 @@ class UpdatePersonalityBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdatePersonalityBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UpdatePersonalityBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6309,7 +6783,9 @@ class UpdatePersonalityOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdatePersonalityOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdatePersonalityOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6329,7 +6805,8 @@ class UpdateProjectInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/UpdateProjectInputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UpdateProjectInputBody.json'],
         ),
     ] = None
     """
@@ -6358,7 +6835,9 @@ class UpdateUserPersonaInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateUserPersonaInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateUserPersonaInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6387,7 +6866,9 @@ class UpsertCustomStateByKeyInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpsertCustomStateByKeyInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpsertCustomStateByKeyInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6428,7 +6909,9 @@ class UpsertWebhookForTenantInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpsertWebhookForTenantInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpsertWebhookForTenantInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6452,7 +6935,8 @@ class UpsertWebhookInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/UpsertWebhookInputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UpsertWebhookInputBody.json'],
         ),
     ] = None
     """
@@ -6476,7 +6960,10 @@ class UpsertWebhookOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/UpsertWebhookOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpsertWebhookOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6555,7 +7042,10 @@ class UserPersonaRecord(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UserPersonaRecord.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UserPersonaRecord.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6577,7 +7067,10 @@ class UserPrimingMetadata(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UserPrimingMetadata.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UserPrimingMetadata.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6628,7 +7121,10 @@ class VoiceLiveWSTokenInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/VoiceLiveWSTokenInputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/VoiceLiveWSTokenInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6663,7 +7159,9 @@ class VoiceLiveWSTokenOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/VoiceLiveWSTokenOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/VoiceLiveWSTokenOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -6707,7 +7205,10 @@ class WakeupsResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/WakeupsResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/WakeupsResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6755,7 +7256,10 @@ class WisdomAuditResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/WisdomAuditResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/WisdomAuditResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6791,7 +7295,10 @@ class WorkbenchGenerateBioBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/WorkbenchGenerateBioBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/WorkbenchGenerateBioBody.json'
+            ],
         ),
     ] = None
     """
@@ -6866,7 +7373,10 @@ class WorkbenchPrepareBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/WorkbenchPrepareBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/WorkbenchPrepareBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6885,7 +7395,10 @@ class WorkbenchResetAgentBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/WorkbenchResetAgentBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/WorkbenchResetAgentBody.json'
+            ],
         ),
     ] = None
     """
@@ -6915,7 +7428,10 @@ class WorkbenchSessionEndBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/WorkbenchSessionEndBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/WorkbenchSessionEndBody.json'
+            ],
         ),
     ] = None
     """
@@ -6932,7 +7448,10 @@ class WorkbenchSimulateUserBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/WorkbenchSimulateUserBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/WorkbenchSimulateUserBody.json'
+            ],
         ),
     ] = None
     """
@@ -7045,7 +7564,8 @@ class WorkbenchStateResponse(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/WorkbenchStateResponse.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/WorkbenchStateResponse.json'],
         ),
     ] = None
     """
@@ -7069,7 +7589,10 @@ class AddContentRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AddContentRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/AddContentRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7085,7 +7608,10 @@ class AgentCapabilities(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AgentCapabilities.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/AgentCapabilities.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7135,7 +7661,8 @@ class AgentDialogueInputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/AgentDialogueInputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/AgentDialogueInputBody.json'],
         ),
     ] = None
     """
@@ -7179,7 +7706,10 @@ class AnalyticsRealtimeResponse(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/AnalyticsRealtimeResponse.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/AnalyticsRealtimeResponse.json'
+            ],
         ),
     ] = None
     """
@@ -7241,7 +7771,10 @@ class ChatSSEChunk(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ChatSSEChunk.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ChatSSEChunk.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7291,7 +7824,10 @@ class ConstellationResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ConstellationResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ConstellationResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7308,7 +7844,10 @@ class CostBreakdownResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CostBreakdownResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CostBreakdownResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7329,7 +7868,10 @@ class CostResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CostResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CostResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7354,7 +7896,10 @@ class CreateAgentBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateAgentBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/CreateAgentBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7474,7 +8019,9 @@ class CreateEvalTemplateInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/CreateEvalTemplateInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CreateEvalTemplateInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -7521,7 +8068,10 @@ class EndSessionInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EndSessionInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/EndSessionInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7634,7 +8184,10 @@ class EvaluateRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EvaluateRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/EvaluateRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7690,7 +8243,9 @@ class GenerateSeedMemoriesInputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/GenerateSeedMemoriesInputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/GenerateSeedMemoriesInputBody.json'
+            ],
         ),
     ] = None
     """
@@ -7771,7 +8326,9 @@ class GenerateSeedMemoriesOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/GenerateSeedMemoriesOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/GenerateSeedMemoriesOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -7791,7 +8348,10 @@ class GetToolSchemasOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/GetToolSchemasOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/GetToolSchemasOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -7811,7 +8371,8 @@ class InventoryWriteResponse(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/InventoryWriteResponse.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/InventoryWriteResponse.json'],
         ),
     ] = None
     """
@@ -7832,7 +8393,10 @@ class KBEntitySchema(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KBEntitySchema.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KBEntitySchema.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7854,7 +8418,10 @@ class KBNode(BaseModel):
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/KBNode.json'])
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['https://api.sonz.ai/api/v1/schemas/KBNode.json']
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7884,7 +8451,10 @@ class KBNodeWithScope(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KBNodeWithScope.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KBNodeWithScope.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7916,7 +8486,10 @@ class KBSearchResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KBSearchResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KBSearchResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7933,7 +8506,10 @@ class KbGetNodeOutputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbGetNodeOutputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KbGetNodeOutputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7963,7 +8539,10 @@ class KbListNodesOutputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbListNodesOutputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KbListNodesOutputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7986,7 +8565,10 @@ class KbListOrgNodesOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbListOrgNodesOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbListOrgNodesOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -8004,7 +8586,10 @@ class KbListSchemasOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/KbListSchemasOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/KbListSchemasOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -8027,7 +8612,10 @@ class KbSearchResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbSearchResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/KbSearchResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8043,7 +8631,10 @@ class ListAllFactsResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ListAllFactsResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ListAllFactsResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8061,7 +8652,9 @@ class ListDeliveryAttemptsOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/ListDeliveryAttemptsOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListDeliveryAttemptsOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -8080,7 +8673,10 @@ class ListFactsResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ListFactsResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ListFactsResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8097,7 +8693,10 @@ class ListSchedulesOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ListSchedulesOutputBody.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListSchedulesOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -8115,7 +8714,9 @@ class ListUserPersonasOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/ListUserPersonasOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListUserPersonasOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -8134,7 +8735,10 @@ class ListVoicesResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ListVoicesResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ListVoicesResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8150,7 +8754,8 @@ class ListWebhooksOutputBody(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/ListWebhooksOutputBody.json']
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ListWebhooksOutputBody.json'],
         ),
     ] = None
     """
@@ -8169,7 +8774,10 @@ class MeResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MeResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/MeResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8186,7 +8794,10 @@ class MoodResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MoodResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/MoodResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8226,7 +8837,10 @@ class PersonalityResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/PersonalityResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/PersonalityResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8242,7 +8856,10 @@ class PrimeUserRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/PrimeUserRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/PrimeUserRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8276,7 +8893,10 @@ class ProcessInputBody(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ProcessInputBody.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ProcessInputBody.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8314,7 +8934,10 @@ class ProcessResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ProcessResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ProcessResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8331,7 +8954,10 @@ class SearchResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SearchResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/SearchResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8356,7 +8982,10 @@ class SimulateRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SimulateRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/SimulateRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8394,7 +9023,10 @@ class SupportTicket(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SupportTicket.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/SupportTicket.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8424,7 +9056,10 @@ class TicketDetailResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TicketDetailResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/TicketDetailResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8440,7 +9075,10 @@ class TicketListResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TicketListResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/TicketListResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8457,7 +9095,10 @@ class TimeMachineResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TimeMachineResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/TimeMachineResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8476,7 +9117,10 @@ class TimelineResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TimelineResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/TimelineResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8494,7 +9138,9 @@ class UpdateUserMetadataHumaOutputBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/UpdateUserMetadataHumaOutputBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UpdateUserMetadataHumaOutputBody.json'
+            ],
         ),
     ] = None
     """
@@ -8517,7 +9163,10 @@ class UsageResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UsageResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UsageResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8570,7 +9219,10 @@ class UserOverlaysListResponse(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/UserOverlaysListResponse.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UserOverlaysListResponse.json'
+            ],
         ),
     ] = None
     """
@@ -8586,7 +9238,10 @@ class UsersResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UsersResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UsersResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8604,7 +9259,9 @@ class WorkbenchAdvanceTimeJobBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/WorkbenchAdvanceTimeJobBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/WorkbenchAdvanceTimeJobBody.json'
+            ],
         ),
     ] = None
     """
@@ -8652,7 +9309,9 @@ class WorkbenchGenerateSeedMemoriesBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/WorkbenchGenerateSeedMemoriesBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/WorkbenchGenerateSeedMemoriesBody.json'
+            ],
         ),
     ] = None
     """
@@ -8668,7 +9327,10 @@ class AgentDetailResponse(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AgentDetailResponse.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/AgentDetailResponse.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8705,7 +9367,10 @@ class BatchImportRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/BatchImportRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/BatchImportRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8731,7 +9396,10 @@ class BatchPersonalityResponse(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/BatchPersonalityResponse.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/BatchPersonalityResponse.json'
+            ],
         ),
     ] = None
     """
@@ -8747,7 +9415,10 @@ class RunEvalRequest(BaseModel):
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/RunEvalRequest.json']),
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/RunEvalRequest.json'],
+        ),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8794,7 +9465,10 @@ class UserOverlayDetailResponse(BaseModel):
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema', examples=['/api/v1/schemas/UserOverlayDetailResponse.json']
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/UserOverlayDetailResponse.json'
+            ],
         ),
     ] = None
     """
@@ -8814,7 +9488,9 @@ class WorkbenchGenerateCharacterBody(BaseModel):
         AnyUrl | None,
         Field(
             alias='$schema',
-            examples=['/api/v1/schemas/WorkbenchGenerateCharacterBody.json'],
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/WorkbenchGenerateCharacterBody.json'
+            ],
         ),
     ] = None
     """

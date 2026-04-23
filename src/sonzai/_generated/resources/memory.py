@@ -14,6 +14,7 @@ from sonzai._generated.models import (
     ListFactsResponse,
     MemoryResponse,
     SearchResponse,
+    StoredFact,
     SummariesResponse,
     TimelineResponse,
     TriggerConsolidationInputBody,
@@ -123,21 +124,24 @@ class Memory(_MemoryBase):
         user_id: str | None = None,
         instance_id: str | None = None,
         fact_type: str | None = None,
-        limit: str | None = None,
-    ) -> ListFactsResponse:
+        limit: int = 100,
+    ) -> Page[StoredFact]:
         """List facts for an agent"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts"
-        params: dict[str, Any] = {}
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if user_id is not None:
             params["user_id"] = user_id
         if instance_id is not None:
             params["instance_id"] = instance_id
         if fact_type is not None:
             params["fact_type"] = fact_type
-        if limit is not None:
-            params["limit"] = limit
-        data = self._http.get(path, params=params)
-        return ListFactsResponse.model_validate(data)
+        return Page(
+            fetcher=lambda p: self._http.get(path, params=p),
+            params=params,
+            item_key="facts",
+            item_parser=StoredFact.model_validate,
+            mode="offset",
+        )
 
     def create_fact(
         self,
@@ -147,7 +151,7 @@ class Memory(_MemoryBase):
         confidence: float | None = None,
         content: str,
         entities: list[Any] | None = None,
-        fact_type: str,
+        fact_type: str | None = None,
         importance: float | None = None,
         metadata: dict[str, Any] | None = None,
         node_id: str | None = None,
@@ -429,21 +433,28 @@ class AsyncMemory(_MemoryBase):
         user_id: str | None = None,
         instance_id: str | None = None,
         fact_type: str | None = None,
-        limit: str | None = None,
-    ) -> ListFactsResponse:
+        limit: int = 100,
+    ) -> AsyncPage[StoredFact]:
         """List facts for an agent"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts"
-        params: dict[str, Any] = {}
+        params: dict[str, Any] = {"limit": limit, "offset": 0}
         if user_id is not None:
             params["user_id"] = user_id
         if instance_id is not None:
             params["instance_id"] = instance_id
         if fact_type is not None:
             params["fact_type"] = fact_type
-        if limit is not None:
-            params["limit"] = limit
-        data = await self._http.get(path, params=params)
-        return ListFactsResponse.model_validate(data)
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get(path, params=p)
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params=params,
+            item_key="facts",
+            item_parser=StoredFact.model_validate,
+            mode="offset",
+        )
 
     async def create_fact(
         self,
@@ -453,7 +464,7 @@ class AsyncMemory(_MemoryBase):
         confidence: float | None = None,
         content: str,
         entities: list[Any] | None = None,
-        fact_type: str,
+        fact_type: str | None = None,
         importance: float | None = None,
         metadata: dict[str, Any] | None = None,
         node_id: str | None = None,

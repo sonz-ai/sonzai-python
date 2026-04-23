@@ -1077,12 +1077,31 @@ class EnrichedContextResponse(BaseModel):
     # Layer 6: Memory
     loaded_facts: list[dict[str, Any]] | None = None
     long_term_summaries: list[Any] | None = None
+    # Raw messages buffered by /process for the current session.
+    # Chronological order. Closes the latency gap between a fact being said
+    # this turn and that fact becoming searchable via consolidated facts.
+    recent_turns: list["RecentTurn"] | None = None
     # Layer 6b: Proactive
     proactive_memories: list[Any] | None = None
     # Layer 6c: Constellation
     constellation_patterns: list[Any] | None = None
     # Layer 7: Backend Context
     backend_context: dict[str, Any] | None = Field(default=None, alias="game_context")
+
+
+class RecentTurn(BaseModel):
+    """A raw message buffered by /process and surfaced by /context."""
+
+    model_config = {"extra": "allow", "populate_by_name": True}
+    role: str
+    """One of "user" | "assistant" | "system"."""
+    content: str
+    """Raw message content as the SDK consumer sent it."""
+    timestamp: str
+    """RFC3339 UTC timestamp set by the backend on Push."""
+
+
+EnrichedContextResponse.model_rebuild()
 
 
 # ---------------------------------------------------------------------------
