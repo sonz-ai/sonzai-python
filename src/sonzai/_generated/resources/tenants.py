@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     Tenant,
 )
@@ -26,13 +27,12 @@ class Tenants(_TenantsBase):
         params = None
         data = self._http.get(path, params=params)
         return data
-
     def get_tenant(
         self,
         tenant_id: str,
     ) -> Tenant:
         """Get a tenant"""
-        path = f"/api/v1/tenants/{tenant_id}"
+        path = f"/api/v1/tenants/{quote(tenant_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return Tenant.model_validate(data)
@@ -47,13 +47,12 @@ class AsyncTenants(_TenantsBase):
         params = None
         data = await self._http.get(path, params=params)
         return data
-
     async def get_tenant(
         self,
         tenant_id: str,
     ) -> Tenant:
         """Get a tenant"""
-        path = f"/api/v1/tenants/{tenant_id}"
+        path = f"/api/v1/tenants/{quote(tenant_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return Tenant.model_validate(data)

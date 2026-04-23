@@ -14,7 +14,7 @@
 {% endfor %}
     ) -> {{ op.response_class or "Any" }}:
         """{{ op.description or "Auto-generated." }}"""
-        path = f"{{ op.python_path }}"
+        path = f"{{ op.path_expression }}"
 {% if op.query_params %}
         params: dict[str, Any] = {}
 {% for qp in op.query_params %}
@@ -37,7 +37,11 @@
 {% else %}
         data = self._http.{{ op.http_method | lower }}(path, params=params)
 {% endif %}
-{% if op.response_class %}
+{% if op.response_class and op.http_method == "DELETE" %}
+        if isinstance(data, dict):
+            return {{ op.response_class }}.model_validate(data)
+        return {{ op.response_class }}()
+{% elif op.response_class %}
         return {{ op.response_class }}.model_validate(data)
 {% else %}
         return data

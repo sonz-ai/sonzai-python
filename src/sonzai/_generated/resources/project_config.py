@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     SetProjectConfigOutputBody,
 )
@@ -23,40 +24,37 @@ class ProjectConfig(_ProjectConfigBase):
         project_id: str,
     ) -> Any:
         """List project config keys"""
-        path = f"/api/v1/projects/{project_id}/config"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/config"
         params = None
         data = self._http.get(path, params=params)
         return data
-
     def delete_project_config(
         self,
         project_id: str,
         key: str,
     ) -> Any:
         """Delete a project config key"""
-        path = f"/api/v1/projects/{project_id}/config/{key}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/config/{quote(key, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
         return data
-
     def get_project_config(
         self,
         project_id: str,
         key: str,
     ) -> Any:
         """Get a project config value"""
-        path = f"/api/v1/projects/{project_id}/config/{key}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/config/{quote(key, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return data
-
     def set_project_config(
         self,
         project_id: str,
         key: str,
     ) -> SetProjectConfigOutputBody:
         """Set a project config value"""
-        path = f"/api/v1/projects/{project_id}/config/{key}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/config/{quote(key, safe='')}"
         params = None
         data = self._http.put(path, params=params)
         return SetProjectConfigOutputBody.model_validate(data)
@@ -68,40 +66,37 @@ class AsyncProjectConfig(_ProjectConfigBase):
         project_id: str,
     ) -> Any:
         """List project config keys"""
-        path = f"/api/v1/projects/{project_id}/config"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/config"
         params = None
         data = await self._http.get(path, params=params)
         return data
-
     async def delete_project_config(
         self,
         project_id: str,
         key: str,
     ) -> Any:
         """Delete a project config key"""
-        path = f"/api/v1/projects/{project_id}/config/{key}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/config/{quote(key, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
-
     async def get_project_config(
         self,
         project_id: str,
         key: str,
     ) -> Any:
         """Get a project config value"""
-        path = f"/api/v1/projects/{project_id}/config/{key}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/config/{quote(key, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return data
-
     async def set_project_config(
         self,
         project_id: str,
         key: str,
     ) -> SetProjectConfigOutputBody:
         """Set a project config value"""
-        path = f"/api/v1/projects/{project_id}/config/{key}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/config/{quote(key, safe='')}"
         params = None
         data = await self._http.put(path, params=params)
         return SetProjectConfigOutputBody.model_validate(data)

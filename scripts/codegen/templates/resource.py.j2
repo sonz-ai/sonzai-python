@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 {% if referenced_classes %}
 from sonzai._generated.models import (
 {% for cls in referenced_classes | sort %}
@@ -12,6 +13,13 @@ from sonzai._generated.models import (
 {% endfor %}
 )
 {% endif %}
+{% for mod, classes in external_imports.items() | sort %}
+from {{ mod }} import (
+{% for cls in classes %}
+    {{ cls }},
+{% endfor %}
+)
+{% endfor %}
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
 

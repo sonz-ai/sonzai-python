@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
 
@@ -20,17 +21,16 @@ class Chat(_ChatBase):
         agent_id: str,
     ) -> Any:
         """Chat with agent (SSE streaming)"""
-        path = f"/api/v1/agents/{agent_id}/chat"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/chat"
         params = None
         data = self._http.post(path, params=params)
         return data
-
     def playground_chat(
         self,
         agent_id: str,
     ) -> Any:
         """Playground chat with agent (SSE streaming)"""
-        path = f"/api/v1/agents/{agent_id}/playground/chat"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/playground/chat"
         params = None
         data = self._http.post(path, params=params)
         return data
@@ -42,17 +42,16 @@ class AsyncChat(_ChatBase):
         agent_id: str,
     ) -> Any:
         """Chat with agent (SSE streaming)"""
-        path = f"/api/v1/agents/{agent_id}/chat"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/chat"
         params = None
         data = await self._http.post(path, params=params)
         return data
-
     async def playground_chat(
         self,
         agent_id: str,
     ) -> Any:
         """Playground chat with agent (SSE streaming)"""
-        path = f"/api/v1/agents/{agent_id}/playground/chat"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/playground/chat"
         params = None
         data = await self._http.post(path, params=params)
         return data

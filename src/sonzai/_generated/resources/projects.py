@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     CreateProjectInputBody,
     DeleteProjectOutputBody,
@@ -36,7 +37,6 @@ class Projects(_ProjectsBase):
             params["offset"] = offset
         data = self._http.get(path, params=params)
         return data
-
     def create_project(
         self,
         *,
@@ -54,27 +54,26 @@ class Projects(_ProjectsBase):
         body = encode_body(CreateProjectInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return Project.model_validate(data)
-
     def delete_project(
         self,
         project_id: str,
     ) -> DeleteProjectOutputBody:
         """Delete a project"""
-        path = f"/api/v1/projects/{project_id}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
-        return DeleteProjectOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteProjectOutputBody.model_validate(data)
+        return DeleteProjectOutputBody()
     def get_project(
         self,
         project_id: str,
     ) -> Project:
         """Get a project"""
-        path = f"/api/v1/projects/{project_id}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return Project.model_validate(data)
-
     def update_project(
         self,
         project_id: str,
@@ -84,7 +83,7 @@ class Projects(_ProjectsBase):
         name: str | None = None,
     ) -> Project:
         """Update a project"""
-        path = f"/api/v1/projects/{project_id}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if environment is not None:
@@ -114,7 +113,6 @@ class AsyncProjects(_ProjectsBase):
             params["offset"] = offset
         data = await self._http.get(path, params=params)
         return data
-
     async def create_project(
         self,
         *,
@@ -132,27 +130,26 @@ class AsyncProjects(_ProjectsBase):
         body = encode_body(CreateProjectInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return Project.model_validate(data)
-
     async def delete_project(
         self,
         project_id: str,
     ) -> DeleteProjectOutputBody:
         """Delete a project"""
-        path = f"/api/v1/projects/{project_id}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
-        return DeleteProjectOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteProjectOutputBody.model_validate(data)
+        return DeleteProjectOutputBody()
     async def get_project(
         self,
         project_id: str,
     ) -> Project:
         """Get a project"""
-        path = f"/api/v1/projects/{project_id}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return Project.model_validate(data)
-
     async def update_project(
         self,
         project_id: str,
@@ -162,7 +159,7 @@ class AsyncProjects(_ProjectsBase):
         name: str | None = None,
     ) -> Project:
         """Update a project"""
-        path = f"/api/v1/projects/{project_id}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if environment is not None:

@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     CustomLLMConfigResponse,
     SetCustomLLMConfigInputBody,
@@ -24,21 +25,19 @@ class CustomLlm(_CustomLlmBase):
         project_id: str,
     ) -> Any:
         """Delete custom LLM config"""
-        path = f"/api/v1/projects/{project_id}/custom-llm"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/custom-llm"
         params = None
         data = self._http.delete(path, params=params)
         return data
-
     def get_custom_llm_config(
         self,
         project_id: str,
     ) -> CustomLLMConfigResponse:
         """Get custom LLM config for a project"""
-        path = f"/api/v1/projects/{project_id}/custom-llm"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/custom-llm"
         params = None
         data = self._http.get(path, params=params)
         return CustomLLMConfigResponse.model_validate(data)
-
     def set_custom_llm_config(
         self,
         project_id: str,
@@ -50,7 +49,7 @@ class CustomLlm(_CustomLlmBase):
         model: str | None = None,
     ) -> CustomLLMConfigResponse:
         """Set custom LLM config for a project"""
-        path = f"/api/v1/projects/{project_id}/custom-llm"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/custom-llm"
         params = None
         _raw: dict[str, Any] = {}
         if api_key is not None:
@@ -74,21 +73,19 @@ class AsyncCustomLlm(_CustomLlmBase):
         project_id: str,
     ) -> Any:
         """Delete custom LLM config"""
-        path = f"/api/v1/projects/{project_id}/custom-llm"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/custom-llm"
         params = None
         data = await self._http.delete(path, params=params)
         return data
-
     async def get_custom_llm_config(
         self,
         project_id: str,
     ) -> CustomLLMConfigResponse:
         """Get custom LLM config for a project"""
-        path = f"/api/v1/projects/{project_id}/custom-llm"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/custom-llm"
         params = None
         data = await self._http.get(path, params=params)
         return CustomLLMConfigResponse.model_validate(data)
-
     async def set_custom_llm_config(
         self,
         project_id: str,
@@ -100,7 +97,7 @@ class AsyncCustomLlm(_CustomLlmBase):
         model: str | None = None,
     ) -> CustomLLMConfigResponse:
         """Set custom LLM config for a project"""
-        path = f"/api/v1/projects/{project_id}/custom-llm"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/custom-llm"
         params = None
         _raw: dict[str, Any] = {}
         if api_key is not None:

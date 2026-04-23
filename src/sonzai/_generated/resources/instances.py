@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     AgentInstance,
     CreateInstanceInputBody,
@@ -28,11 +29,10 @@ class Instances(_InstancesBase):
         agent_id: str,
     ) -> ListInstancesOutputBody:
         """List agent instances"""
-        path = f"/api/v1/agents/{agent_id}/instances"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances"
         params = None
         data = self._http.get(path, params=params)
         return ListInstancesOutputBody.model_validate(data)
-
     def create_instance(
         self,
         agent_id: str,
@@ -41,7 +41,7 @@ class Instances(_InstancesBase):
         name: str,
     ) -> AgentInstance:
         """Create an agent instance"""
-        path = f"/api/v1/agents/{agent_id}/instances"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -51,29 +51,28 @@ class Instances(_InstancesBase):
         body = encode_body(CreateInstanceInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return AgentInstance.model_validate(data)
-
     def delete_instance(
         self,
         agent_id: str,
         instance_id: str,
     ) -> DeleteInstanceOutputBody:
         """Delete an instance"""
-        path = f"/api/v1/agents/{agent_id}/instances/{instance_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances/{quote(instance_id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
-        return DeleteInstanceOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteInstanceOutputBody.model_validate(data)
+        return DeleteInstanceOutputBody()
     def get_instance(
         self,
         agent_id: str,
         instance_id: str,
     ) -> AgentInstance:
         """Get a single instance"""
-        path = f"/api/v1/agents/{agent_id}/instances/{instance_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances/{quote(instance_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return AgentInstance.model_validate(data)
-
     def update_instance(
         self,
         agent_id: str,
@@ -84,7 +83,7 @@ class Instances(_InstancesBase):
         status: str | None = None,
     ) -> AgentInstance:
         """Update an instance"""
-        path = f"/api/v1/agents/{agent_id}/instances/{instance_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances/{quote(instance_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -96,14 +95,13 @@ class Instances(_InstancesBase):
         body = encode_body(UpdateInstanceInputBody, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return AgentInstance.model_validate(data)
-
     def reset_instance(
         self,
         agent_id: str,
         instance_id: str,
     ) -> ResetInstanceOutputBody:
         """Reset an instance"""
-        path = f"/api/v1/agents/{agent_id}/instances/{instance_id}/reset"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances/{quote(instance_id, safe='')}/reset"
         params = None
         data = self._http.post(path, params=params)
         return ResetInstanceOutputBody.model_validate(data)
@@ -115,11 +113,10 @@ class AsyncInstances(_InstancesBase):
         agent_id: str,
     ) -> ListInstancesOutputBody:
         """List agent instances"""
-        path = f"/api/v1/agents/{agent_id}/instances"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances"
         params = None
         data = await self._http.get(path, params=params)
         return ListInstancesOutputBody.model_validate(data)
-
     async def create_instance(
         self,
         agent_id: str,
@@ -128,7 +125,7 @@ class AsyncInstances(_InstancesBase):
         name: str,
     ) -> AgentInstance:
         """Create an agent instance"""
-        path = f"/api/v1/agents/{agent_id}/instances"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -138,29 +135,28 @@ class AsyncInstances(_InstancesBase):
         body = encode_body(CreateInstanceInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return AgentInstance.model_validate(data)
-
     async def delete_instance(
         self,
         agent_id: str,
         instance_id: str,
     ) -> DeleteInstanceOutputBody:
         """Delete an instance"""
-        path = f"/api/v1/agents/{agent_id}/instances/{instance_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances/{quote(instance_id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
-        return DeleteInstanceOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteInstanceOutputBody.model_validate(data)
+        return DeleteInstanceOutputBody()
     async def get_instance(
         self,
         agent_id: str,
         instance_id: str,
     ) -> AgentInstance:
         """Get a single instance"""
-        path = f"/api/v1/agents/{agent_id}/instances/{instance_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances/{quote(instance_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return AgentInstance.model_validate(data)
-
     async def update_instance(
         self,
         agent_id: str,
@@ -171,7 +167,7 @@ class AsyncInstances(_InstancesBase):
         status: str | None = None,
     ) -> AgentInstance:
         """Update an instance"""
-        path = f"/api/v1/agents/{agent_id}/instances/{instance_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances/{quote(instance_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -183,14 +179,13 @@ class AsyncInstances(_InstancesBase):
         body = encode_body(UpdateInstanceInputBody, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return AgentInstance.model_validate(data)
-
     async def reset_instance(
         self,
         agent_id: str,
         instance_id: str,
     ) -> ResetInstanceOutputBody:
         """Reset an instance"""
-        path = f"/api/v1/agents/{agent_id}/instances/{instance_id}/reset"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/instances/{quote(instance_id, safe='')}/reset"
         params = None
         data = await self._http.post(path, params=params)
         return ResetInstanceOutputBody.model_validate(data)

@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     ConstellationResponse,
     CreateConstellationNodeInputBody,
@@ -28,13 +29,12 @@ class Constellation(_ConstellationBase):
         user_id: str | None = None,
     ) -> ConstellationResponse:
         """Get agent constellation graph"""
-        path = f"/api/v1/agents/{agent_id}/constellation"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/constellation"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
         data = self._http.get(path, params=params)
         return ConstellationResponse.model_validate(data)
-
     def create_constellation_node(
         self,
         agent_id: str,
@@ -46,7 +46,7 @@ class Constellation(_ConstellationBase):
         user_id: str | None = None,
     ) -> Node:
         """Create a constellation node"""
-        path = f"/api/v1/agents/{agent_id}/constellation/nodes"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/constellation/nodes"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -62,18 +62,16 @@ class Constellation(_ConstellationBase):
         body = encode_body(CreateConstellationNodeInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return Node.model_validate(data)
-
     def delete_constellation_node(
         self,
         agent_id: str,
         node_id: str,
     ) -> Any:
         """Delete a constellation node"""
-        path = f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/constellation/nodes/{quote(node_id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
         return data
-
     def update_constellation_node(
         self,
         agent_id: str,
@@ -85,7 +83,7 @@ class Constellation(_ConstellationBase):
         significance: float | None = None,
     ) -> Node:
         """Update a constellation node"""
-        path = f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/constellation/nodes/{quote(node_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -109,13 +107,12 @@ class AsyncConstellation(_ConstellationBase):
         user_id: str | None = None,
     ) -> ConstellationResponse:
         """Get agent constellation graph"""
-        path = f"/api/v1/agents/{agent_id}/constellation"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/constellation"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
         data = await self._http.get(path, params=params)
         return ConstellationResponse.model_validate(data)
-
     async def create_constellation_node(
         self,
         agent_id: str,
@@ -127,7 +124,7 @@ class AsyncConstellation(_ConstellationBase):
         user_id: str | None = None,
     ) -> Node:
         """Create a constellation node"""
-        path = f"/api/v1/agents/{agent_id}/constellation/nodes"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/constellation/nodes"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -143,18 +140,16 @@ class AsyncConstellation(_ConstellationBase):
         body = encode_body(CreateConstellationNodeInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return Node.model_validate(data)
-
     async def delete_constellation_node(
         self,
         agent_id: str,
         node_id: str,
     ) -> Any:
         """Delete a constellation node"""
-        path = f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/constellation/nodes/{quote(node_id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
-
     async def update_constellation_node(
         self,
         agent_id: str,
@@ -166,7 +161,7 @@ class AsyncConstellation(_ConstellationBase):
         significance: float | None = None,
     ) -> Node:
         """Update a constellation node"""
-        path = f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/constellation/nodes/{quote(node_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:

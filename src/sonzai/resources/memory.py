@@ -5,15 +5,10 @@ class unless an override is necessary. Overrides remain for:
 
   - seed(): Not in spec (spec gap, Bug 8 deferred).
   - list_facts(): Generated is missing `offset` param; spec types limit as
-    string but historical contract uses int.
-  - reset(): Generated returns ResetMemoryResponse (no agent_id/user_id
-    fields); historical contract is MemoryResetResponse + fallback for
-    non-dict server responses.
-  - create_fact(): Generated has fact_type required; historical treats it as
-    optional. Also: generated doesn't URL-encode fact path params.
-  - update_fact(): URL-encoding of fact_id needed.
-  - delete_fact(): URL-encoding of fact_id; return None vs Any.
-  - delete_wisdom_fact(): URL-encoding + fallback for non-dict responses.
+    string but historical contract uses int. Also returns ListFactsResponse
+    (generated) vs FactListResponse (historical).
+  - create_fact(): Spec marks fact_type required; historical contract treats
+    it as optional.
 
 B.2 fixes resolved (overrides removed):
   - list(): generator now produces correct method_name, path, and type.
@@ -23,29 +18,33 @@ B.2 fixes resolved (overrides removed):
   - get_fact_history(): generator now produces correct path.
   - get_wisdom_audit(): generator now produces correct path.
   - __init__: base class _MemoryBase accepts Any, no override needed.
+
+B.5 fixes resolved (overrides removed):
+  - reset(): generator now returns MemoryResetResponse (RESPONSE_CLASS_OVERRIDES),
+    URL-quotes agent_id (Fix 1), and handles DELETE empty-body (Fix 3).
+  - update_fact(): generator now URL-quotes fact_id (Fix 1).
+  - delete_fact(): generator now URL-quotes fact_id (Fix 1).
+  - delete_wisdom_fact(): generator now URL-quotes fact_id (Fix 1) and handles
+    DELETE empty-body with sonzai.types.DeleteWisdomResponse (Fix 3 +
+    EXTERNAL_CLASS_IMPORTS).
 """
 
 from __future__ import annotations
 
 import builtins
 from typing import Any
-from urllib.parse import quote
 
 _list = builtins.list
 
 from .._generated.resources.memory import AsyncMemory as _GenAsyncMemory
 from .._generated.resources.memory import Memory as _GenMemory
-from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from .._generated.models import (
     AtomicFact,
     CreateFactInputBody,
-    UpdateFactInputBody,
 )
 from ..types import (
-    DeleteWisdomResponse,
     FactListResponse,
-    MemoryResetResponse,
     SeedMemoriesResponse,
 )
 
@@ -109,31 +108,9 @@ class Memory(_GenMemory):
         )
         return FactListResponse.model_validate(data)
 
-    # TODO: Generated reset() returns ResetMemoryResponse which lacks agent_id/
-    # user_id fields; historical contract is MemoryResetResponse. Also adds
-    # fallback for non-dict server responses.
-    def reset(
-        self,
-        agent_id: str,
-        *,
-        user_id: str,
-        instance_id: str | None = None,
-    ) -> MemoryResetResponse:
-        """Delete all memory for an agent scoped to a user."""
-        params: dict[str, Any] = {"user_id": user_id}
-        if instance_id:
-            params["instance_id"] = instance_id
-
-        data = self._http.delete(
-            f"/api/v1/agents/{agent_id}/memory",
-            params=params,
-        )
-        if isinstance(data, dict):
-            return MemoryResetResponse.model_validate(data)
-        return MemoryResetResponse(agent_id=agent_id, status="reset")
-
-    # TODO: Generator doesn't URL-encode fact_id. Also: spec marks fact_type
-    # required but historical contract treats it as optional.
+    # TODO: Spec marks fact_type required but historical contract treats it as
+    # optional. Also: generated adds instance_id as a query param (not in
+    # historical contract).
     def create_fact(
         self,
         agent_id: str,
@@ -168,57 +145,6 @@ class Memory(_GenMemory):
             json_data=encode_body(CreateFactInputBody, body),
         )
         return AtomicFact.model_validate(data)
-
-    # TODO: Generator doesn't URL-encode fact_id in path.
-    def update_fact(
-        self,
-        agent_id: str,
-        fact_id: str,
-        *,
-        content: str | None = None,
-        fact_type: str | None = None,
-        importance: float | None = None,
-        confidence: float | None = None,
-        entities: _list[str] | None = None,
-        metadata: dict[str, Any] | None = None,
-    ) -> AtomicFact:
-        """Update an existing fact by ID."""
-        body: dict[str, Any] = {}
-        if content is not None:
-            body["content"] = content
-        if fact_type is not None:
-            body["fact_type"] = fact_type
-        if importance is not None:
-            body["importance"] = importance
-        if confidence is not None:
-            body["confidence"] = confidence
-        if entities is not None:
-            body["entities"] = entities
-        if metadata is not None:
-            body["metadata"] = metadata
-        data = self._http.put(
-            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}",
-            json_data=encode_body(UpdateFactInputBody, body),
-        )
-        return AtomicFact.model_validate(data)
-
-    # TODO: Generator doesn't URL-encode fact_id in path.
-    def delete_fact(self, agent_id: str, fact_id: str) -> None:
-        """Delete a fact by ID."""
-        self._http.delete(
-            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}"
-        )
-
-    # TODO: Generator doesn't URL-encode fact_id; also missing fallback for
-    # non-dict responses.
-    def delete_wisdom_fact(self, agent_id: str, fact_id: str) -> DeleteWisdomResponse:
-        """Delete a wisdom fact by ID."""
-        data = self._http.delete(
-            f"/api/v1/agents/{agent_id}/memory/wisdom/{quote(fact_id, safe='')}"
-        )
-        if isinstance(data, dict):
-            return DeleteWisdomResponse.model_validate(data)
-        return DeleteWisdomResponse(success=True, fact_id=fact_id)
 
 
 class AsyncMemory(_GenAsyncMemory):
@@ -275,28 +201,7 @@ class AsyncMemory(_GenAsyncMemory):
         )
         return FactListResponse.model_validate(data)
 
-    # TODO: Different return type + fallback for non-dict responses.
-    async def reset(
-        self,
-        agent_id: str,
-        *,
-        user_id: str,
-        instance_id: str | None = None,
-    ) -> MemoryResetResponse:
-        """Delete all memory for an agent scoped to a user."""
-        params: dict[str, Any] = {"user_id": user_id}
-        if instance_id:
-            params["instance_id"] = instance_id
-
-        data = await self._http.delete(
-            f"/api/v1/agents/{agent_id}/memory",
-            params=params,
-        )
-        if isinstance(data, dict):
-            return MemoryResetResponse.model_validate(data)
-        return MemoryResetResponse(agent_id=agent_id, status="reset")
-
-    # TODO: URL-encoding of fact_id; fact_type treated as optional.
+    # TODO: fact_type optional vs required; no instance_id in historical contract.
     async def create_fact(
         self,
         agent_id: str,
@@ -331,55 +236,3 @@ class AsyncMemory(_GenAsyncMemory):
             json_data=encode_body(CreateFactInputBody, body),
         )
         return AtomicFact.model_validate(data)
-
-    # TODO: URL-encoding of fact_id.
-    async def update_fact(
-        self,
-        agent_id: str,
-        fact_id: str,
-        *,
-        content: str | None = None,
-        fact_type: str | None = None,
-        importance: float | None = None,
-        confidence: float | None = None,
-        entities: _list[str] | None = None,
-        metadata: dict[str, Any] | None = None,
-    ) -> AtomicFact:
-        """Update an existing fact by ID."""
-        body: dict[str, Any] = {}
-        if content is not None:
-            body["content"] = content
-        if fact_type is not None:
-            body["fact_type"] = fact_type
-        if importance is not None:
-            body["importance"] = importance
-        if confidence is not None:
-            body["confidence"] = confidence
-        if entities is not None:
-            body["entities"] = entities
-        if metadata is not None:
-            body["metadata"] = metadata
-        data = await self._http.put(
-            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}",
-            json_data=encode_body(UpdateFactInputBody, body),
-        )
-        return AtomicFact.model_validate(data)
-
-    # TODO: URL-encoding of fact_id.
-    async def delete_fact(self, agent_id: str, fact_id: str) -> None:
-        """Delete a fact by ID."""
-        await self._http.delete(
-            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}"
-        )
-
-    # TODO: URL-encoding + fallback for non-dict responses.
-    async def delete_wisdom_fact(
-        self, agent_id: str, fact_id: str
-    ) -> DeleteWisdomResponse:
-        """Delete a wisdom fact by ID."""
-        data = await self._http.delete(
-            f"/api/v1/agents/{agent_id}/memory/wisdom/{quote(fact_id, safe='')}"
-        )
-        if isinstance(data, dict):
-            return DeleteWisdomResponse.model_validate(data)
-        return DeleteWisdomResponse(success=True, fact_id=fact_id)

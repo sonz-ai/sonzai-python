@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     RecentShiftsResponse,
     SignificantMomentsResponse,
@@ -27,11 +28,10 @@ class Insights(_InsightsBase):
         agent_id: str,
     ) -> RecentShiftsResponse:
         """Get recent personality shifts"""
-        path = f"/api/v1/agents/{agent_id}/personality/recent-shifts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality/recent-shifts"
         params = None
         data = self._http.get(path, params=params)
         return RecentShiftsResponse.model_validate(data)
-
     def get_significant_moments(
         self,
         agent_id: str,
@@ -39,23 +39,21 @@ class Insights(_InsightsBase):
         limit: int | None = 20,
     ) -> SignificantMomentsResponse:
         """Get significant personality moments"""
-        path = f"/api/v1/agents/{agent_id}/personality/significant-moments"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality/significant-moments"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return SignificantMomentsResponse.model_validate(data)
-
     def list_user_overlays(
         self,
         agent_id: str,
     ) -> UserOverlaysListResponse:
         """List per-user personality overlays"""
-        path = f"/api/v1/agents/{agent_id}/personality/users"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality/users"
         params = None
         data = self._http.get(path, params=params)
         return UserOverlaysListResponse.model_validate(data)
-
     def get_user_personality_overlay(
         self,
         agent_id: str,
@@ -65,7 +63,7 @@ class Insights(_InsightsBase):
         since: str | None = None,
     ) -> UserOverlayDetailResponse:
         """Get user personality overlay"""
-        path = f"/api/v1/agents/{agent_id}/personality/users/{user_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality/users/{quote(user_id, safe='')}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -73,7 +71,6 @@ class Insights(_InsightsBase):
             params["since"] = since
         data = self._http.get(path, params=params)
         return UserOverlayDetailResponse.model_validate(data)
-
     def get_time_machine(
         self,
         agent_id: str,
@@ -81,7 +78,7 @@ class Insights(_InsightsBase):
         at: str,
     ) -> TimeMachineResponse:
         """Reconstruct personality at a point in time"""
-        path = f"/api/v1/agents/{agent_id}/timemachine"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/timemachine"
         params: dict[str, Any] = {}
         if at is not None:
             params["at"] = at
@@ -95,11 +92,10 @@ class AsyncInsights(_InsightsBase):
         agent_id: str,
     ) -> RecentShiftsResponse:
         """Get recent personality shifts"""
-        path = f"/api/v1/agents/{agent_id}/personality/recent-shifts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality/recent-shifts"
         params = None
         data = await self._http.get(path, params=params)
         return RecentShiftsResponse.model_validate(data)
-
     async def get_significant_moments(
         self,
         agent_id: str,
@@ -107,23 +103,21 @@ class AsyncInsights(_InsightsBase):
         limit: int | None = 20,
     ) -> SignificantMomentsResponse:
         """Get significant personality moments"""
-        path = f"/api/v1/agents/{agent_id}/personality/significant-moments"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality/significant-moments"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return SignificantMomentsResponse.model_validate(data)
-
     async def list_user_overlays(
         self,
         agent_id: str,
     ) -> UserOverlaysListResponse:
         """List per-user personality overlays"""
-        path = f"/api/v1/agents/{agent_id}/personality/users"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality/users"
         params = None
         data = await self._http.get(path, params=params)
         return UserOverlaysListResponse.model_validate(data)
-
     async def get_user_personality_overlay(
         self,
         agent_id: str,
@@ -133,7 +127,7 @@ class AsyncInsights(_InsightsBase):
         since: str | None = None,
     ) -> UserOverlayDetailResponse:
         """Get user personality overlay"""
-        path = f"/api/v1/agents/{agent_id}/personality/users/{user_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality/users/{quote(user_id, safe='')}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -141,7 +135,6 @@ class AsyncInsights(_InsightsBase):
             params["since"] = since
         data = await self._http.get(path, params=params)
         return UserOverlayDetailResponse.model_validate(data)
-
     async def get_time_machine(
         self,
         agent_id: str,
@@ -149,7 +142,7 @@ class AsyncInsights(_InsightsBase):
         at: str,
     ) -> TimeMachineResponse:
         """Reconstruct personality at a point in time"""
-        path = f"/api/v1/agents/{agent_id}/timemachine"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/timemachine"
         params: dict[str, Any] = {}
         if at is not None:
             params["at"] = at

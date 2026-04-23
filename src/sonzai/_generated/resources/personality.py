@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     BatchGetPersonalitiesInputBody,
     BatchPersonalityResponse,
@@ -36,7 +37,6 @@ class Personality(_PersonalityBase):
         body = encode_body(BatchGetPersonalitiesInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return BatchPersonalityResponse.model_validate(data)
-
     def get_personality(
         self,
         agent_id: str,
@@ -45,7 +45,7 @@ class Personality(_PersonalityBase):
         since: str | None = None,
     ) -> PersonalityResponse:
         """Get agent personality profile and evolution"""
-        path = f"/api/v1/agents/{agent_id}/personality"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality"
         params: dict[str, Any] = {}
         if history_limit is not None:
             params["history_limit"] = history_limit
@@ -53,7 +53,6 @@ class Personality(_PersonalityBase):
             params["since"] = since
         data = self._http.get(path, params=params)
         return PersonalityResponse.model_validate(data)
-
     def update_personality(
         self,
         agent_id: str,
@@ -62,7 +61,7 @@ class Personality(_PersonalityBase):
         dimensions: str | None = None,
     ) -> UpdatePersonalityOutputBody:
         """Update agent personality scores"""
-        path = f"/api/v1/agents/{agent_id}/personality"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality"
         params = None
         _raw: dict[str, Any] = {}
         if big5 is not None:
@@ -89,7 +88,6 @@ class AsyncPersonality(_PersonalityBase):
         body = encode_body(BatchGetPersonalitiesInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return BatchPersonalityResponse.model_validate(data)
-
     async def get_personality(
         self,
         agent_id: str,
@@ -98,7 +96,7 @@ class AsyncPersonality(_PersonalityBase):
         since: str | None = None,
     ) -> PersonalityResponse:
         """Get agent personality profile and evolution"""
-        path = f"/api/v1/agents/{agent_id}/personality"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality"
         params: dict[str, Any] = {}
         if history_limit is not None:
             params["history_limit"] = history_limit
@@ -106,7 +104,6 @@ class AsyncPersonality(_PersonalityBase):
             params["since"] = since
         data = await self._http.get(path, params=params)
         return PersonalityResponse.model_validate(data)
-
     async def update_personality(
         self,
         agent_id: str,
@@ -115,7 +112,7 @@ class AsyncPersonality(_PersonalityBase):
         dimensions: str | None = None,
     ) -> UpdatePersonalityOutputBody:
         """Update agent personality scores"""
-        path = f"/api/v1/agents/{agent_id}/personality"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality"
         params = None
         _raw: dict[str, Any] = {}
         if big5 is not None:

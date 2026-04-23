@@ -5,15 +5,14 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     AtomicFact,
     CreateFactInputBody,
-    DeleteWisdomResponse,
     FactHistoryResponse,
     ListAllFactsResponse,
     ListFactsResponse,
     MemoryResponse,
-    ResetMemoryResponse,
     SearchResponse,
     SummariesResponse,
     TimelineResponse,
@@ -21,6 +20,10 @@ from sonzai._generated.models import (
     TriggerConsolidationOutputBody,
     UpdateFactInputBody,
     WisdomAuditResponse,
+)
+from sonzai.types import (
+    DeleteWisdomResponse,
+    MemoryResetResponse,
 )
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
@@ -38,17 +41,18 @@ class Memory(_MemoryBase):
         *,
         user_id: str,
         instance_id: str | None = None,
-    ) -> ResetMemoryResponse:
+    ) -> MemoryResetResponse:
         """Reset memory for an agent-user pair"""
-        path = f"/api/v1/agents/{agent_id}/memory"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
         if instance_id is not None:
             params["instance_id"] = instance_id
         data = self._http.delete(path, params=params)
-        return ResetMemoryResponse.model_validate(data)
-
+        if isinstance(data, dict):
+            return MemoryResetResponse.model_validate(data)
+        return MemoryResetResponse()
     def list(
         self,
         agent_id: str,
@@ -62,7 +66,7 @@ class Memory(_MemoryBase):
         memory_type: str | None = None,
     ) -> MemoryResponse:
         """Get memory tree nodes for an agent"""
-        path = f"/api/v1/agents/{agent_id}/memory"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -80,7 +84,6 @@ class Memory(_MemoryBase):
             params["memory_type"] = memory_type
         data = self._http.get(path, params=params)
         return MemoryResponse.model_validate(data)
-
     def consolidate_memory(
         self,
         agent_id: str,
@@ -89,7 +92,7 @@ class Memory(_MemoryBase):
         user_id: str,
     ) -> TriggerConsolidationOutputBody:
         """Trigger memory consolidation"""
-        path = f"/api/v1/agents/{agent_id}/memory/consolidate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/consolidate"
         params = None
         _raw: dict[str, Any] = {}
         if period is not None:
@@ -99,18 +102,16 @@ class Memory(_MemoryBase):
         body = encode_body(TriggerConsolidationInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return TriggerConsolidationOutputBody.model_validate(data)
-
     def get_fact_history(
         self,
         agent_id: str,
         fact_id: str,
     ) -> FactHistoryResponse:
         """Get fact supersedes history"""
-        path = f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/fact/{quote(fact_id, safe='')}/history"
         params = None
         data = self._http.get(path, params=params)
         return FactHistoryResponse.model_validate(data)
-
     def list_facts(
         self,
         agent_id: str,
@@ -121,7 +122,7 @@ class Memory(_MemoryBase):
         limit: str | None = None,
     ) -> ListFactsResponse:
         """List facts for an agent"""
-        path = f"/api/v1/agents/{agent_id}/memory/facts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -133,7 +134,6 @@ class Memory(_MemoryBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ListFactsResponse.model_validate(data)
-
     def create_fact(
         self,
         agent_id: str,
@@ -149,7 +149,7 @@ class Memory(_MemoryBase):
         user_id: str | None = None,
     ) -> AtomicFact:
         """Create a new fact for an agent"""
-        path = f"/api/v1/agents/{agent_id}/memory/facts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -173,18 +173,16 @@ class Memory(_MemoryBase):
         body = encode_body(CreateFactInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return AtomicFact.model_validate(data)
-
     def delete_fact(
         self,
         agent_id: str,
         fact_id: str,
     ) -> Any:
         """Delete a fact"""
-        path = f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts/{quote(fact_id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
         return data
-
     def update_fact(
         self,
         agent_id: str,
@@ -198,7 +196,7 @@ class Memory(_MemoryBase):
         metadata: dict[str, Any] | None = None,
     ) -> AtomicFact:
         """Update an existing fact"""
-        path = f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts/{quote(fact_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if confidence is not None:
@@ -216,7 +214,6 @@ class Memory(_MemoryBase):
         body = encode_body(UpdateFactInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return AtomicFact.model_validate(data)
-
     def search(
         self,
         agent_id: str,
@@ -229,7 +226,7 @@ class Memory(_MemoryBase):
         include_verbatim: str | None = None,
     ) -> SearchResponse:
         """Search agent memories (semantic or BM25)"""
-        path = f"/api/v1/agents/{agent_id}/memory/search"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/search"
         params: dict[str, Any] = {}
         if query is not None:
             params["q"] = query
@@ -245,7 +242,6 @@ class Memory(_MemoryBase):
             params["include_verbatim"] = include_verbatim
         data = self._http.get(path, params=params)
         return SearchResponse.model_validate(data)
-
     def list_summaries(
         self,
         agent_id: str,
@@ -254,7 +250,7 @@ class Memory(_MemoryBase):
         limit: int | None = 20,
     ) -> SummariesResponse:
         """List memory consolidation summaries"""
-        path = f"/api/v1/agents/{agent_id}/memory/summaries"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/summaries"
         params: dict[str, Any] = {}
         if period is not None:
             params["period"] = period
@@ -262,7 +258,6 @@ class Memory(_MemoryBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return SummariesResponse.model_validate(data)
-
     def timeline(
         self,
         agent_id: str,
@@ -273,7 +268,7 @@ class Memory(_MemoryBase):
         end: str | None = None,
     ) -> TimelineResponse:
         """Get memory timeline grouped by session"""
-        path = f"/api/v1/agents/{agent_id}/memory/timeline"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/timeline"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -285,29 +280,28 @@ class Memory(_MemoryBase):
             params["end"] = end
         data = self._http.get(path, params=params)
         return TimelineResponse.model_validate(data)
-
     def get_wisdom_audit(
         self,
         agent_id: str,
         fact_id: str,
     ) -> WisdomAuditResponse:
         """Get wisdom fact audit trail"""
-        path = f"/api/v1/agents/{agent_id}/memory/wisdom/audit/{fact_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/wisdom/audit/{quote(fact_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return WisdomAuditResponse.model_validate(data)
-
     def delete_wisdom_fact(
         self,
         agent_id: str,
         fact_id: str,
     ) -> DeleteWisdomResponse:
         """Delete a wisdom fact"""
-        path = f"/api/v1/agents/{agent_id}/memory/wisdom/{fact_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/wisdom/{quote(fact_id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
-        return DeleteWisdomResponse.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteWisdomResponse.model_validate(data)
+        return DeleteWisdomResponse()
     def list_user_facts(
         self,
         agent_id: str,
@@ -319,7 +313,7 @@ class Memory(_MemoryBase):
         metadata_item_type: str | None = None,
     ) -> ListAllFactsResponse:
         """List all active facts for a specific user"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/facts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/facts"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -340,17 +334,18 @@ class AsyncMemory(_MemoryBase):
         *,
         user_id: str,
         instance_id: str | None = None,
-    ) -> ResetMemoryResponse:
+    ) -> MemoryResetResponse:
         """Reset memory for an agent-user pair"""
-        path = f"/api/v1/agents/{agent_id}/memory"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
         if instance_id is not None:
             params["instance_id"] = instance_id
         data = await self._http.delete(path, params=params)
-        return ResetMemoryResponse.model_validate(data)
-
+        if isinstance(data, dict):
+            return MemoryResetResponse.model_validate(data)
+        return MemoryResetResponse()
     async def list(
         self,
         agent_id: str,
@@ -364,7 +359,7 @@ class AsyncMemory(_MemoryBase):
         memory_type: str | None = None,
     ) -> MemoryResponse:
         """Get memory tree nodes for an agent"""
-        path = f"/api/v1/agents/{agent_id}/memory"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -382,7 +377,6 @@ class AsyncMemory(_MemoryBase):
             params["memory_type"] = memory_type
         data = await self._http.get(path, params=params)
         return MemoryResponse.model_validate(data)
-
     async def consolidate_memory(
         self,
         agent_id: str,
@@ -391,7 +385,7 @@ class AsyncMemory(_MemoryBase):
         user_id: str,
     ) -> TriggerConsolidationOutputBody:
         """Trigger memory consolidation"""
-        path = f"/api/v1/agents/{agent_id}/memory/consolidate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/consolidate"
         params = None
         _raw: dict[str, Any] = {}
         if period is not None:
@@ -401,18 +395,16 @@ class AsyncMemory(_MemoryBase):
         body = encode_body(TriggerConsolidationInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return TriggerConsolidationOutputBody.model_validate(data)
-
     async def get_fact_history(
         self,
         agent_id: str,
         fact_id: str,
     ) -> FactHistoryResponse:
         """Get fact supersedes history"""
-        path = f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/fact/{quote(fact_id, safe='')}/history"
         params = None
         data = await self._http.get(path, params=params)
         return FactHistoryResponse.model_validate(data)
-
     async def list_facts(
         self,
         agent_id: str,
@@ -423,7 +415,7 @@ class AsyncMemory(_MemoryBase):
         limit: str | None = None,
     ) -> ListFactsResponse:
         """List facts for an agent"""
-        path = f"/api/v1/agents/{agent_id}/memory/facts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -435,7 +427,6 @@ class AsyncMemory(_MemoryBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ListFactsResponse.model_validate(data)
-
     async def create_fact(
         self,
         agent_id: str,
@@ -451,7 +442,7 @@ class AsyncMemory(_MemoryBase):
         user_id: str | None = None,
     ) -> AtomicFact:
         """Create a new fact for an agent"""
-        path = f"/api/v1/agents/{agent_id}/memory/facts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -475,18 +466,16 @@ class AsyncMemory(_MemoryBase):
         body = encode_body(CreateFactInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return AtomicFact.model_validate(data)
-
     async def delete_fact(
         self,
         agent_id: str,
         fact_id: str,
     ) -> Any:
         """Delete a fact"""
-        path = f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts/{quote(fact_id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
-
     async def update_fact(
         self,
         agent_id: str,
@@ -500,7 +489,7 @@ class AsyncMemory(_MemoryBase):
         metadata: dict[str, Any] | None = None,
     ) -> AtomicFact:
         """Update an existing fact"""
-        path = f"/api/v1/agents/{agent_id}/memory/facts/{fact_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/facts/{quote(fact_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if confidence is not None:
@@ -518,7 +507,6 @@ class AsyncMemory(_MemoryBase):
         body = encode_body(UpdateFactInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return AtomicFact.model_validate(data)
-
     async def search(
         self,
         agent_id: str,
@@ -531,7 +519,7 @@ class AsyncMemory(_MemoryBase):
         include_verbatim: str | None = None,
     ) -> SearchResponse:
         """Search agent memories (semantic or BM25)"""
-        path = f"/api/v1/agents/{agent_id}/memory/search"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/search"
         params: dict[str, Any] = {}
         if query is not None:
             params["q"] = query
@@ -547,7 +535,6 @@ class AsyncMemory(_MemoryBase):
             params["include_verbatim"] = include_verbatim
         data = await self._http.get(path, params=params)
         return SearchResponse.model_validate(data)
-
     async def list_summaries(
         self,
         agent_id: str,
@@ -556,7 +543,7 @@ class AsyncMemory(_MemoryBase):
         limit: int | None = 20,
     ) -> SummariesResponse:
         """List memory consolidation summaries"""
-        path = f"/api/v1/agents/{agent_id}/memory/summaries"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/summaries"
         params: dict[str, Any] = {}
         if period is not None:
             params["period"] = period
@@ -564,7 +551,6 @@ class AsyncMemory(_MemoryBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return SummariesResponse.model_validate(data)
-
     async def timeline(
         self,
         agent_id: str,
@@ -575,7 +561,7 @@ class AsyncMemory(_MemoryBase):
         end: str | None = None,
     ) -> TimelineResponse:
         """Get memory timeline grouped by session"""
-        path = f"/api/v1/agents/{agent_id}/memory/timeline"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/timeline"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -587,29 +573,28 @@ class AsyncMemory(_MemoryBase):
             params["end"] = end
         data = await self._http.get(path, params=params)
         return TimelineResponse.model_validate(data)
-
     async def get_wisdom_audit(
         self,
         agent_id: str,
         fact_id: str,
     ) -> WisdomAuditResponse:
         """Get wisdom fact audit trail"""
-        path = f"/api/v1/agents/{agent_id}/memory/wisdom/audit/{fact_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/wisdom/audit/{quote(fact_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return WisdomAuditResponse.model_validate(data)
-
     async def delete_wisdom_fact(
         self,
         agent_id: str,
         fact_id: str,
     ) -> DeleteWisdomResponse:
         """Delete a wisdom fact"""
-        path = f"/api/v1/agents/{agent_id}/memory/wisdom/{fact_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/wisdom/{quote(fact_id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
-        return DeleteWisdomResponse.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteWisdomResponse.model_validate(data)
+        return DeleteWisdomResponse()
     async def list_user_facts(
         self,
         agent_id: str,
@@ -621,7 +606,7 @@ class AsyncMemory(_MemoryBase):
         metadata_item_type: str | None = None,
     ) -> ListAllFactsResponse:
         """List all active facts for a specific user"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/facts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/facts"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id

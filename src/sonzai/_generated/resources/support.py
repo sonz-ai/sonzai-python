@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     AddCommentRequest,
     CreateTicketRequest,
@@ -46,7 +47,6 @@ class Support(_SupportBase):
             mode="offset",
             total_key="total",
         )
-
     def create_support_ticket(
         self,
         *,
@@ -70,27 +70,24 @@ class Support(_SupportBase):
         body = encode_body(CreateTicketRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return SupportTicket.model_validate(data)
-
     def get_support_ticket(
         self,
         ticket_id: str,
     ) -> TicketDetailResponse:
         """Get a support ticket with comments"""
-        path = f"/api/v1/support/tickets/{ticket_id}"
+        path = f"/api/v1/support/tickets/{quote(ticket_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return TicketDetailResponse.model_validate(data)
-
     def close_support_ticket(
         self,
         ticket_id: str,
     ) -> SupportTicket:
         """Close a support ticket (user)"""
-        path = f"/api/v1/support/tickets/{ticket_id}/close"
+        path = f"/api/v1/support/tickets/{quote(ticket_id, safe='')}/close"
         params = None
         data = self._http.post(path, params=params)
         return SupportTicket.model_validate(data)
-
     def add_support_ticket_comment(
         self,
         ticket_id: str,
@@ -99,7 +96,7 @@ class Support(_SupportBase):
         is_internal: bool | None = None,
     ) -> SupportTicketComment:
         """Add a comment to a support ticket"""
-        path = f"/api/v1/support/tickets/{ticket_id}/comments"
+        path = f"/api/v1/support/tickets/{quote(ticket_id, safe='')}/comments"
         params = None
         _raw: dict[str, Any] = {}
         if content is not None:
@@ -138,7 +135,6 @@ class AsyncSupport(_SupportBase):
             mode="offset",
             total_key="total",
         )
-
     async def create_support_ticket(
         self,
         *,
@@ -162,27 +158,24 @@ class AsyncSupport(_SupportBase):
         body = encode_body(CreateTicketRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return SupportTicket.model_validate(data)
-
     async def get_support_ticket(
         self,
         ticket_id: str,
     ) -> TicketDetailResponse:
         """Get a support ticket with comments"""
-        path = f"/api/v1/support/tickets/{ticket_id}"
+        path = f"/api/v1/support/tickets/{quote(ticket_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return TicketDetailResponse.model_validate(data)
-
     async def close_support_ticket(
         self,
         ticket_id: str,
     ) -> SupportTicket:
         """Close a support ticket (user)"""
-        path = f"/api/v1/support/tickets/{ticket_id}/close"
+        path = f"/api/v1/support/tickets/{quote(ticket_id, safe='')}/close"
         params = None
         data = await self._http.post(path, params=params)
         return SupportTicket.model_validate(data)
-
     async def add_support_ticket_comment(
         self,
         ticket_id: str,
@@ -191,7 +184,7 @@ class AsyncSupport(_SupportBase):
         is_internal: bool | None = None,
     ) -> SupportTicketComment:
         """Add a comment to a support ticket"""
-        path = f"/api/v1/support/tickets/{ticket_id}/comments"
+        path = f"/api/v1/support/tickets/{quote(ticket_id, safe='')}/comments"
         params = None
         _raw: dict[str, Any] = {}
         if content is not None:

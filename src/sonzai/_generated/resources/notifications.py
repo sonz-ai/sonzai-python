@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     AcknowledgeAllProjectNotificationsOutputBody,
     AcknowledgeProjectNotificationsInputBody,
@@ -32,7 +33,7 @@ class Notifications(_NotificationsBase):
         limit: int | None = 50,
     ) -> ProactiveNotificationsResponse:
         """List proactive notifications for an agent"""
-        path = f"/api/v1/agents/{agent_id}/notifications"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/notifications"
         params: dict[str, Any] = {}
         if status is not None:
             params["status"] = status
@@ -42,7 +43,6 @@ class Notifications(_NotificationsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ProactiveNotificationsResponse.model_validate(data)
-
     def get_notification_history(
         self,
         agent_id: str,
@@ -50,24 +50,22 @@ class Notifications(_NotificationsBase):
         limit: int | None = 50,
     ) -> ProactiveNotificationsResponse:
         """Get proactive notification history"""
-        path = f"/api/v1/agents/{agent_id}/notifications/history"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/notifications/history"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ProactiveNotificationsResponse.model_validate(data)
-
     def consume_notification(
         self,
         agent_id: str,
         message_id: str,
     ) -> ConsumeNotificationOutputBody:
         """Consume a proactive notification"""
-        path = f"/api/v1/agents/{agent_id}/notifications/{message_id}/consume"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/notifications/{quote(message_id, safe='')}/consume"
         params = None
         data = self._http.post(path, params=params)
         return ConsumeNotificationOutputBody.model_validate(data)
-
     def list_project_notifications(
         self,
         project_id: str,
@@ -77,7 +75,7 @@ class Notifications(_NotificationsBase):
         limit: int | None = 50,
     ) -> ProjectNotificationsListOutputBody:
         """List pending notifications for a project"""
-        path = f"/api/v1/projects/{project_id}/notifications"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/notifications"
         params: dict[str, Any] = {}
         if agent_id is not None:
             params["agent_id"] = agent_id
@@ -87,7 +85,6 @@ class Notifications(_NotificationsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ProjectNotificationsListOutputBody.model_validate(data)
-
     def acknowledge_project_notifications(
         self,
         project_id: str,
@@ -95,7 +92,7 @@ class Notifications(_NotificationsBase):
         notification_ids: list[Any],
     ) -> AcknowledgeProjectNotificationsOutputBody:
         """Acknowledge specific project notifications"""
-        path = f"/api/v1/projects/{project_id}/notifications/acknowledge"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/notifications/acknowledge"
         params = None
         _raw: dict[str, Any] = {}
         if notification_ids is not None:
@@ -103,7 +100,6 @@ class Notifications(_NotificationsBase):
         body = encode_body(AcknowledgeProjectNotificationsInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return AcknowledgeProjectNotificationsOutputBody.model_validate(data)
-
     def acknowledge_all_project_notifications(
         self,
         project_id: str,
@@ -112,7 +108,7 @@ class Notifications(_NotificationsBase):
         event_type: str | None = None,
     ) -> AcknowledgeAllProjectNotificationsOutputBody:
         """Acknowledge all pending project notifications"""
-        path = f"/api/v1/projects/{project_id}/notifications/acknowledge-all"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/notifications/acknowledge-all"
         params: dict[str, Any] = {}
         if agent_id is not None:
             params["agent_id"] = agent_id
@@ -132,7 +128,7 @@ class AsyncNotifications(_NotificationsBase):
         limit: int | None = 50,
     ) -> ProactiveNotificationsResponse:
         """List proactive notifications for an agent"""
-        path = f"/api/v1/agents/{agent_id}/notifications"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/notifications"
         params: dict[str, Any] = {}
         if status is not None:
             params["status"] = status
@@ -142,7 +138,6 @@ class AsyncNotifications(_NotificationsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ProactiveNotificationsResponse.model_validate(data)
-
     async def get_notification_history(
         self,
         agent_id: str,
@@ -150,24 +145,22 @@ class AsyncNotifications(_NotificationsBase):
         limit: int | None = 50,
     ) -> ProactiveNotificationsResponse:
         """Get proactive notification history"""
-        path = f"/api/v1/agents/{agent_id}/notifications/history"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/notifications/history"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ProactiveNotificationsResponse.model_validate(data)
-
     async def consume_notification(
         self,
         agent_id: str,
         message_id: str,
     ) -> ConsumeNotificationOutputBody:
         """Consume a proactive notification"""
-        path = f"/api/v1/agents/{agent_id}/notifications/{message_id}/consume"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/notifications/{quote(message_id, safe='')}/consume"
         params = None
         data = await self._http.post(path, params=params)
         return ConsumeNotificationOutputBody.model_validate(data)
-
     async def list_project_notifications(
         self,
         project_id: str,
@@ -177,7 +170,7 @@ class AsyncNotifications(_NotificationsBase):
         limit: int | None = 50,
     ) -> ProjectNotificationsListOutputBody:
         """List pending notifications for a project"""
-        path = f"/api/v1/projects/{project_id}/notifications"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/notifications"
         params: dict[str, Any] = {}
         if agent_id is not None:
             params["agent_id"] = agent_id
@@ -187,7 +180,6 @@ class AsyncNotifications(_NotificationsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ProjectNotificationsListOutputBody.model_validate(data)
-
     async def acknowledge_project_notifications(
         self,
         project_id: str,
@@ -195,7 +187,7 @@ class AsyncNotifications(_NotificationsBase):
         notification_ids: list[Any],
     ) -> AcknowledgeProjectNotificationsOutputBody:
         """Acknowledge specific project notifications"""
-        path = f"/api/v1/projects/{project_id}/notifications/acknowledge"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/notifications/acknowledge"
         params = None
         _raw: dict[str, Any] = {}
         if notification_ids is not None:
@@ -203,7 +195,6 @@ class AsyncNotifications(_NotificationsBase):
         body = encode_body(AcknowledgeProjectNotificationsInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return AcknowledgeProjectNotificationsOutputBody.model_validate(data)
-
     async def acknowledge_all_project_notifications(
         self,
         project_id: str,
@@ -212,7 +203,7 @@ class AsyncNotifications(_NotificationsBase):
         event_type: str | None = None,
     ) -> AcknowledgeAllProjectNotificationsOutputBody:
         """Acknowledge all pending project notifications"""
-        path = f"/api/v1/projects/{project_id}/notifications/acknowledge-all"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/notifications/acknowledge-all"
         params: dict[str, Any] = {}
         if agent_id is not None:
             params["agent_id"] = agent_id

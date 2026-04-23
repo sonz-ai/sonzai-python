@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     SetAccountConfigOutputBody,
 )
@@ -26,33 +27,30 @@ class AccountConfig(_AccountConfigBase):
         params = None
         data = self._http.get(path, params=params)
         return data
-
     def delete_account_config(
         self,
         key: str,
     ) -> Any:
         """Delete an account config key"""
-        path = f"/api/v1/account/config/{key}"
+        path = f"/api/v1/account/config/{quote(key, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
         return data
-
     def get_account_config(
         self,
         key: str,
     ) -> Any:
         """Get an account config value"""
-        path = f"/api/v1/account/config/{key}"
+        path = f"/api/v1/account/config/{quote(key, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return data
-
     def set_account_config(
         self,
         key: str,
     ) -> SetAccountConfigOutputBody:
         """Set an account config value"""
-        path = f"/api/v1/account/config/{key}"
+        path = f"/api/v1/account/config/{quote(key, safe='')}"
         params = None
         data = self._http.put(path, params=params)
         return SetAccountConfigOutputBody.model_validate(data)
@@ -67,33 +65,30 @@ class AsyncAccountConfig(_AccountConfigBase):
         params = None
         data = await self._http.get(path, params=params)
         return data
-
     async def delete_account_config(
         self,
         key: str,
     ) -> Any:
         """Delete an account config key"""
-        path = f"/api/v1/account/config/{key}"
+        path = f"/api/v1/account/config/{quote(key, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
-
     async def get_account_config(
         self,
         key: str,
     ) -> Any:
         """Get an account config value"""
-        path = f"/api/v1/account/config/{key}"
+        path = f"/api/v1/account/config/{quote(key, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return data
-
     async def set_account_config(
         self,
         key: str,
     ) -> SetAccountConfigOutputBody:
         """Set an account config value"""
-        path = f"/api/v1/account/config/{key}"
+        path = f"/api/v1/account/config/{quote(key, safe='')}"
         params = None
         data = await self._http.put(path, params=params)
         return SetAccountConfigOutputBody.model_validate(data)

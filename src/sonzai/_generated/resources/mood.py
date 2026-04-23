@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     MoodAggregateResponse,
     MoodHistoryResponse,
@@ -28,7 +29,7 @@ class Mood(_MoodBase):
         instance_id: str | None = None,
     ) -> MoodResponse:
         """Get agent mood state"""
-        path = f"/api/v1/agents/{agent_id}/mood"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/mood"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -36,7 +37,6 @@ class Mood(_MoodBase):
             params["instance_id"] = instance_id
         data = self._http.get(path, params=params)
         return MoodResponse.model_validate(data)
-
     def get_mood_history(
         self,
         agent_id: str,
@@ -46,7 +46,7 @@ class Mood(_MoodBase):
         instance_id: str | None = None,
     ) -> MoodHistoryResponse:
         """Get agent mood history"""
-        path = f"/api/v1/agents/{agent_id}/mood-history"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/mood-history"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -56,7 +56,6 @@ class Mood(_MoodBase):
             params["instance_id"] = instance_id
         data = self._http.get(path, params=params)
         return MoodHistoryResponse.model_validate(data)
-
     def get_mood_aggregate(
         self,
         agent_id: str,
@@ -64,7 +63,7 @@ class Mood(_MoodBase):
         days: int | None = 5,
     ) -> MoodAggregateResponse:
         """Get aggregated mood across users"""
-        path = f"/api/v1/agents/{agent_id}/mood/aggregate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/mood/aggregate"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -81,7 +80,7 @@ class AsyncMood(_MoodBase):
         instance_id: str | None = None,
     ) -> MoodResponse:
         """Get agent mood state"""
-        path = f"/api/v1/agents/{agent_id}/mood"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/mood"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -89,7 +88,6 @@ class AsyncMood(_MoodBase):
             params["instance_id"] = instance_id
         data = await self._http.get(path, params=params)
         return MoodResponse.model_validate(data)
-
     async def get_mood_history(
         self,
         agent_id: str,
@@ -99,7 +97,7 @@ class AsyncMood(_MoodBase):
         instance_id: str | None = None,
     ) -> MoodHistoryResponse:
         """Get agent mood history"""
-        path = f"/api/v1/agents/{agent_id}/mood-history"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/mood-history"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -109,7 +107,6 @@ class AsyncMood(_MoodBase):
             params["instance_id"] = instance_id
         data = await self._http.get(path, params=params)
         return MoodHistoryResponse.model_validate(data)
-
     async def get_mood_aggregate(
         self,
         agent_id: str,
@@ -117,7 +114,7 @@ class AsyncMood(_MoodBase):
         days: int | None = 5,
     ) -> MoodAggregateResponse:
         """Get aggregated mood across users"""
-        path = f"/api/v1/agents/{agent_id}/mood/aggregate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/mood/aggregate"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days

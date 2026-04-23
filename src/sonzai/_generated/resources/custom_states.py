@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     CreateCustomStateInputBody,
     CustomState,
@@ -32,7 +33,7 @@ class CustomStates(_CustomStatesBase):
         key: str | None = None,
     ) -> ListCustomStatesOutputBody:
         """List custom states"""
-        path = f"/api/v1/agents/{agent_id}/custom-states"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states"
         params: dict[str, Any] = {}
         if scope is not None:
             params["scope"] = scope
@@ -44,7 +45,6 @@ class CustomStates(_CustomStatesBase):
             params["key"] = key
         data = self._http.get(path, params=params)
         return ListCustomStatesOutputBody.model_validate(data)
-
     def create_custom_state(
         self,
         agent_id: str,
@@ -57,7 +57,7 @@ class CustomStates(_CustomStatesBase):
         value: str,
     ) -> CustomState:
         """Create a custom state"""
-        path = f"/api/v1/agents/{agent_id}/custom-states"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states"
         params = None
         _raw: dict[str, Any] = {}
         if content_type is not None:
@@ -75,7 +75,6 @@ class CustomStates(_CustomStatesBase):
         body = encode_body(CreateCustomStateInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return CustomState.model_validate(data)
-
     def delete_custom_state_by_key(
         self,
         agent_id: str,
@@ -86,7 +85,7 @@ class CustomStates(_CustomStatesBase):
         instance_id: str | None = None,
     ) -> Any:
         """Delete a custom state by key"""
-        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states/by-key"
         params: dict[str, Any] = {}
         if key is not None:
             params["key"] = key
@@ -98,7 +97,6 @@ class CustomStates(_CustomStatesBase):
             params["instance_id"] = instance_id
         data = self._http.delete(path, params=params)
         return data
-
     def get_custom_state_by_key(
         self,
         agent_id: str,
@@ -109,7 +107,7 @@ class CustomStates(_CustomStatesBase):
         instance_id: str | None = None,
     ) -> CustomState:
         """Get a custom state by key"""
-        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states/by-key"
         params: dict[str, Any] = {}
         if key is not None:
             params["key"] = key
@@ -121,7 +119,6 @@ class CustomStates(_CustomStatesBase):
             params["instance_id"] = instance_id
         data = self._http.get(path, params=params)
         return CustomState.model_validate(data)
-
     def upsert_custom_state_by_key(
         self,
         agent_id: str,
@@ -134,7 +131,7 @@ class CustomStates(_CustomStatesBase):
         value: str,
     ) -> CustomState:
         """Upsert a custom state by key"""
-        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states/by-key"
         params = None
         _raw: dict[str, Any] = {}
         if content_type is not None:
@@ -152,18 +149,16 @@ class CustomStates(_CustomStatesBase):
         body = encode_body(UpsertCustomStateByKeyInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return CustomState.model_validate(data)
-
     def delete_custom_state(
         self,
         agent_id: str,
         state_id: str,
     ) -> Any:
         """Delete a custom state"""
-        path = f"/api/v1/agents/{agent_id}/custom-states/{state_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states/{quote(state_id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
         return data
-
     def update_custom_state(
         self,
         agent_id: str,
@@ -173,7 +168,7 @@ class CustomStates(_CustomStatesBase):
         value: str,
     ) -> CustomState:
         """Update a custom state"""
-        path = f"/api/v1/agents/{agent_id}/custom-states/{state_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states/{quote(state_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if content_type is not None:
@@ -196,7 +191,7 @@ class AsyncCustomStates(_CustomStatesBase):
         key: str | None = None,
     ) -> ListCustomStatesOutputBody:
         """List custom states"""
-        path = f"/api/v1/agents/{agent_id}/custom-states"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states"
         params: dict[str, Any] = {}
         if scope is not None:
             params["scope"] = scope
@@ -208,7 +203,6 @@ class AsyncCustomStates(_CustomStatesBase):
             params["key"] = key
         data = await self._http.get(path, params=params)
         return ListCustomStatesOutputBody.model_validate(data)
-
     async def create_custom_state(
         self,
         agent_id: str,
@@ -221,7 +215,7 @@ class AsyncCustomStates(_CustomStatesBase):
         value: str,
     ) -> CustomState:
         """Create a custom state"""
-        path = f"/api/v1/agents/{agent_id}/custom-states"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states"
         params = None
         _raw: dict[str, Any] = {}
         if content_type is not None:
@@ -239,7 +233,6 @@ class AsyncCustomStates(_CustomStatesBase):
         body = encode_body(CreateCustomStateInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return CustomState.model_validate(data)
-
     async def delete_custom_state_by_key(
         self,
         agent_id: str,
@@ -250,7 +243,7 @@ class AsyncCustomStates(_CustomStatesBase):
         instance_id: str | None = None,
     ) -> Any:
         """Delete a custom state by key"""
-        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states/by-key"
         params: dict[str, Any] = {}
         if key is not None:
             params["key"] = key
@@ -262,7 +255,6 @@ class AsyncCustomStates(_CustomStatesBase):
             params["instance_id"] = instance_id
         data = await self._http.delete(path, params=params)
         return data
-
     async def get_custom_state_by_key(
         self,
         agent_id: str,
@@ -273,7 +265,7 @@ class AsyncCustomStates(_CustomStatesBase):
         instance_id: str | None = None,
     ) -> CustomState:
         """Get a custom state by key"""
-        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states/by-key"
         params: dict[str, Any] = {}
         if key is not None:
             params["key"] = key
@@ -285,7 +277,6 @@ class AsyncCustomStates(_CustomStatesBase):
             params["instance_id"] = instance_id
         data = await self._http.get(path, params=params)
         return CustomState.model_validate(data)
-
     async def upsert_custom_state_by_key(
         self,
         agent_id: str,
@@ -298,7 +289,7 @@ class AsyncCustomStates(_CustomStatesBase):
         value: str,
     ) -> CustomState:
         """Upsert a custom state by key"""
-        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states/by-key"
         params = None
         _raw: dict[str, Any] = {}
         if content_type is not None:
@@ -316,18 +307,16 @@ class AsyncCustomStates(_CustomStatesBase):
         body = encode_body(UpsertCustomStateByKeyInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return CustomState.model_validate(data)
-
     async def delete_custom_state(
         self,
         agent_id: str,
         state_id: str,
     ) -> Any:
         """Delete a custom state"""
-        path = f"/api/v1/agents/{agent_id}/custom-states/{state_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states/{quote(state_id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
-
     async def update_custom_state(
         self,
         agent_id: str,
@@ -337,7 +326,7 @@ class AsyncCustomStates(_CustomStatesBase):
         value: str,
     ) -> CustomState:
         """Update a custom state"""
-        path = f"/api/v1/agents/{agent_id}/custom-states/{state_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/custom-states/{quote(state_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if content_type is not None:

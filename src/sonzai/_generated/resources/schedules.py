@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     CreateScheduleInputBody,
     CreateScheduleOutputBody,
@@ -29,11 +30,10 @@ class Schedules(_SchedulesBase):
         user_id: str,
     ) -> ListSchedulesOutputBody:
         """List all schedules for a (agent, user) pair."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
         params = None
         data = self._http.get(path, params=params)
         return ListSchedulesOutputBody.model_validate(data)
-
     def create_schedule(
         self,
         agent_id: str,
@@ -49,7 +49,7 @@ class Schedules(_SchedulesBase):
         starts_at: str | None = None,
     ) -> CreateScheduleOutputBody:
         """Create a recurring schedule for a user."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
         params = None
         _raw: dict[str, Any] = {}
         if active_window is not None:
@@ -71,7 +71,6 @@ class Schedules(_SchedulesBase):
         body = encode_body(CreateScheduleInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return CreateScheduleOutputBody.model_validate(data)
-
     def delete_schedule(
         self,
         agent_id: str,
@@ -79,11 +78,10 @@ class Schedules(_SchedulesBase):
         schedule_id: str,
     ) -> Any:
         """Delete a schedule. Idempotent — missing IDs return 204."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules/{quote(schedule_id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
         return data
-
     def get_schedule(
         self,
         agent_id: str,
@@ -91,11 +89,10 @@ class Schedules(_SchedulesBase):
         schedule_id: str,
     ) -> ScheduleDTO:
         """Fetch a single schedule by ID."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules/{quote(schedule_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return ScheduleDTO.model_validate(data)
-
     def patch_schedule(
         self,
         agent_id: str,
@@ -112,7 +109,7 @@ class Schedules(_SchedulesBase):
         starts_at: str | None = None,
     ) -> ScheduleDTO:
         """Partially update a schedule. Recomputes next_fire_at only when cadence/active_window/starts_at change."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules/{quote(schedule_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if active_window is not None:
@@ -134,7 +131,6 @@ class Schedules(_SchedulesBase):
         body = encode_body(PatchScheduleInputBody, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return ScheduleDTO.model_validate(data)
-
     def upcoming_schedule(
         self,
         agent_id: str,
@@ -144,7 +140,7 @@ class Schedules(_SchedulesBase):
         limit: int | None = 10,
     ) -> UpcomingScheduleOutputBody:
         """Preview the next N allowed fire times (honors active_window). Does not mutate state."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}/upcoming"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules/{quote(schedule_id, safe='')}/upcoming"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -159,11 +155,10 @@ class AsyncSchedules(_SchedulesBase):
         user_id: str,
     ) -> ListSchedulesOutputBody:
         """List all schedules for a (agent, user) pair."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
         params = None
         data = await self._http.get(path, params=params)
         return ListSchedulesOutputBody.model_validate(data)
-
     async def create_schedule(
         self,
         agent_id: str,
@@ -179,7 +174,7 @@ class AsyncSchedules(_SchedulesBase):
         starts_at: str | None = None,
     ) -> CreateScheduleOutputBody:
         """Create a recurring schedule for a user."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
         params = None
         _raw: dict[str, Any] = {}
         if active_window is not None:
@@ -201,7 +196,6 @@ class AsyncSchedules(_SchedulesBase):
         body = encode_body(CreateScheduleInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return CreateScheduleOutputBody.model_validate(data)
-
     async def delete_schedule(
         self,
         agent_id: str,
@@ -209,11 +203,10 @@ class AsyncSchedules(_SchedulesBase):
         schedule_id: str,
     ) -> Any:
         """Delete a schedule. Idempotent — missing IDs return 204."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules/{quote(schedule_id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
-
     async def get_schedule(
         self,
         agent_id: str,
@@ -221,11 +214,10 @@ class AsyncSchedules(_SchedulesBase):
         schedule_id: str,
     ) -> ScheduleDTO:
         """Fetch a single schedule by ID."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules/{quote(schedule_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return ScheduleDTO.model_validate(data)
-
     async def patch_schedule(
         self,
         agent_id: str,
@@ -242,7 +234,7 @@ class AsyncSchedules(_SchedulesBase):
         starts_at: str | None = None,
     ) -> ScheduleDTO:
         """Partially update a schedule. Recomputes next_fire_at only when cadence/active_window/starts_at change."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules/{quote(schedule_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if active_window is not None:
@@ -264,7 +256,6 @@ class AsyncSchedules(_SchedulesBase):
         body = encode_body(PatchScheduleInputBody, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return ScheduleDTO.model_validate(data)
-
     async def upcoming_schedule(
         self,
         agent_id: str,
@@ -274,7 +265,7 @@ class AsyncSchedules(_SchedulesBase):
         limit: int | None = 10,
     ) -> UpcomingScheduleOutputBody:
         """Preview the next N allowed fire times (honors active_window). Does not mutate state."""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}/upcoming"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules/{quote(schedule_id, safe='')}/upcoming"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit

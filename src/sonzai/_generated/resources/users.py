@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     MeResponse,
     UserEntry,
@@ -29,7 +30,7 @@ class Users(_UsersBase):
         limit: int = 100,
     ) -> Page[UserEntry]:
         """List users for an agent"""
-        path = f"/api/v1/agents/{agent_id}/users"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if sort_by is not None:
             params["sort_by"] = sort_by
@@ -43,7 +44,6 @@ class Users(_UsersBase):
             mode="offset",
             total_key="total",
         )
-
     def get_my_org(
         self,
     ) -> MeResponse:
@@ -64,7 +64,7 @@ class AsyncUsers(_UsersBase):
         limit: int = 100,
     ) -> AsyncPage[UserEntry]:
         """List users for an agent"""
-        path = f"/api/v1/agents/{agent_id}/users"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if sort_by is not None:
             params["sort_by"] = sort_by
@@ -82,7 +82,6 @@ class AsyncUsers(_UsersBase):
             mode="offset",
             total_key="total",
         )
-
     async def get_my_org(
         self,
     ) -> MeResponse:

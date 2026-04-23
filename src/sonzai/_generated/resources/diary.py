@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     DiaryPolymorphicResponse,
 )
@@ -28,7 +29,7 @@ class Diary(_DiaryBase):
         instance_id: str | None = None,
     ) -> DiaryPolymorphicResponse:
         """Get diary entries for an agent"""
-        path = f"/api/v1/agents/{agent_id}/diary"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/diary"
         params: dict[str, Any] = {}
         if date is not None:
             params["date"] = date
@@ -53,7 +54,7 @@ class AsyncDiary(_DiaryBase):
         instance_id: str | None = None,
     ) -> DiaryPolymorphicResponse:
         """Get diary entries for an agent"""
-        path = f"/api/v1/agents/{agent_id}/diary"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/diary"
         params: dict[str, Any] = {}
         if date is not None:
             params["date"] = date

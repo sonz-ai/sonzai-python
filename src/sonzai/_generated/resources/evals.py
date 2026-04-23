@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     CreateEvalTemplateInputBody,
     DeleteEvalRunOutputBody,
@@ -42,7 +43,7 @@ class Evals(_EvalsBase):
         template_id: str,
     ) -> RunningBody:
         """Re-evaluate an existing transcript"""
-        path = f"/api/v1/agents/{agent_id}/eval-only"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/eval-only"
         params = None
         _raw: dict[str, Any] = {}
         if adaptation_template_id is not None:
@@ -56,7 +57,6 @@ class Evals(_EvalsBase):
         body = encode_body(EvalOnlyRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return RunningBody.model_validate(data)
-
     def evaluate_agent(
         self,
         agent_id: str,
@@ -73,7 +73,7 @@ class Evals(_EvalsBase):
         user_persona: str | None = None,
     ) -> EvaluateAcceptedBody:
         """Evaluate an agent conversation"""
-        path = f"/api/v1/agents/{agent_id}/evaluate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/evaluate"
         params = None
         _raw: dict[str, Any] = {}
         if adaptation_template_id is not None:
@@ -99,7 +99,6 @@ class Evals(_EvalsBase):
         body = encode_body(EvaluateRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return EvaluateAcceptedBody.model_validate(data)
-
     def run_eval(
         self,
         agent_id: str,
@@ -114,7 +113,7 @@ class Evals(_EvalsBase):
         user_persona: str | None = None,
     ) -> RunningBody:
         """Run simulation and evaluation"""
-        path = f"/api/v1/agents/{agent_id}/run-eval"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/run-eval"
         params = None
         _raw: dict[str, Any] = {}
         if adaptation_template_id is not None:
@@ -136,7 +135,6 @@ class Evals(_EvalsBase):
         body = encode_body(RunEvalRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return RunningBody.model_validate(data)
-
     def simulate_agent(
         self,
         agent_id: str,
@@ -149,7 +147,7 @@ class Evals(_EvalsBase):
         user_persona: str | None = None,
     ) -> SimulateRunningBody:
         """Run an agent simulation"""
-        path = f"/api/v1/agents/{agent_id}/simulate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/simulate"
         params = None
         _raw: dict[str, Any] = {}
         if config is not None:
@@ -167,7 +165,6 @@ class Evals(_EvalsBase):
         body = encode_body(SimulateRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return SimulateRunningBody.model_validate(data)
-
     def list_eval_runs(
         self,
         *,
@@ -186,27 +183,26 @@ class Evals(_EvalsBase):
             item_parser=EvalRun.model_validate,
             mode="offset",
         )
-
     def delete_eval_run(
         self,
         run_id: str,
     ) -> DeleteEvalRunOutputBody:
         """Delete an eval run"""
-        path = f"/api/v1/eval-runs/{run_id}"
+        path = f"/api/v1/eval-runs/{quote(run_id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
-        return DeleteEvalRunOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteEvalRunOutputBody.model_validate(data)
+        return DeleteEvalRunOutputBody()
     def get_eval_run(
         self,
         run_id: str,
     ) -> EvalRun:
         """Get an eval run"""
-        path = f"/api/v1/eval-runs/{run_id}"
+        path = f"/api/v1/eval-runs/{quote(run_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return EvalRun.model_validate(data)
-
     def stream_eval_events(
         self,
         run_id: str,
@@ -214,13 +210,12 @@ class Evals(_EvalsBase):
         from_: int | None = 0,
     ) -> Any:
         """Stream eval run events (SSE)"""
-        path = f"/api/v1/eval-runs/{run_id}/events"
+        path = f"/api/v1/eval-runs/{quote(run_id, safe='')}/events"
         params: dict[str, Any] = {}
         if from_ is not None:
             params["from"] = from_
         data = self._http.get(path, params=params)
         return data
-
     def list_eval_templates(
         self,
         *,
@@ -233,7 +228,6 @@ class Evals(_EvalsBase):
             params["type"] = type
         data = self._http.get(path, params=params)
         return ListEvalTemplatesOutputBody.model_validate(data)
-
     def create_eval_template(
         self,
         *,
@@ -269,27 +263,26 @@ class Evals(_EvalsBase):
         body = encode_body(CreateEvalTemplateInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return EvalTemplate.model_validate(data)
-
     def delete_eval_template(
         self,
         template_id: str,
     ) -> DeleteEvalTemplateOutputBody:
         """Delete an eval template"""
-        path = f"/api/v1/eval-templates/{template_id}"
+        path = f"/api/v1/eval-templates/{quote(template_id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
-        return DeleteEvalTemplateOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteEvalTemplateOutputBody.model_validate(data)
+        return DeleteEvalTemplateOutputBody()
     def get_eval_template(
         self,
         template_id: str,
     ) -> EvalTemplate:
         """Get an eval template"""
-        path = f"/api/v1/eval-templates/{template_id}"
+        path = f"/api/v1/eval-templates/{quote(template_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return EvalTemplate.model_validate(data)
-
     def update_eval_template(
         self,
         template_id: str,
@@ -303,7 +296,7 @@ class Evals(_EvalsBase):
         temperature: float | None = None,
     ) -> EvalTemplate:
         """Update an eval template"""
-        path = f"/api/v1/eval-templates/{template_id}"
+        path = f"/api/v1/eval-templates/{quote(template_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if categories is not None:
@@ -336,7 +329,7 @@ class AsyncEvals(_EvalsBase):
         template_id: str,
     ) -> RunningBody:
         """Re-evaluate an existing transcript"""
-        path = f"/api/v1/agents/{agent_id}/eval-only"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/eval-only"
         params = None
         _raw: dict[str, Any] = {}
         if adaptation_template_id is not None:
@@ -350,7 +343,6 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(EvalOnlyRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return RunningBody.model_validate(data)
-
     async def evaluate_agent(
         self,
         agent_id: str,
@@ -367,7 +359,7 @@ class AsyncEvals(_EvalsBase):
         user_persona: str | None = None,
     ) -> EvaluateAcceptedBody:
         """Evaluate an agent conversation"""
-        path = f"/api/v1/agents/{agent_id}/evaluate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/evaluate"
         params = None
         _raw: dict[str, Any] = {}
         if adaptation_template_id is not None:
@@ -393,7 +385,6 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(EvaluateRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return EvaluateAcceptedBody.model_validate(data)
-
     async def run_eval(
         self,
         agent_id: str,
@@ -408,7 +399,7 @@ class AsyncEvals(_EvalsBase):
         user_persona: str | None = None,
     ) -> RunningBody:
         """Run simulation and evaluation"""
-        path = f"/api/v1/agents/{agent_id}/run-eval"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/run-eval"
         params = None
         _raw: dict[str, Any] = {}
         if adaptation_template_id is not None:
@@ -430,7 +421,6 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(RunEvalRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return RunningBody.model_validate(data)
-
     async def simulate_agent(
         self,
         agent_id: str,
@@ -443,7 +433,7 @@ class AsyncEvals(_EvalsBase):
         user_persona: str | None = None,
     ) -> SimulateRunningBody:
         """Run an agent simulation"""
-        path = f"/api/v1/agents/{agent_id}/simulate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/simulate"
         params = None
         _raw: dict[str, Any] = {}
         if config is not None:
@@ -461,7 +451,6 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(SimulateRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return SimulateRunningBody.model_validate(data)
-
     async def list_eval_runs(
         self,
         *,
@@ -484,27 +473,26 @@ class AsyncEvals(_EvalsBase):
             item_parser=EvalRun.model_validate,
             mode="offset",
         )
-
     async def delete_eval_run(
         self,
         run_id: str,
     ) -> DeleteEvalRunOutputBody:
         """Delete an eval run"""
-        path = f"/api/v1/eval-runs/{run_id}"
+        path = f"/api/v1/eval-runs/{quote(run_id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
-        return DeleteEvalRunOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteEvalRunOutputBody.model_validate(data)
+        return DeleteEvalRunOutputBody()
     async def get_eval_run(
         self,
         run_id: str,
     ) -> EvalRun:
         """Get an eval run"""
-        path = f"/api/v1/eval-runs/{run_id}"
+        path = f"/api/v1/eval-runs/{quote(run_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return EvalRun.model_validate(data)
-
     async def stream_eval_events(
         self,
         run_id: str,
@@ -512,13 +500,12 @@ class AsyncEvals(_EvalsBase):
         from_: int | None = 0,
     ) -> Any:
         """Stream eval run events (SSE)"""
-        path = f"/api/v1/eval-runs/{run_id}/events"
+        path = f"/api/v1/eval-runs/{quote(run_id, safe='')}/events"
         params: dict[str, Any] = {}
         if from_ is not None:
             params["from"] = from_
         data = await self._http.get(path, params=params)
         return data
-
     async def list_eval_templates(
         self,
         *,
@@ -531,7 +518,6 @@ class AsyncEvals(_EvalsBase):
             params["type"] = type
         data = await self._http.get(path, params=params)
         return ListEvalTemplatesOutputBody.model_validate(data)
-
     async def create_eval_template(
         self,
         *,
@@ -567,27 +553,26 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(CreateEvalTemplateInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return EvalTemplate.model_validate(data)
-
     async def delete_eval_template(
         self,
         template_id: str,
     ) -> DeleteEvalTemplateOutputBody:
         """Delete an eval template"""
-        path = f"/api/v1/eval-templates/{template_id}"
+        path = f"/api/v1/eval-templates/{quote(template_id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
-        return DeleteEvalTemplateOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteEvalTemplateOutputBody.model_validate(data)
+        return DeleteEvalTemplateOutputBody()
     async def get_eval_template(
         self,
         template_id: str,
     ) -> EvalTemplate:
         """Get an eval template"""
-        path = f"/api/v1/eval-templates/{template_id}"
+        path = f"/api/v1/eval-templates/{quote(template_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return EvalTemplate.model_validate(data)
-
     async def update_eval_template(
         self,
         template_id: str,
@@ -601,7 +586,7 @@ class AsyncEvals(_EvalsBase):
         temperature: float | None = None,
     ) -> EvalTemplate:
         """Update an eval template"""
-        path = f"/api/v1/eval-templates/{template_id}"
+        path = f"/api/v1/eval-templates/{quote(template_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if categories is not None:

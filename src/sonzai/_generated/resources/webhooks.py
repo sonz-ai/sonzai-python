@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     ListDeliveryAttemptsOutputBody,
     ListWebhooksOutputBody,
@@ -29,22 +30,20 @@ class Webhooks(_WebhooksBase):
         project_id: str,
     ) -> ListWebhooksOutputBody:
         """List webhooks for a project"""
-        path = f"/api/v1/projects/{project_id}/webhooks"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks"
         params = None
         data = self._http.get(path, params=params)
         return ListWebhooksOutputBody.model_validate(data)
-
     def delete_webhook(
         self,
         project_id: str,
         event_type: str,
     ) -> Any:
         """Delete a webhook"""
-        path = f"/api/v1/projects/{project_id}/webhooks/{event_type}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks/{quote(event_type, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
         return data
-
     def upsert_webhook(
         self,
         project_id: str,
@@ -54,7 +53,7 @@ class Webhooks(_WebhooksBase):
         webhook_url: str,
     ) -> UpsertWebhookOutputBody:
         """Register or update a webhook"""
-        path = f"/api/v1/projects/{project_id}/webhooks/{event_type}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks/{quote(event_type, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if auth_header is not None:
@@ -64,7 +63,6 @@ class Webhooks(_WebhooksBase):
         body = encode_body(UpsertWebhookInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return UpsertWebhookOutputBody.model_validate(data)
-
     def list_delivery_attempts(
         self,
         project_id: str,
@@ -73,7 +71,7 @@ class Webhooks(_WebhooksBase):
         limit: int = 100,
     ) -> Page[WebhookDeliveryAttempt]:
         """List webhook delivery attempts"""
-        path = f"/api/v1/projects/{project_id}/webhooks/{event_type}/attempts"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks/{quote(event_type, safe='')}/attempts"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         return Page(
             fetcher=lambda p: self._http.get(path, params=p),
@@ -82,18 +80,16 @@ class Webhooks(_WebhooksBase):
             item_parser=WebhookDeliveryAttempt.model_validate,
             mode="offset",
         )
-
     def rotate_webhook_signing_secret(
         self,
         project_id: str,
         event_type: str,
     ) -> RotateSigningSecretOutputBody:
         """Rotate webhook signing secret"""
-        path = f"/api/v1/projects/{project_id}/webhooks/{event_type}/rotate-secret"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks/{quote(event_type, safe='')}/rotate-secret"
         params = None
         data = self._http.post(path, params=params)
         return RotateSigningSecretOutputBody.model_validate(data)
-
     def list_webhooks_for_tenant(
         self,
     ) -> ListWebhooksOutputBody:
@@ -102,17 +98,15 @@ class Webhooks(_WebhooksBase):
         params = None
         data = self._http.get(path, params=params)
         return ListWebhooksOutputBody.model_validate(data)
-
     def delete_webhook_for_tenant(
         self,
         event_type: str,
     ) -> Any:
         """Delete a webhook (tenant-scoped)"""
-        path = f"/api/v1/webhooks/{event_type}"
+        path = f"/api/v1/webhooks/{quote(event_type, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
         return data
-
     def upsert_webhook_for_tenant(
         self,
         event_type: str,
@@ -121,7 +115,7 @@ class Webhooks(_WebhooksBase):
         webhook_url: str,
     ) -> UpsertWebhookOutputBody:
         """Register or update a webhook (tenant-scoped)"""
-        path = f"/api/v1/webhooks/{event_type}"
+        path = f"/api/v1/webhooks/{quote(event_type, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if auth_header is not None:
@@ -131,7 +125,6 @@ class Webhooks(_WebhooksBase):
         body = encode_body(UpsertWebhookForTenantInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return UpsertWebhookOutputBody.model_validate(data)
-
     def list_delivery_attempts_for_tenant(
         self,
         event_type: str,
@@ -139,7 +132,7 @@ class Webhooks(_WebhooksBase):
         limit: int = 100,
     ) -> Page[WebhookDeliveryAttempt]:
         """List webhook delivery attempts (tenant-scoped)"""
-        path = f"/api/v1/webhooks/{event_type}/attempts"
+        path = f"/api/v1/webhooks/{quote(event_type, safe='')}/attempts"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         return Page(
             fetcher=lambda p: self._http.get(path, params=p),
@@ -148,13 +141,12 @@ class Webhooks(_WebhooksBase):
             item_parser=WebhookDeliveryAttempt.model_validate,
             mode="offset",
         )
-
     def rotate_webhook_signing_secret_for_tenant(
         self,
         event_type: str,
     ) -> RotateSigningSecretOutputBody:
         """Rotate webhook signing secret (tenant-scoped)"""
-        path = f"/api/v1/webhooks/{event_type}/rotate-secret"
+        path = f"/api/v1/webhooks/{quote(event_type, safe='')}/rotate-secret"
         params = None
         data = self._http.post(path, params=params)
         return RotateSigningSecretOutputBody.model_validate(data)
@@ -166,22 +158,20 @@ class AsyncWebhooks(_WebhooksBase):
         project_id: str,
     ) -> ListWebhooksOutputBody:
         """List webhooks for a project"""
-        path = f"/api/v1/projects/{project_id}/webhooks"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks"
         params = None
         data = await self._http.get(path, params=params)
         return ListWebhooksOutputBody.model_validate(data)
-
     async def delete_webhook(
         self,
         project_id: str,
         event_type: str,
     ) -> Any:
         """Delete a webhook"""
-        path = f"/api/v1/projects/{project_id}/webhooks/{event_type}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks/{quote(event_type, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
-
     async def upsert_webhook(
         self,
         project_id: str,
@@ -191,7 +181,7 @@ class AsyncWebhooks(_WebhooksBase):
         webhook_url: str,
     ) -> UpsertWebhookOutputBody:
         """Register or update a webhook"""
-        path = f"/api/v1/projects/{project_id}/webhooks/{event_type}"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks/{quote(event_type, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if auth_header is not None:
@@ -201,7 +191,6 @@ class AsyncWebhooks(_WebhooksBase):
         body = encode_body(UpsertWebhookInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return UpsertWebhookOutputBody.model_validate(data)
-
     async def list_delivery_attempts(
         self,
         project_id: str,
@@ -210,7 +199,7 @@ class AsyncWebhooks(_WebhooksBase):
         limit: int = 100,
     ) -> AsyncPage[WebhookDeliveryAttempt]:
         """List webhook delivery attempts"""
-        path = f"/api/v1/projects/{project_id}/webhooks/{event_type}/attempts"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks/{quote(event_type, safe='')}/attempts"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
 
         async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
@@ -223,18 +212,16 @@ class AsyncWebhooks(_WebhooksBase):
             item_parser=WebhookDeliveryAttempt.model_validate,
             mode="offset",
         )
-
     async def rotate_webhook_signing_secret(
         self,
         project_id: str,
         event_type: str,
     ) -> RotateSigningSecretOutputBody:
         """Rotate webhook signing secret"""
-        path = f"/api/v1/projects/{project_id}/webhooks/{event_type}/rotate-secret"
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks/{quote(event_type, safe='')}/rotate-secret"
         params = None
         data = await self._http.post(path, params=params)
         return RotateSigningSecretOutputBody.model_validate(data)
-
     async def list_webhooks_for_tenant(
         self,
     ) -> ListWebhooksOutputBody:
@@ -243,17 +230,15 @@ class AsyncWebhooks(_WebhooksBase):
         params = None
         data = await self._http.get(path, params=params)
         return ListWebhooksOutputBody.model_validate(data)
-
     async def delete_webhook_for_tenant(
         self,
         event_type: str,
     ) -> Any:
         """Delete a webhook (tenant-scoped)"""
-        path = f"/api/v1/webhooks/{event_type}"
+        path = f"/api/v1/webhooks/{quote(event_type, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
-
     async def upsert_webhook_for_tenant(
         self,
         event_type: str,
@@ -262,7 +247,7 @@ class AsyncWebhooks(_WebhooksBase):
         webhook_url: str,
     ) -> UpsertWebhookOutputBody:
         """Register or update a webhook (tenant-scoped)"""
-        path = f"/api/v1/webhooks/{event_type}"
+        path = f"/api/v1/webhooks/{quote(event_type, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if auth_header is not None:
@@ -272,7 +257,6 @@ class AsyncWebhooks(_WebhooksBase):
         body = encode_body(UpsertWebhookForTenantInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return UpsertWebhookOutputBody.model_validate(data)
-
     async def list_delivery_attempts_for_tenant(
         self,
         event_type: str,
@@ -280,7 +264,7 @@ class AsyncWebhooks(_WebhooksBase):
         limit: int = 100,
     ) -> AsyncPage[WebhookDeliveryAttempt]:
         """List webhook delivery attempts (tenant-scoped)"""
-        path = f"/api/v1/webhooks/{event_type}/attempts"
+        path = f"/api/v1/webhooks/{quote(event_type, safe='')}/attempts"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
 
         async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
@@ -293,13 +277,12 @@ class AsyncWebhooks(_WebhooksBase):
             item_parser=WebhookDeliveryAttempt.model_validate,
             mode="offset",
         )
-
     async def rotate_webhook_signing_secret_for_tenant(
         self,
         event_type: str,
     ) -> RotateSigningSecretOutputBody:
         """Rotate webhook signing secret (tenant-scoped)"""
-        path = f"/api/v1/webhooks/{event_type}/rotate-secret"
+        path = f"/api/v1/webhooks/{quote(event_type, safe='')}/rotate-secret"
         params = None
         data = await self._http.post(path, params=params)
         return RotateSigningSecretOutputBody.model_validate(data)

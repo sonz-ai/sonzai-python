@@ -27,6 +27,27 @@ QUERY_PARAM_OVERRIDES: dict[tuple[str, str, str], str] = {
     ("memory", "searchMemories", "q"): "query",
 }
 
+# Map of (tag, operation_id) → historical SDK response class name.
+# Applied after response_class is set. Keeps the generated output
+# aligned with sonzai.types / sonzai re-exports that predate the
+# spec's naming conventions.
+RESPONSE_CLASS_OVERRIDES: dict[tuple[str, str], str] = {
+    ("memory", "resetMemory"): "MemoryResetResponse",
+    # Add more as overrides are identified.
+}
+
+# Map of class name → import module path for classes that live outside
+# sonzai._generated.models (e.g. legacy types in sonzai.types).
+# Used by _emit.py to emit correct import statements.
+EXTERNAL_CLASS_IMPORTS: dict[str, str] = {
+    "MemoryResetResponse": "sonzai.types",
+    # DeleteWisdomResponse: sonzai.types version has all-default fields (safe
+    # for Fix-3 empty-body fallback), unlike the spec-generated version which
+    # has required fields.
+    "DeleteWisdomResponse": "sonzai.types",
+    # Add more as overrides are identified.
+}
+
 
 @dataclass
 class Parameter:
@@ -68,6 +89,7 @@ class Operation:
     pagination_total_key: str | None = None
     description: str | None = None
     python_path: str = ""  # path with {camelCase} replaced by {snake_case} + /api/v1 prefix
+    path_expression: str = ""  # python_path with str params wrapped in quote()
 
 
 def _build_python_path(path: str, path_params: list[Parameter]) -> str:
@@ -79,6 +101,21 @@ def _build_python_path(path: str, path_params: list[Parameter]) -> str:
     # Prepend /api/v1 if the spec omits it
     if not result.startswith(_PATH_PREFIX):
         result = _PATH_PREFIX + result
+    return result
+
+
+def render_path_expression(op: "Operation") -> str:
+    """Return a Python expression that constructs the path with URL-quoted string params.
+
+    For path ``/api/v1/agents/{agent_id}/users/{user_id}/x``, emits:
+        f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/x"
+    """
+    result = op.python_path
+    # Walk through path params, wrapping string-typed ones with quote().
+    for pp in op.path_params:
+        needle = "{" + pp.python_name + "}"
+        if pp.type_hint.startswith("str"):
+            result = result.replace(needle, "{quote(" + pp.python_name + ", safe='')}")
     return result
 
 
@@ -158,10 +195,17 @@ def parse_spec(spec: dict[str, Any]) -> dict[str, list[Operation]]:
             if "text/event-stream" in resp:
                 operation.is_streaming = True
 
+            # Apply response class name override if defined
+            resp_override = RESPONSE_CLASS_OVERRIDES.get((tag, op_id))
+            if resp_override:
+                operation.response_class = resp_override
+
             _detect_pagination(operation, schemas)
 
             # Build python_path after all params are collected
             operation.python_path = _build_python_path(path, operation.path_params)
+            # Build path_expression with URL-quoted string params
+            operation.path_expression = render_path_expression(operation)
 
             by_tag.setdefault(tag, []).append(operation)
 

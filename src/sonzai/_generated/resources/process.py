@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     ProcessInputBody,
     ProcessResponse,
@@ -31,7 +32,7 @@ class Process(_ProcessBase):
         user_id: str,
     ) -> ProcessResponse:
         """Process an external conversation transcript"""
-        path = f"/api/v1/agents/{agent_id}/process"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/process"
         params = None
         _raw: dict[str, Any] = {}
         if instance_id is not None:
@@ -64,7 +65,7 @@ class AsyncProcess(_ProcessBase):
         user_id: str,
     ) -> ProcessResponse:
         """Process an external conversation transcript"""
-        path = f"/api/v1/agents/{agent_id}/process"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/process"
         params = None
         _raw: dict[str, Any] = {}
         if instance_id is not None:

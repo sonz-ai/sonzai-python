@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     GenerateAndCreateInputBody,
     GenerateBioInputBody,
@@ -65,7 +66,6 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateAndCreateInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
-
     def generate_character(
         self,
         *,
@@ -101,7 +101,6 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateCharacterInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
-
     def regenerate_avatar(
         self,
         agent_id: str,
@@ -109,7 +108,7 @@ class Generation(_GenerationBase):
         style: str | None = None,
     ) -> RegenerateAvatarOutputBody:
         """Regenerate agent avatar"""
-        path = f"/api/v1/agents/{agent_id}/avatar/generate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/avatar/generate"
         params = None
         _raw: dict[str, Any] = {}
         if style is not None:
@@ -117,7 +116,6 @@ class Generation(_GenerationBase):
         body = encode_body(RegenerateAvatarInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return RegenerateAvatarOutputBody.model_validate(data)
-
     def generate_bio(
         self,
         agent_id: str,
@@ -132,7 +130,7 @@ class Generation(_GenerationBase):
         user_id: str | None = None,
     ) -> GenerateBioOutputBody:
         """Generate agent bio"""
-        path = f"/api/v1/agents/{agent_id}/bio/generate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/bio/generate"
         params = None
         _raw: dict[str, Any] = {}
         if current_bio is not None:
@@ -154,7 +152,6 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateBioInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return GenerateBioOutputBody.model_validate(data)
-
     def generate_image(
         self,
         agent_id: str,
@@ -166,7 +163,7 @@ class Generation(_GenerationBase):
         provider: str | None = None,
     ) -> GenerateImageOutputBody:
         """Generate an image"""
-        path = f"/api/v1/agents/{agent_id}/image/generate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/image/generate"
         params = None
         _raw: dict[str, Any] = {}
         if model is not None:
@@ -182,7 +179,6 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateImageInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return GenerateImageOutputBody.model_validate(data)
-
     def generate_seed_memories(
         self,
         agent_id: str,
@@ -202,7 +198,7 @@ class Generation(_GenerationBase):
         true_interests: list[Any],
     ) -> GenerateSeedMemoriesOutputBody:
         """Generate seed memories for an agent"""
-        path = f"/api/v1/agents/{agent_id}/memory/seed"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/seed"
         params = None
         _raw: dict[str, Any] = {}
         if agent_name is not None:
@@ -275,7 +271,6 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateAndCreateInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
-
     async def generate_character(
         self,
         *,
@@ -311,7 +306,6 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateCharacterInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
-
     async def regenerate_avatar(
         self,
         agent_id: str,
@@ -319,7 +313,7 @@ class AsyncGeneration(_GenerationBase):
         style: str | None = None,
     ) -> RegenerateAvatarOutputBody:
         """Regenerate agent avatar"""
-        path = f"/api/v1/agents/{agent_id}/avatar/generate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/avatar/generate"
         params = None
         _raw: dict[str, Any] = {}
         if style is not None:
@@ -327,7 +321,6 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(RegenerateAvatarInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return RegenerateAvatarOutputBody.model_validate(data)
-
     async def generate_bio(
         self,
         agent_id: str,
@@ -342,7 +335,7 @@ class AsyncGeneration(_GenerationBase):
         user_id: str | None = None,
     ) -> GenerateBioOutputBody:
         """Generate agent bio"""
-        path = f"/api/v1/agents/{agent_id}/bio/generate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/bio/generate"
         params = None
         _raw: dict[str, Any] = {}
         if current_bio is not None:
@@ -364,7 +357,6 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateBioInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return GenerateBioOutputBody.model_validate(data)
-
     async def generate_image(
         self,
         agent_id: str,
@@ -376,7 +368,7 @@ class AsyncGeneration(_GenerationBase):
         provider: str | None = None,
     ) -> GenerateImageOutputBody:
         """Generate an image"""
-        path = f"/api/v1/agents/{agent_id}/image/generate"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/image/generate"
         params = None
         _raw: dict[str, Any] = {}
         if model is not None:
@@ -392,7 +384,6 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateImageInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return GenerateImageOutputBody.model_validate(data)
-
     async def generate_seed_memories(
         self,
         agent_id: str,
@@ -412,7 +403,7 @@ class AsyncGeneration(_GenerationBase):
         true_interests: list[Any],
     ) -> GenerateSeedMemoriesOutputBody:
         """Generate seed memories for an agent"""
-        path = f"/api/v1/agents/{agent_id}/memory/seed"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/memory/seed"
         params = None
         _raw: dict[str, Any] = {}
         if agent_name is not None:

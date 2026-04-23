@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     AgentCapabilities,
     AgentDetailResponse,
@@ -69,7 +70,6 @@ class Agents(_AgentsBase):
             item_parser=AgentIndex.model_validate,
             mode="offset",
         )
-
     def create_agent(
         self,
         *,
@@ -159,37 +159,35 @@ class Agents(_AgentsBase):
         body = encode_body(CreateAgentBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return AgentDetailResponse.model_validate(data)
-
     def delete_agent(
         self,
         agent_id: str,
     ) -> DeleteAgentOutputBody:
         """Delete an agent and all data"""
-        path = f"/api/v1/agents/{agent_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
-        return DeleteAgentOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteAgentOutputBody.model_validate(data)
+        return DeleteAgentOutputBody()
     def get_agent(
         self,
         agent_id: str,
     ) -> AgentDetailResponse:
         """Get a single agent by ID"""
-        path = f"/api/v1/agents/{agent_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return AgentDetailResponse.model_validate(data)
-
     def get_capabilities(
         self,
         agent_id: str,
     ) -> AgentCapabilities:
         """Get agent capabilities"""
-        path = f"/api/v1/agents/{agent_id}/capabilities"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/capabilities"
         params = None
         data = self._http.get(path, params=params)
         return AgentCapabilities.model_validate(data)
-
     def update_capabilities(
         self,
         agent_id: str,
@@ -202,7 +200,7 @@ class Agents(_AgentsBase):
         web_search: bool | None = None,
     ) -> AgentCapabilities:
         """Update agent capabilities"""
-        path = f"/api/v1/agents/{agent_id}/capabilities"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/capabilities"
         params = None
         _raw: dict[str, Any] = {}
         if image_generation is not None:
@@ -220,7 +218,6 @@ class Agents(_AgentsBase):
         body = encode_body(UpdateCapabilitiesInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return AgentCapabilities.model_validate(data)
-
     def get_effective_post_processing_model(
         self,
         agent_id: str,
@@ -228,13 +225,12 @@ class Agents(_AgentsBase):
         chat_model: str,
     ) -> EffectivePostProcessingModelOutputBody:
         """Preview the resolved post-processing model for this agent"""
-        path = f"/api/v1/agents/{agent_id}/effective-post-processing-model"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/effective-post-processing-model"
         params: dict[str, Any] = {}
         if chat_model is not None:
             params["chat_model"] = chat_model
         data = self._http.get(path, params=params)
         return EffectivePostProcessingModelOutputBody.model_validate(data)
-
     def fork_agent(
         self,
         agent_id: str,
@@ -242,7 +238,7 @@ class Agents(_AgentsBase):
         name: str | None = None,
     ) -> ForkResponse:
         """Fork (clone) an agent"""
-        path = f"/api/v1/agents/{agent_id}/fork"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/fork"
         params = None
         _raw: dict[str, Any] = {}
         if name is not None:
@@ -250,17 +246,15 @@ class Agents(_AgentsBase):
         body = encode_body(ForkAgentInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return ForkResponse.model_validate(data)
-
     def get_fork_status(
         self,
         agent_id: str,
     ) -> ForkStatusResponse:
         """Get fork operation status"""
-        path = f"/api/v1/agents/{agent_id}/fork/status"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/fork/status"
         params = None
         data = self._http.get(path, params=params)
         return ForkStatusResponse.model_validate(data)
-
     def update_agent_post_processing_model(
         self,
         agent_id: str,
@@ -269,7 +263,7 @@ class Agents(_AgentsBase):
         post_processing_provider: str | None = None,
     ) -> UpdateAgentPostProcessingModelOutputBody:
         """Set or clear agent-scope post-processing model override"""
-        path = f"/api/v1/agents/{agent_id}/post-processing-model"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/post-processing-model"
         params = None
         _raw: dict[str, Any] = {}
         if post_processing_model is not None:
@@ -279,7 +273,6 @@ class Agents(_AgentsBase):
         body = encode_body(UpdateAgentPostProcessingModelInputBody, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return UpdateAgentPostProcessingModelOutputBody.model_validate(data)
-
     def update_agent_profile(
         self,
         agent_id: str,
@@ -292,7 +285,7 @@ class Agents(_AgentsBase):
         true_interests: list[Any] | None = None,
     ) -> UpdateAgentProfileOutputBody:
         """Update agent profile fields"""
-        path = f"/api/v1/agents/{agent_id}/profile"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/profile"
         params = None
         _raw: dict[str, Any] = {}
         if bio is not None:
@@ -310,7 +303,6 @@ class Agents(_AgentsBase):
         body = encode_body(UpdateAgentProfileInputBody, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return UpdateAgentProfileOutputBody.model_validate(data)
-
     def update_agent_project(
         self,
         agent_id: str,
@@ -318,7 +310,7 @@ class Agents(_AgentsBase):
         project_id: str,
     ) -> UpdateAgentProjectOutputBody:
         """Assign an agent to a different project"""
-        path = f"/api/v1/agents/{agent_id}/project"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/project"
         params = None
         _raw: dict[str, Any] = {}
         if project_id is not None:
@@ -326,7 +318,6 @@ class Agents(_AgentsBase):
         body = encode_body(UpdateAgentProjectInputBody, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return UpdateAgentProjectOutputBody.model_validate(data)
-
     def set_agent_status(
         self,
         agent_id: str,
@@ -334,7 +325,7 @@ class Agents(_AgentsBase):
         is_active: bool,
     ) -> SetAgentStatusOutputBody:
         """Activate or deactivate an agent"""
-        path = f"/api/v1/agents/{agent_id}/status"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/status"
         params = None
         _raw: dict[str, Any] = {}
         if is_active is not None:
@@ -342,17 +333,15 @@ class Agents(_AgentsBase):
         body = encode_body(SetAgentStatusInputBody, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return SetAgentStatusOutputBody.model_validate(data)
-
     def list_custom_tools(
         self,
         agent_id: str,
     ) -> ListCustomToolsOutputBody:
         """List custom tools"""
-        path = f"/api/v1/agents/{agent_id}/tools"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools"
         params = None
         data = self._http.get(path, params=params)
         return ListCustomToolsOutputBody.model_validate(data)
-
     def create_custom_tool(
         self,
         agent_id: str,
@@ -362,7 +351,7 @@ class Agents(_AgentsBase):
         parameters: str | None = None,
     ) -> CustomToolDefinition:
         """Create a custom tool"""
-        path = f"/api/v1/agents/{agent_id}/tools"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -374,18 +363,18 @@ class Agents(_AgentsBase):
         body = encode_body(CreateCustomToolInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return CustomToolDefinition.model_validate(data)
-
     def delete_custom_tool(
         self,
         agent_id: str,
         tool_name: str,
     ) -> DeleteCustomToolOutputBody:
         """Delete a custom tool"""
-        path = f"/api/v1/agents/{agent_id}/tools/{tool_name}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools/{quote(tool_name, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
-        return DeleteCustomToolOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteCustomToolOutputBody.model_validate(data)
+        return DeleteCustomToolOutputBody()
     def update_custom_tool(
         self,
         agent_id: str,
@@ -395,7 +384,7 @@ class Agents(_AgentsBase):
         parameters: str | None = None,
     ) -> UpdateCustomToolOutputBody:
         """Update a custom tool"""
-        path = f"/api/v1/agents/{agent_id}/tools/{tool_name}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools/{quote(tool_name, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -439,7 +428,6 @@ class AsyncAgents(_AgentsBase):
             item_parser=AgentIndex.model_validate,
             mode="offset",
         )
-
     async def create_agent(
         self,
         *,
@@ -529,37 +517,35 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(CreateAgentBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return AgentDetailResponse.model_validate(data)
-
     async def delete_agent(
         self,
         agent_id: str,
     ) -> DeleteAgentOutputBody:
         """Delete an agent and all data"""
-        path = f"/api/v1/agents/{agent_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
-        return DeleteAgentOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteAgentOutputBody.model_validate(data)
+        return DeleteAgentOutputBody()
     async def get_agent(
         self,
         agent_id: str,
     ) -> AgentDetailResponse:
         """Get a single agent by ID"""
-        path = f"/api/v1/agents/{agent_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return AgentDetailResponse.model_validate(data)
-
     async def get_capabilities(
         self,
         agent_id: str,
     ) -> AgentCapabilities:
         """Get agent capabilities"""
-        path = f"/api/v1/agents/{agent_id}/capabilities"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/capabilities"
         params = None
         data = await self._http.get(path, params=params)
         return AgentCapabilities.model_validate(data)
-
     async def update_capabilities(
         self,
         agent_id: str,
@@ -572,7 +558,7 @@ class AsyncAgents(_AgentsBase):
         web_search: bool | None = None,
     ) -> AgentCapabilities:
         """Update agent capabilities"""
-        path = f"/api/v1/agents/{agent_id}/capabilities"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/capabilities"
         params = None
         _raw: dict[str, Any] = {}
         if image_generation is not None:
@@ -590,7 +576,6 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(UpdateCapabilitiesInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return AgentCapabilities.model_validate(data)
-
     async def get_effective_post_processing_model(
         self,
         agent_id: str,
@@ -598,13 +583,12 @@ class AsyncAgents(_AgentsBase):
         chat_model: str,
     ) -> EffectivePostProcessingModelOutputBody:
         """Preview the resolved post-processing model for this agent"""
-        path = f"/api/v1/agents/{agent_id}/effective-post-processing-model"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/effective-post-processing-model"
         params: dict[str, Any] = {}
         if chat_model is not None:
             params["chat_model"] = chat_model
         data = await self._http.get(path, params=params)
         return EffectivePostProcessingModelOutputBody.model_validate(data)
-
     async def fork_agent(
         self,
         agent_id: str,
@@ -612,7 +596,7 @@ class AsyncAgents(_AgentsBase):
         name: str | None = None,
     ) -> ForkResponse:
         """Fork (clone) an agent"""
-        path = f"/api/v1/agents/{agent_id}/fork"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/fork"
         params = None
         _raw: dict[str, Any] = {}
         if name is not None:
@@ -620,17 +604,15 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(ForkAgentInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return ForkResponse.model_validate(data)
-
     async def get_fork_status(
         self,
         agent_id: str,
     ) -> ForkStatusResponse:
         """Get fork operation status"""
-        path = f"/api/v1/agents/{agent_id}/fork/status"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/fork/status"
         params = None
         data = await self._http.get(path, params=params)
         return ForkStatusResponse.model_validate(data)
-
     async def update_agent_post_processing_model(
         self,
         agent_id: str,
@@ -639,7 +621,7 @@ class AsyncAgents(_AgentsBase):
         post_processing_provider: str | None = None,
     ) -> UpdateAgentPostProcessingModelOutputBody:
         """Set or clear agent-scope post-processing model override"""
-        path = f"/api/v1/agents/{agent_id}/post-processing-model"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/post-processing-model"
         params = None
         _raw: dict[str, Any] = {}
         if post_processing_model is not None:
@@ -649,7 +631,6 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(UpdateAgentPostProcessingModelInputBody, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return UpdateAgentPostProcessingModelOutputBody.model_validate(data)
-
     async def update_agent_profile(
         self,
         agent_id: str,
@@ -662,7 +643,7 @@ class AsyncAgents(_AgentsBase):
         true_interests: list[Any] | None = None,
     ) -> UpdateAgentProfileOutputBody:
         """Update agent profile fields"""
-        path = f"/api/v1/agents/{agent_id}/profile"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/profile"
         params = None
         _raw: dict[str, Any] = {}
         if bio is not None:
@@ -680,7 +661,6 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(UpdateAgentProfileInputBody, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return UpdateAgentProfileOutputBody.model_validate(data)
-
     async def update_agent_project(
         self,
         agent_id: str,
@@ -688,7 +668,7 @@ class AsyncAgents(_AgentsBase):
         project_id: str,
     ) -> UpdateAgentProjectOutputBody:
         """Assign an agent to a different project"""
-        path = f"/api/v1/agents/{agent_id}/project"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/project"
         params = None
         _raw: dict[str, Any] = {}
         if project_id is not None:
@@ -696,7 +676,6 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(UpdateAgentProjectInputBody, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return UpdateAgentProjectOutputBody.model_validate(data)
-
     async def set_agent_status(
         self,
         agent_id: str,
@@ -704,7 +683,7 @@ class AsyncAgents(_AgentsBase):
         is_active: bool,
     ) -> SetAgentStatusOutputBody:
         """Activate or deactivate an agent"""
-        path = f"/api/v1/agents/{agent_id}/status"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/status"
         params = None
         _raw: dict[str, Any] = {}
         if is_active is not None:
@@ -712,17 +691,15 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(SetAgentStatusInputBody, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return SetAgentStatusOutputBody.model_validate(data)
-
     async def list_custom_tools(
         self,
         agent_id: str,
     ) -> ListCustomToolsOutputBody:
         """List custom tools"""
-        path = f"/api/v1/agents/{agent_id}/tools"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools"
         params = None
         data = await self._http.get(path, params=params)
         return ListCustomToolsOutputBody.model_validate(data)
-
     async def create_custom_tool(
         self,
         agent_id: str,
@@ -732,7 +709,7 @@ class AsyncAgents(_AgentsBase):
         parameters: str | None = None,
     ) -> CustomToolDefinition:
         """Create a custom tool"""
-        path = f"/api/v1/agents/{agent_id}/tools"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -744,18 +721,18 @@ class AsyncAgents(_AgentsBase):
         body = encode_body(CreateCustomToolInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return CustomToolDefinition.model_validate(data)
-
     async def delete_custom_tool(
         self,
         agent_id: str,
         tool_name: str,
     ) -> DeleteCustomToolOutputBody:
         """Delete a custom tool"""
-        path = f"/api/v1/agents/{agent_id}/tools/{tool_name}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools/{quote(tool_name, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
-        return DeleteCustomToolOutputBody.model_validate(data)
-
+        if isinstance(data, dict):
+            return DeleteCustomToolOutputBody.model_validate(data)
+        return DeleteCustomToolOutputBody()
     async def update_custom_tool(
         self,
         agent_id: str,
@@ -765,7 +742,7 @@ class AsyncAgents(_AgentsBase):
         parameters: str | None = None,
     ) -> UpdateCustomToolOutputBody:
         """Update a custom tool"""
-        path = f"/api/v1/agents/{agent_id}/tools/{tool_name}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools/{quote(tool_name, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:

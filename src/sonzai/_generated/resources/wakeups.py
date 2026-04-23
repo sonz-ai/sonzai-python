@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     ScheduleWakeupInputBody,
     ScheduleWakeupOutputBody,
@@ -28,7 +29,7 @@ class Wakeups(_WakeupsBase):
         limit: int | None = 50,
     ) -> WakeupsResponse:
         """List scheduled wakeups for an agent"""
-        path = f"/api/v1/agents/{agent_id}/wakeups"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/wakeups"
         params: dict[str, Any] = {}
         if status is not None:
             params["status"] = status
@@ -36,7 +37,6 @@ class Wakeups(_WakeupsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return WakeupsResponse.model_validate(data)
-
     def schedule_wakeup(
         self,
         agent_id: str,
@@ -51,7 +51,7 @@ class Wakeups(_WakeupsBase):
         user_id: str,
     ) -> ScheduleWakeupOutputBody:
         """Schedule a wakeup for an agent"""
-        path = f"/api/v1/agents/{agent_id}/wakeups"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/wakeups"
         params = None
         _raw: dict[str, Any] = {}
         if check_type is not None:
@@ -84,7 +84,7 @@ class AsyncWakeups(_WakeupsBase):
         limit: int | None = 50,
     ) -> WakeupsResponse:
         """List scheduled wakeups for an agent"""
-        path = f"/api/v1/agents/{agent_id}/wakeups"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/wakeups"
         params: dict[str, Any] = {}
         if status is not None:
             params["status"] = status
@@ -92,7 +92,6 @@ class AsyncWakeups(_WakeupsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return WakeupsResponse.model_validate(data)
-
     async def schedule_wakeup(
         self,
         agent_id: str,
@@ -107,7 +106,7 @@ class AsyncWakeups(_WakeupsBase):
         user_id: str,
     ) -> ScheduleWakeupOutputBody:
         """Schedule a wakeup for an agent"""
-        path = f"/api/v1/agents/{agent_id}/wakeups"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/wakeups"
         params = None
         _raw: dict[str, Any] = {}
         if check_type is not None:

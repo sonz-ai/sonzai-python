@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     EndSessionInputBody,
     EndSessionOutputBody,
@@ -37,7 +38,7 @@ class Sessions(_SessionsBase):
         wait: bool | None = None,
     ) -> EndSessionOutputBody:
         """End a chat session"""
-        path = f"/api/v1/agents/{agent_id}/sessions/end"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/end"
         params = None
         _raw: dict[str, Any] = {}
         if duration_seconds is not None:
@@ -61,7 +62,6 @@ class Sessions(_SessionsBase):
         body = encode_body(EndSessionInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return EndSessionOutputBody.model_validate(data)
-
     def start_session(
         self,
         agent_id: str,
@@ -73,7 +73,7 @@ class Sessions(_SessionsBase):
         user_id: str,
     ) -> StartSessionOutputBody:
         """Start a chat session"""
-        path = f"/api/v1/agents/{agent_id}/sessions/start"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/start"
         params = None
         _raw: dict[str, Any] = {}
         if instance_id is not None:
@@ -89,14 +89,13 @@ class Sessions(_SessionsBase):
         body = encode_body(StartSessionInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return StartSessionOutputBody.model_validate(data)
-
     def set_session_tools(
         self,
         agent_id: str,
         session_id: str,
     ) -> SetSessionToolsOutputBody:
         """Set session tool definitions"""
-        path = f"/api/v1/agents/{agent_id}/sessions/{session_id}/tools"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/{quote(session_id, safe='')}/tools"
         params = None
         data = self._http.put(path, params=params)
         return SetSessionToolsOutputBody.model_validate(data)
@@ -118,7 +117,7 @@ class AsyncSessions(_SessionsBase):
         wait: bool | None = None,
     ) -> EndSessionOutputBody:
         """End a chat session"""
-        path = f"/api/v1/agents/{agent_id}/sessions/end"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/end"
         params = None
         _raw: dict[str, Any] = {}
         if duration_seconds is not None:
@@ -142,7 +141,6 @@ class AsyncSessions(_SessionsBase):
         body = encode_body(EndSessionInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return EndSessionOutputBody.model_validate(data)
-
     async def start_session(
         self,
         agent_id: str,
@@ -154,7 +152,7 @@ class AsyncSessions(_SessionsBase):
         user_id: str,
     ) -> StartSessionOutputBody:
         """Start a chat session"""
-        path = f"/api/v1/agents/{agent_id}/sessions/start"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/start"
         params = None
         _raw: dict[str, Any] = {}
         if instance_id is not None:
@@ -170,14 +168,13 @@ class AsyncSessions(_SessionsBase):
         body = encode_body(StartSessionInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return StartSessionOutputBody.model_validate(data)
-
     async def set_session_tools(
         self,
         agent_id: str,
         session_id: str,
     ) -> SetSessionToolsOutputBody:
         """Set session tool definitions"""
-        path = f"/api/v1/agents/{agent_id}/sessions/{session_id}/tools"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/{quote(session_id, safe='')}/tools"
         params = None
         data = await self._http.put(path, params=params)
         return SetSessionToolsOutputBody.model_validate(data)

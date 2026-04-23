@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     RelationshipsResponse,
 )
@@ -23,7 +24,7 @@ class Relationships(_RelationshipsBase):
         agent_id: str,
     ) -> RelationshipsResponse:
         """Get agent relationships"""
-        path = f"/api/v1/agents/{agent_id}/relationships"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/relationships"
         params = None
         data = self._http.get(path, params=params)
         return RelationshipsResponse.model_validate(data)
@@ -35,7 +36,7 @@ class AsyncRelationships(_RelationshipsBase):
         agent_id: str,
     ) -> RelationshipsResponse:
         """Get agent relationships"""
-        path = f"/api/v1/agents/{agent_id}/relationships"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/relationships"
         params = None
         data = await self._http.get(path, params=params)
         return RelationshipsResponse.model_validate(data)

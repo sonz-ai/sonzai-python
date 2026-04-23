@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
 
@@ -27,7 +28,7 @@ class Context(_ContextBase):
         timezone: str | None = None,
     ) -> Any:
         """Get enriched agent context"""
-        path = f"/api/v1/agents/{agent_id}/context"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/context"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["userId"] = user_id
@@ -58,7 +59,7 @@ class AsyncContext(_ContextBase):
         timezone: str | None = None,
     ) -> Any:
         """Get enriched agent context"""
-        path = f"/api/v1/agents/{agent_id}/context"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/context"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["userId"] = user_id

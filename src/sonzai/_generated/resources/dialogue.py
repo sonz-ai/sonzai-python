@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     AgentDialogueInputBody,
     AgentDialogueOutputBody,
@@ -32,7 +33,7 @@ class Dialogue(_DialogueBase):
         user_id: str,
     ) -> AgentDialogueOutputBody:
         """Multi-agent dialogue"""
-        path = f"/api/v1/agents/{agent_id}/dialogue"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/dialogue"
         params = None
         _raw: dict[str, Any] = {}
         if enriched_context is not None:
@@ -68,7 +69,7 @@ class AsyncDialogue(_DialogueBase):
         user_id: str,
     ) -> AgentDialogueOutputBody:
         """Multi-agent dialogue"""
-        path = f"/api/v1/agents/{agent_id}/dialogue"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/dialogue"
         params = None
         _raw: dict[str, Any] = {}
         if enriched_context is not None:

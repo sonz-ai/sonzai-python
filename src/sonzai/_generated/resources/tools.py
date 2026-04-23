@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     AgentKBSearchInputBody,
     GetToolSchemasOutputBody,
@@ -28,7 +29,7 @@ class Tools(_ToolsBase):
         limit: int | None = None,
     ) -> KbSearchResponse:
         """Search agent knowledge base (GET)"""
-        path = f"/api/v1/agents/{agent_id}/tools/kb-search"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools/kb-search"
         params: dict[str, Any] = {}
         if q is not None:
             params["q"] = q
@@ -36,7 +37,6 @@ class Tools(_ToolsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return KbSearchResponse.model_validate(data)
-
     def agent_kb_search(
         self,
         agent_id: str,
@@ -45,7 +45,7 @@ class Tools(_ToolsBase):
         query: str,
     ) -> KbSearchResponse:
         """Search agent knowledge base"""
-        path = f"/api/v1/agents/{agent_id}/tools/kb-search"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools/kb-search"
         params = None
         _raw: dict[str, Any] = {}
         if limit is not None:
@@ -55,13 +55,12 @@ class Tools(_ToolsBase):
         body = encode_body(AgentKBSearchInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return KbSearchResponse.model_validate(data)
-
     def get_tool_schemas(
         self,
         agent_id: str,
     ) -> GetToolSchemasOutputBody:
         """Get available tool schemas"""
-        path = f"/api/v1/agents/{agent_id}/tools/schemas"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools/schemas"
         params = None
         data = self._http.get(path, params=params)
         return GetToolSchemasOutputBody.model_validate(data)
@@ -76,7 +75,7 @@ class AsyncTools(_ToolsBase):
         limit: int | None = None,
     ) -> KbSearchResponse:
         """Search agent knowledge base (GET)"""
-        path = f"/api/v1/agents/{agent_id}/tools/kb-search"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools/kb-search"
         params: dict[str, Any] = {}
         if q is not None:
             params["q"] = q
@@ -84,7 +83,6 @@ class AsyncTools(_ToolsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return KbSearchResponse.model_validate(data)
-
     async def agent_kb_search(
         self,
         agent_id: str,
@@ -93,7 +91,7 @@ class AsyncTools(_ToolsBase):
         query: str,
     ) -> KbSearchResponse:
         """Search agent knowledge base"""
-        path = f"/api/v1/agents/{agent_id}/tools/kb-search"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools/kb-search"
         params = None
         _raw: dict[str, Any] = {}
         if limit is not None:
@@ -103,13 +101,12 @@ class AsyncTools(_ToolsBase):
         body = encode_body(AgentKBSearchInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return KbSearchResponse.model_validate(data)
-
     async def get_tool_schemas(
         self,
         agent_id: str,
     ) -> GetToolSchemasOutputBody:
         """Get available tool schemas"""
-        path = f"/api/v1/agents/{agent_id}/tools/schemas"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/tools/schemas"
         params = None
         data = await self._http.get(path, params=params)
         return GetToolSchemasOutputBody.model_validate(data)

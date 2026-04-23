@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     AddFactInputBody,
     ListAllFactsResponse,
@@ -28,7 +29,7 @@ class Memory(_MemoryBase):
         limit: int = 100,
     ) -> Page[StoredFact]:
         """Auto-generated paginated list."""
-        path = f"/api/v1/agents/{agent_id}/facts/all"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/facts/all"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if user_id is not None:
             params["user_id"] = user_id
@@ -49,7 +50,7 @@ class Memory(_MemoryBase):
         user_id: str | None = None,
     ) -> StoredFact:
         """Auto-generated."""
-        path = f"/api/v1/agents/{agent_id}/facts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/facts"
         params = None
         _raw: dict[str, Any] = {}
         if content is not None:
@@ -72,7 +73,7 @@ class AsyncMemory(_MemoryBase):
         limit: int = 100,
     ) -> AsyncPage[StoredFact]:
         """Auto-generated paginated list."""
-        path = f"/api/v1/agents/{agent_id}/facts/all"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/facts/all"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if user_id is not None:
             params["user_id"] = user_id
@@ -97,7 +98,7 @@ class AsyncMemory(_MemoryBase):
         user_id: str | None = None,
     ) -> StoredFact:
         """Auto-generated."""
-        path = f"/api/v1/agents/{agent_id}/facts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/facts"
         params = None
         _raw: dict[str, Any] = {}
         if content is not None:

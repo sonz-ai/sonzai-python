@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     AddContentRequest,
     AddUserContentHumaOutputBody,
@@ -36,7 +37,7 @@ class Priming(_PrimingBase):
         users: list[Any],
     ) -> BatchImportUsersHumaOutputBody:
         """Batch import users"""
-        path = f"/api/v1/agents/{agent_id}/users/import"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/import"
         params = None
         _raw: dict[str, Any] = {}
         if source is not None:
@@ -46,18 +47,16 @@ class Priming(_PrimingBase):
         body = encode_body(BatchImportRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return BatchImportUsersHumaOutputBody.model_validate(data)
-
     def get_import_status(
         self,
         agent_id: str,
         job_id: str,
     ) -> ImportJob:
         """Get batch import job status"""
-        path = f"/api/v1/agents/{agent_id}/users/import/{job_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/import/{quote(job_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return ImportJob.model_validate(data)
-
     def list_import_job_users(
         self,
         agent_id: str,
@@ -66,13 +65,12 @@ class Priming(_PrimingBase):
         limit: int | None = 100,
     ) -> ListImportJobUsersOutputBody:
         """List per-user progress for a batch import job"""
-        path = f"/api/v1/agents/{agent_id}/users/import/{job_id}/users"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/import/{quote(job_id, safe='')}/users"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ListImportJobUsersOutputBody.model_validate(data)
-
     def list_import_jobs(
         self,
         agent_id: str,
@@ -80,13 +78,12 @@ class Priming(_PrimingBase):
         limit: int | None = 20,
     ) -> ListImportJobsOutputBody:
         """List import jobs for an agent"""
-        path = f"/api/v1/agents/{agent_id}/users/imports"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/imports"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ListImportJobsOutputBody.model_validate(data)
-
     def add_user_content(
         self,
         agent_id: str,
@@ -96,7 +93,7 @@ class Priming(_PrimingBase):
         source: str | None = None,
     ) -> AddUserContentHumaOutputBody:
         """Add content for a user"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/content"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/content"
         params = None
         _raw: dict[str, Any] = {}
         if content is not None:
@@ -106,18 +103,16 @@ class Priming(_PrimingBase):
         body = encode_body(AddContentRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return AddUserContentHumaOutputBody.model_validate(data)
-
     def get_user_metadata(
         self,
         agent_id: str,
         user_id: str,
     ) -> UserPrimingMetadata:
         """Get user priming metadata"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/metadata"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/metadata"
         params = None
         data = self._http.get(path, params=params)
         return UserPrimingMetadata.model_validate(data)
-
     def update_user_metadata(
         self,
         agent_id: str,
@@ -131,7 +126,7 @@ class Priming(_PrimingBase):
         title: str | None = None,
     ) -> UpdateUserMetadataHumaOutputBody:
         """Update user priming metadata"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/metadata"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/metadata"
         params = None
         _raw: dict[str, Any] = {}
         if company is not None:
@@ -149,7 +144,6 @@ class Priming(_PrimingBase):
         body = encode_body(UpdateMetadataRequest, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return UpdateUserMetadataHumaOutputBody.model_validate(data)
-
     def prime_user(
         self,
         agent_id: str,
@@ -165,7 +159,7 @@ class Priming(_PrimingBase):
         structured_import: str | None = None,
     ) -> Any:
         """Prime a user with external data"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/prime"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/prime"
         params = None
         _raw: dict[str, Any] = {}
         if content is not None:
@@ -187,7 +181,6 @@ class Priming(_PrimingBase):
         body = encode_body(PrimeUserRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
-
     def get_prime_status(
         self,
         agent_id: str,
@@ -195,7 +188,7 @@ class Priming(_PrimingBase):
         job_id: str,
     ) -> ImportJob:
         """Get priming job status"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/prime/{job_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/prime/{quote(job_id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return ImportJob.model_validate(data)
@@ -210,7 +203,7 @@ class AsyncPriming(_PrimingBase):
         users: list[Any],
     ) -> BatchImportUsersHumaOutputBody:
         """Batch import users"""
-        path = f"/api/v1/agents/{agent_id}/users/import"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/import"
         params = None
         _raw: dict[str, Any] = {}
         if source is not None:
@@ -220,18 +213,16 @@ class AsyncPriming(_PrimingBase):
         body = encode_body(BatchImportRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return BatchImportUsersHumaOutputBody.model_validate(data)
-
     async def get_import_status(
         self,
         agent_id: str,
         job_id: str,
     ) -> ImportJob:
         """Get batch import job status"""
-        path = f"/api/v1/agents/{agent_id}/users/import/{job_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/import/{quote(job_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return ImportJob.model_validate(data)
-
     async def list_import_job_users(
         self,
         agent_id: str,
@@ -240,13 +231,12 @@ class AsyncPriming(_PrimingBase):
         limit: int | None = 100,
     ) -> ListImportJobUsersOutputBody:
         """List per-user progress for a batch import job"""
-        path = f"/api/v1/agents/{agent_id}/users/import/{job_id}/users"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/import/{quote(job_id, safe='')}/users"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ListImportJobUsersOutputBody.model_validate(data)
-
     async def list_import_jobs(
         self,
         agent_id: str,
@@ -254,13 +244,12 @@ class AsyncPriming(_PrimingBase):
         limit: int | None = 20,
     ) -> ListImportJobsOutputBody:
         """List import jobs for an agent"""
-        path = f"/api/v1/agents/{agent_id}/users/imports"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/imports"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ListImportJobsOutputBody.model_validate(data)
-
     async def add_user_content(
         self,
         agent_id: str,
@@ -270,7 +259,7 @@ class AsyncPriming(_PrimingBase):
         source: str | None = None,
     ) -> AddUserContentHumaOutputBody:
         """Add content for a user"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/content"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/content"
         params = None
         _raw: dict[str, Any] = {}
         if content is not None:
@@ -280,18 +269,16 @@ class AsyncPriming(_PrimingBase):
         body = encode_body(AddContentRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return AddUserContentHumaOutputBody.model_validate(data)
-
     async def get_user_metadata(
         self,
         agent_id: str,
         user_id: str,
     ) -> UserPrimingMetadata:
         """Get user priming metadata"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/metadata"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/metadata"
         params = None
         data = await self._http.get(path, params=params)
         return UserPrimingMetadata.model_validate(data)
-
     async def update_user_metadata(
         self,
         agent_id: str,
@@ -305,7 +292,7 @@ class AsyncPriming(_PrimingBase):
         title: str | None = None,
     ) -> UpdateUserMetadataHumaOutputBody:
         """Update user priming metadata"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/metadata"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/metadata"
         params = None
         _raw: dict[str, Any] = {}
         if company is not None:
@@ -323,7 +310,6 @@ class AsyncPriming(_PrimingBase):
         body = encode_body(UpdateMetadataRequest, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return UpdateUserMetadataHumaOutputBody.model_validate(data)
-
     async def prime_user(
         self,
         agent_id: str,
@@ -339,7 +325,7 @@ class AsyncPriming(_PrimingBase):
         structured_import: str | None = None,
     ) -> Any:
         """Prime a user with external data"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/prime"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/prime"
         params = None
         _raw: dict[str, Any] = {}
         if content is not None:
@@ -361,7 +347,6 @@ class AsyncPriming(_PrimingBase):
         body = encode_body(PrimeUserRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
-
     async def get_prime_status(
         self,
         agent_id: str,
@@ -369,7 +354,7 @@ class AsyncPriming(_PrimingBase):
         job_id: str,
     ) -> ImportJob:
         """Get priming job status"""
-        path = f"/api/v1/agents/{agent_id}/users/{user_id}/prime/{job_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/prime/{quote(job_id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return ImportJob.model_validate(data)

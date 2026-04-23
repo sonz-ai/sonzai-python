@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     TriggerEventInputBody,
     TriggerEventOutputBody,
@@ -32,7 +33,7 @@ class Events(_EventsBase):
         user_id: str,
     ) -> TriggerEventOutputBody:
         """Trigger a game event"""
-        path = f"/api/v1/agents/{agent_id}/events"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/events"
         params = None
         _raw: dict[str, Any] = {}
         if event_description is not None:
@@ -68,7 +69,7 @@ class AsyncEvents(_EventsBase):
         user_id: str,
     ) -> TriggerEventOutputBody:
         """Trigger a game event"""
-        path = f"/api/v1/agents/{agent_id}/events"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/events"
         params = None
         _raw: dict[str, Any] = {}
         if event_description is not None:

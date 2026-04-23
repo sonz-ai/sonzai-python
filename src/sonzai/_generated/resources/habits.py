@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     CreateHabitInputBody,
     Habit,
@@ -29,7 +30,7 @@ class Habits(_HabitsBase):
         instance_id: str | None = None,
     ) -> HabitsResponse:
         """List habits for an agent"""
-        path = f"/api/v1/agents/{agent_id}/habits"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/habits"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -37,7 +38,6 @@ class Habits(_HabitsBase):
             params["instance_id"] = instance_id
         data = self._http.get(path, params=params)
         return HabitsResponse.model_validate(data)
-
     def create_habit(
         self,
         agent_id: str,
@@ -51,7 +51,7 @@ class Habits(_HabitsBase):
         user_id: str | None = None,
     ) -> Habit:
         """Create a habit for an agent"""
-        path = f"/api/v1/agents/{agent_id}/habits"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/habits"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -71,7 +71,6 @@ class Habits(_HabitsBase):
         body = encode_body(CreateHabitInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return Habit.model_validate(data)
-
     def delete_habit(
         self,
         agent_id: str,
@@ -81,7 +80,7 @@ class Habits(_HabitsBase):
         instance_id: str | None = None,
     ) -> Any:
         """Delete a habit"""
-        path = f"/api/v1/agents/{agent_id}/habits/{habit_name}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/habits/{quote(habit_name, safe='')}"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -89,7 +88,6 @@ class Habits(_HabitsBase):
             params["instance_id"] = instance_id
         data = self._http.delete(path, params=params)
         return data
-
     def update_habit(
         self,
         agent_id: str,
@@ -103,7 +101,7 @@ class Habits(_HabitsBase):
         user_id: str | None = None,
     ) -> Habit:
         """Update a habit"""
-        path = f"/api/v1/agents/{agent_id}/habits/{habit_name}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/habits/{quote(habit_name, safe='')}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -132,7 +130,7 @@ class AsyncHabits(_HabitsBase):
         instance_id: str | None = None,
     ) -> HabitsResponse:
         """List habits for an agent"""
-        path = f"/api/v1/agents/{agent_id}/habits"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/habits"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -140,7 +138,6 @@ class AsyncHabits(_HabitsBase):
             params["instance_id"] = instance_id
         data = await self._http.get(path, params=params)
         return HabitsResponse.model_validate(data)
-
     async def create_habit(
         self,
         agent_id: str,
@@ -154,7 +151,7 @@ class AsyncHabits(_HabitsBase):
         user_id: str | None = None,
     ) -> Habit:
         """Create a habit for an agent"""
-        path = f"/api/v1/agents/{agent_id}/habits"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/habits"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -174,7 +171,6 @@ class AsyncHabits(_HabitsBase):
         body = encode_body(CreateHabitInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return Habit.model_validate(data)
-
     async def delete_habit(
         self,
         agent_id: str,
@@ -184,7 +180,7 @@ class AsyncHabits(_HabitsBase):
         instance_id: str | None = None,
     ) -> Any:
         """Delete a habit"""
-        path = f"/api/v1/agents/{agent_id}/habits/{habit_name}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/habits/{quote(habit_name, safe='')}"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -192,7 +188,6 @@ class AsyncHabits(_HabitsBase):
             params["instance_id"] = instance_id
         data = await self._http.delete(path, params=params)
         return data
-
     async def update_habit(
         self,
         agent_id: str,
@@ -206,7 +201,7 @@ class AsyncHabits(_HabitsBase):
         user_id: str | None = None,
     ) -> Habit:
         """Update a habit"""
-        path = f"/api/v1/agents/{agent_id}/habits/{habit_name}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/habits/{quote(habit_name, safe='')}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id

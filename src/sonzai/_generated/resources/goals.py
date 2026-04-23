@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     BreakthroughsResponse,
     CreateGoalInputBody,
@@ -29,13 +30,12 @@ class Goals(_GoalsBase):
         user_id: str | None = None,
     ) -> BreakthroughsResponse:
         """List breakthroughs for an agent"""
-        path = f"/api/v1/agents/{agent_id}/breakthroughs"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/breakthroughs"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
         data = self._http.get(path, params=params)
         return BreakthroughsResponse.model_validate(data)
-
     def list_goals(
         self,
         agent_id: str,
@@ -43,13 +43,12 @@ class Goals(_GoalsBase):
         user_id: str | None = None,
     ) -> GoalsResponse:
         """List goals for an agent"""
-        path = f"/api/v1/agents/{agent_id}/goals"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/goals"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
         data = self._http.get(path, params=params)
         return GoalsResponse.model_validate(data)
-
     def create_goal(
         self,
         agent_id: str,
@@ -62,7 +61,7 @@ class Goals(_GoalsBase):
         user_id: str | None = None,
     ) -> Goal:
         """Create a goal for an agent"""
-        path = f"/api/v1/agents/{agent_id}/goals"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/goals"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -80,7 +79,6 @@ class Goals(_GoalsBase):
         body = encode_body(CreateGoalInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return Goal.model_validate(data)
-
     def delete_goal(
         self,
         agent_id: str,
@@ -89,13 +87,12 @@ class Goals(_GoalsBase):
         user_id: str | None = None,
     ) -> Any:
         """Delete (abandon) a goal"""
-        path = f"/api/v1/agents/{agent_id}/goals/{goal_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/goals/{quote(goal_id, safe='')}"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
         data = self._http.delete(path, params=params)
         return data
-
     def update_goal(
         self,
         agent_id: str,
@@ -109,7 +106,7 @@ class Goals(_GoalsBase):
         user_id: str | None = None,
     ) -> Goal:
         """Update a goal"""
-        path = f"/api/v1/agents/{agent_id}/goals/{goal_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/goals/{quote(goal_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -137,13 +134,12 @@ class AsyncGoals(_GoalsBase):
         user_id: str | None = None,
     ) -> BreakthroughsResponse:
         """List breakthroughs for an agent"""
-        path = f"/api/v1/agents/{agent_id}/breakthroughs"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/breakthroughs"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
         data = await self._http.get(path, params=params)
         return BreakthroughsResponse.model_validate(data)
-
     async def list_goals(
         self,
         agent_id: str,
@@ -151,13 +147,12 @@ class AsyncGoals(_GoalsBase):
         user_id: str | None = None,
     ) -> GoalsResponse:
         """List goals for an agent"""
-        path = f"/api/v1/agents/{agent_id}/goals"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/goals"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
         data = await self._http.get(path, params=params)
         return GoalsResponse.model_validate(data)
-
     async def create_goal(
         self,
         agent_id: str,
@@ -170,7 +165,7 @@ class AsyncGoals(_GoalsBase):
         user_id: str | None = None,
     ) -> Goal:
         """Create a goal for an agent"""
-        path = f"/api/v1/agents/{agent_id}/goals"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/goals"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:
@@ -188,7 +183,6 @@ class AsyncGoals(_GoalsBase):
         body = encode_body(CreateGoalInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return Goal.model_validate(data)
-
     async def delete_goal(
         self,
         agent_id: str,
@@ -197,13 +191,12 @@ class AsyncGoals(_GoalsBase):
         user_id: str | None = None,
     ) -> Any:
         """Delete (abandon) a goal"""
-        path = f"/api/v1/agents/{agent_id}/goals/{goal_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/goals/{quote(goal_id, safe='')}"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
         data = await self._http.delete(path, params=params)
         return data
-
     async def update_goal(
         self,
         agent_id: str,
@@ -217,7 +210,7 @@ class AsyncGoals(_GoalsBase):
         user_id: str | None = None,
     ) -> Goal:
         """Update a goal"""
-        path = f"/api/v1/agents/{agent_id}/goals/{goal_id}"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/goals/{quote(goal_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if description is not None:

@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     ListVoicesResponse,
     SpeechToTextInputBody,
@@ -32,7 +33,7 @@ class Voice(_VoiceBase):
         voice_name: str | None = None,
     ) -> VoiceLiveWSTokenOutputBody:
         """Get a voice live WebSocket token"""
-        path = f"/api/v1/agents/{agent_id}/voice/live-ws-token"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/voice/live-ws-token"
         params = None
         _raw: dict[str, Any] = {}
         if compiled_system_prompt is not None:
@@ -46,7 +47,6 @@ class Voice(_VoiceBase):
         body = encode_body(VoiceLiveWSTokenInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return VoiceLiveWSTokenOutputBody.model_validate(data)
-
     def speech_to_text(
         self,
         agent_id: str,
@@ -56,7 +56,7 @@ class Voice(_VoiceBase):
         language: str | None = None,
     ) -> Any:
         """Convert speech to text"""
-        path = f"/api/v1/agents/{agent_id}/voice/stt"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/voice/stt"
         params = None
         _raw: dict[str, Any] = {}
         if audio is not None:
@@ -68,7 +68,6 @@ class Voice(_VoiceBase):
         body = encode_body(SpeechToTextInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
-
     def text_to_speech(
         self,
         agent_id: str,
@@ -79,7 +78,7 @@ class Voice(_VoiceBase):
         voice_name: str | None = None,
     ) -> Any:
         """Convert text to speech"""
-        path = f"/api/v1/agents/{agent_id}/voice/tts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/voice/tts"
         params = None
         _raw: dict[str, Any] = {}
         if language is not None:
@@ -93,7 +92,6 @@ class Voice(_VoiceBase):
         body = encode_body(TextToSpeechInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
-
     def list_voices(
         self,
         *,
@@ -119,7 +117,7 @@ class AsyncVoice(_VoiceBase):
         voice_name: str | None = None,
     ) -> VoiceLiveWSTokenOutputBody:
         """Get a voice live WebSocket token"""
-        path = f"/api/v1/agents/{agent_id}/voice/live-ws-token"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/voice/live-ws-token"
         params = None
         _raw: dict[str, Any] = {}
         if compiled_system_prompt is not None:
@@ -133,7 +131,6 @@ class AsyncVoice(_VoiceBase):
         body = encode_body(VoiceLiveWSTokenInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return VoiceLiveWSTokenOutputBody.model_validate(data)
-
     async def speech_to_text(
         self,
         agent_id: str,
@@ -143,7 +140,7 @@ class AsyncVoice(_VoiceBase):
         language: str | None = None,
     ) -> Any:
         """Convert speech to text"""
-        path = f"/api/v1/agents/{agent_id}/voice/stt"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/voice/stt"
         params = None
         _raw: dict[str, Any] = {}
         if audio is not None:
@@ -155,7 +152,6 @@ class AsyncVoice(_VoiceBase):
         body = encode_body(SpeechToTextInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
-
     async def text_to_speech(
         self,
         agent_id: str,
@@ -166,7 +162,7 @@ class AsyncVoice(_VoiceBase):
         voice_name: str | None = None,
     ) -> Any:
         """Convert text to speech"""
-        path = f"/api/v1/agents/{agent_id}/voice/tts"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/voice/tts"
         params = None
         _raw: dict[str, Any] = {}
         if language is not None:
@@ -180,7 +176,6 @@ class AsyncVoice(_VoiceBase):
         body = encode_body(TextToSpeechInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
-
     async def list_voices(
         self,
         *,

@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import quote
 from sonzai._generated.models import (
     CachedModelsPayload,
     GetAgentModelsOutputBody,
@@ -24,11 +25,10 @@ class Models(_ModelsBase):
         agent_id: str,
     ) -> GetAgentModelsOutputBody:
         """List available models for an agent"""
-        path = f"/api/v1/agents/{agent_id}/models"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/models"
         params = None
         data = self._http.get(path, params=params)
         return GetAgentModelsOutputBody.model_validate(data)
-
     def list_models(
         self,
     ) -> CachedModelsPayload:
@@ -45,11 +45,10 @@ class AsyncModels(_ModelsBase):
         agent_id: str,
     ) -> GetAgentModelsOutputBody:
         """List available models for an agent"""
-        path = f"/api/v1/agents/{agent_id}/models"
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/models"
         params = None
         data = await self._http.get(path, params=params)
         return GetAgentModelsOutputBody.model_validate(data)
-
     async def list_models(
         self,
     ) -> CachedModelsPayload:

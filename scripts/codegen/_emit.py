@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+from collections import defaultdict
 from pathlib import Path
 
 import jinja2
 
-from ._parse import Operation
+from ._parse import EXTERNAL_CLASS_IMPORTS, Operation
 
 TEMPLATES_DIR = Path(__file__).resolve().parent / "templates"
 
@@ -28,14 +29,21 @@ def emit_module(tag: str, operations: list[Operation]) -> str:
             op.method_template = "method_sync.j2"
             op.async_method_template = "method_async.j2"
 
+    # Separate classes into those from _generated.models vs external modules.
     referenced: set[str] = set()
+    # external_imports: module_path → sorted list of class names
+    external_imports: dict[str, list[str]] = defaultdict(list)
+
     for op in operations:
-        if op.input_body_class:
-            referenced.add(op.input_body_class)
-        if op.response_class:
-            referenced.add(op.response_class)
-        if op.pagination_item_type:
-            referenced.add(op.pagination_item_type)
+        for cls in (op.input_body_class, op.response_class, op.pagination_item_type):
+            if not cls:
+                continue
+            if cls in EXTERNAL_CLASS_IMPORTS:
+                mod = EXTERNAL_CLASS_IMPORTS[cls]
+                if cls not in external_imports[mod]:
+                    external_imports[mod].append(cls)
+            else:
+                referenced.add(cls)
 
     class_base = _to_pascal_case(tag)
 
@@ -45,6 +53,7 @@ def emit_module(tag: str, operations: list[Operation]) -> str:
         class_base=class_base,
         operations=operations,
         referenced_classes=referenced,
+        external_imports={mod: sorted(names) for mod, names in external_imports.items()},
     )
 
 
