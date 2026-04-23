@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import pytest
+import httpx
+import respx
 from httpx import ConnectError
 
+from sonzai import RateLimitError, Sonzai
 from sonzai._retry import RetryPolicy
 
 
@@ -57,3 +60,91 @@ class TestBackoff:
         for _ in range(20):
             s = p.backoff_seconds(attempt=1, retry_after_header=None)
             assert 0.5 <= s <= 1.5
+
+
+class TestHTTPRetry:
+    def test_retries_on_429_then_succeeds(self) -> None:
+        with respx.mock() as router:
+            route = router.get("https://api.sonz.ai/api/v1/projects")
+            route.side_effect = [
+                httpx.Response(429, headers={"Retry-After": "0"}, json={"message": "slow"}),
+                httpx.Response(200, json={"projects": [], "total": 0}),
+            ]
+            client = Sonzai(api_key="test-key", retry=RetryPolicy(max_attempts=3, backoff_factor=0.001, backoff_jitter=0.0))
+            client.projects.list()
+            assert route.call_count == 2
+
+    def test_exhausts_retries_and_raises(self) -> None:
+        with respx.mock() as router:
+            router.get("https://api.sonz.ai/api/v1/projects").mock(
+                return_value=httpx.Response(503, json={"message": "down"})
+            )
+            client = Sonzai(api_key="test-key", retry=RetryPolicy(max_attempts=2, backoff_factor=0.001, backoff_jitter=0.0))
+            with pytest.raises(Exception) as exc_info:
+                client.projects.list()
+            assert exc_info.value.status_code == 503   # type: ignore[attr-defined]
+
+    def test_network_error_retry(self) -> None:
+        with respx.mock() as router:
+            route = router.get("https://api.sonz.ai/api/v1/projects")
+            route.side_effect = [
+                httpx.ConnectError("boom"),
+                httpx.Response(200, json={"projects": [], "total": 0}),
+            ]
+            client = Sonzai(api_key="test-key", retry=RetryPolicy(max_attempts=3, backoff_factor=0.001, backoff_jitter=0.0))
+            client.projects.list()
+            assert route.call_count == 2
+
+    def test_none_policy_raises_on_first_failure(self) -> None:
+        with respx.mock() as router:
+            router.get("https://api.sonz.ai/api/v1/projects").mock(
+                return_value=httpx.Response(503, json={"message": "down"})
+            )
+            client = Sonzai(api_key="test-key", retry=RetryPolicy.none())
+            with pytest.raises(Exception):
+                client.projects.list()
+
+
+class TestIdempotencyKey:
+    def test_idempotency_key_injected_on_post(self) -> None:
+        captured: list[httpx.Request] = []
+
+        def capture(request: httpx.Request) -> httpx.Response:
+            captured.append(request)
+            return httpx.Response(200, json={"agent_id": "a1", "name": "X", "owner_user_id": "u1", "tenant_id": "t1", "instance_count": 1, "is_active": True, "created_at": "2026-01-01T00:00:00Z"})
+
+        with respx.mock() as router:
+            router.post("https://api.sonz.ai/api/v1/agents").mock(side_effect=capture)
+            client = Sonzai(api_key="test-key")
+            client.agents.create(name="x")
+            assert "Idempotency-Key" in captured[0].headers
+            assert len(captured[0].headers["Idempotency-Key"]) == 32
+
+    def test_idempotency_key_consistent_across_retries(self) -> None:
+        captured: list[str] = []
+
+        def capture(request: httpx.Request) -> httpx.Response:
+            captured.append(request.headers["Idempotency-Key"])
+            if len(captured) == 1:
+                return httpx.Response(503, json={"message": "down"})
+            return httpx.Response(200, json={"agent_id": "a1", "name": "X", "owner_user_id": "u1", "tenant_id": "t1", "instance_count": 1, "is_active": True, "created_at": "2026-01-01T00:00:00Z"})
+
+        with respx.mock() as router:
+            router.post("https://api.sonz.ai/api/v1/agents").mock(side_effect=capture)
+            client = Sonzai(api_key="test-key", retry=RetryPolicy(max_attempts=3, backoff_factor=0.001, backoff_jitter=0.0))
+            client.agents.create(name="x")
+            assert len(captured) == 2
+            assert captured[0] == captured[1]
+
+    def test_no_idempotency_key_on_get(self) -> None:
+        captured: list[httpx.Request] = []
+
+        def capture(request: httpx.Request) -> httpx.Response:
+            captured.append(request)
+            return httpx.Response(200, json={"projects": [], "total": 0})
+
+        with respx.mock() as router:
+            router.get("https://api.sonz.ai/api/v1/projects").mock(side_effect=capture)
+            client = Sonzai(api_key="test-key")
+            client.projects.list()
+            assert "Idempotency-Key" not in captured[0].headers

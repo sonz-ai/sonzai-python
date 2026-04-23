@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import time
+import uuid
 from collections.abc import AsyncIterator, Generator, Iterator
 from datetime import datetime
 from typing import Any
@@ -34,6 +35,7 @@ from ._customizations.chat import (
     ChatMessageBoundaryEvent,
     ChatSideEffectsEvent,
 )
+from ._retry import RetryPolicy
 
 
 def _raise_for_status(response: httpx.Response) -> None:
@@ -153,6 +155,7 @@ class HTTPClient:
         api_key: str,
         timeout: float = 30.0,
         max_retries: int = 2,
+        retry: RetryPolicy | None = None,
         httpx_client: httpx.Client | None = None,
     ) -> None:
         if httpx_client is not None:
@@ -169,9 +172,13 @@ class HTTPClient:
                 follow_redirects=True,
                 limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
             )
-        self._max_retries = max_retries
+        # retry= takes precedence; fall back to legacy max_retries kwarg
+        if retry is not None:
+            self._retry = retry
+        else:
+            self._retry = RetryPolicy(max_attempts=max_retries)
 
-    _RETRYABLE_METHODS = frozenset({"GET", "DELETE"})
+    _MUTATING_METHODS = frozenset({"POST", "PUT", "PATCH"})
 
     def request(
         self,
@@ -180,53 +187,71 @@ class HTTPClient:
         *,
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
     ) -> Any:
         # Strip None values from params
         if params:
             params = {k: v for k, v in params.items() if v is not None}
 
-        retries = self._max_retries if method.upper() in self._RETRYABLE_METHODS else 0
+        # Build per-request headers; add Idempotency-Key for mutating methods
+        extra_headers: dict[str, str] = {}
+        if method.upper() in self._MUTATING_METHODS:
+            extra_headers["Idempotency-Key"] = idempotency_key or uuid.uuid4().hex
 
-        for attempt in range(retries + 1):
+        attempt = 0
+        last_exc: Exception | None = None
+        while attempt < self._retry.max_attempts:
+            attempt += 1
             try:
                 response = self._client.request(
                     method,
                     path,
                     json=json_data,
                     params=params,
+                    headers=extra_headers,
                 )
-                if response.status_code >= 500 and attempt < retries:
-                    logger.debug(
-                        "Retrying %s %s (attempt %d/%d) after %d status",
-                        method,
-                        path,
-                        attempt + 1,
-                        retries,
-                        response.status_code,
-                    )
-                    time.sleep(0.5 * 2**attempt)
-                    continue
-                _raise_for_status(response)
+            except Exception as exc:
+                if not self._retry.should_retry(attempt=attempt, status=None, exc=exc):
+                    raise
+                last_exc = exc
+                logger.debug(
+                    "Retrying %s %s (attempt %d/%d) after network error: %s",
+                    method,
+                    path,
+                    attempt,
+                    self._retry.max_attempts,
+                    exc,
+                )
+                time.sleep(self._retry.backoff_seconds(attempt=attempt, retry_after_header=None))
+                continue
 
+            if response.is_success:
                 if response.headers.get("content-type", "").startswith("application/json"):
                     return response.json()
                 return response.text
-            except httpx.TransportError as exc:
-                if attempt < retries:
-                    logger.debug(
-                        "Retrying %s %s (attempt %d/%d) after transport error: %s",
-                        method,
-                        path,
-                        attempt + 1,
-                        retries,
-                        exc,
-                    )
-                    time.sleep(0.5 * 2**attempt)
-                    continue
-                raise
 
-        # Unreachable, but satisfies type checkers
-        raise InternalServerError("Max retries exceeded")  # pragma: no cover
+            if self._retry.should_retry(attempt=attempt, status=response.status_code, exc=None):
+                logger.debug(
+                    "Retrying %s %s (attempt %d/%d) after %d status",
+                    method,
+                    path,
+                    attempt,
+                    self._retry.max_attempts,
+                    response.status_code,
+                )
+                time.sleep(
+                    self._retry.backoff_seconds(
+                        attempt=attempt,
+                        retry_after_header=response.headers.get("Retry-After"),
+                    )
+                )
+                continue
+
+            _raise_for_status(response)
+
+        if last_exc is not None:
+            raise last_exc
+        raise APIError(0, "retries exhausted")  # pragma: no cover
 
     def get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return self.request("GET", path, params=params)
@@ -237,24 +262,27 @@ class HTTPClient:
         *,
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
     ) -> Any:
-        return self.request("POST", path, json_data=json_data, params=params)
+        return self.request("POST", path, json_data=json_data, params=params, idempotency_key=idempotency_key)
 
     def put(
         self,
         path: str,
         *,
         json_data: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
     ) -> Any:
-        return self.request("PUT", path, json_data=json_data)
+        return self.request("PUT", path, json_data=json_data, idempotency_key=idempotency_key)
 
     def patch(
         self,
         path: str,
         *,
         json_data: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
     ) -> Any:
-        return self.request("PATCH", path, json_data=json_data)
+        return self.request("PATCH", path, json_data=json_data, idempotency_key=idempotency_key)
 
     def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return self.request("DELETE", path, params=params)
@@ -322,6 +350,7 @@ class AsyncHTTPClient:
         api_key: str,
         timeout: float = 30.0,
         max_retries: int = 2,
+        retry: RetryPolicy | None = None,
         httpx_client: httpx.AsyncClient | None = None,
     ) -> None:
         if httpx_client is not None:
@@ -338,9 +367,13 @@ class AsyncHTTPClient:
                 follow_redirects=True,
                 limits=httpx.Limits(max_connections=100, max_keepalive_connections=20),
             )
-        self._max_retries = max_retries
+        # retry= takes precedence; fall back to legacy max_retries kwarg
+        if retry is not None:
+            self._retry = retry
+        else:
+            self._retry = RetryPolicy(max_attempts=max_retries)
 
-    _RETRYABLE_METHODS = frozenset({"GET", "DELETE"})
+    _MUTATING_METHODS = frozenset({"POST", "PUT", "PATCH"})
 
     async def request(
         self,
@@ -349,53 +382,72 @@ class AsyncHTTPClient:
         *,
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
     ) -> Any:
+        import asyncio
+
         if params:
             params = {k: v for k, v in params.items() if v is not None}
 
-        retries = self._max_retries if method.upper() in self._RETRYABLE_METHODS else 0
-        import asyncio
+        # Build per-request headers; add Idempotency-Key for mutating methods
+        extra_headers: dict[str, str] = {}
+        if method.upper() in self._MUTATING_METHODS:
+            extra_headers["Idempotency-Key"] = idempotency_key or uuid.uuid4().hex
 
-        for attempt in range(retries + 1):
+        attempt = 0
+        last_exc: Exception | None = None
+        while attempt < self._retry.max_attempts:
+            attempt += 1
             try:
                 response = await self._client.request(
                     method,
                     path,
                     json=json_data,
                     params=params,
+                    headers=extra_headers,
                 )
-                if response.status_code >= 500 and attempt < retries:
-                    logger.debug(
-                        "Retrying %s %s (attempt %d/%d) after %d status",
-                        method,
-                        path,
-                        attempt + 1,
-                        retries,
-                        response.status_code,
-                    )
-                    await asyncio.sleep(0.5 * 2**attempt)
-                    continue
-                _raise_for_status(response)
+            except Exception as exc:
+                if not self._retry.should_retry(attempt=attempt, status=None, exc=exc):
+                    raise
+                last_exc = exc
+                logger.debug(
+                    "Retrying %s %s (attempt %d/%d) after network error: %s",
+                    method,
+                    path,
+                    attempt,
+                    self._retry.max_attempts,
+                    exc,
+                )
+                await asyncio.sleep(self._retry.backoff_seconds(attempt=attempt, retry_after_header=None))
+                continue
 
+            if response.is_success:
                 if response.headers.get("content-type", "").startswith("application/json"):
                     return response.json()
                 return response.text
-            except httpx.TransportError as exc:
-                if attempt < retries:
-                    logger.debug(
-                        "Retrying %s %s (attempt %d/%d) after transport error: %s",
-                        method,
-                        path,
-                        attempt + 1,
-                        retries,
-                        exc,
-                    )
-                    await asyncio.sleep(0.5 * 2**attempt)
-                    continue
-                raise
 
-        # Unreachable, but satisfies type checkers
-        raise InternalServerError("Max retries exceeded")  # pragma: no cover
+            if self._retry.should_retry(attempt=attempt, status=response.status_code, exc=None):
+                logger.debug(
+                    "Retrying %s %s (attempt %d/%d) after %d status",
+                    method,
+                    path,
+                    attempt,
+                    self._retry.max_attempts,
+                    response.status_code,
+                )
+                await asyncio.sleep(
+                    self._retry.backoff_seconds(
+                        attempt=attempt,
+                        retry_after_header=response.headers.get("Retry-After"),
+                    )
+                )
+                continue
+
+            _raise_for_status(response)
+
+        if last_exc is not None:
+            raise last_exc
+        raise APIError(0, "retries exhausted")  # pragma: no cover
 
     async def get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return await self.request("GET", path, params=params)
@@ -406,24 +458,27 @@ class AsyncHTTPClient:
         *,
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
     ) -> Any:
-        return await self.request("POST", path, json_data=json_data, params=params)
+        return await self.request("POST", path, json_data=json_data, params=params, idempotency_key=idempotency_key)
 
     async def put(
         self,
         path: str,
         *,
         json_data: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
     ) -> Any:
-        return await self.request("PUT", path, json_data=json_data)
+        return await self.request("PUT", path, json_data=json_data, idempotency_key=idempotency_key)
 
     async def patch(
         self,
         path: str,
         *,
         json_data: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
     ) -> Any:
-        return await self.request("PATCH", path, json_data=json_data)
+        return await self.request("PATCH", path, json_data=json_data, idempotency_key=idempotency_key)
 
     async def delete(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
         return await self.request("DELETE", path, params=params)

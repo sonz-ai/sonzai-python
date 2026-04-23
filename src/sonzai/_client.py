@@ -7,6 +7,7 @@ import os
 import httpx
 
 from ._http import AsyncHTTPClient, HTTPClient
+from ._retry import RetryPolicy
 from .resources.account_config import AccountConfig, AsyncAccountConfig
 from .resources.agents import Agents, AsyncAgents
 from .resources.analytics import Analytics, AsyncAnalytics
@@ -86,11 +87,12 @@ class Sonzai:
 
     def __init__(
         self,
-        *,
         api_key: str | None = None,
+        *,
         base_url: str | None = None,
         timeout: float = 30.0,
-        max_retries: int = 2,
+        retry: RetryPolicy | None = None,
+        max_retries: int | None = None,
         http_client: httpx.Client | None = None,
     ) -> None:
         """Initialize the Sonzai client.
@@ -99,7 +101,10 @@ class Sonzai:
             api_key: Your project API key. Falls back to ``SONZAI_API_KEY`` env var.
             base_url: API base URL. Falls back to ``SONZAI_BASE_URL`` or the default.
             timeout: Request timeout in seconds.
-            max_retries: Maximum number of retries for failed requests.
+            retry: ``RetryPolicy`` instance controlling retry behaviour. When provided,
+                takes precedence over ``max_retries``.
+            max_retries: Maximum number of retry attempts. Backwards-compat shorthand;
+                prefer ``retry=RetryPolicy(max_attempts=...)``.
             http_client: Custom ``httpx.Client`` instance. When provided, the SDK
                 uses this client directly instead of creating a new one.
         """
@@ -111,12 +116,16 @@ class Sonzai:
 
         resolved_url = base_url or os.environ.get("SONZAI_BASE_URL", DEFAULT_BASE_URL)
 
+        # Build the effective RetryPolicy. retry= wins; max_retries= is compat shim.
+        if retry is None and max_retries is not None:
+            retry = RetryPolicy(max_attempts=max_retries)
+
         if http_client is not None:
             self._http = HTTPClient(
                 base_url=resolved_url,
                 api_key=resolved_key,
                 timeout=timeout,
-                max_retries=max_retries,
+                retry=retry,
                 httpx_client=http_client,
             )
         else:
@@ -124,7 +133,7 @@ class Sonzai:
                 base_url=resolved_url,
                 api_key=resolved_key,
                 timeout=timeout,
-                max_retries=max_retries,
+                retry=retry,
             )
 
         self.agents = Agents(self._http)
@@ -217,11 +226,12 @@ class AsyncSonzai:
 
     def __init__(
         self,
-        *,
         api_key: str | None = None,
+        *,
         base_url: str | None = None,
         timeout: float = 30.0,
-        max_retries: int = 2,
+        retry: RetryPolicy | None = None,
+        max_retries: int | None = None,
         http_client: httpx.AsyncClient | None = None,
     ) -> None:
         resolved_key = api_key or os.environ.get("SONZAI_API_KEY", "")
@@ -232,12 +242,16 @@ class AsyncSonzai:
 
         resolved_url = base_url or os.environ.get("SONZAI_BASE_URL", DEFAULT_BASE_URL)
 
+        # Build the effective RetryPolicy. retry= wins; max_retries= is compat shim.
+        if retry is None and max_retries is not None:
+            retry = RetryPolicy(max_attempts=max_retries)
+
         if http_client is not None:
             self._http = AsyncHTTPClient(
                 base_url=resolved_url,
                 api_key=resolved_key,
                 timeout=timeout,
-                max_retries=max_retries,
+                retry=retry,
                 httpx_client=http_client,
             )
         else:
@@ -245,7 +259,7 @@ class AsyncSonzai:
                 base_url=resolved_url,
                 api_key=resolved_key,
                 timeout=timeout,
-                max_retries=max_retries,
+                retry=retry,
             )
 
         self.agents = AsyncAgents(self._http)
