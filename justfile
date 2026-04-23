@@ -25,9 +25,9 @@ install-hooks:
 #
 # Requires `datamodel-code-generator` (installed via `uv sync --extra dev`).
 regenerate-sdk:
-    @echo "Step 1/3: sync OpenAPI spec from production..."
+    @echo "Step 1/4: sync OpenAPI spec from production..."
     @just sync-spec
-    @echo "Step 2/3: regenerate src/sonzai/_generated/models.py ..."
+    @echo "Step 2/4: regenerate src/sonzai/_generated/models.py ..."
     @rm -rf src/sonzai/_generated
     @mkdir -p src/sonzai/_generated
     uv run --extra dev datamodel-codegen \
@@ -47,7 +47,10 @@ regenerate-sdk:
         --use-schema-description \
         --disable-timestamp
     @printf '"""Spec-derived pydantic models. Do not edit by hand.\n\nRegenerate with `just regenerate-sdk`. Hand-written customizations live in\n`src/sonzai/_customizations/`.\n"""\n\nfrom .models import *  # noqa: F401,F403\n' > src/sonzai/_generated/__init__.py
-    @echo "Step 3/3: refreshing parity audit..."
+    @echo "Step 3/4: regenerate src/sonzai/_generated/resources/ ..."
+    uv run --extra dev python -m scripts.codegen.generate_resources openapi.json src/sonzai/_generated/resources/
+    @uv run --extra dev ruff format src/sonzai/_generated/resources/ 2>/dev/null || true
+    @echo "Step 4/4: refreshing parity audit..."
     @uv run --extra dev python scripts/parity_audit.py
     @echo "✓ SDK regenerated."
 
