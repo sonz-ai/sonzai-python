@@ -220,6 +220,14 @@ from .types import (
     WakeupExecution,
 )
 from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact
+from ._customizations.chat import (
+    ChatCompleteEvent,
+    ChatContextReadyEvent,
+    ChatDeltaEvent,
+    ChatErrorEvent,
+    ChatMessageBoundaryEvent,
+    ChatSideEffectsEvent,
+)
 
 __version__ = "1.4.0"
 
@@ -257,8 +265,14 @@ __all__ = [
     "UpdateProjectResponse",
     # Types - Chat
     "ChatChoice",
+    "ChatCompleteEvent",
+    "ChatContextReadyEvent",
+    "ChatDeltaEvent",
+    "ChatErrorEvent",
     "ChatMessage",
+    "ChatMessageBoundaryEvent",
     "ChatResponse",
+    "ChatSideEffectsEvent",
     "ChatStreamEvent",
     "ChatUsage",
     "ExternalToolCall",
