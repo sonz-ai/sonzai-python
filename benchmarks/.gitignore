@@ -14,3 +14,7 @@ __pycache__/
 # this list short; everything else stays ignored.
 !longmemeval/results/sonzai_20260423-073411.jsonl
 !longmemeval/results/mempalace_20260422-105717.jsonl
+!sotopia/results/sotopia_20260423-222834.jsonl
+!sotopia/results/sotopia_20260423-222834_trajectory.png
+!sotopia/results/sotopia_mempalace_20260423-203813.jsonl
+!sotopia/results/sotopia_mempalace_20260423-203813_trajectory.png
