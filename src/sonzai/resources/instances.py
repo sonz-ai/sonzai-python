@@ -5,15 +5,17 @@ from __future__ import annotations
 from typing import Any
 
 from .._generated.models import CreateInstanceInputBody, UpdateInstanceInputBody
+from .._generated.resources.instances import AsyncInstances as _GenAsyncInstances
+from .._generated.resources.instances import Instances as _GenInstances
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import AgentInstance, InstanceListResponse, SessionResponse
 
 
-class Instances:
+class Instances(_GenInstances):
     """Sync instance operations for an agent."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def list(self, agent_id: str) -> InstanceListResponse:
@@ -84,10 +86,10 @@ class Instances:
         return AgentInstance.model_validate(data)
 
 
-class AsyncInstances:
+class AsyncInstances(_GenAsyncInstances):
     """Async instance operations for an agent."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def list(self, agent_id: str) -> InstanceListResponse:

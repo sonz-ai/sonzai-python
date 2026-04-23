@@ -5,15 +5,17 @@ from __future__ import annotations
 from typing import Any
 
 from .._generated.models import SetCustomLLMConfigInputBody
+from .._generated.resources.custom_llm import AsyncCustomLlm as _GenAsyncCustomLlm
+from .._generated.resources.custom_llm import CustomLlm as _GenCustomLlm
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import CustomLLMConfigResponse
 
 
-class CustomLLM:
+class CustomLLM(_GenCustomLlm):
     """Sync custom LLM configuration operations."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def get(self, project_id: str) -> CustomLLMConfigResponse:
@@ -54,10 +56,10 @@ class CustomLLM:
         self._http.delete(f"/api/v1/projects/{project_id}/custom-llm")
 
 
-class AsyncCustomLLM:
+class AsyncCustomLLM(_GenAsyncCustomLlm):
     """Async custom LLM configuration operations."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def get(self, project_id: str) -> CustomLLMConfigResponse:

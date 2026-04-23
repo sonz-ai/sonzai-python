@@ -6,6 +6,8 @@ import builtins
 from typing import Any
 
 from .._generated.models import CreateEvalTemplateInputBody
+from .._generated.resources.evals import AsyncEvals as _GenAsyncEvals
+from .._generated.resources.evals import Evals as _GenEvals
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import EvalTemplate, EvalTemplateCategory, EvalTemplateListResponse, SessionResponse
@@ -14,10 +16,10 @@ from ..types import EvalTemplate, EvalTemplateCategory, EvalTemplateListResponse
 _list = builtins.list
 
 
-class EvalTemplates:
+class EvalTemplates(_GenEvals):
     """Sync eval template operations."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def list(self, *, template_type: str | None = None) -> EvalTemplateListResponse:
@@ -108,10 +110,10 @@ class EvalTemplates:
         return SessionResponse.model_validate(data)
 
 
-class AsyncEvalTemplates:
+class AsyncEvalTemplates(_GenAsyncEvals):
     """Async eval template operations."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def list(self, *, template_type: str | None = None) -> EvalTemplateListResponse:

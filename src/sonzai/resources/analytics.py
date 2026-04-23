@@ -4,13 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.resources.analytics import Analytics as _GenAnalytics
+from .._generated.resources.analytics import AsyncAnalytics as _GenAsyncAnalytics
 from .._http import AsyncHTTPClient, HTTPClient
 
 
-class Analytics:
+class Analytics(_GenAnalytics):
     """Sync analytics operations."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def get_overview(self) -> dict[str, Any]:
@@ -48,10 +50,10 @@ class Analytics:
         return data  # type: ignore[return-value]
 
 
-class AsyncAnalytics:
+class AsyncAnalytics(_GenAsyncAnalytics):
     """Async analytics operations."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def get_overview(self) -> dict[str, Any]:

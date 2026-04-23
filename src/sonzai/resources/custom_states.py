@@ -9,15 +9,17 @@ from .._generated.models import (
     UpdateCustomStateInputBody,
     UpsertCustomStateByKeyInputBody,
 )
+from .._generated.resources.custom_states import AsyncCustomStates as _GenAsyncCustomStates
+from .._generated.resources.custom_states import CustomStates as _GenCustomStates
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import CustomState, CustomStateListResponse, DeleteResponse
 
 
-class CustomStates:
+class CustomStates(_GenCustomStates):
     """Sync custom state operations for an agent."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def list(
@@ -176,10 +178,10 @@ class CustomStates:
         return DeleteResponse(success=True)
 
 
-class AsyncCustomStates:
+class AsyncCustomStates(_GenAsyncCustomStates):
     """Async custom state operations for an agent."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def list(

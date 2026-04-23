@@ -5,15 +5,17 @@ from __future__ import annotations
 from typing import Any
 
 from .._generated.models import CreateUserPersonaInputBody, UpdateUserPersonaInputBody
+from .._generated.resources.user_personas import AsyncUserPersonas as _GenAsyncUserPersonas
+from .._generated.resources.user_personas import UserPersonas as _GenUserPersonas
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import DeleteUserPersonaResponse, UserPersonaList, UserPersonaRecord
 
 
-class UserPersonas:
+class UserPersonas(_GenUserPersonas):
     """Sync user persona operations."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def list(self) -> UserPersonaList:
@@ -73,10 +75,10 @@ class UserPersonas:
         return DeleteUserPersonaResponse.model_validate(data)
 
 
-class AsyncUserPersonas:
+class AsyncUserPersonas(_GenAsyncUserPersonas):
     """Async user persona operations."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def list(self) -> UserPersonaList:

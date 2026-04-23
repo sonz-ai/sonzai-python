@@ -22,20 +22,17 @@ from .._generated.models import (
     OrgBillingSubscribeInputBody,
     OrgBillingVoucherInputBody,
 )
+from .._generated.resources.org_billing import AsyncOrgBilling as _GenAsyncOrgBilling
+from .._generated.resources.org_billing import OrgBilling as _GenOrgBilling
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 
 
-class _OrgBase:
-    def __init__(self, http: Any) -> None:
-        self._http = http
-
-
-class Org(_OrgBase):
+class Org(_GenOrgBilling):
     """Sync organization/billing operations."""
 
-    def __init__(self, http: HTTPClient) -> None:
-        super().__init__(http)
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
+        self._http = http
 
     # -- Current user context --------------------------------------------------
 
@@ -133,11 +130,11 @@ class Org(_OrgBase):
         return self._http.post("/api/v1/org/vouchers/redeem", json_data=body)  # type: ignore[no-any-return]
 
 
-class AsyncOrg(_OrgBase):
+class AsyncOrg(_GenAsyncOrgBilling):
     """Async organization/billing operations (mirror of :class:`Org`)."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
-        super().__init__(http)
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
+        self._http = http
 
     async def me(self) -> dict[str, Any]:
         return await self._http.get("/api/v1/me")  # type: ignore[no-any-return]

@@ -12,13 +12,15 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import quote
 
+from .._generated.resources.tenants import AsyncTenants as _GenAsyncTenants
+from .._generated.resources.tenants import Tenants as _GenTenants
 from .._http import AsyncHTTPClient, HTTPClient
 
 
-class Tenants:
+class Tenants(_GenTenants):
     """Sync tenant read operations."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def list(self) -> dict[str, Any]:
@@ -50,10 +52,10 @@ class Tenants:
         )
 
 
-class AsyncTenants:
+class AsyncTenants(_GenAsyncTenants):
     """Async tenant read operations (mirror of :class:`Tenants`)."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def list(self) -> dict[str, Any]:

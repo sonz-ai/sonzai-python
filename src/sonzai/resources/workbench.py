@@ -22,6 +22,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.resources.workbench import AsyncWorkbench as _GenAsyncWorkbench
+from .._generated.resources.workbench import Workbench as _GenWorkbench
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import AdvanceTimeResponse
 
@@ -63,10 +65,10 @@ def _build_advance_time_body(
     return body
 
 
-class Workbench:
+class Workbench(_GenWorkbench):
     """Sync workbench operations (time-machine, simulate-user, passthrough chat)."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     # -- Advance time (PRIMARY) ------------------------------------------------
@@ -200,10 +202,10 @@ class Workbench:
         return self._http.post("/api/v1/workbench/chat", json_data=body)
 
 
-class AsyncWorkbench:
+class AsyncWorkbench(_GenAsyncWorkbench):
     """Async workbench operations (mirror of :class:`Workbench`)."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def advance_time(

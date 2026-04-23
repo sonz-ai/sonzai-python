@@ -12,14 +12,16 @@ from typing import Any
 from urllib.parse import quote
 
 from .._generated.models import StorefrontUpdateInputBody, StorefrontUpsertAgentInputBody
+from .._generated.resources.storefront import AsyncStorefront as _GenAsyncStorefront
+from .._generated.resources.storefront import Storefront as _GenStorefront
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 
 
-class Storefront:
+class Storefront(_GenStorefront):
     """Sync storefront config + published agents."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def get(self) -> dict[str, Any]:
@@ -110,10 +112,10 @@ class Storefront:
         self._http.delete(f"/api/v1/storefront/agents/{quote(agent_id, safe='')}")
 
 
-class AsyncStorefront:
+class AsyncStorefront(_GenAsyncStorefront):
     """Async storefront operations (mirror of :class:`Storefront`)."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def get(self) -> dict[str, Any]:

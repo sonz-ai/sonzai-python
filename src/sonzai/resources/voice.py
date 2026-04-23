@@ -12,6 +12,8 @@ from .._generated.models import (
     TextToSpeechInputBody,
     VoiceLiveWSTokenInputBody,
 )
+from .._generated.resources.voice import AsyncVoice as _GenAsyncVoice
+from .._generated.resources.voice import Voice as _GenVoice
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import (
@@ -23,10 +25,10 @@ from ..types import (
 )
 
 
-class VoiceResource:
+class VoiceResource(_GenVoice):
     """Sync per-agent voice live operations (duplex WebSocket streaming via Gemini Live)."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def get_token(
@@ -513,10 +515,10 @@ class AsyncVoiceStream:
         await self.close()
 
 
-class Voices:
+class Voices(_GenVoice):
     """Sync global voice catalog operations."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def list(
@@ -545,10 +547,10 @@ class Voices:
         return VoiceListResponse.model_validate(data)
 
 
-class AsyncVoiceResource:
+class AsyncVoiceResource(_GenAsyncVoice):
     """Async per-agent voice live operations (duplex WebSocket streaming via Gemini Live)."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def get_token(
@@ -635,10 +637,10 @@ class AsyncVoiceResource:
         return STTResponse.model_validate(data)
 
 
-class AsyncVoices:
+class AsyncVoices(_GenAsyncVoice):
     """Async global voice catalog operations."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def list(

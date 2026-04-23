@@ -11,6 +11,8 @@ from .._generated.models import (
     GenerateImageInputBody,
     GenerateSeedMemoriesInputBody,
 )
+from .._generated.resources.generation import AsyncGeneration as _GenAsyncGeneration
+from .._generated.resources.generation import Generation as _GenGeneration
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import (
@@ -21,10 +23,10 @@ from ..types import (
 )
 
 
-class Generation:
+class Generation(_GenGeneration):
     """Sync AI content generation operations for an agent."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def generate_bio(
@@ -236,10 +238,10 @@ class Generation:
         return GenerateSeedMemoriesResponse.model_validate(data)
 
 
-class AsyncGeneration:
+class AsyncGeneration(_GenAsyncGeneration):
     """Async AI content generation operations for an agent."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def generate_bio(

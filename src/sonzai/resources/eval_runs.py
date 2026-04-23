@@ -5,15 +5,17 @@ from __future__ import annotations
 from collections.abc import AsyncIterator, Iterator
 from typing import Any
 
+from .._generated.resources.evals import AsyncEvals as _GenAsyncEvals
+from .._generated.resources.evals import Evals as _GenEvals
 from .._http import AsyncHTTPClient, HTTPClient
 from .._pagination import AsyncPage, Page
 from ..types import EvalRun, EvalRunListResponse, SessionResponse, SimulationEvent
 
 
-class EvalRuns:
+class EvalRuns(_GenEvals):
     """Sync eval run operations."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def list(
@@ -59,10 +61,10 @@ class EvalRuns:
             yield SimulationEvent.model_validate(event)
 
 
-class AsyncEvalRuns:
+class AsyncEvalRuns(_GenAsyncEvals):
     """Async eval run operations."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def list(

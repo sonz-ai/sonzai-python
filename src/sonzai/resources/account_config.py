@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.resources.account_config import AccountConfig as _GenAccountConfig
+from .._generated.resources.account_config import AsyncAccountConfig as _GenAsyncAccountConfig
 from .._http import AsyncHTTPClient, HTTPClient
 from ..post_processing_model import (
     POST_PROCESSING_MODEL_MAP_KEY,
@@ -23,10 +25,10 @@ from ..post_processing_model import (
 from ..types import AccountConfigEntry, AccountConfigListResponse
 
 
-class AccountConfig:
+class AccountConfig(_GenAccountConfig):
     """Sync account-scope configuration (key-value store)."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def list(self) -> AccountConfigListResponse:
@@ -75,10 +77,10 @@ class AccountConfig:
         self.delete(POST_PROCESSING_MODEL_MAP_KEY)
 
 
-class AsyncAccountConfig:
+class AsyncAccountConfig(_GenAsyncAccountConfig):
     """Async account-scope configuration (key-value store)."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def list(self) -> AccountConfigListResponse:

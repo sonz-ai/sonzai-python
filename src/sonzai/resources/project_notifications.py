@@ -5,15 +5,17 @@ from __future__ import annotations
 from typing import Any
 
 from .._generated.models import AcknowledgeProjectNotificationsInputBody
+from .._generated.resources.notifications import AsyncNotifications as _GenAsyncNotifications
+from .._generated.resources.notifications import Notifications as _GenNotifications
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import AcknowledgeResponse, ProjectNotificationListResponse
 
 
-class ProjectNotifications:
+class ProjectNotifications(_GenNotifications):
     """Sync project-scoped notification polling operations."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def list(
@@ -76,10 +78,10 @@ class ProjectNotifications:
         return AcknowledgeResponse.model_validate(data)
 
 
-class AsyncProjectNotifications:
+class AsyncProjectNotifications(_GenAsyncNotifications):
     """Async project-scoped notification polling operations."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def list(

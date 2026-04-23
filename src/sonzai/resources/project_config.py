@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.resources.project_config import AsyncProjectConfig as _GenAsyncProjectConfig
+from .._generated.resources.project_config import ProjectConfig as _GenProjectConfig
 from .._http import AsyncHTTPClient, HTTPClient
 from ..post_processing_model import (
     POST_PROCESSING_MODEL_MAP_KEY,
@@ -13,10 +15,10 @@ from ..post_processing_model import (
 from ..types import ProjectConfigEntry, ProjectConfigListResponse
 
 
-class ProjectConfig:
+class ProjectConfig(_GenProjectConfig):
     """Sync project configuration operations (key-value store)."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def list(self, project_id: str) -> ProjectConfigListResponse:
@@ -67,10 +69,10 @@ class ProjectConfig:
         self.delete(project_id, POST_PROCESSING_MODEL_MAP_KEY)
 
 
-class AsyncProjectConfig:
+class AsyncProjectConfig(_GenAsyncProjectConfig):
     """Async project configuration operations (key-value store)."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def list(self, project_id: str) -> ProjectConfigListResponse:

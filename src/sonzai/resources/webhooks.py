@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any
 
 from .._generated.models import UpsertWebhookForTenantInputBody, UpsertWebhookInputBody, WebhookDeliveryAttempt
+from .._generated.resources.webhooks import AsyncWebhooks as _GenAsyncWebhooks
+from .._generated.resources.webhooks import Webhooks as _GenWebhooks
 from .._http import AsyncHTTPClient, HTTPClient
 from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
@@ -16,10 +18,10 @@ from ..types import (
 )
 
 
-class Webhooks:
+class Webhooks(_GenWebhooks):
     """Sync webhook management operations."""
 
-    def __init__(self, http: HTTPClient) -> None:
+    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     def register(
@@ -137,10 +139,10 @@ class Webhooks:
         return WebhookRegisterResponse.model_validate(data)
 
 
-class AsyncWebhooks:
+class AsyncWebhooks(_GenAsyncWebhooks):
     """Async webhook management operations."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:
+    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
         self._http = http
 
     async def register(
