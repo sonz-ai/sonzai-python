@@ -68,8 +68,28 @@ class SliceKey:
     dataset_tag: str = ""
 
     def matches(self, other: "SliceKey") -> bool:
-        """Strict equality — any field mismatch means the snapshot is unusable."""
-        return self == other
+        """Check whether two slice keys describe compatible ingested state.
+
+        Identity-affecting fields are benchmark-specific:
+          * ``limit`` and ``dataset_tag`` always matter (different scenario /
+            question pool → different ingestion).
+          * LongMemEval: ``max_sessions_per_question`` picks the haystack
+            slice, so it's part of identity.
+          * SOTOPIA: ``sessions_per_scenario`` is a **target**, not an
+            identity — a snapshot taken at N sessions resumes cleanly for
+            any target ≥ N. Including it in equality would throw away the
+            last_session_index every time the user bumps ``--sessions-per-
+            scenario`` from 30 → 60 → 90.
+        """
+        if self.benchmark != other.benchmark:
+            return False
+        if self.limit != other.limit:
+            return False
+        if self.dataset_tag != other.dataset_tag:
+            return False
+        if self.benchmark == "sotopia":
+            return True
+        return self.max_sessions_per_question == other.max_sessions_per_question
 
 
 @dataclass

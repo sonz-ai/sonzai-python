@@ -43,6 +43,7 @@ from ..common.gemini_judge import (
     GeminiJudge,
     judge_sotopia_async,
     partner_turn_async,
+    summarize_session_async,
 )
 from ..common.sdk_extras import async_sessions
 from ..common.workbench_compat import advance_time_chunked_async
@@ -67,8 +68,16 @@ async def _simulate_session(
     session_id: str,
     scenario: Scenario,
     judge: GeminiJudge,
+    prior_sessions_summary: str = "",
 ) -> list[dict[str, str]]:
-    """Run one scenario session and return the transcript."""
+    """Run one scenario session and return the transcript.
+
+    ``prior_sessions_summary`` is threaded into the partner prompt so the
+    partner Gemini can legitimately reference earlier sessions — the whole
+    point of a longitudinal benchmark. Without this, every session opens
+    cold from the partner's side and there's nothing for the memory system
+    to be tested against.
+    """
     sessions = async_sessions(client)
     await sessions.start(agent_id=agent_id, user_id=user_id, session_id=session_id)
 
@@ -92,6 +101,8 @@ async def _simulate_session(
                 partner_name=scenario.partner.name,
                 partner_goal=scenario.partner.goal,
                 partner_secret=scenario.partner.secret,
+                agent_name=scenario.agent.name,
+                prior_sessions_summary=prior_sessions_summary,
             )
         except Exception as e:
             logger.warning("partner_turn failed: %s — ending session early", e)
@@ -126,6 +137,30 @@ async def _simulate_session(
         logger.warning("sessions.end failed (non-fatal): %s", e)
 
     return transcript
+
+
+# ---------------------------------------------------------------------------
+# Prior-session summary management
+# ---------------------------------------------------------------------------
+
+# Cap how many prior-session summaries we stitch into the partner/judge
+# prompts. Longer than this and the prompt balloons; the partner only needs
+# enough to produce credible callbacks, not verbatim total recall. Sonzai's
+# own memory system is what's being measured, not the partner's.
+_PRIOR_SUMMARY_WINDOW = 10
+
+
+def _format_prior_summaries(summaries: list[str]) -> str:
+    """Render the last ``_PRIOR_SUMMARY_WINDOW`` summaries as a bullet block."""
+    if not summaries:
+        return ""
+    window = summaries[-_PRIOR_SUMMARY_WINDOW:]
+    start_idx = len(summaries) - len(window) + 1
+    lines = [
+        f"- Session {start_idx + i}: {s}"
+        for i, s in enumerate(window)
+    ]
+    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -179,7 +214,7 @@ async def _run_scenario(
             f"Your goal in interactions with {scenario.partner.name}: "
             f"{scenario.agent.goal}"
         )
-        from ...common.sdk_extras import ensure_bench_agent_async
+        from ..common.sdk_extras import ensure_bench_agent_async
 
         agent_id, existed = await ensure_bench_agent_async(
             client, name=agent_name, description=description
@@ -209,9 +244,15 @@ async def _run_scenario(
         )
         return runs
 
+    # Rolling list of per-session summaries; stitched into both partner and
+    # judge prompts so the longitudinal benchmark actually has longitudinal
+    # surface. Grows by one every scored session.
+    prior_summaries: list[str] = []
+
     try:
         for idx in range(start_idx, sessions_per_scenario + 1):
             session_id = f"{scenario.scenario_id}-s{idx:02d}-{uuid.uuid4().hex[:4]}"
+            prior_block = _format_prior_summaries(prior_summaries)
             transcript = await _simulate_session(
                 client,
                 agent_id=agent_id,
@@ -219,6 +260,7 @@ async def _run_scenario(
                 session_id=session_id,
                 scenario=scenario,
                 judge=judge,
+                prior_sessions_summary=prior_block,
             )
 
             transcript_text = "\n".join(
@@ -234,10 +276,28 @@ async def _run_scenario(
                     agent_name=scenario.agent.name,
                     agent_goal=scenario.agent.goal,
                     agent_secret=scenario.agent.secret,
+                    prior_sessions_summary=prior_block,
                 )
             except Exception as e:
                 logger.exception("sotopia judge failed on %s s%d", scenario.scenario_id, idx)
                 continue
+
+            # Summarize this session for downstream partner/judge context.
+            # Best-effort: failure here shouldn't kill the bench.
+            try:
+                summary = await summarize_session_async(
+                    judge,
+                    transcript_text=transcript_text,
+                    agent_name=scenario.agent.name,
+                    partner_name=scenario.partner.name,
+                )
+                prior_summaries.append(summary.summary)
+            except Exception as e:
+                logger.warning(
+                    "session summarizer failed on %s s%d (non-fatal): %s",
+                    scenario.scenario_id, idx, e,
+                )
+                prior_summaries.append("(summary unavailable)")
 
             runs.append(
                 SessionRun(
@@ -404,6 +464,27 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="When reusing agents, call memory.reset before the next session — "
         "useful to re-score with a clean slate without creating a new agent.",
     )
+    p.add_argument(
+        "--backend",
+        choices=("sonzai", "mempalace"),
+        default="sonzai",
+        help="Memory system under test (default: sonzai). 'mempalace' pairs "
+        "MemPalace retrieval with Gemini Flash Lite for the agent role so "
+        "both sides of the comparison use the same generator.",
+    )
+    p.add_argument(
+        "--mempalace-search-k",
+        type=int,
+        default=5,
+        help="Top-K drawers to retrieve per agent turn (MemPalace backend).",
+    )
+    p.add_argument(
+        "--mempalace-max-drawer-chars",
+        type=int,
+        default=600,
+        help="Truncate each retrieved drawer to this many chars when building "
+        "the agent prompt (MemPalace backend).",
+    )
     p.add_argument("-v", "--verbose", action="count", default=0)
     return p.parse_args(argv)
 
@@ -414,7 +495,7 @@ async def _amain(args: argparse.Namespace) -> int:
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
 
-    if not os.environ.get("SONZAI_API_KEY"):
+    if args.backend == "sonzai" and not os.environ.get("SONZAI_API_KEY"):
         print("error: SONZAI_API_KEY must be set", file=sys.stderr)
         return 2
     if not os.environ.get("GEMINI_API_KEY"):
@@ -424,12 +505,47 @@ async def _amain(args: argparse.Namespace) -> int:
     at_sessions = [int(x) for x in args.snapshot_at.split(",") if x.strip()]
     scenarios = load_scenarios(limit=args.scenarios, prefer_hf=not args.no_hf)
     print(
-        f"Running SOTOPIA longitudinal: {len(scenarios)} scenarios × "
+        f"Running SOTOPIA longitudinal [{args.backend}]: {len(scenarios)} scenarios × "
         f"{args.sessions_per_scenario} sessions",
         file=sys.stderr,
     )
 
     judge = GeminiJudge(model=args.judge_model)
+
+    # --- MemPalace backend short-circuit -----------------------------------
+    # MemPalace has no notion of simulated time, agents, or server sessions,
+    # so the reuse-agents / pinning / advance_time plumbing all no-ops here.
+    # Palace state is persisted per-scenario on disk under
+    # ``~/.cache/sonzai-bench/sotopia-mempalace/<scenario_id>/`` and survives
+    # across runs automatically.
+    if args.backend == "mempalace":
+        from .backends.mempalace import run_all_scenarios_mempalace
+
+        t0 = time.time()
+        all_runs = await run_all_scenarios_mempalace(
+            scenarios=scenarios,
+            sessions_per_scenario=args.sessions_per_scenario,
+            scenario_concurrency=args.scenario_concurrency,
+            judge=judge,
+            search_k=args.mempalace_search_k,
+            max_drawer_chars=args.mempalace_max_drawer_chars,
+        )
+        elapsed = time.time() - t0
+
+        ts = time.strftime("%Y%m%d-%H%M%S")
+        results_dir = Path(__file__).parent / "results"
+        jsonl_out = args.output or results_dir / f"sotopia_mempalace_{ts}.jsonl"
+        chart_out = jsonl_out.with_suffix("").with_name(
+            jsonl_out.stem + "_trajectory.png"
+        )
+        _write_runs_jsonl(jsonl_out, all_runs)
+        _plot_trajectory(chart_out, all_runs)
+        _print_summary(all_runs, at_sessions)
+        print(f"\nElapsed: {elapsed:.1f}s")
+        print(f"Output : {jsonl_out}")
+        print(f"Chart  : {chart_out}")
+        return 0
+
     # advance_time can take minutes per call (runs CE workers per simulated day).
     client = AsyncSonzai(timeout=600.0)
 

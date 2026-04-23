@@ -36,11 +36,18 @@ class Scenario:
     tags: list[str] = field(default_factory=list)
 
 
-# Hand-picked seed scenarios — used when HuggingFace isn't available, and as
-# the tags source for filtering the full dataset.
+# Hand-picked seed scenarios with enriched partner personas — the "user" side
+# of each conversation carries ~200–300 words of personal history, preferences,
+# quirks, and current-life context. Rich latent structure is what lets a
+# memory system demonstrate "understanding" (compressing scattered turns into
+# a model of the user) beyond "remembering" (verbatim recall of what was said).
+#
+# Scenario IDs are prefixed ``rich-*`` so runs against these personas get
+# fresh pinned agents / fresh palaces rather than bleeding in with state from
+# older thin-persona runs against ``seed-*`` IDs.
 _SEED_SCENARIOS: list[Scenario] = [
     Scenario(
-        scenario_id="seed-mentorship",
+        scenario_id="rich-mentorship",
         codename="Weekly mentorship check-in",
         setting=(
             "A mentor and mentee meet for a weekly 1:1. Over many sessions they "
@@ -53,16 +60,43 @@ _SEED_SCENARIOS: list[Scenario] = [
             secret="Mika was passed over for promotion last quarter.",
         ),
         partner=Character(
-            name="Alex",
-            background="Junior engineer two months into their first role.",
-            goal="Get unblocked on the project and feel supported.",
-            secret="Alex is secretly interviewing elsewhere.",
+            name="Alex Chen",
+            background=(
+                "28-year-old junior engineer, two months into their first full-time "
+                "software role at a mid-size fintech in Toronto. Grew up in Vancouver, "
+                "only child of first-gen Taiwanese immigrants who ran a small bakery; "
+                "mom passed in 2024 and the bakery is now leased out. Took a winding "
+                "path to engineering — started in structural at UBC, switched to CS "
+                "mid-degree after building a scheduler for the bakery POS. Graduated "
+                "2025 with side projects in Elm (a tarot-drawing web app) and a "
+                "scheduling tool for the local mahjong club. "
+                "Communicates with classic early-career patterns: over-apologizes, "
+                "hedges with 'I could be wrong, but…', quotes docs verbatim to mask "
+                "uncertainty. Gets defensive in 1:1s when feeling judged; lights up "
+                "on concrete technical puzzles. Reads fantasy (Sanderson, Jemisin), "
+                "plays D&D Fridays (Rogue, never DMs), makes pour-over coffee every "
+                "morning as a ritual. Tabby cat named Pickle; long-distance partner "
+                "Kai in Vancouver. "
+                "Current life: paying down $28k in student loans, quietly considering "
+                "a part-time CS MS (hasn't told anyone), feels imposter syndrome as "
+                "the only junior on a senior team, loves the work but worries the "
+                "pace isn't sustainable. Prefers written feedback, async over sync, "
+                "does their best thinking on 6am walks."
+            ),
+            goal=(
+                "Grow as an engineer without burning out; get concrete, actionable "
+                "feedback that doesn't feel patronizing."
+            ),
+            secret=(
+                "Secretly interviewing at a larger FAANG-type company for next month; "
+                "hasn't decided whether to tell Mika."
+            ),
         ),
         max_turns=12,
         tags=["cooperative", "longitudinal"],
     ),
     Scenario(
-        scenario_id="seed-therapy",
+        scenario_id="rich-therapy",
         codename="Weekly therapy session",
         setting=(
             "A therapist sees a returning client. Over sessions they should build "
@@ -75,16 +109,44 @@ _SEED_SCENARIOS: list[Scenario] = [
             secret="Dr. Yuen is dealing with burnout and is cutting their caseload.",
         ),
         partner=Character(
-            name="Jordan",
-            background="Client working through work-related anxiety.",
-            goal="Feel heard and leave each session with an actionable idea.",
-            secret="Jordan has been avoiding a conversation with their partner.",
+            name="Jordan Rivera",
+            background=(
+                "34-year-old senior product manager at a mid-size SaaS company in "
+                "Oakland, started therapy six months ago for work-related anxiety "
+                "that has bled into sleep. Grew up in Sacramento, oldest of three; "
+                "parents divorced when Jordan was nine and Jordan became the stable "
+                "one — classic 'parentified' older sibling. Bachelor's in psychology "
+                "(UC Santa Cruz), unrelated to the current career; drifted into PM "
+                "via a startup operations role. "
+                "Married to Sam (elementary-school teacher) for four years; two dogs, "
+                "Moxie (corgi) and Biscuit (mutt). No kids, both leaning no. "
+                "Communicates carefully — uses lots of meta-commentary ('let me try "
+                "to say this better…'), rarely cries in session but sometimes goes "
+                "quiet mid-sentence. Highly self-aware, reads pop-psych books, uses "
+                "therapy vocabulary sometimes defensively. Exercises compulsively "
+                "when anxious (morning runs, weekend rock climbing). Strong opinions "
+                "about public transit and zoning. Avoids alcohol after watching dad "
+                "spiral on it. "
+                "Current life: promoted to senior PM in February, inherited a failing "
+                "product line, worked 60-hour weeks for three months and is now "
+                "crashing. Anxious about the quarterly review in three weeks. Sleep "
+                "broken since May. Has started, then stopped, journaling four times. "
+                "Favorite comfort: long drives to nowhere with Sam, windows down."
+            ),
+            goal=(
+                "Stop the anxiety from taking over; leave each session with one "
+                "concrete idea to try."
+            ),
+            secret=(
+                "Has been mentally rehearsing a 'I quit' conversation with the "
+                "manager and feels guilty about it — hasn't told Sam."
+            ),
         ),
         max_turns=14,
         tags=["cooperative", "longitudinal", "emotional"],
     ),
     Scenario(
-        scenario_id="seed-language-tutor",
+        scenario_id="rich-language-tutor",
         codename="Weekly Spanish lesson",
         setting=(
             "A language tutor works with a returning student. Over sessions they "
@@ -94,19 +156,49 @@ _SEED_SCENARIOS: list[Scenario] = [
             name="Profesora Elena",
             background="Native Spanish speaker, 10 years tutoring experience.",
             goal="Move the student one level up in fluency over the term.",
-            secret="Elena doubles her rate in a month.",
+            secret="Elena is doubling her rate next month.",
         ),
         partner=Character(
-            name="Sam",
-            background="Adult learner preparing for a trip to Madrid.",
-            goal="Be conversational before the trip; enjoy the process.",
-            secret="Sam finds grammar drills demotivating but hasn't said so.",
+            name="Sam Okafor",
+            background=(
+                "42-year-old mechanical engineer at an aerospace supplier in Seattle, "
+                "learning Spanish for a three-week family trip to Madrid and "
+                "Barcelona in November. Born in Houston to Nigerian immigrants, "
+                "raised bilingual English/Igbo at home; high-school French never "
+                "really stuck. This is Sam's first serious language attempt as an "
+                "adult. "
+                "Married to Lena (graphic designer) for eleven years; two kids — "
+                "Chioma (9, into soccer) and Adaeze (6, into dinosaurs). The Spain "
+                "trip is a belated anniversary celebration and a reconnection after "
+                "a rough year — Lena's father passed in March. "
+                "Communicates literally: engineer's mind, asks for rules and "
+                "patterns, gets frustrated when the language 'just doesn't follow "
+                "logic.' Finds grammar drills demotivating but hasn't said so — "
+                "keeps showing up for them. Gets embarrassed about pronunciation; "
+                "avoids recording spoken homework. Loves sci-fi audiobooks on "
+                "commutes; home-brews beer; plays competitive chess at the local "
+                "club (1780 Elo, climbing slowly). "
+                "Current life: just bought a house in Ballard; two cats and a "
+                "spaniel; kids' school drop-off every morning at 7:45; tutors "
+                "daughter Chioma in math on Sundays. Quietly proud of the household "
+                "he's built. Prefers lessons at 8pm after kids go down; thinks a "
+                "30-min daily session is more sustainable than a weekly 60."
+            ),
+            goal=(
+                "Be conversational enough to order food, navigate the city, and "
+                "small-talk with Lena's Spanish-speaking relatives on the trip; "
+                "not embarrass the family."
+            ),
+            secret=(
+                "Finds grammar drills demotivating and has been quietly considering "
+                "switching tutors — doesn't want to hurt Elena's feelings."
+            ),
         ),
         max_turns=10,
         tags=["cooperative", "longitudinal", "knowledge-transfer"],
     ),
     Scenario(
-        scenario_id="seed-fitness-coach",
+        scenario_id="rich-fitness-coach",
         codename="Fitness coaching check-in",
         setting=(
             "A personal trainer checks in with their client each week, adjusting "
@@ -119,10 +211,39 @@ _SEED_SCENARIOS: list[Scenario] = [
             secret="Dev has started a side business and has less time.",
         ),
         partner=Character(
-            name="Taylor",
-            background="Desk worker starting strength training for the first time.",
-            goal="See real progress without hating the process.",
-            secret="Taylor occasionally skips sessions and fibs about it.",
+            name="Taylor Nguyen",
+            background=(
+                "31-year-old software engineer at a major cloud provider in Austin, "
+                "desk worker starting serious strength training for the first time "
+                "after a decade of 'I'll get to it.' Daughter of first-gen Vietnamese "
+                "refugees, grew up in Houston; older brother Minh is a doctor in "
+                "Dallas. Single, lives alone in a South Congress condo with a shiba "
+                "inu named Beanie. Dated someone for five years, broke up in 2024; "
+                "dating-app fatigue is a recurring theme. "
+                "Communicates politely with a self-deprecating edge; makes jokes when "
+                "nervous; apologizes for missed sessions by front-loading context "
+                "('ugh, okay so what happened was…'). Perfectionist — avoids sharing "
+                "numbers until they're 'ready' (shared bodyweight only on week four). "
+                "Family history of Type-2 diabetes and cardiovascular disease — the "
+                "real reason for starting — but leads with aesthetics because it "
+                "feels less heavy. "
+                "Preferences: 5:30am workouts, hates running, loves rowing, oddly "
+                "into deadlifts. Pickleball with coworkers on weekends. Cooks "
+                "Vietnamese food on Sundays for the week. Two cups of coffee, no "
+                "alcohol on weekdays. Lifts to lo-fi and '90s R&B. "
+                "Current life: promoted six months ago, imposter syndrome about it; "
+                "saving for a house; seeing a therapist named Mia every other week; "
+                "just got back from a solo trip to Japan. Has a bad left knee from "
+                "a 2022 skiing incident and is paranoid about re-injuring it."
+            ),
+            goal=(
+                "Hit the 6-month strength milestones (deadlift 2x bodyweight, squat "
+                "1.5x) without getting injured, and do it consistently."
+            ),
+            secret=(
+                "Has skipped two sessions in the last month and told Dev they went "
+                "well; feels guilty but doesn't want to lose face."
+            ),
         ),
         max_turns=10,
         tags=["cooperative", "longitudinal"],

@@ -15,6 +15,7 @@ SCORE_DIMS = (
     "social_rules",
     "financial_and_material",
     "goal",
+    "memory_continuity",
     "overall",
 )
 
@@ -44,7 +45,13 @@ def trajectory_per_dimension(
     for dim in SCORE_DIMS:
         series: list[float] = []
         for idx in range(1, max_session + 1):
-            at_idx = [getattr(r.score, dim) for r in filtered if r.session_index == idx]
+            at_idx = [
+                getattr(r.score, dim)
+                for r in filtered
+                if r.session_index == idx
+                and hasattr(r.score, dim)
+                and getattr(r.score, dim) is not None
+            ]
             series.append(sum(at_idx) / len(at_idx) if at_idx else float("nan"))
         out[dim] = series
     return out
@@ -57,7 +64,16 @@ def snapshot(runs: Sequence[SessionRun], at_sessions: Sequence[int]) -> dict[int
         rows = [r for r in runs if r.session_index == idx]
         if not rows:
             continue
-        out[idx] = {
-            dim: sum(getattr(r.score, dim) for r in rows) / len(rows) for dim in SCORE_DIMS
-        }
+        out[idx] = {}
+        for dim in SCORE_DIMS:
+            # Tolerate older runs (pre-memory_continuity JSONLs) by skipping
+            # rows that lack the attribute instead of blowing up the whole
+            # snapshot. compare.py can then show '-' for the missing dim.
+            vals = [
+                getattr(r.score, dim)
+                for r in rows
+                if hasattr(r.score, dim) and getattr(r.score, dim) is not None
+            ]
+            if vals:
+                out[idx][dim] = sum(vals) / len(vals)
     return out
