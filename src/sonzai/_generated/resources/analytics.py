@@ -31,7 +31,7 @@ class Analytics(_AnalyticsBase):
         project_id: str | None = None,
     ) -> CostResponse:
         """Cost analytics with billing-aware pricing"""
-        path = f"/analytics/cost"
+        path = f"/api/v1/analytics/cost"
         params: dict[str, Any] = {}
         if start is not None:
             params["start"] = start
@@ -53,7 +53,7 @@ class Analytics(_AnalyticsBase):
         project_id: str | None = None,
     ) -> CostBreakdownResponse:
         """Cost breakdown by operation / model / agent"""
-        path = f"/analytics/cost/breakdown"
+        path = f"/api/v1/analytics/cost/breakdown"
         params: dict[str, Any] = {}
         if month is not None:
             params["month"] = month
@@ -70,7 +70,7 @@ class Analytics(_AnalyticsBase):
         self,
     ) -> AnalyticsOverview:
         """Dashboard analytics overview"""
-        path = f"/analytics/overview"
+        path = f"/api/v1/analytics/overview"
         params = None
         data = self._http.get(path, params=params)
         return AnalyticsOverview.model_validate(data)
@@ -79,7 +79,7 @@ class Analytics(_AnalyticsBase):
         self,
     ) -> AnalyticsRealtimeResponse:
         """Dashboard analytics realtime"""
-        path = f"/analytics/realtime"
+        path = f"/api/v1/analytics/realtime"
         params = None
         data = self._http.get(path, params=params)
         return AnalyticsRealtimeResponse.model_validate(data)
@@ -91,7 +91,7 @@ class Analytics(_AnalyticsBase):
         project_id: str | None = None,
     ) -> UsageResponse:
         """Token and session usage analytics"""
-        path = f"/analytics/usage"
+        path = f"/api/v1/analytics/usage"
         params: dict[str, Any] = {}
         if month is not None:
             params["month"] = month
@@ -111,7 +111,7 @@ class AsyncAnalytics(_AnalyticsBase):
         project_id: str | None = None,
     ) -> CostResponse:
         """Cost analytics with billing-aware pricing"""
-        path = f"/analytics/cost"
+        path = f"/api/v1/analytics/cost"
         params: dict[str, Any] = {}
         if start is not None:
             params["start"] = start
@@ -133,7 +133,7 @@ class AsyncAnalytics(_AnalyticsBase):
         project_id: str | None = None,
     ) -> CostBreakdownResponse:
         """Cost breakdown by operation / model / agent"""
-        path = f"/analytics/cost/breakdown"
+        path = f"/api/v1/analytics/cost/breakdown"
         params: dict[str, Any] = {}
         if month is not None:
             params["month"] = month
@@ -150,7 +150,7 @@ class AsyncAnalytics(_AnalyticsBase):
         self,
     ) -> AnalyticsOverview:
         """Dashboard analytics overview"""
-        path = f"/analytics/overview"
+        path = f"/api/v1/analytics/overview"
         params = None
         data = await self._http.get(path, params=params)
         return AnalyticsOverview.model_validate(data)
@@ -159,7 +159,7 @@ class AsyncAnalytics(_AnalyticsBase):
         self,
     ) -> AnalyticsRealtimeResponse:
         """Dashboard analytics realtime"""
-        path = f"/analytics/realtime"
+        path = f"/api/v1/analytics/realtime"
         params = None
         data = await self._http.get(path, params=params)
         return AnalyticsRealtimeResponse.model_validate(data)
@@ -171,7 +171,7 @@ class AsyncAnalytics(_AnalyticsBase):
         project_id: str | None = None,
     ) -> UsageResponse:
         """Token and session usage analytics"""
-        path = f"/analytics/usage"
+        path = f"/api/v1/analytics/usage"
         params: dict[str, Any] = {}
         if month is not None:
             params["month"] = month

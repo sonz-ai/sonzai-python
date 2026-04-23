@@ -23,7 +23,7 @@ class ProjectConfig(_ProjectConfigBase):
         project_id: str,
     ) -> Any:
         """List project config keys"""
-        path = f"/projects/{projectId}/config"
+        path = f"/api/v1/projects/{project_id}/config"
         params = None
         data = self._http.get(path, params=params)
         return data
@@ -34,7 +34,7 @@ class ProjectConfig(_ProjectConfigBase):
         key: str,
     ) -> Any:
         """Delete a project config key"""
-        path = f"/projects/{projectId}/config/{key}"
+        path = f"/api/v1/projects/{project_id}/config/{key}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -45,7 +45,7 @@ class ProjectConfig(_ProjectConfigBase):
         key: str,
     ) -> Any:
         """Get a project config value"""
-        path = f"/projects/{projectId}/config/{key}"
+        path = f"/api/v1/projects/{project_id}/config/{key}"
         params = None
         data = self._http.get(path, params=params)
         return data
@@ -56,9 +56,9 @@ class ProjectConfig(_ProjectConfigBase):
         key: str,
     ) -> SetProjectConfigOutputBody:
         """Set a project config value"""
-        path = f"/projects/{projectId}/config/{key}"
+        path = f"/api/v1/projects/{project_id}/config/{key}"
         params = None
-        data = self._http.put(path, params=params, body=None)
+        data = self._http.put(path, params=params)
         return SetProjectConfigOutputBody.model_validate(data)
 
 
@@ -68,7 +68,7 @@ class AsyncProjectConfig(_ProjectConfigBase):
         project_id: str,
     ) -> Any:
         """List project config keys"""
-        path = f"/projects/{projectId}/config"
+        path = f"/api/v1/projects/{project_id}/config"
         params = None
         data = await self._http.get(path, params=params)
         return data
@@ -79,7 +79,7 @@ class AsyncProjectConfig(_ProjectConfigBase):
         key: str,
     ) -> Any:
         """Delete a project config key"""
-        path = f"/projects/{projectId}/config/{key}"
+        path = f"/api/v1/projects/{project_id}/config/{key}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -90,7 +90,7 @@ class AsyncProjectConfig(_ProjectConfigBase):
         key: str,
     ) -> Any:
         """Get a project config value"""
-        path = f"/projects/{projectId}/config/{key}"
+        path = f"/api/v1/projects/{project_id}/config/{key}"
         params = None
         data = await self._http.get(path, params=params)
         return data
@@ -101,7 +101,7 @@ class AsyncProjectConfig(_ProjectConfigBase):
         key: str,
     ) -> SetProjectConfigOutputBody:
         """Set a project config value"""
-        path = f"/projects/{projectId}/config/{key}"
+        path = f"/api/v1/projects/{project_id}/config/{key}"
         params = None
-        data = await self._http.put(path, params=params, body=None)
+        data = await self._http.put(path, params=params)
         return SetProjectConfigOutputBody.model_validate(data)

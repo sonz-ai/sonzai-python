@@ -26,7 +26,7 @@ class Interests(_InterestsBase):
         instance_id: str | None = None,
     ) -> InterestsResponse:
         """Get agent interests"""
-        path = f"/agents/{agentId}/interests"
+        path = f"/api/v1/agents/{agent_id}/interests"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -45,7 +45,7 @@ class AsyncInterests(_InterestsBase):
         instance_id: str | None = None,
     ) -> InterestsResponse:
         """Get agent interests"""
-        path = f"/agents/{agentId}/interests"
+        path = f"/api/v1/agents/{agent_id}/interests"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id

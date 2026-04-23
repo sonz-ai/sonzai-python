@@ -29,7 +29,7 @@ class Users(_UsersBase):
         limit: int = 100,
     ) -> Page[UserEntry]:
         """List users for an agent"""
-        path = f"/agents/{agentId}/users"
+        path = f"/api/v1/agents/{agent_id}/users"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if sort_by is not None:
             params["sort_by"] = sort_by
@@ -48,7 +48,7 @@ class Users(_UsersBase):
         self,
     ) -> MeResponse:
         """Get current user with organizations"""
-        path = f"/me"
+        path = f"/api/v1/me"
         params = None
         data = self._http.get(path, params=params)
         return MeResponse.model_validate(data)
@@ -64,7 +64,7 @@ class AsyncUsers(_UsersBase):
         limit: int = 100,
     ) -> AsyncPage[UserEntry]:
         """List users for an agent"""
-        path = f"/agents/{agentId}/users"
+        path = f"/api/v1/agents/{agent_id}/users"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if sort_by is not None:
             params["sort_by"] = sort_by
@@ -87,7 +87,7 @@ class AsyncUsers(_UsersBase):
         self,
     ) -> MeResponse:
         """Get current user with organizations"""
-        path = f"/me"
+        path = f"/api/v1/me"
         params = None
         data = await self._http.get(path, params=params)
         return MeResponse.model_validate(data)

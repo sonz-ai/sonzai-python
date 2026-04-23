@@ -24,13 +24,17 @@ class _PersonalityBase:
 class Personality(_PersonalityBase):
     def batch_get_personalities(
         self,
-        **body_fields: Any,
+        *,
+        agent_ids: list[Any],
     ) -> BatchPersonalityResponse:
         """Batch-fetch agent personalities"""
-        path = f"/agents/personalities/batch"
+        path = f"/api/v1/agents/personalities/batch"
         params = None
-        body = encode_body(BatchGetPersonalitiesInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if agent_ids is not None:
+            _raw["agent_ids"] = agent_ids
+        body = encode_body(BatchGetPersonalitiesInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return BatchPersonalityResponse.model_validate(data)
 
     def get_personality(
@@ -41,7 +45,7 @@ class Personality(_PersonalityBase):
         since: str | None = None,
     ) -> PersonalityResponse:
         """Get agent personality profile and evolution"""
-        path = f"/agents/{agentId}/personality"
+        path = f"/api/v1/agents/{agent_id}/personality"
         params: dict[str, Any] = {}
         if history_limit is not None:
             params["history_limit"] = history_limit
@@ -53,26 +57,37 @@ class Personality(_PersonalityBase):
     def update_personality(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        big5: str | None = None,
+        dimensions: str | None = None,
     ) -> UpdatePersonalityOutputBody:
         """Update agent personality scores"""
-        path = f"/agents/{agentId}/personality"
+        path = f"/api/v1/agents/{agent_id}/personality"
         params = None
-        body = encode_body(UpdatePersonalityBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if big5 is not None:
+            _raw["big5"] = big5
+        if dimensions is not None:
+            _raw["dimensions"] = dimensions
+        body = encode_body(UpdatePersonalityBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return UpdatePersonalityOutputBody.model_validate(data)
 
 
 class AsyncPersonality(_PersonalityBase):
     async def batch_get_personalities(
         self,
-        **body_fields: Any,
+        *,
+        agent_ids: list[Any],
     ) -> BatchPersonalityResponse:
         """Batch-fetch agent personalities"""
-        path = f"/agents/personalities/batch"
+        path = f"/api/v1/agents/personalities/batch"
         params = None
-        body = encode_body(BatchGetPersonalitiesInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if agent_ids is not None:
+            _raw["agent_ids"] = agent_ids
+        body = encode_body(BatchGetPersonalitiesInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return BatchPersonalityResponse.model_validate(data)
 
     async def get_personality(
@@ -83,7 +98,7 @@ class AsyncPersonality(_PersonalityBase):
         since: str | None = None,
     ) -> PersonalityResponse:
         """Get agent personality profile and evolution"""
-        path = f"/agents/{agentId}/personality"
+        path = f"/api/v1/agents/{agent_id}/personality"
         params: dict[str, Any] = {}
         if history_limit is not None:
             params["history_limit"] = history_limit
@@ -95,11 +110,18 @@ class AsyncPersonality(_PersonalityBase):
     async def update_personality(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        big5: str | None = None,
+        dimensions: str | None = None,
     ) -> UpdatePersonalityOutputBody:
         """Update agent personality scores"""
-        path = f"/agents/{agentId}/personality"
+        path = f"/api/v1/agents/{agent_id}/personality"
         params = None
-        body = encode_body(UpdatePersonalityBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if big5 is not None:
+            _raw["big5"] = big5
+        if dimensions is not None:
+            _raw["dimensions"] = dimensions
+        body = encode_body(UpdatePersonalityBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return UpdatePersonalityOutputBody.model_validate(data)

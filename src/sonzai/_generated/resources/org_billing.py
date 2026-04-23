@@ -32,29 +32,36 @@ class OrgBilling(_OrgBillingBase):
         self,
     ) -> TenantBillingProfile:
         """Get org billing profile"""
-        path = f"/org/billing"
+        path = f"/api/v1/org/billing"
         params = None
         data = self._http.get(path, params=params)
         return TenantBillingProfile.model_validate(data)
 
     def create_org_billing_checkout(
         self,
-        **body_fields: Any,
+        *,
+        amount: int,
+        currency: str | None = None,
     ) -> OrgBillingURLBody:
         """Create Stripe checkout session (credit top-up)"""
-        path = f"/org/billing/checkout"
+        path = f"/api/v1/org/billing/checkout"
         params = None
-        body = encode_body(OrgBillingCheckoutInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if amount is not None:
+            _raw["amount"] = amount
+        if currency is not None:
+            _raw["currency"] = currency
+        body = encode_body(OrgBillingCheckoutInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return OrgBillingURLBody.model_validate(data)
 
     def create_org_billing_portal(
         self,
     ) -> OrgBillingURLBody:
         """Create Stripe billing-portal session"""
-        path = f"/org/billing/portal"
+        path = f"/api/v1/org/billing/portal"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return OrgBillingURLBody.model_validate(data)
 
     def list_org_active_characters(
@@ -63,7 +70,7 @@ class OrgBilling(_OrgBillingBase):
         days: int | None = 30,
     ) -> ActiveCharacterSummary:
         """List active characters for billing"""
-        path = f"/org/characters"
+        path = f"/api/v1/org/characters"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -74,20 +81,24 @@ class OrgBilling(_OrgBillingBase):
         self,
     ) -> EnterpriseContract:
         """Get org enterprise contract"""
-        path = f"/org/contract"
+        path = f"/api/v1/org/contract"
         params = None
         data = self._http.get(path, params=params)
         return EnterpriseContract.model_validate(data)
 
     def subscribe_to_org_contract(
         self,
-        **body_fields: Any,
+        *,
+        contract_id: str,
     ) -> OrgBillingURLBody:
         """Subscribe tenant to an enterprise contract"""
-        path = f"/org/contract/subscribe"
+        path = f"/api/v1/org/contract/subscribe"
         params = None
-        body = encode_body(OrgBillingSubscribeInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if contract_id is not None:
+            _raw["contractId"] = contract_id
+        body = encode_body(OrgBillingSubscribeInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return OrgBillingURLBody.model_validate(data)
 
     def get_org_context_engine_events(
@@ -96,7 +107,7 @@ class OrgBilling(_OrgBillingBase):
         days: int | None = 30,
     ) -> ContextEngineEventSummary:
         """Context engine event usage"""
-        path = f"/org/events"
+        path = f"/api/v1/org/events"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -109,7 +120,7 @@ class OrgBilling(_OrgBillingBase):
         days: int | None = 30,
     ) -> Any:
         """Get org billing ledger"""
-        path = f"/org/ledger"
+        path = f"/api/v1/org/ledger"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -120,7 +131,7 @@ class OrgBilling(_OrgBillingBase):
         self,
     ) -> Any:
         """Get active model pricing"""
-        path = f"/org/model-pricing"
+        path = f"/api/v1/org/model-pricing"
         params = None
         data = self._http.get(path, params=params)
         return data
@@ -129,7 +140,7 @@ class OrgBilling(_OrgBillingBase):
         self,
     ) -> Any:
         """List active service agreements"""
-        path = f"/org/service-agreements"
+        path = f"/api/v1/org/service-agreements"
         params = None
         data = self._http.get(path, params=params)
         return data
@@ -140,7 +151,7 @@ class OrgBilling(_OrgBillingBase):
         days: int | None = 30,
     ) -> ServiceUsageSummary:
         """Get org service usage"""
-        path = f"/org/service-usage"
+        path = f"/api/v1/org/service-usage"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -153,7 +164,7 @@ class OrgBilling(_OrgBillingBase):
         days: int | None = 30,
     ) -> OrgUsageSummaryBody:
         """Get org usage summary"""
-        path = f"/org/usage-summary"
+        path = f"/api/v1/org/usage-summary"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -162,13 +173,17 @@ class OrgBilling(_OrgBillingBase):
 
     def redeem_org_voucher(
         self,
-        **body_fields: Any,
+        *,
+        code: str,
     ) -> RedeemVoucherResponse:
         """Redeem a voucher code"""
-        path = f"/org/vouchers/redeem"
+        path = f"/api/v1/org/vouchers/redeem"
         params = None
-        body = encode_body(OrgBillingVoucherInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if code is not None:
+            _raw["code"] = code
+        body = encode_body(OrgBillingVoucherInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return RedeemVoucherResponse.model_validate(data)
 
 
@@ -177,29 +192,36 @@ class AsyncOrgBilling(_OrgBillingBase):
         self,
     ) -> TenantBillingProfile:
         """Get org billing profile"""
-        path = f"/org/billing"
+        path = f"/api/v1/org/billing"
         params = None
         data = await self._http.get(path, params=params)
         return TenantBillingProfile.model_validate(data)
 
     async def create_org_billing_checkout(
         self,
-        **body_fields: Any,
+        *,
+        amount: int,
+        currency: str | None = None,
     ) -> OrgBillingURLBody:
         """Create Stripe checkout session (credit top-up)"""
-        path = f"/org/billing/checkout"
+        path = f"/api/v1/org/billing/checkout"
         params = None
-        body = encode_body(OrgBillingCheckoutInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if amount is not None:
+            _raw["amount"] = amount
+        if currency is not None:
+            _raw["currency"] = currency
+        body = encode_body(OrgBillingCheckoutInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return OrgBillingURLBody.model_validate(data)
 
     async def create_org_billing_portal(
         self,
     ) -> OrgBillingURLBody:
         """Create Stripe billing-portal session"""
-        path = f"/org/billing/portal"
+        path = f"/api/v1/org/billing/portal"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return OrgBillingURLBody.model_validate(data)
 
     async def list_org_active_characters(
@@ -208,7 +230,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         days: int | None = 30,
     ) -> ActiveCharacterSummary:
         """List active characters for billing"""
-        path = f"/org/characters"
+        path = f"/api/v1/org/characters"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -219,20 +241,24 @@ class AsyncOrgBilling(_OrgBillingBase):
         self,
     ) -> EnterpriseContract:
         """Get org enterprise contract"""
-        path = f"/org/contract"
+        path = f"/api/v1/org/contract"
         params = None
         data = await self._http.get(path, params=params)
         return EnterpriseContract.model_validate(data)
 
     async def subscribe_to_org_contract(
         self,
-        **body_fields: Any,
+        *,
+        contract_id: str,
     ) -> OrgBillingURLBody:
         """Subscribe tenant to an enterprise contract"""
-        path = f"/org/contract/subscribe"
+        path = f"/api/v1/org/contract/subscribe"
         params = None
-        body = encode_body(OrgBillingSubscribeInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if contract_id is not None:
+            _raw["contractId"] = contract_id
+        body = encode_body(OrgBillingSubscribeInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return OrgBillingURLBody.model_validate(data)
 
     async def get_org_context_engine_events(
@@ -241,7 +267,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         days: int | None = 30,
     ) -> ContextEngineEventSummary:
         """Context engine event usage"""
-        path = f"/org/events"
+        path = f"/api/v1/org/events"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -254,7 +280,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         days: int | None = 30,
     ) -> Any:
         """Get org billing ledger"""
-        path = f"/org/ledger"
+        path = f"/api/v1/org/ledger"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -265,7 +291,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         self,
     ) -> Any:
         """Get active model pricing"""
-        path = f"/org/model-pricing"
+        path = f"/api/v1/org/model-pricing"
         params = None
         data = await self._http.get(path, params=params)
         return data
@@ -274,7 +300,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         self,
     ) -> Any:
         """List active service agreements"""
-        path = f"/org/service-agreements"
+        path = f"/api/v1/org/service-agreements"
         params = None
         data = await self._http.get(path, params=params)
         return data
@@ -285,7 +311,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         days: int | None = 30,
     ) -> ServiceUsageSummary:
         """Get org service usage"""
-        path = f"/org/service-usage"
+        path = f"/api/v1/org/service-usage"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -298,7 +324,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         days: int | None = 30,
     ) -> OrgUsageSummaryBody:
         """Get org usage summary"""
-        path = f"/org/usage-summary"
+        path = f"/api/v1/org/usage-summary"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -307,11 +333,15 @@ class AsyncOrgBilling(_OrgBillingBase):
 
     async def redeem_org_voucher(
         self,
-        **body_fields: Any,
+        *,
+        code: str,
     ) -> RedeemVoucherResponse:
         """Redeem a voucher code"""
-        path = f"/org/vouchers/redeem"
+        path = f"/api/v1/org/vouchers/redeem"
         params = None
-        body = encode_body(OrgBillingVoucherInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if code is not None:
+            _raw["code"] = code
+        body = encode_body(OrgBillingVoucherInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return RedeemVoucherResponse.model_validate(data)

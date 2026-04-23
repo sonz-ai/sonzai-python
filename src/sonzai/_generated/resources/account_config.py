@@ -22,7 +22,7 @@ class AccountConfig(_AccountConfigBase):
         self,
     ) -> Any:
         """List account config keys"""
-        path = f"/account/config"
+        path = f"/api/v1/account/config"
         params = None
         data = self._http.get(path, params=params)
         return data
@@ -32,7 +32,7 @@ class AccountConfig(_AccountConfigBase):
         key: str,
     ) -> Any:
         """Delete an account config key"""
-        path = f"/account/config/{key}"
+        path = f"/api/v1/account/config/{key}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -42,7 +42,7 @@ class AccountConfig(_AccountConfigBase):
         key: str,
     ) -> Any:
         """Get an account config value"""
-        path = f"/account/config/{key}"
+        path = f"/api/v1/account/config/{key}"
         params = None
         data = self._http.get(path, params=params)
         return data
@@ -52,9 +52,9 @@ class AccountConfig(_AccountConfigBase):
         key: str,
     ) -> SetAccountConfigOutputBody:
         """Set an account config value"""
-        path = f"/account/config/{key}"
+        path = f"/api/v1/account/config/{key}"
         params = None
-        data = self._http.put(path, params=params, body=None)
+        data = self._http.put(path, params=params)
         return SetAccountConfigOutputBody.model_validate(data)
 
 
@@ -63,7 +63,7 @@ class AsyncAccountConfig(_AccountConfigBase):
         self,
     ) -> Any:
         """List account config keys"""
-        path = f"/account/config"
+        path = f"/api/v1/account/config"
         params = None
         data = await self._http.get(path, params=params)
         return data
@@ -73,7 +73,7 @@ class AsyncAccountConfig(_AccountConfigBase):
         key: str,
     ) -> Any:
         """Delete an account config key"""
-        path = f"/account/config/{key}"
+        path = f"/api/v1/account/config/{key}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -83,7 +83,7 @@ class AsyncAccountConfig(_AccountConfigBase):
         key: str,
     ) -> Any:
         """Get an account config value"""
-        path = f"/account/config/{key}"
+        path = f"/api/v1/account/config/{key}"
         params = None
         data = await self._http.get(path, params=params)
         return data
@@ -93,7 +93,7 @@ class AsyncAccountConfig(_AccountConfigBase):
         key: str,
     ) -> SetAccountConfigOutputBody:
         """Set an account config value"""
-        path = f"/account/config/{key}"
+        path = f"/api/v1/account/config/{key}"
         params = None
-        data = await self._http.put(path, params=params, body=None)
+        data = await self._http.put(path, params=params)
         return SetAccountConfigOutputBody.model_validate(data)

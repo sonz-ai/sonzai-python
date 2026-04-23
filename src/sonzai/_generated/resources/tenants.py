@@ -22,7 +22,7 @@ class Tenants(_TenantsBase):
         self,
     ) -> Any:
         """List tenants"""
-        path = f"/tenants"
+        path = f"/api/v1/tenants"
         params = None
         data = self._http.get(path, params=params)
         return data
@@ -32,7 +32,7 @@ class Tenants(_TenantsBase):
         tenant_id: str,
     ) -> Tenant:
         """Get a tenant"""
-        path = f"/tenants/{tenantId}"
+        path = f"/api/v1/tenants/{tenant_id}"
         params = None
         data = self._http.get(path, params=params)
         return Tenant.model_validate(data)
@@ -43,7 +43,7 @@ class AsyncTenants(_TenantsBase):
         self,
     ) -> Any:
         """List tenants"""
-        path = f"/tenants"
+        path = f"/api/v1/tenants"
         params = None
         data = await self._http.get(path, params=params)
         return data
@@ -53,7 +53,7 @@ class AsyncTenants(_TenantsBase):
         tenant_id: str,
     ) -> Tenant:
         """Get a tenant"""
-        path = f"/tenants/{tenantId}"
+        path = f"/api/v1/tenants/{tenant_id}"
         params = None
         data = await self._http.get(path, params=params)
         return Tenant.model_validate(data)

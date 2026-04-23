@@ -28,7 +28,7 @@ class Diary(_DiaryBase):
         instance_id: str | None = None,
     ) -> DiaryPolymorphicResponse:
         """Get diary entries for an agent"""
-        path = f"/agents/{agentId}/diary"
+        path = f"/api/v1/agents/{agent_id}/diary"
         params: dict[str, Any] = {}
         if date is not None:
             params["date"] = date
@@ -53,7 +53,7 @@ class AsyncDiary(_DiaryBase):
         instance_id: str | None = None,
     ) -> DiaryPolymorphicResponse:
         """Get diary entries for an agent"""
-        path = f"/agents/{agentId}/diary"
+        path = f"/api/v1/agents/{agent_id}/diary"
         params: dict[str, Any] = {}
         if date is not None:
             params["date"] = date

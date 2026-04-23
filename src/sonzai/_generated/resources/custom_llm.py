@@ -24,7 +24,7 @@ class CustomLlm(_CustomLlmBase):
         project_id: str,
     ) -> Any:
         """Delete custom LLM config"""
-        path = f"/projects/{projectId}/custom-llm"
+        path = f"/api/v1/projects/{project_id}/custom-llm"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -34,7 +34,7 @@ class CustomLlm(_CustomLlmBase):
         project_id: str,
     ) -> CustomLLMConfigResponse:
         """Get custom LLM config for a project"""
-        path = f"/projects/{projectId}/custom-llm"
+        path = f"/api/v1/projects/{project_id}/custom-llm"
         params = None
         data = self._http.get(path, params=params)
         return CustomLLMConfigResponse.model_validate(data)
@@ -42,13 +42,29 @@ class CustomLlm(_CustomLlmBase):
     def set_custom_llm_config(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        api_key: str,
+        display_name: str | None = None,
+        endpoint: str,
+        is_active: bool | None = None,
+        model: str | None = None,
     ) -> CustomLLMConfigResponse:
         """Set custom LLM config for a project"""
-        path = f"/projects/{projectId}/custom-llm"
+        path = f"/api/v1/projects/{project_id}/custom-llm"
         params = None
-        body = encode_body(SetCustomLLMConfigInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if api_key is not None:
+            _raw["api_key"] = api_key
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if endpoint is not None:
+            _raw["endpoint"] = endpoint
+        if is_active is not None:
+            _raw["is_active"] = is_active
+        if model is not None:
+            _raw["model"] = model
+        body = encode_body(SetCustomLLMConfigInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return CustomLLMConfigResponse.model_validate(data)
 
 
@@ -58,7 +74,7 @@ class AsyncCustomLlm(_CustomLlmBase):
         project_id: str,
     ) -> Any:
         """Delete custom LLM config"""
-        path = f"/projects/{projectId}/custom-llm"
+        path = f"/api/v1/projects/{project_id}/custom-llm"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -68,7 +84,7 @@ class AsyncCustomLlm(_CustomLlmBase):
         project_id: str,
     ) -> CustomLLMConfigResponse:
         """Get custom LLM config for a project"""
-        path = f"/projects/{projectId}/custom-llm"
+        path = f"/api/v1/projects/{project_id}/custom-llm"
         params = None
         data = await self._http.get(path, params=params)
         return CustomLLMConfigResponse.model_validate(data)
@@ -76,11 +92,27 @@ class AsyncCustomLlm(_CustomLlmBase):
     async def set_custom_llm_config(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        api_key: str,
+        display_name: str | None = None,
+        endpoint: str,
+        is_active: bool | None = None,
+        model: str | None = None,
     ) -> CustomLLMConfigResponse:
         """Set custom LLM config for a project"""
-        path = f"/projects/{projectId}/custom-llm"
+        path = f"/api/v1/projects/{project_id}/custom-llm"
         params = None
-        body = encode_body(SetCustomLLMConfigInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if api_key is not None:
+            _raw["api_key"] = api_key
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if endpoint is not None:
+            _raw["endpoint"] = endpoint
+        if is_active is not None:
+            _raw["is_active"] = is_active
+        if model is not None:
+            _raw["model"] = model
+        body = encode_body(SetCustomLLMConfigInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return CustomLLMConfigResponse.model_validate(data)

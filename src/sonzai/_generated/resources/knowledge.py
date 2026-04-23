@@ -57,7 +57,7 @@ class Knowledge(_KnowledgeBase):
         segment: str | None = None,
     ) -> KbGetConversionStatsOutputBody:
         """Get conversion statistics"""
-        path = f"/projects/{projectId}/knowledge/analytics/conversions"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/conversions"
         params: dict[str, Any] = {}
         if rule_id is not None:
             params["rule_id"] = rule_id
@@ -69,13 +69,32 @@ class Knowledge(_KnowledgeBase):
     def kb_record_feedback(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        action: str | None = None,
+        converted: bool,
+        rule_id: str,
+        score_at_time: float,
+        source_node_id: str,
+        target_node_id: str,
     ) -> KbRecordFeedbackOutputBody:
         """Record recommendation feedback"""
-        path = f"/projects/{projectId}/knowledge/analytics/feedback"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/feedback"
         params = None
-        body = encode_body(KbRecordFeedbackInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if action is not None:
+            _raw["action"] = action
+        if converted is not None:
+            _raw["converted"] = converted
+        if rule_id is not None:
+            _raw["rule_id"] = rule_id
+        if score_at_time is not None:
+            _raw["score_at_time"] = score_at_time
+        if source_node_id is not None:
+            _raw["source_node_id"] = source_node_id
+        if target_node_id is not None:
+            _raw["target_node_id"] = target_node_id
+        body = encode_body(KbRecordFeedbackInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return KbRecordFeedbackOutputBody.model_validate(data)
 
     def kb_get_trend_rankings(
@@ -88,7 +107,7 @@ class Knowledge(_KnowledgeBase):
         limit: int | None = 10,
     ) -> KbGetTrendRankingsOutputBody:
         """Get trend rankings"""
-        path = f"/projects/{projectId}/knowledge/analytics/rankings"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rankings"
         params: dict[str, Any] = {}
         if rule_id is not None:
             params["rule_id"] = rule_id
@@ -110,7 +129,7 @@ class Knowledge(_KnowledgeBase):
         limit: int | None = 10,
     ) -> KbGetRecommendationsOutputBody:
         """Get knowledge base recommendations"""
-        path = f"/projects/{projectId}/knowledge/analytics/recommendations"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/recommendations"
         params: dict[str, Any] = {}
         if source_id is not None:
             params["source_id"] = source_id
@@ -126,7 +145,7 @@ class Knowledge(_KnowledgeBase):
         project_id: str,
     ) -> KbListAnalyticsRulesOutputBody:
         """List analytics rules"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules"
         params = None
         data = self._http.get(path, params=params)
         return KbListAnalyticsRulesOutputBody.model_validate(data)
@@ -134,13 +153,29 @@ class Knowledge(_KnowledgeBase):
     def kb_create_analytics_rule(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        config: str,
+        enabled: bool,
+        name: str,
+        rule_type: str,
+        schedule: str | None = None,
     ) -> KBAnalyticsRule:
         """Create an analytics rule"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules"
         params = None
-        body = encode_body(KbCreateAnalyticsRuleInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if config is not None:
+            _raw["config"] = config
+        if enabled is not None:
+            _raw["enabled"] = enabled
+        if name is not None:
+            _raw["name"] = name
+        if rule_type is not None:
+            _raw["rule_type"] = rule_type
+        if schedule is not None:
+            _raw["schedule"] = schedule
+        body = encode_body(KbCreateAnalyticsRuleInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return KBAnalyticsRule.model_validate(data)
 
     def kb_delete_analytics_rule(
@@ -149,7 +184,7 @@ class Knowledge(_KnowledgeBase):
         rule_id: str,
     ) -> Any:
         """Delete an analytics rule"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules/{ruleId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -160,7 +195,7 @@ class Knowledge(_KnowledgeBase):
         rule_id: str,
     ) -> KBAnalyticsRule:
         """Get an analytics rule"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules/{ruleId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
         params = None
         data = self._http.get(path, params=params)
         return KBAnalyticsRule.model_validate(data)
@@ -169,13 +204,26 @@ class Knowledge(_KnowledgeBase):
         self,
         project_id: str,
         rule_id: str,
-        **body_fields: Any,
+        *,
+        config: str | None = None,
+        enabled: bool,
+        name: str | None = None,
+        schedule: str | None = None,
     ) -> KBAnalyticsRule:
         """Update an analytics rule"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules/{ruleId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
         params = None
-        body = encode_body(KbUpdateAnalyticsRuleInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if config is not None:
+            _raw["config"] = config
+        if enabled is not None:
+            _raw["enabled"] = enabled
+        if name is not None:
+            _raw["name"] = name
+        if schedule is not None:
+            _raw["schedule"] = schedule
+        body = encode_body(KbUpdateAnalyticsRuleInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return KBAnalyticsRule.model_validate(data)
 
     def kb_run_analytics_rule(
@@ -184,9 +232,9 @@ class Knowledge(_KnowledgeBase):
         rule_id: str,
     ) -> KbRunAnalyticsRuleOutputBody:
         """Manually trigger an analytics rule"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules/{ruleId}/run"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}/run"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return KbRunAnalyticsRuleOutputBody.model_validate(data)
 
     def kb_get_trends(
@@ -196,7 +244,7 @@ class Knowledge(_KnowledgeBase):
         node_id: str,
     ) -> KbGetTrendsOutputBody:
         """Get knowledge base trends"""
-        path = f"/projects/{projectId}/knowledge/analytics/trends"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/trends"
         params: dict[str, Any] = {}
         if node_id is not None:
             params["node_id"] = node_id
@@ -206,13 +254,23 @@ class Knowledge(_KnowledgeBase):
     def kb_bulk_update_properties(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        source: str | None = None,
+        updates: list[Any],
+        upsert: bool | None = None,
     ) -> KbBulkUpdateOutputBody:
         """Bulk update node properties"""
-        path = f"/projects/{projectId}/knowledge/bulk-update"
+        path = f"/api/v1/projects/{project_id}/knowledge/bulk-update"
         params = None
-        body = encode_body(KbBulkUpdateInputBody, body_fields)
-        data = self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if source is not None:
+            _raw["source"] = source
+        if updates is not None:
+            _raw["updates"] = updates
+        if upsert is not None:
+            _raw["upsert"] = upsert
+        body = encode_body(KbBulkUpdateInputBody, _raw)
+        data = self._http.patch(path, params=params, json_data=body)
         return KbBulkUpdateOutputBody.model_validate(data)
 
     def kb_list_documents(
@@ -222,7 +280,7 @@ class Knowledge(_KnowledgeBase):
         limit: int | None = 50,
     ) -> KbListDocumentsOutputBody:
         """List knowledge base documents"""
-        path = f"/projects/{projectId}/knowledge/documents"
+        path = f"/api/v1/projects/{project_id}/knowledge/documents"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -234,9 +292,9 @@ class Knowledge(_KnowledgeBase):
         project_id: str,
     ) -> KbUploadDocumentOutputBody:
         """Upload a document for knowledge extraction"""
-        path = f"/projects/{projectId}/knowledge/documents"
+        path = f"/api/v1/projects/{project_id}/knowledge/documents"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return KbUploadDocumentOutputBody.model_validate(data)
 
     def kb_delete_document(
@@ -245,7 +303,7 @@ class Knowledge(_KnowledgeBase):
         doc_id: str,
     ) -> Any:
         """Delete a document"""
-        path = f"/projects/{projectId}/knowledge/documents/{docId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -256,7 +314,7 @@ class Knowledge(_KnowledgeBase):
         doc_id: str,
     ) -> KBDocument:
         """Get a single document"""
-        path = f"/projects/{projectId}/knowledge/documents/{docId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}"
         params = None
         data = self._http.get(path, params=params)
         return KBDocument.model_validate(data)
@@ -264,13 +322,23 @@ class Knowledge(_KnowledgeBase):
     def kb_insert_facts(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        facts: list[Any],
+        relationships: list[Any] | None = None,
+        source: str | None = None,
     ) -> KbInsertFactsOutputBody:
         """Insert facts into the knowledge base"""
-        path = f"/projects/{projectId}/knowledge/facts"
+        path = f"/api/v1/projects/{project_id}/knowledge/facts"
         params = None
-        body = encode_body(KbInsertFactsInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if facts is not None:
+            _raw["facts"] = facts
+        if relationships is not None:
+            _raw["relationships"] = relationships
+        if source is not None:
+            _raw["source"] = source
+        body = encode_body(KbInsertFactsInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return KbInsertFactsOutputBody.model_validate(data)
 
     def kb_list_nodes(
@@ -283,7 +351,7 @@ class Knowledge(_KnowledgeBase):
         limit: int = 100,
     ) -> Page[KBNode]:
         """List knowledge base nodes"""
-        path = f"/projects/{projectId}/knowledge/nodes"
+        path = f"/api/v1/projects/{project_id}/knowledge/nodes"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if type is not None:
             params["type"] = type
@@ -306,7 +374,7 @@ class Knowledge(_KnowledgeBase):
         node_id: str,
     ) -> Any:
         """Delete a knowledge base node"""
-        path = f"/projects/{projectId}/knowledge/nodes/{nodeId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -319,7 +387,7 @@ class Knowledge(_KnowledgeBase):
         history: str | None = None,
     ) -> KbGetNodeOutputBody:
         """Get a knowledge base node with edges"""
-        path = f"/projects/{projectId}/knowledge/nodes/{nodeId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}"
         params: dict[str, Any] = {}
         if history is not None:
             params["history"] = history
@@ -334,7 +402,7 @@ class Knowledge(_KnowledgeBase):
         limit: int | None = 50,
     ) -> KbGetNodeHistoryOutputBody:
         """Get node version history"""
-        path = f"/projects/{projectId}/knowledge/nodes/{nodeId}/history"
+        path = f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}/history"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -345,13 +413,17 @@ class Knowledge(_KnowledgeBase):
         self,
         project_id: str,
         node_id: str,
-        **body_fields: Any,
+        *,
+        tenant_id: str,
     ) -> KBNodeWithScope:
         """Promote a project-scoped node to the organization-global scope"""
-        path = f"/projects/{projectId}/knowledge/nodes/{nodeId}/promote-to-org"
+        path = f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}/promote-to-org"
         params = None
-        body = encode_body(KbPromoteNodeInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if tenant_id is not None:
+            _raw["tenant_id"] = tenant_id
+        body = encode_body(KbPromoteNodeInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return KBNodeWithScope.model_validate(data)
 
     def kb_list_schemas(
@@ -359,7 +431,7 @@ class Knowledge(_KnowledgeBase):
         project_id: str,
     ) -> KbListSchemasOutputBody:
         """List entity schemas"""
-        path = f"/projects/{projectId}/knowledge/schemas"
+        path = f"/api/v1/projects/{project_id}/knowledge/schemas"
         params = None
         data = self._http.get(path, params=params)
         return KbListSchemasOutputBody.model_validate(data)
@@ -367,13 +439,29 @@ class Knowledge(_KnowledgeBase):
     def kb_create_schema(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        display_name: str | None = None,
+        entity_type: str,
+        fields: list[Any],
+        similarity_config: str | None = None,
     ) -> KBEntitySchema:
         """Create an entity schema"""
-        path = f"/projects/{projectId}/knowledge/schemas"
+        path = f"/api/v1/projects/{project_id}/knowledge/schemas"
         params = None
-        body = encode_body(KbCreateSchemaInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if entity_type is not None:
+            _raw["entity_type"] = entity_type
+        if fields is not None:
+            _raw["fields"] = fields
+        if similarity_config is not None:
+            _raw["similarity_config"] = similarity_config
+        body = encode_body(KbCreateSchemaInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return KBEntitySchema.model_validate(data)
 
     def kb_delete_schema(
@@ -382,7 +470,7 @@ class Knowledge(_KnowledgeBase):
         schema_id: str,
     ) -> Any:
         """Delete an entity schema"""
-        path = f"/projects/{projectId}/knowledge/schemas/{schemaId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -391,13 +479,29 @@ class Knowledge(_KnowledgeBase):
         self,
         project_id: str,
         schema_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        display_name: str | None = None,
+        entity_type: str | None = None,
+        fields: list[Any] | None = None,
+        similarity_config: str | None = None,
     ) -> KBEntitySchema:
         """Update an entity schema"""
-        path = f"/projects/{projectId}/knowledge/schemas/{schemaId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}"
         params = None
-        body = encode_body(KbUpdateSchemaInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if entity_type is not None:
+            _raw["entity_type"] = entity_type
+        if fields is not None:
+            _raw["fields"] = fields
+        if similarity_config is not None:
+            _raw["similarity_config"] = similarity_config
+        body = encode_body(KbUpdateSchemaInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return KBEntitySchema.model_validate(data)
 
     def kb_search(
@@ -413,7 +517,7 @@ class Knowledge(_KnowledgeBase):
         filters: str | None = None,
     ) -> KBSearchResponse:
         """Search the knowledge base"""
-        path = f"/projects/{projectId}/knowledge/search"
+        path = f"/api/v1/projects/{project_id}/knowledge/search"
         params: dict[str, Any] = {}
         if q is not None:
             params["q"] = q
@@ -437,7 +541,7 @@ class Knowledge(_KnowledgeBase):
         project_id: str,
     ) -> KbGetStatsOutputBody:
         """Get knowledge base statistics"""
-        path = f"/projects/{projectId}/knowledge/stats"
+        path = f"/api/v1/projects/{project_id}/knowledge/stats"
         params = None
         data = self._http.get(path, params=params)
         return KbGetStatsOutputBody.model_validate(data)
@@ -449,7 +553,7 @@ class Knowledge(_KnowledgeBase):
         limit: int | None = 200,
     ) -> KbListOrgNodesOutputBody:
         """List nodes in the organization-global KB scope"""
-        path = f"/tenants/{tenantId}/knowledge/org-nodes"
+        path = f"/api/v1/tenants/{tenant_id}/knowledge/org-nodes"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -459,13 +563,26 @@ class Knowledge(_KnowledgeBase):
     def kb_create_org_node(
         self,
         tenant_id: str,
-        **body_fields: Any,
+        *,
+        confidence: float | None = None,
+        label: str,
+        node_type: str,
+        properties: dict[str, Any] | None = None,
     ) -> KBNode:
         """Create a knowledge-base node in the organization-global scope"""
-        path = f"/tenants/{tenantId}/knowledge/org-nodes"
+        path = f"/api/v1/tenants/{tenant_id}/knowledge/org-nodes"
         params = None
-        body = encode_body(KbCreateOrgNodeInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if confidence is not None:
+            _raw["confidence"] = confidence
+        if label is not None:
+            _raw["label"] = label
+        if node_type is not None:
+            _raw["node_type"] = node_type
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(KbCreateOrgNodeInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return KBNode.model_validate(data)
 
 
@@ -478,7 +595,7 @@ class AsyncKnowledge(_KnowledgeBase):
         segment: str | None = None,
     ) -> KbGetConversionStatsOutputBody:
         """Get conversion statistics"""
-        path = f"/projects/{projectId}/knowledge/analytics/conversions"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/conversions"
         params: dict[str, Any] = {}
         if rule_id is not None:
             params["rule_id"] = rule_id
@@ -490,13 +607,32 @@ class AsyncKnowledge(_KnowledgeBase):
     async def kb_record_feedback(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        action: str | None = None,
+        converted: bool,
+        rule_id: str,
+        score_at_time: float,
+        source_node_id: str,
+        target_node_id: str,
     ) -> KbRecordFeedbackOutputBody:
         """Record recommendation feedback"""
-        path = f"/projects/{projectId}/knowledge/analytics/feedback"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/feedback"
         params = None
-        body = encode_body(KbRecordFeedbackInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if action is not None:
+            _raw["action"] = action
+        if converted is not None:
+            _raw["converted"] = converted
+        if rule_id is not None:
+            _raw["rule_id"] = rule_id
+        if score_at_time is not None:
+            _raw["score_at_time"] = score_at_time
+        if source_node_id is not None:
+            _raw["source_node_id"] = source_node_id
+        if target_node_id is not None:
+            _raw["target_node_id"] = target_node_id
+        body = encode_body(KbRecordFeedbackInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return KbRecordFeedbackOutputBody.model_validate(data)
 
     async def kb_get_trend_rankings(
@@ -509,7 +645,7 @@ class AsyncKnowledge(_KnowledgeBase):
         limit: int | None = 10,
     ) -> KbGetTrendRankingsOutputBody:
         """Get trend rankings"""
-        path = f"/projects/{projectId}/knowledge/analytics/rankings"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rankings"
         params: dict[str, Any] = {}
         if rule_id is not None:
             params["rule_id"] = rule_id
@@ -531,7 +667,7 @@ class AsyncKnowledge(_KnowledgeBase):
         limit: int | None = 10,
     ) -> KbGetRecommendationsOutputBody:
         """Get knowledge base recommendations"""
-        path = f"/projects/{projectId}/knowledge/analytics/recommendations"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/recommendations"
         params: dict[str, Any] = {}
         if source_id is not None:
             params["source_id"] = source_id
@@ -547,7 +683,7 @@ class AsyncKnowledge(_KnowledgeBase):
         project_id: str,
     ) -> KbListAnalyticsRulesOutputBody:
         """List analytics rules"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules"
         params = None
         data = await self._http.get(path, params=params)
         return KbListAnalyticsRulesOutputBody.model_validate(data)
@@ -555,13 +691,29 @@ class AsyncKnowledge(_KnowledgeBase):
     async def kb_create_analytics_rule(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        config: str,
+        enabled: bool,
+        name: str,
+        rule_type: str,
+        schedule: str | None = None,
     ) -> KBAnalyticsRule:
         """Create an analytics rule"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules"
         params = None
-        body = encode_body(KbCreateAnalyticsRuleInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if config is not None:
+            _raw["config"] = config
+        if enabled is not None:
+            _raw["enabled"] = enabled
+        if name is not None:
+            _raw["name"] = name
+        if rule_type is not None:
+            _raw["rule_type"] = rule_type
+        if schedule is not None:
+            _raw["schedule"] = schedule
+        body = encode_body(KbCreateAnalyticsRuleInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return KBAnalyticsRule.model_validate(data)
 
     async def kb_delete_analytics_rule(
@@ -570,7 +722,7 @@ class AsyncKnowledge(_KnowledgeBase):
         rule_id: str,
     ) -> Any:
         """Delete an analytics rule"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules/{ruleId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -581,7 +733,7 @@ class AsyncKnowledge(_KnowledgeBase):
         rule_id: str,
     ) -> KBAnalyticsRule:
         """Get an analytics rule"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules/{ruleId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
         params = None
         data = await self._http.get(path, params=params)
         return KBAnalyticsRule.model_validate(data)
@@ -590,13 +742,26 @@ class AsyncKnowledge(_KnowledgeBase):
         self,
         project_id: str,
         rule_id: str,
-        **body_fields: Any,
+        *,
+        config: str | None = None,
+        enabled: bool,
+        name: str | None = None,
+        schedule: str | None = None,
     ) -> KBAnalyticsRule:
         """Update an analytics rule"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules/{ruleId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}"
         params = None
-        body = encode_body(KbUpdateAnalyticsRuleInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if config is not None:
+            _raw["config"] = config
+        if enabled is not None:
+            _raw["enabled"] = enabled
+        if name is not None:
+            _raw["name"] = name
+        if schedule is not None:
+            _raw["schedule"] = schedule
+        body = encode_body(KbUpdateAnalyticsRuleInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return KBAnalyticsRule.model_validate(data)
 
     async def kb_run_analytics_rule(
@@ -605,9 +770,9 @@ class AsyncKnowledge(_KnowledgeBase):
         rule_id: str,
     ) -> KbRunAnalyticsRuleOutputBody:
         """Manually trigger an analytics rule"""
-        path = f"/projects/{projectId}/knowledge/analytics/rules/{ruleId}/run"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/rules/{rule_id}/run"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return KbRunAnalyticsRuleOutputBody.model_validate(data)
 
     async def kb_get_trends(
@@ -617,7 +782,7 @@ class AsyncKnowledge(_KnowledgeBase):
         node_id: str,
     ) -> KbGetTrendsOutputBody:
         """Get knowledge base trends"""
-        path = f"/projects/{projectId}/knowledge/analytics/trends"
+        path = f"/api/v1/projects/{project_id}/knowledge/analytics/trends"
         params: dict[str, Any] = {}
         if node_id is not None:
             params["node_id"] = node_id
@@ -627,13 +792,23 @@ class AsyncKnowledge(_KnowledgeBase):
     async def kb_bulk_update_properties(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        source: str | None = None,
+        updates: list[Any],
+        upsert: bool | None = None,
     ) -> KbBulkUpdateOutputBody:
         """Bulk update node properties"""
-        path = f"/projects/{projectId}/knowledge/bulk-update"
+        path = f"/api/v1/projects/{project_id}/knowledge/bulk-update"
         params = None
-        body = encode_body(KbBulkUpdateInputBody, body_fields)
-        data = await self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if source is not None:
+            _raw["source"] = source
+        if updates is not None:
+            _raw["updates"] = updates
+        if upsert is not None:
+            _raw["upsert"] = upsert
+        body = encode_body(KbBulkUpdateInputBody, _raw)
+        data = await self._http.patch(path, params=params, json_data=body)
         return KbBulkUpdateOutputBody.model_validate(data)
 
     async def kb_list_documents(
@@ -643,7 +818,7 @@ class AsyncKnowledge(_KnowledgeBase):
         limit: int | None = 50,
     ) -> KbListDocumentsOutputBody:
         """List knowledge base documents"""
-        path = f"/projects/{projectId}/knowledge/documents"
+        path = f"/api/v1/projects/{project_id}/knowledge/documents"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -655,9 +830,9 @@ class AsyncKnowledge(_KnowledgeBase):
         project_id: str,
     ) -> KbUploadDocumentOutputBody:
         """Upload a document for knowledge extraction"""
-        path = f"/projects/{projectId}/knowledge/documents"
+        path = f"/api/v1/projects/{project_id}/knowledge/documents"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return KbUploadDocumentOutputBody.model_validate(data)
 
     async def kb_delete_document(
@@ -666,7 +841,7 @@ class AsyncKnowledge(_KnowledgeBase):
         doc_id: str,
     ) -> Any:
         """Delete a document"""
-        path = f"/projects/{projectId}/knowledge/documents/{docId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -677,7 +852,7 @@ class AsyncKnowledge(_KnowledgeBase):
         doc_id: str,
     ) -> KBDocument:
         """Get a single document"""
-        path = f"/projects/{projectId}/knowledge/documents/{docId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/documents/{doc_id}"
         params = None
         data = await self._http.get(path, params=params)
         return KBDocument.model_validate(data)
@@ -685,13 +860,23 @@ class AsyncKnowledge(_KnowledgeBase):
     async def kb_insert_facts(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        facts: list[Any],
+        relationships: list[Any] | None = None,
+        source: str | None = None,
     ) -> KbInsertFactsOutputBody:
         """Insert facts into the knowledge base"""
-        path = f"/projects/{projectId}/knowledge/facts"
+        path = f"/api/v1/projects/{project_id}/knowledge/facts"
         params = None
-        body = encode_body(KbInsertFactsInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if facts is not None:
+            _raw["facts"] = facts
+        if relationships is not None:
+            _raw["relationships"] = relationships
+        if source is not None:
+            _raw["source"] = source
+        body = encode_body(KbInsertFactsInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return KbInsertFactsOutputBody.model_validate(data)
 
     async def kb_list_nodes(
@@ -704,7 +889,7 @@ class AsyncKnowledge(_KnowledgeBase):
         limit: int = 100,
     ) -> AsyncPage[KBNode]:
         """List knowledge base nodes"""
-        path = f"/projects/{projectId}/knowledge/nodes"
+        path = f"/api/v1/projects/{project_id}/knowledge/nodes"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if type is not None:
             params["type"] = type
@@ -731,7 +916,7 @@ class AsyncKnowledge(_KnowledgeBase):
         node_id: str,
     ) -> Any:
         """Delete a knowledge base node"""
-        path = f"/projects/{projectId}/knowledge/nodes/{nodeId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -744,7 +929,7 @@ class AsyncKnowledge(_KnowledgeBase):
         history: str | None = None,
     ) -> KbGetNodeOutputBody:
         """Get a knowledge base node with edges"""
-        path = f"/projects/{projectId}/knowledge/nodes/{nodeId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}"
         params: dict[str, Any] = {}
         if history is not None:
             params["history"] = history
@@ -759,7 +944,7 @@ class AsyncKnowledge(_KnowledgeBase):
         limit: int | None = 50,
     ) -> KbGetNodeHistoryOutputBody:
         """Get node version history"""
-        path = f"/projects/{projectId}/knowledge/nodes/{nodeId}/history"
+        path = f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}/history"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -770,13 +955,17 @@ class AsyncKnowledge(_KnowledgeBase):
         self,
         project_id: str,
         node_id: str,
-        **body_fields: Any,
+        *,
+        tenant_id: str,
     ) -> KBNodeWithScope:
         """Promote a project-scoped node to the organization-global scope"""
-        path = f"/projects/{projectId}/knowledge/nodes/{nodeId}/promote-to-org"
+        path = f"/api/v1/projects/{project_id}/knowledge/nodes/{node_id}/promote-to-org"
         params = None
-        body = encode_body(KbPromoteNodeInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if tenant_id is not None:
+            _raw["tenant_id"] = tenant_id
+        body = encode_body(KbPromoteNodeInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return KBNodeWithScope.model_validate(data)
 
     async def kb_list_schemas(
@@ -784,7 +973,7 @@ class AsyncKnowledge(_KnowledgeBase):
         project_id: str,
     ) -> KbListSchemasOutputBody:
         """List entity schemas"""
-        path = f"/projects/{projectId}/knowledge/schemas"
+        path = f"/api/v1/projects/{project_id}/knowledge/schemas"
         params = None
         data = await self._http.get(path, params=params)
         return KbListSchemasOutputBody.model_validate(data)
@@ -792,13 +981,29 @@ class AsyncKnowledge(_KnowledgeBase):
     async def kb_create_schema(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        display_name: str | None = None,
+        entity_type: str,
+        fields: list[Any],
+        similarity_config: str | None = None,
     ) -> KBEntitySchema:
         """Create an entity schema"""
-        path = f"/projects/{projectId}/knowledge/schemas"
+        path = f"/api/v1/projects/{project_id}/knowledge/schemas"
         params = None
-        body = encode_body(KbCreateSchemaInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if entity_type is not None:
+            _raw["entity_type"] = entity_type
+        if fields is not None:
+            _raw["fields"] = fields
+        if similarity_config is not None:
+            _raw["similarity_config"] = similarity_config
+        body = encode_body(KbCreateSchemaInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return KBEntitySchema.model_validate(data)
 
     async def kb_delete_schema(
@@ -807,7 +1012,7 @@ class AsyncKnowledge(_KnowledgeBase):
         schema_id: str,
     ) -> Any:
         """Delete an entity schema"""
-        path = f"/projects/{projectId}/knowledge/schemas/{schemaId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -816,13 +1021,29 @@ class AsyncKnowledge(_KnowledgeBase):
         self,
         project_id: str,
         schema_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        display_name: str | None = None,
+        entity_type: str | None = None,
+        fields: list[Any] | None = None,
+        similarity_config: str | None = None,
     ) -> KBEntitySchema:
         """Update an entity schema"""
-        path = f"/projects/{projectId}/knowledge/schemas/{schemaId}"
+        path = f"/api/v1/projects/{project_id}/knowledge/schemas/{schema_id}"
         params = None
-        body = encode_body(KbUpdateSchemaInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if entity_type is not None:
+            _raw["entity_type"] = entity_type
+        if fields is not None:
+            _raw["fields"] = fields
+        if similarity_config is not None:
+            _raw["similarity_config"] = similarity_config
+        body = encode_body(KbUpdateSchemaInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return KBEntitySchema.model_validate(data)
 
     async def kb_search(
@@ -838,7 +1059,7 @@ class AsyncKnowledge(_KnowledgeBase):
         filters: str | None = None,
     ) -> KBSearchResponse:
         """Search the knowledge base"""
-        path = f"/projects/{projectId}/knowledge/search"
+        path = f"/api/v1/projects/{project_id}/knowledge/search"
         params: dict[str, Any] = {}
         if q is not None:
             params["q"] = q
@@ -862,7 +1083,7 @@ class AsyncKnowledge(_KnowledgeBase):
         project_id: str,
     ) -> KbGetStatsOutputBody:
         """Get knowledge base statistics"""
-        path = f"/projects/{projectId}/knowledge/stats"
+        path = f"/api/v1/projects/{project_id}/knowledge/stats"
         params = None
         data = await self._http.get(path, params=params)
         return KbGetStatsOutputBody.model_validate(data)
@@ -874,7 +1095,7 @@ class AsyncKnowledge(_KnowledgeBase):
         limit: int | None = 200,
     ) -> KbListOrgNodesOutputBody:
         """List nodes in the organization-global KB scope"""
-        path = f"/tenants/{tenantId}/knowledge/org-nodes"
+        path = f"/api/v1/tenants/{tenant_id}/knowledge/org-nodes"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -884,11 +1105,24 @@ class AsyncKnowledge(_KnowledgeBase):
     async def kb_create_org_node(
         self,
         tenant_id: str,
-        **body_fields: Any,
+        *,
+        confidence: float | None = None,
+        label: str,
+        node_type: str,
+        properties: dict[str, Any] | None = None,
     ) -> KBNode:
         """Create a knowledge-base node in the organization-global scope"""
-        path = f"/tenants/{tenantId}/knowledge/org-nodes"
+        path = f"/api/v1/tenants/{tenant_id}/knowledge/org-nodes"
         params = None
-        body = encode_body(KbCreateOrgNodeInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if confidence is not None:
+            _raw["confidence"] = confidence
+        if label is not None:
+            _raw["label"] = label
+        if node_type is not None:
+            _raw["node_type"] = node_type
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(KbCreateOrgNodeInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return KBNode.model_validate(data)

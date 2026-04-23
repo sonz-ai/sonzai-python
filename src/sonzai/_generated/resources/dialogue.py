@@ -22,13 +22,35 @@ class Dialogue(_DialogueBase):
     def agent_dialogue(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        enriched_context: str | None = None,
+        instance_id: str | None = None,
+        messages: list[Any],
+        request_type: str | None = None,
+        scene_guidance: str | None = None,
+        tool_config: str | None = None,
+        user_id: str,
     ) -> AgentDialogueOutputBody:
         """Multi-agent dialogue"""
-        path = f"/agents/{agentId}/dialogue"
+        path = f"/api/v1/agents/{agent_id}/dialogue"
         params = None
-        body = encode_body(AgentDialogueInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if enriched_context is not None:
+            _raw["enriched_context"] = enriched_context
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if messages is not None:
+            _raw["messages"] = messages
+        if request_type is not None:
+            _raw["request_type"] = request_type
+        if scene_guidance is not None:
+            _raw["scene_guidance"] = scene_guidance
+        if tool_config is not None:
+            _raw["tool_config"] = tool_config
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(AgentDialogueInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return AgentDialogueOutputBody.model_validate(data)
 
 
@@ -36,11 +58,33 @@ class AsyncDialogue(_DialogueBase):
     async def agent_dialogue(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        enriched_context: str | None = None,
+        instance_id: str | None = None,
+        messages: list[Any],
+        request_type: str | None = None,
+        scene_guidance: str | None = None,
+        tool_config: str | None = None,
+        user_id: str,
     ) -> AgentDialogueOutputBody:
         """Multi-agent dialogue"""
-        path = f"/agents/{agentId}/dialogue"
+        path = f"/api/v1/agents/{agent_id}/dialogue"
         params = None
-        body = encode_body(AgentDialogueInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if enriched_context is not None:
+            _raw["enriched_context"] = enriched_context
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if messages is not None:
+            _raw["messages"] = messages
+        if request_type is not None:
+            _raw["request_type"] = request_type
+        if scene_guidance is not None:
+            _raw["scene_guidance"] = scene_guidance
+        if tool_config is not None:
+            _raw["tool_config"] = tool_config
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(AgentDialogueInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return AgentDialogueOutputBody.model_validate(data)

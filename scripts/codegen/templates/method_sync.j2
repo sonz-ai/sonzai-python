@@ -3,18 +3,18 @@
 {% for pp in op.path_params %}
         {{ pp.python_name }}: {{ pp.type_hint }},
 {% endfor %}
-{% if op.query_params %}
+{% if op.query_params or op.input_body_fields %}
         *,
 {% endif %}
 {% for qp in op.query_params %}
         {{ qp.python_name }}: {{ qp.type_hint }}{% if qp.default is not none %} = {{ qp.default | tojson }}{% elif not qp.required %} = None{% endif %},
 {% endfor %}
-{% if op.input_body_class %}
-        **body_fields: Any,
-{% endif %}
+{% for bf in op.input_body_fields %}
+        {{ bf.python_name }}: {{ bf.type_hint }}{% if not bf.required %} = None{% endif %},
+{% endfor %}
     ) -> {{ op.response_class or "Any" }}:
         """{{ op.description or "Auto-generated." }}"""
-        path = f"{{ op.path }}"
+        path = f"{{ op.python_path }}"
 {% if op.query_params %}
         params: dict[str, Any] = {}
 {% for qp in op.query_params %}
@@ -24,13 +24,18 @@
 {% else %}
         params = None
 {% endif %}
-{% if op.input_body_class %}
-        body = encode_body({{ op.input_body_class }}, body_fields)
-        data = self._http.{{ op.http_method | lower }}(path, params=params, body=body)
+{% if op.input_body_fields %}
+        _raw: dict[str, Any] = {}
+{% for bf in op.input_body_fields %}
+        if {{ bf.python_name }} is not None:
+            _raw["{{ bf.name }}"] = {{ bf.python_name }}
+{% endfor %}
+        body = encode_body({{ op.input_body_class }}, _raw)
+        data = self._http.{{ op.http_method | lower }}(path, params=params, json_data=body)
 {% elif op.http_method == "GET" or op.http_method == "DELETE" %}
         data = self._http.{{ op.http_method | lower }}(path, params=params)
 {% else %}
-        data = self._http.{{ op.http_method | lower }}(path, params=params, body=None)
+        data = self._http.{{ op.http_method | lower }}(path, params=params)
 {% endif %}
 {% if op.response_class %}
         return {{ op.response_class }}.model_validate(data)

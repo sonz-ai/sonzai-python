@@ -28,7 +28,7 @@ class Wakeups(_WakeupsBase):
         limit: int | None = 50,
     ) -> WakeupsResponse:
         """List scheduled wakeups for an agent"""
-        path = f"/agents/{agentId}/wakeups"
+        path = f"/api/v1/agents/{agent_id}/wakeups"
         params: dict[str, Any] = {}
         if status is not None:
             params["status"] = status
@@ -40,13 +40,38 @@ class Wakeups(_WakeupsBase):
     def schedule_wakeup(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        check_type: str,
+        delay_hours: int,
+        event_description: str | None = None,
+        intent: str,
+        interest_topic: str | None = None,
+        occasion: str | None = None,
+        scheduled_at: str | None = None,
+        user_id: str,
     ) -> ScheduleWakeupOutputBody:
         """Schedule a wakeup for an agent"""
-        path = f"/agents/{agentId}/wakeups"
+        path = f"/api/v1/agents/{agent_id}/wakeups"
         params = None
-        body = encode_body(ScheduleWakeupInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if check_type is not None:
+            _raw["check_type"] = check_type
+        if delay_hours is not None:
+            _raw["delay_hours"] = delay_hours
+        if event_description is not None:
+            _raw["event_description"] = event_description
+        if intent is not None:
+            _raw["intent"] = intent
+        if interest_topic is not None:
+            _raw["interest_topic"] = interest_topic
+        if occasion is not None:
+            _raw["occasion"] = occasion
+        if scheduled_at is not None:
+            _raw["scheduled_at"] = scheduled_at
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(ScheduleWakeupInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return ScheduleWakeupOutputBody.model_validate(data)
 
 
@@ -59,7 +84,7 @@ class AsyncWakeups(_WakeupsBase):
         limit: int | None = 50,
     ) -> WakeupsResponse:
         """List scheduled wakeups for an agent"""
-        path = f"/agents/{agentId}/wakeups"
+        path = f"/api/v1/agents/{agent_id}/wakeups"
         params: dict[str, Any] = {}
         if status is not None:
             params["status"] = status
@@ -71,11 +96,36 @@ class AsyncWakeups(_WakeupsBase):
     async def schedule_wakeup(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        check_type: str,
+        delay_hours: int,
+        event_description: str | None = None,
+        intent: str,
+        interest_topic: str | None = None,
+        occasion: str | None = None,
+        scheduled_at: str | None = None,
+        user_id: str,
     ) -> ScheduleWakeupOutputBody:
         """Schedule a wakeup for an agent"""
-        path = f"/agents/{agentId}/wakeups"
+        path = f"/api/v1/agents/{agent_id}/wakeups"
         params = None
-        body = encode_body(ScheduleWakeupInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if check_type is not None:
+            _raw["check_type"] = check_type
+        if delay_hours is not None:
+            _raw["delay_hours"] = delay_hours
+        if event_description is not None:
+            _raw["event_description"] = event_description
+        if intent is not None:
+            _raw["intent"] = intent
+        if interest_topic is not None:
+            _raw["interest_topic"] = interest_topic
+        if occasion is not None:
+            _raw["occasion"] = occasion
+        if scheduled_at is not None:
+            _raw["scheduled_at"] = scheduled_at
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(ScheduleWakeupInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return ScheduleWakeupOutputBody.model_validate(data)

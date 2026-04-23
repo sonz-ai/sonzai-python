@@ -30,9 +30,9 @@ class Workbench(_WorkbenchBase):
         self,
     ) -> Any:
         """Advance simulated time in the workbench"""
-        path = f"/workbench/advance-time"
+        path = f"/api/v1/workbench/advance-time"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return data
 
     def workbench_get_advance_time_job(
@@ -40,7 +40,7 @@ class Workbench(_WorkbenchBase):
         job_id: str,
     ) -> WorkbenchAdvanceTimeJobBody:
         """Get async advance-time job status"""
-        path = f"/workbench/advance-time/jobs/{jobId}"
+        path = f"/api/v1/workbench/advance-time/jobs/{job_id}"
         params = None
         data = self._http.get(path, params=params)
         return WorkbenchAdvanceTimeJobBody.model_validate(data)
@@ -49,81 +49,81 @@ class Workbench(_WorkbenchBase):
         self,
     ) -> Any:
         """Workbench chat (SSE streaming)"""
-        path = f"/workbench/chat"
+        path = f"/api/v1/workbench/chat"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return data
 
     def workbench_generate_bio(
         self,
     ) -> WorkbenchGenerateBioBody:
         """Generate agent bio"""
-        path = f"/workbench/generate-bio"
+        path = f"/api/v1/workbench/generate-bio"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return WorkbenchGenerateBioBody.model_validate(data)
 
     def workbench_generate_character(
         self,
     ) -> WorkbenchGenerateCharacterBody:
         """Generate a full character (personality + bio + seed memories)"""
-        path = f"/workbench/generate-character"
+        path = f"/api/v1/workbench/generate-character"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return WorkbenchGenerateCharacterBody.model_validate(data)
 
     def workbench_generate_seed_memories(
         self,
     ) -> WorkbenchGenerateSeedMemoriesBody:
         """Generate agent seed memories"""
-        path = f"/workbench/generate-seed-memories"
+        path = f"/api/v1/workbench/generate-seed-memories"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return WorkbenchGenerateSeedMemoriesBody.model_validate(data)
 
     def workbench_prepare(
         self,
     ) -> WorkbenchPrepareBody:
         """Prepare the workbench for a run"""
-        path = f"/workbench/prepare"
+        path = f"/api/v1/workbench/prepare"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return WorkbenchPrepareBody.model_validate(data)
 
     def workbench_reset_agent(
         self,
     ) -> WorkbenchResetAgentBody:
         """Reset the workbench agent's data"""
-        path = f"/workbench/reset-agent"
+        path = f"/api/v1/workbench/reset-agent"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return WorkbenchResetAgentBody.model_validate(data)
 
     def workbench_session_end(
         self,
     ) -> WorkbenchSessionEndBody:
         """Trigger session-end processing"""
-        path = f"/workbench/session-end"
+        path = f"/api/v1/workbench/session-end"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return WorkbenchSessionEndBody.model_validate(data)
 
     def workbench_simulate_user(
         self,
     ) -> WorkbenchSimulateUserBody:
         """Generate a simulated user turn"""
-        path = f"/workbench/simulate-user"
+        path = f"/api/v1/workbench/simulate-user"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return WorkbenchSimulateUserBody.model_validate(data)
 
     def workbench_get_state(
         self,
     ) -> WorkbenchStateResponse:
         """Get current workbench state"""
-        path = f"/workbench/state"
+        path = f"/api/v1/workbench/state"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return WorkbenchStateResponse.model_validate(data)
 
 
@@ -132,9 +132,9 @@ class AsyncWorkbench(_WorkbenchBase):
         self,
     ) -> Any:
         """Advance simulated time in the workbench"""
-        path = f"/workbench/advance-time"
+        path = f"/api/v1/workbench/advance-time"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return data
 
     async def workbench_get_advance_time_job(
@@ -142,7 +142,7 @@ class AsyncWorkbench(_WorkbenchBase):
         job_id: str,
     ) -> WorkbenchAdvanceTimeJobBody:
         """Get async advance-time job status"""
-        path = f"/workbench/advance-time/jobs/{jobId}"
+        path = f"/api/v1/workbench/advance-time/jobs/{job_id}"
         params = None
         data = await self._http.get(path, params=params)
         return WorkbenchAdvanceTimeJobBody.model_validate(data)
@@ -151,79 +151,79 @@ class AsyncWorkbench(_WorkbenchBase):
         self,
     ) -> Any:
         """Workbench chat (SSE streaming)"""
-        path = f"/workbench/chat"
+        path = f"/api/v1/workbench/chat"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return data
 
     async def workbench_generate_bio(
         self,
     ) -> WorkbenchGenerateBioBody:
         """Generate agent bio"""
-        path = f"/workbench/generate-bio"
+        path = f"/api/v1/workbench/generate-bio"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return WorkbenchGenerateBioBody.model_validate(data)
 
     async def workbench_generate_character(
         self,
     ) -> WorkbenchGenerateCharacterBody:
         """Generate a full character (personality + bio + seed memories)"""
-        path = f"/workbench/generate-character"
+        path = f"/api/v1/workbench/generate-character"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return WorkbenchGenerateCharacterBody.model_validate(data)
 
     async def workbench_generate_seed_memories(
         self,
     ) -> WorkbenchGenerateSeedMemoriesBody:
         """Generate agent seed memories"""
-        path = f"/workbench/generate-seed-memories"
+        path = f"/api/v1/workbench/generate-seed-memories"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return WorkbenchGenerateSeedMemoriesBody.model_validate(data)
 
     async def workbench_prepare(
         self,
     ) -> WorkbenchPrepareBody:
         """Prepare the workbench for a run"""
-        path = f"/workbench/prepare"
+        path = f"/api/v1/workbench/prepare"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return WorkbenchPrepareBody.model_validate(data)
 
     async def workbench_reset_agent(
         self,
     ) -> WorkbenchResetAgentBody:
         """Reset the workbench agent's data"""
-        path = f"/workbench/reset-agent"
+        path = f"/api/v1/workbench/reset-agent"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return WorkbenchResetAgentBody.model_validate(data)
 
     async def workbench_session_end(
         self,
     ) -> WorkbenchSessionEndBody:
         """Trigger session-end processing"""
-        path = f"/workbench/session-end"
+        path = f"/api/v1/workbench/session-end"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return WorkbenchSessionEndBody.model_validate(data)
 
     async def workbench_simulate_user(
         self,
     ) -> WorkbenchSimulateUserBody:
         """Generate a simulated user turn"""
-        path = f"/workbench/simulate-user"
+        path = f"/api/v1/workbench/simulate-user"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return WorkbenchSimulateUserBody.model_validate(data)
 
     async def workbench_get_state(
         self,
     ) -> WorkbenchStateResponse:
         """Get current workbench state"""
-        path = f"/workbench/state"
+        path = f"/api/v1/workbench/state"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return WorkbenchStateResponse.model_validate(data)

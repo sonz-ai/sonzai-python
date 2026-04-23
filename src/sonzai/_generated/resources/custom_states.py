@@ -32,7 +32,7 @@ class CustomStates(_CustomStatesBase):
         key: str | None = None,
     ) -> ListCustomStatesOutputBody:
         """List custom states"""
-        path = f"/agents/{agentId}/custom-states"
+        path = f"/api/v1/agents/{agent_id}/custom-states"
         params: dict[str, Any] = {}
         if scope is not None:
             params["scope"] = scope
@@ -48,13 +48,32 @@ class CustomStates(_CustomStatesBase):
     def create_custom_state(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        content_type: str | None = None,
+        instance_id: str | None = None,
+        key: str,
+        scope: str | None = None,
+        user_id: str | None = None,
+        value: str,
     ) -> CustomState:
         """Create a custom state"""
-        path = f"/agents/{agentId}/custom-states"
+        path = f"/api/v1/agents/{agent_id}/custom-states"
         params = None
-        body = encode_body(CreateCustomStateInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if content_type is not None:
+            _raw["content_type"] = content_type
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if key is not None:
+            _raw["key"] = key
+        if scope is not None:
+            _raw["scope"] = scope
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        if value is not None:
+            _raw["value"] = value
+        body = encode_body(CreateCustomStateInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return CustomState.model_validate(data)
 
     def delete_custom_state_by_key(
@@ -67,7 +86,7 @@ class CustomStates(_CustomStatesBase):
         instance_id: str | None = None,
     ) -> Any:
         """Delete a custom state by key"""
-        path = f"/agents/{agentId}/custom-states/by-key"
+        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
         params: dict[str, Any] = {}
         if key is not None:
             params["key"] = key
@@ -90,7 +109,7 @@ class CustomStates(_CustomStatesBase):
         instance_id: str | None = None,
     ) -> CustomState:
         """Get a custom state by key"""
-        path = f"/agents/{agentId}/custom-states/by-key"
+        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
         params: dict[str, Any] = {}
         if key is not None:
             params["key"] = key
@@ -106,13 +125,32 @@ class CustomStates(_CustomStatesBase):
     def upsert_custom_state_by_key(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        content_type: str | None = None,
+        instance_id: str | None = None,
+        key: str,
+        scope: str | None = None,
+        user_id: str | None = None,
+        value: str,
     ) -> CustomState:
         """Upsert a custom state by key"""
-        path = f"/agents/{agentId}/custom-states/by-key"
+        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
         params = None
-        body = encode_body(UpsertCustomStateByKeyInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if content_type is not None:
+            _raw["content_type"] = content_type
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if key is not None:
+            _raw["key"] = key
+        if scope is not None:
+            _raw["scope"] = scope
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        if value is not None:
+            _raw["value"] = value
+        body = encode_body(UpsertCustomStateByKeyInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return CustomState.model_validate(data)
 
     def delete_custom_state(
@@ -121,7 +159,7 @@ class CustomStates(_CustomStatesBase):
         state_id: str,
     ) -> Any:
         """Delete a custom state"""
-        path = f"/agents/{agentId}/custom-states/{stateId}"
+        path = f"/api/v1/agents/{agent_id}/custom-states/{state_id}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -130,13 +168,20 @@ class CustomStates(_CustomStatesBase):
         self,
         agent_id: str,
         state_id: str,
-        **body_fields: Any,
+        *,
+        content_type: str | None = None,
+        value: str,
     ) -> CustomState:
         """Update a custom state"""
-        path = f"/agents/{agentId}/custom-states/{stateId}"
+        path = f"/api/v1/agents/{agent_id}/custom-states/{state_id}"
         params = None
-        body = encode_body(UpdateCustomStateInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if content_type is not None:
+            _raw["content_type"] = content_type
+        if value is not None:
+            _raw["value"] = value
+        body = encode_body(UpdateCustomStateInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return CustomState.model_validate(data)
 
 
@@ -151,7 +196,7 @@ class AsyncCustomStates(_CustomStatesBase):
         key: str | None = None,
     ) -> ListCustomStatesOutputBody:
         """List custom states"""
-        path = f"/agents/{agentId}/custom-states"
+        path = f"/api/v1/agents/{agent_id}/custom-states"
         params: dict[str, Any] = {}
         if scope is not None:
             params["scope"] = scope
@@ -167,13 +212,32 @@ class AsyncCustomStates(_CustomStatesBase):
     async def create_custom_state(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        content_type: str | None = None,
+        instance_id: str | None = None,
+        key: str,
+        scope: str | None = None,
+        user_id: str | None = None,
+        value: str,
     ) -> CustomState:
         """Create a custom state"""
-        path = f"/agents/{agentId}/custom-states"
+        path = f"/api/v1/agents/{agent_id}/custom-states"
         params = None
-        body = encode_body(CreateCustomStateInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if content_type is not None:
+            _raw["content_type"] = content_type
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if key is not None:
+            _raw["key"] = key
+        if scope is not None:
+            _raw["scope"] = scope
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        if value is not None:
+            _raw["value"] = value
+        body = encode_body(CreateCustomStateInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return CustomState.model_validate(data)
 
     async def delete_custom_state_by_key(
@@ -186,7 +250,7 @@ class AsyncCustomStates(_CustomStatesBase):
         instance_id: str | None = None,
     ) -> Any:
         """Delete a custom state by key"""
-        path = f"/agents/{agentId}/custom-states/by-key"
+        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
         params: dict[str, Any] = {}
         if key is not None:
             params["key"] = key
@@ -209,7 +273,7 @@ class AsyncCustomStates(_CustomStatesBase):
         instance_id: str | None = None,
     ) -> CustomState:
         """Get a custom state by key"""
-        path = f"/agents/{agentId}/custom-states/by-key"
+        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
         params: dict[str, Any] = {}
         if key is not None:
             params["key"] = key
@@ -225,13 +289,32 @@ class AsyncCustomStates(_CustomStatesBase):
     async def upsert_custom_state_by_key(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        content_type: str | None = None,
+        instance_id: str | None = None,
+        key: str,
+        scope: str | None = None,
+        user_id: str | None = None,
+        value: str,
     ) -> CustomState:
         """Upsert a custom state by key"""
-        path = f"/agents/{agentId}/custom-states/by-key"
+        path = f"/api/v1/agents/{agent_id}/custom-states/by-key"
         params = None
-        body = encode_body(UpsertCustomStateByKeyInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if content_type is not None:
+            _raw["content_type"] = content_type
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if key is not None:
+            _raw["key"] = key
+        if scope is not None:
+            _raw["scope"] = scope
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        if value is not None:
+            _raw["value"] = value
+        body = encode_body(UpsertCustomStateByKeyInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return CustomState.model_validate(data)
 
     async def delete_custom_state(
@@ -240,7 +323,7 @@ class AsyncCustomStates(_CustomStatesBase):
         state_id: str,
     ) -> Any:
         """Delete a custom state"""
-        path = f"/agents/{agentId}/custom-states/{stateId}"
+        path = f"/api/v1/agents/{agent_id}/custom-states/{state_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -249,11 +332,18 @@ class AsyncCustomStates(_CustomStatesBase):
         self,
         agent_id: str,
         state_id: str,
-        **body_fields: Any,
+        *,
+        content_type: str | None = None,
+        value: str,
     ) -> CustomState:
         """Update a custom state"""
-        path = f"/agents/{agentId}/custom-states/{stateId}"
+        path = f"/api/v1/agents/{agent_id}/custom-states/{state_id}"
         params = None
-        body = encode_body(UpdateCustomStateInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if content_type is not None:
+            _raw["content_type"] = content_type
+        if value is not None:
+            _raw["value"] = value
+        body = encode_body(UpdateCustomStateInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return CustomState.model_validate(data)

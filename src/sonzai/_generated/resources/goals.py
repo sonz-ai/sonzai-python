@@ -29,7 +29,7 @@ class Goals(_GoalsBase):
         user_id: str | None = None,
     ) -> BreakthroughsResponse:
         """List breakthroughs for an agent"""
-        path = f"/agents/{agentId}/breakthroughs"
+        path = f"/api/v1/agents/{agent_id}/breakthroughs"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -43,7 +43,7 @@ class Goals(_GoalsBase):
         user_id: str | None = None,
     ) -> GoalsResponse:
         """List goals for an agent"""
-        path = f"/agents/{agentId}/goals"
+        path = f"/api/v1/agents/{agent_id}/goals"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -53,13 +53,32 @@ class Goals(_GoalsBase):
     def create_goal(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        priority: int | None = None,
+        related_traits: list[Any] | None = None,
+        title: str | None = None,
+        type: str | None = None,
+        user_id: str | None = None,
     ) -> Goal:
         """Create a goal for an agent"""
-        path = f"/agents/{agentId}/goals"
+        path = f"/api/v1/agents/{agent_id}/goals"
         params = None
-        body = encode_body(CreateGoalInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if priority is not None:
+            _raw["priority"] = priority
+        if related_traits is not None:
+            _raw["related_traits"] = related_traits
+        if title is not None:
+            _raw["title"] = title
+        if type is not None:
+            _raw["type"] = type
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(CreateGoalInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return Goal.model_validate(data)
 
     def delete_goal(
@@ -70,7 +89,7 @@ class Goals(_GoalsBase):
         user_id: str | None = None,
     ) -> Any:
         """Delete (abandon) a goal"""
-        path = f"/agents/{agentId}/goals/{goalId}"
+        path = f"/api/v1/agents/{agent_id}/goals/{goal_id}"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -81,13 +100,32 @@ class Goals(_GoalsBase):
         self,
         agent_id: str,
         goal_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        priority: int | None = None,
+        related_traits: list[Any] | None = None,
+        status: str | None = None,
+        title: str | None = None,
+        user_id: str | None = None,
     ) -> Goal:
         """Update a goal"""
-        path = f"/agents/{agentId}/goals/{goalId}"
+        path = f"/api/v1/agents/{agent_id}/goals/{goal_id}"
         params = None
-        body = encode_body(UpdateGoalInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if priority is not None:
+            _raw["priority"] = priority
+        if related_traits is not None:
+            _raw["related_traits"] = related_traits
+        if status is not None:
+            _raw["status"] = status
+        if title is not None:
+            _raw["title"] = title
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(UpdateGoalInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return Goal.model_validate(data)
 
 
@@ -99,7 +137,7 @@ class AsyncGoals(_GoalsBase):
         user_id: str | None = None,
     ) -> BreakthroughsResponse:
         """List breakthroughs for an agent"""
-        path = f"/agents/{agentId}/breakthroughs"
+        path = f"/api/v1/agents/{agent_id}/breakthroughs"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -113,7 +151,7 @@ class AsyncGoals(_GoalsBase):
         user_id: str | None = None,
     ) -> GoalsResponse:
         """List goals for an agent"""
-        path = f"/agents/{agentId}/goals"
+        path = f"/api/v1/agents/{agent_id}/goals"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -123,13 +161,32 @@ class AsyncGoals(_GoalsBase):
     async def create_goal(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        priority: int | None = None,
+        related_traits: list[Any] | None = None,
+        title: str | None = None,
+        type: str | None = None,
+        user_id: str | None = None,
     ) -> Goal:
         """Create a goal for an agent"""
-        path = f"/agents/{agentId}/goals"
+        path = f"/api/v1/agents/{agent_id}/goals"
         params = None
-        body = encode_body(CreateGoalInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if priority is not None:
+            _raw["priority"] = priority
+        if related_traits is not None:
+            _raw["related_traits"] = related_traits
+        if title is not None:
+            _raw["title"] = title
+        if type is not None:
+            _raw["type"] = type
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(CreateGoalInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return Goal.model_validate(data)
 
     async def delete_goal(
@@ -140,7 +197,7 @@ class AsyncGoals(_GoalsBase):
         user_id: str | None = None,
     ) -> Any:
         """Delete (abandon) a goal"""
-        path = f"/agents/{agentId}/goals/{goalId}"
+        path = f"/api/v1/agents/{agent_id}/goals/{goal_id}"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -151,11 +208,30 @@ class AsyncGoals(_GoalsBase):
         self,
         agent_id: str,
         goal_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        priority: int | None = None,
+        related_traits: list[Any] | None = None,
+        status: str | None = None,
+        title: str | None = None,
+        user_id: str | None = None,
     ) -> Goal:
         """Update a goal"""
-        path = f"/agents/{agentId}/goals/{goalId}"
+        path = f"/api/v1/agents/{agent_id}/goals/{goal_id}"
         params = None
-        body = encode_body(UpdateGoalInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if priority is not None:
+            _raw["priority"] = priority
+        if related_traits is not None:
+            _raw["related_traits"] = related_traits
+        if status is not None:
+            _raw["status"] = status
+        if title is not None:
+            _raw["title"] = title
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(UpdateGoalInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return Goal.model_validate(data)

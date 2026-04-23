@@ -22,13 +22,35 @@ class Events(_EventsBase):
     def trigger_backend_event(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        event_description: str | None = None,
+        event_type: str,
+        instance_id: str | None = None,
+        language: str | None = None,
+        messages: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        user_id: str,
     ) -> TriggerEventOutputBody:
         """Trigger a game event"""
-        path = f"/agents/{agentId}/events"
+        path = f"/api/v1/agents/{agent_id}/events"
         params = None
-        body = encode_body(TriggerEventInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if event_description is not None:
+            _raw["event_description"] = event_description
+        if event_type is not None:
+            _raw["event_type"] = event_type
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if language is not None:
+            _raw["language"] = language
+        if messages is not None:
+            _raw["messages"] = messages
+        if metadata is not None:
+            _raw["metadata"] = metadata
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(TriggerEventInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return TriggerEventOutputBody.model_validate(data)
 
 
@@ -36,11 +58,33 @@ class AsyncEvents(_EventsBase):
     async def trigger_backend_event(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        event_description: str | None = None,
+        event_type: str,
+        instance_id: str | None = None,
+        language: str | None = None,
+        messages: str | None = None,
+        metadata: dict[str, Any] | None = None,
+        user_id: str,
     ) -> TriggerEventOutputBody:
         """Trigger a game event"""
-        path = f"/agents/{agentId}/events"
+        path = f"/api/v1/agents/{agent_id}/events"
         params = None
-        body = encode_body(TriggerEventInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if event_description is not None:
+            _raw["event_description"] = event_description
+        if event_type is not None:
+            _raw["event_type"] = event_type
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if language is not None:
+            _raw["language"] = language
+        if messages is not None:
+            _raw["messages"] = messages
+        if metadata is not None:
+            _raw["metadata"] = metadata
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(TriggerEventInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return TriggerEventOutputBody.model_validate(data)

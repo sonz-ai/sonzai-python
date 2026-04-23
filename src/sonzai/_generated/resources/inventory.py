@@ -44,7 +44,7 @@ class Inventory(_InventoryBase):
         limit: int = 100,
     ) -> Page[GroupResult]:
         """Query user inventory"""
-        path = f"/agents/{agentId}/users/{userId}/inventory"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -80,15 +80,36 @@ class Inventory(_InventoryBase):
         user_id: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        action: str,
+        description: str | None = None,
+        item_type: str,
+        kb_node_id: str | None = None,
+        label: str | None = None,
+        project_id: str | None = None,
+        properties: dict[str, Any] | None = None,
     ) -> InventoryWriteResponse:
         """Add, update, or remove an inventory item"""
-        path = f"/agents/{agentId}/users/{userId}/inventory"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(InventoryWriteRequest, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if action is not None:
+            _raw["action"] = action
+        if description is not None:
+            _raw["description"] = description
+        if item_type is not None:
+            _raw["item_type"] = item_type
+        if kb_node_id is not None:
+            _raw["kb_node_id"] = kb_node_id
+        if label is not None:
+            _raw["label"] = label
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(InventoryWriteRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return InventoryWriteResponse.model_validate(data)
 
     def batch_import_inventory(
@@ -97,15 +118,21 @@ class Inventory(_InventoryBase):
         user_id: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        items: list[Any],
+        project_id: str | None = None,
     ) -> BatchInventoryResponse:
         """Batch import inventory items"""
-        path = f"/agents/{agentId}/users/{userId}/inventory/batch"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory/batch"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(BatchInventoryRequest, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if items is not None:
+            _raw["items"] = items
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        body = encode_body(BatchInventoryRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return BatchInventoryResponse.model_validate(data)
 
     def create_inventory_item(
@@ -114,15 +141,33 @@ class Inventory(_InventoryBase):
         user_id: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        description: str | None = None,
+        item_type: str,
+        kb_node_id: str | None = None,
+        label: str | None = None,
+        project_id: str | None = None,
+        properties: dict[str, Any] | None = None,
     ) -> InventoryWriteResponse:
         """Create an inventory item (dedicated add endpoint)"""
-        path = f"/agents/{agentId}/users/{userId}/inventory/items"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory/items"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(CreateInventoryItemHumaInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if item_type is not None:
+            _raw["item_type"] = item_type
+        if kb_node_id is not None:
+            _raw["kb_node_id"] = kb_node_id
+        if label is not None:
+            _raw["label"] = label
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(CreateInventoryItemHumaInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return InventoryWriteResponse.model_validate(data)
 
     def direct_delete_inventory(
@@ -134,7 +179,7 @@ class Inventory(_InventoryBase):
         instance_id: str | None = None,
     ) -> DirectUpdateResponse:
         """Delete a specific inventory fact"""
-        path = f"/agents/{agentId}/users/{userId}/inventory/{factId}"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory/{fact_id}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -148,15 +193,18 @@ class Inventory(_InventoryBase):
         fact_id: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        properties: dict[str, Any],
     ) -> DirectUpdateResponse:
         """Update a specific inventory fact"""
-        path = f"/agents/{agentId}/users/{userId}/inventory/{factId}"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory/{fact_id}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(DirectUpdateRequest, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(DirectUpdateRequest, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return DirectUpdateResponse.model_validate(data)
 
 
@@ -179,7 +227,7 @@ class AsyncInventory(_InventoryBase):
         limit: int = 100,
     ) -> AsyncPage[GroupResult]:
         """Query user inventory"""
-        path = f"/agents/{agentId}/users/{userId}/inventory"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -219,15 +267,36 @@ class AsyncInventory(_InventoryBase):
         user_id: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        action: str,
+        description: str | None = None,
+        item_type: str,
+        kb_node_id: str | None = None,
+        label: str | None = None,
+        project_id: str | None = None,
+        properties: dict[str, Any] | None = None,
     ) -> InventoryWriteResponse:
         """Add, update, or remove an inventory item"""
-        path = f"/agents/{agentId}/users/{userId}/inventory"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(InventoryWriteRequest, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if action is not None:
+            _raw["action"] = action
+        if description is not None:
+            _raw["description"] = description
+        if item_type is not None:
+            _raw["item_type"] = item_type
+        if kb_node_id is not None:
+            _raw["kb_node_id"] = kb_node_id
+        if label is not None:
+            _raw["label"] = label
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(InventoryWriteRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return InventoryWriteResponse.model_validate(data)
 
     async def batch_import_inventory(
@@ -236,15 +305,21 @@ class AsyncInventory(_InventoryBase):
         user_id: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        items: list[Any],
+        project_id: str | None = None,
     ) -> BatchInventoryResponse:
         """Batch import inventory items"""
-        path = f"/agents/{agentId}/users/{userId}/inventory/batch"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory/batch"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(BatchInventoryRequest, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if items is not None:
+            _raw["items"] = items
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        body = encode_body(BatchInventoryRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return BatchInventoryResponse.model_validate(data)
 
     async def create_inventory_item(
@@ -253,15 +328,33 @@ class AsyncInventory(_InventoryBase):
         user_id: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        description: str | None = None,
+        item_type: str,
+        kb_node_id: str | None = None,
+        label: str | None = None,
+        project_id: str | None = None,
+        properties: dict[str, Any] | None = None,
     ) -> InventoryWriteResponse:
         """Create an inventory item (dedicated add endpoint)"""
-        path = f"/agents/{agentId}/users/{userId}/inventory/items"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory/items"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(CreateInventoryItemHumaInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if item_type is not None:
+            _raw["item_type"] = item_type
+        if kb_node_id is not None:
+            _raw["kb_node_id"] = kb_node_id
+        if label is not None:
+            _raw["label"] = label
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(CreateInventoryItemHumaInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return InventoryWriteResponse.model_validate(data)
 
     async def direct_delete_inventory(
@@ -273,7 +366,7 @@ class AsyncInventory(_InventoryBase):
         instance_id: str | None = None,
     ) -> DirectUpdateResponse:
         """Delete a specific inventory fact"""
-        path = f"/agents/{agentId}/users/{userId}/inventory/{factId}"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory/{fact_id}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -287,13 +380,16 @@ class AsyncInventory(_InventoryBase):
         fact_id: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        properties: dict[str, Any],
     ) -> DirectUpdateResponse:
         """Update a specific inventory fact"""
-        path = f"/agents/{agentId}/users/{userId}/inventory/{factId}"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/inventory/{fact_id}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(DirectUpdateRequest, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(DirectUpdateRequest, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return DirectUpdateResponse.model_validate(data)

@@ -28,7 +28,7 @@ class Projects(_ProjectsBase):
         offset: int | None = 0,
     ) -> Any:
         """List projects"""
-        path = f"/projects"
+        path = f"/api/v1/projects"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -39,13 +39,20 @@ class Projects(_ProjectsBase):
 
     def create_project(
         self,
-        **body_fields: Any,
+        *,
+        environment: str | None = None,
+        name: str,
     ) -> Project:
         """Create a project"""
-        path = f"/projects"
+        path = f"/api/v1/projects"
         params = None
-        body = encode_body(CreateProjectInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if environment is not None:
+            _raw["environment"] = environment
+        if name is not None:
+            _raw["name"] = name
+        body = encode_body(CreateProjectInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return Project.model_validate(data)
 
     def delete_project(
@@ -53,7 +60,7 @@ class Projects(_ProjectsBase):
         project_id: str,
     ) -> DeleteProjectOutputBody:
         """Delete a project"""
-        path = f"/projects/{projectId}"
+        path = f"/api/v1/projects/{project_id}"
         params = None
         data = self._http.delete(path, params=params)
         return DeleteProjectOutputBody.model_validate(data)
@@ -63,7 +70,7 @@ class Projects(_ProjectsBase):
         project_id: str,
     ) -> Project:
         """Get a project"""
-        path = f"/projects/{projectId}"
+        path = f"/api/v1/projects/{project_id}"
         params = None
         data = self._http.get(path, params=params)
         return Project.model_validate(data)
@@ -71,13 +78,23 @@ class Projects(_ProjectsBase):
     def update_project(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        environment: str | None = None,
+        game_name: str | None = None,
+        name: str | None = None,
     ) -> Project:
         """Update a project"""
-        path = f"/projects/{projectId}"
+        path = f"/api/v1/projects/{project_id}"
         params = None
-        body = encode_body(UpdateProjectInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if environment is not None:
+            _raw["environment"] = environment
+        if game_name is not None:
+            _raw["game_name"] = game_name
+        if name is not None:
+            _raw["name"] = name
+        body = encode_body(UpdateProjectInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return Project.model_validate(data)
 
 
@@ -89,7 +106,7 @@ class AsyncProjects(_ProjectsBase):
         offset: int | None = 0,
     ) -> Any:
         """List projects"""
-        path = f"/projects"
+        path = f"/api/v1/projects"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -100,13 +117,20 @@ class AsyncProjects(_ProjectsBase):
 
     async def create_project(
         self,
-        **body_fields: Any,
+        *,
+        environment: str | None = None,
+        name: str,
     ) -> Project:
         """Create a project"""
-        path = f"/projects"
+        path = f"/api/v1/projects"
         params = None
-        body = encode_body(CreateProjectInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if environment is not None:
+            _raw["environment"] = environment
+        if name is not None:
+            _raw["name"] = name
+        body = encode_body(CreateProjectInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return Project.model_validate(data)
 
     async def delete_project(
@@ -114,7 +138,7 @@ class AsyncProjects(_ProjectsBase):
         project_id: str,
     ) -> DeleteProjectOutputBody:
         """Delete a project"""
-        path = f"/projects/{projectId}"
+        path = f"/api/v1/projects/{project_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteProjectOutputBody.model_validate(data)
@@ -124,7 +148,7 @@ class AsyncProjects(_ProjectsBase):
         project_id: str,
     ) -> Project:
         """Get a project"""
-        path = f"/projects/{projectId}"
+        path = f"/api/v1/projects/{project_id}"
         params = None
         data = await self._http.get(path, params=params)
         return Project.model_validate(data)
@@ -132,11 +156,21 @@ class AsyncProjects(_ProjectsBase):
     async def update_project(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        environment: str | None = None,
+        game_name: str | None = None,
+        name: str | None = None,
     ) -> Project:
         """Update a project"""
-        path = f"/projects/{projectId}"
+        path = f"/api/v1/projects/{project_id}"
         params = None
-        body = encode_body(UpdateProjectInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if environment is not None:
+            _raw["environment"] = environment
+        if game_name is not None:
+            _raw["game_name"] = game_name
+        if name is not None:
+            _raw["name"] = name
+        body = encode_body(UpdateProjectInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return Project.model_validate(data)

@@ -27,7 +27,7 @@ class Insights(_InsightsBase):
         agent_id: str,
     ) -> RecentShiftsResponse:
         """Get recent personality shifts"""
-        path = f"/agents/{agentId}/personality/recent-shifts"
+        path = f"/api/v1/agents/{agent_id}/personality/recent-shifts"
         params = None
         data = self._http.get(path, params=params)
         return RecentShiftsResponse.model_validate(data)
@@ -39,7 +39,7 @@ class Insights(_InsightsBase):
         limit: int | None = 20,
     ) -> SignificantMomentsResponse:
         """Get significant personality moments"""
-        path = f"/agents/{agentId}/personality/significant-moments"
+        path = f"/api/v1/agents/{agent_id}/personality/significant-moments"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -51,7 +51,7 @@ class Insights(_InsightsBase):
         agent_id: str,
     ) -> UserOverlaysListResponse:
         """List per-user personality overlays"""
-        path = f"/agents/{agentId}/personality/users"
+        path = f"/api/v1/agents/{agent_id}/personality/users"
         params = None
         data = self._http.get(path, params=params)
         return UserOverlaysListResponse.model_validate(data)
@@ -65,7 +65,7 @@ class Insights(_InsightsBase):
         since: str | None = None,
     ) -> UserOverlayDetailResponse:
         """Get user personality overlay"""
-        path = f"/agents/{agentId}/personality/users/{userId}"
+        path = f"/api/v1/agents/{agent_id}/personality/users/{user_id}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -81,7 +81,7 @@ class Insights(_InsightsBase):
         at: str,
     ) -> TimeMachineResponse:
         """Reconstruct personality at a point in time"""
-        path = f"/agents/{agentId}/timemachine"
+        path = f"/api/v1/agents/{agent_id}/timemachine"
         params: dict[str, Any] = {}
         if at is not None:
             params["at"] = at
@@ -95,7 +95,7 @@ class AsyncInsights(_InsightsBase):
         agent_id: str,
     ) -> RecentShiftsResponse:
         """Get recent personality shifts"""
-        path = f"/agents/{agentId}/personality/recent-shifts"
+        path = f"/api/v1/agents/{agent_id}/personality/recent-shifts"
         params = None
         data = await self._http.get(path, params=params)
         return RecentShiftsResponse.model_validate(data)
@@ -107,7 +107,7 @@ class AsyncInsights(_InsightsBase):
         limit: int | None = 20,
     ) -> SignificantMomentsResponse:
         """Get significant personality moments"""
-        path = f"/agents/{agentId}/personality/significant-moments"
+        path = f"/api/v1/agents/{agent_id}/personality/significant-moments"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -119,7 +119,7 @@ class AsyncInsights(_InsightsBase):
         agent_id: str,
     ) -> UserOverlaysListResponse:
         """List per-user personality overlays"""
-        path = f"/agents/{agentId}/personality/users"
+        path = f"/api/v1/agents/{agent_id}/personality/users"
         params = None
         data = await self._http.get(path, params=params)
         return UserOverlaysListResponse.model_validate(data)
@@ -133,7 +133,7 @@ class AsyncInsights(_InsightsBase):
         since: str | None = None,
     ) -> UserOverlayDetailResponse:
         """Get user personality overlay"""
-        path = f"/agents/{agentId}/personality/users/{userId}"
+        path = f"/api/v1/agents/{agent_id}/personality/users/{user_id}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -149,7 +149,7 @@ class AsyncInsights(_InsightsBase):
         at: str,
     ) -> TimeMachineResponse:
         """Reconstruct personality at a point in time"""
-        path = f"/agents/{agentId}/timemachine"
+        path = f"/api/v1/agents/{agent_id}/timemachine"
         params: dict[str, Any] = {}
         if at is not None:
             params["at"] = at

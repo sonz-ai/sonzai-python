@@ -28,7 +28,7 @@ class Constellation(_ConstellationBase):
         user_id: str | None = None,
     ) -> ConstellationResponse:
         """Get agent constellation graph"""
-        path = f"/agents/{agentId}/constellation"
+        path = f"/api/v1/agents/{agent_id}/constellation"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -38,13 +38,29 @@ class Constellation(_ConstellationBase):
     def create_constellation_node(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        label: str,
+        node_type: str | None = None,
+        significance: float | None = None,
+        user_id: str | None = None,
     ) -> Node:
         """Create a constellation node"""
-        path = f"/agents/{agentId}/constellation/nodes"
+        path = f"/api/v1/agents/{agent_id}/constellation/nodes"
         params = None
-        body = encode_body(CreateConstellationNodeInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if label is not None:
+            _raw["label"] = label
+        if node_type is not None:
+            _raw["node_type"] = node_type
+        if significance is not None:
+            _raw["significance"] = significance
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(CreateConstellationNodeInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return Node.model_validate(data)
 
     def delete_constellation_node(
@@ -53,7 +69,7 @@ class Constellation(_ConstellationBase):
         node_id: str,
     ) -> Any:
         """Delete a constellation node"""
-        path = f"/agents/{agentId}/constellation/nodes/{nodeId}"
+        path = f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -62,13 +78,26 @@ class Constellation(_ConstellationBase):
         self,
         agent_id: str,
         node_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        label: str | None = None,
+        node_type: str | None = None,
+        significance: float | None = None,
     ) -> Node:
         """Update a constellation node"""
-        path = f"/agents/{agentId}/constellation/nodes/{nodeId}"
+        path = f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
         params = None
-        body = encode_body(UpdateConstellationNodeInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if label is not None:
+            _raw["label"] = label
+        if node_type is not None:
+            _raw["node_type"] = node_type
+        if significance is not None:
+            _raw["significance"] = significance
+        body = encode_body(UpdateConstellationNodeInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return Node.model_validate(data)
 
 
@@ -80,7 +109,7 @@ class AsyncConstellation(_ConstellationBase):
         user_id: str | None = None,
     ) -> ConstellationResponse:
         """Get agent constellation graph"""
-        path = f"/agents/{agentId}/constellation"
+        path = f"/api/v1/agents/{agent_id}/constellation"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -90,13 +119,29 @@ class AsyncConstellation(_ConstellationBase):
     async def create_constellation_node(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        label: str,
+        node_type: str | None = None,
+        significance: float | None = None,
+        user_id: str | None = None,
     ) -> Node:
         """Create a constellation node"""
-        path = f"/agents/{agentId}/constellation/nodes"
+        path = f"/api/v1/agents/{agent_id}/constellation/nodes"
         params = None
-        body = encode_body(CreateConstellationNodeInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if label is not None:
+            _raw["label"] = label
+        if node_type is not None:
+            _raw["node_type"] = node_type
+        if significance is not None:
+            _raw["significance"] = significance
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(CreateConstellationNodeInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return Node.model_validate(data)
 
     async def delete_constellation_node(
@@ -105,7 +150,7 @@ class AsyncConstellation(_ConstellationBase):
         node_id: str,
     ) -> Any:
         """Delete a constellation node"""
-        path = f"/agents/{agentId}/constellation/nodes/{nodeId}"
+        path = f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -114,11 +159,24 @@ class AsyncConstellation(_ConstellationBase):
         self,
         agent_id: str,
         node_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        label: str | None = None,
+        node_type: str | None = None,
+        significance: float | None = None,
     ) -> Node:
         """Update a constellation node"""
-        path = f"/agents/{agentId}/constellation/nodes/{nodeId}"
+        path = f"/api/v1/agents/{agent_id}/constellation/nodes/{node_id}"
         params = None
-        body = encode_body(UpdateConstellationNodeInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if label is not None:
+            _raw["label"] = label
+        if node_type is not None:
+            _raw["node_type"] = node_type
+        if significance is not None:
+            _raw["significance"] = significance
+        body = encode_body(UpdateConstellationNodeInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return Node.model_validate(data)

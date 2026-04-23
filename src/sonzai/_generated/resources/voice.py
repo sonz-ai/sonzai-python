@@ -25,37 +25,73 @@ class Voice(_VoiceBase):
     def get_voice_live_ws_token(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        compiled_system_prompt: str | None = None,
+        language: str | None = None,
+        user_id: str | None = None,
+        voice_name: str | None = None,
     ) -> VoiceLiveWSTokenOutputBody:
         """Get a voice live WebSocket token"""
-        path = f"/agents/{agentId}/voice/live-ws-token"
+        path = f"/api/v1/agents/{agent_id}/voice/live-ws-token"
         params = None
-        body = encode_body(VoiceLiveWSTokenInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if compiled_system_prompt is not None:
+            _raw["compiledSystemPrompt"] = compiled_system_prompt
+        if language is not None:
+            _raw["language"] = language
+        if user_id is not None:
+            _raw["userId"] = user_id
+        if voice_name is not None:
+            _raw["voiceName"] = voice_name
+        body = encode_body(VoiceLiveWSTokenInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return VoiceLiveWSTokenOutputBody.model_validate(data)
 
     def speech_to_text(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        audio: str,
+        audio_format: str,
+        language: str | None = None,
     ) -> Any:
         """Convert speech to text"""
-        path = f"/agents/{agentId}/voice/stt"
+        path = f"/api/v1/agents/{agent_id}/voice/stt"
         params = None
-        body = encode_body(SpeechToTextInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if audio is not None:
+            _raw["audio"] = audio
+        if audio_format is not None:
+            _raw["audioFormat"] = audio_format
+        if language is not None:
+            _raw["language"] = language
+        body = encode_body(SpeechToTextInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return data
 
     def text_to_speech(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        language: str | None = None,
+        output_format: str | None = None,
+        text: str,
+        voice_name: str | None = None,
     ) -> Any:
         """Convert text to speech"""
-        path = f"/agents/{agentId}/voice/tts"
+        path = f"/api/v1/agents/{agent_id}/voice/tts"
         params = None
-        body = encode_body(TextToSpeechInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if language is not None:
+            _raw["language"] = language
+        if output_format is not None:
+            _raw["outputFormat"] = output_format
+        if text is not None:
+            _raw["text"] = text
+        if voice_name is not None:
+            _raw["voiceName"] = voice_name
+        body = encode_body(TextToSpeechInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return data
 
     def list_voices(
@@ -64,7 +100,7 @@ class Voice(_VoiceBase):
         gender: str | None = None,
     ) -> ListVoicesResponse:
         """List available voices"""
-        path = f"/voices"
+        path = f"/api/v1/voices"
         params: dict[str, Any] = {}
         if gender is not None:
             params["gender"] = gender
@@ -76,37 +112,73 @@ class AsyncVoice(_VoiceBase):
     async def get_voice_live_ws_token(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        compiled_system_prompt: str | None = None,
+        language: str | None = None,
+        user_id: str | None = None,
+        voice_name: str | None = None,
     ) -> VoiceLiveWSTokenOutputBody:
         """Get a voice live WebSocket token"""
-        path = f"/agents/{agentId}/voice/live-ws-token"
+        path = f"/api/v1/agents/{agent_id}/voice/live-ws-token"
         params = None
-        body = encode_body(VoiceLiveWSTokenInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if compiled_system_prompt is not None:
+            _raw["compiledSystemPrompt"] = compiled_system_prompt
+        if language is not None:
+            _raw["language"] = language
+        if user_id is not None:
+            _raw["userId"] = user_id
+        if voice_name is not None:
+            _raw["voiceName"] = voice_name
+        body = encode_body(VoiceLiveWSTokenInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return VoiceLiveWSTokenOutputBody.model_validate(data)
 
     async def speech_to_text(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        audio: str,
+        audio_format: str,
+        language: str | None = None,
     ) -> Any:
         """Convert speech to text"""
-        path = f"/agents/{agentId}/voice/stt"
+        path = f"/api/v1/agents/{agent_id}/voice/stt"
         params = None
-        body = encode_body(SpeechToTextInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if audio is not None:
+            _raw["audio"] = audio
+        if audio_format is not None:
+            _raw["audioFormat"] = audio_format
+        if language is not None:
+            _raw["language"] = language
+        body = encode_body(SpeechToTextInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return data
 
     async def text_to_speech(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        language: str | None = None,
+        output_format: str | None = None,
+        text: str,
+        voice_name: str | None = None,
     ) -> Any:
         """Convert text to speech"""
-        path = f"/agents/{agentId}/voice/tts"
+        path = f"/api/v1/agents/{agent_id}/voice/tts"
         params = None
-        body = encode_body(TextToSpeechInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if language is not None:
+            _raw["language"] = language
+        if output_format is not None:
+            _raw["outputFormat"] = output_format
+        if text is not None:
+            _raw["text"] = text
+        if voice_name is not None:
+            _raw["voiceName"] = voice_name
+        body = encode_body(TextToSpeechInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return data
 
     async def list_voices(
@@ -115,7 +187,7 @@ class AsyncVoice(_VoiceBase):
         gender: str | None = None,
     ) -> ListVoicesResponse:
         """List available voices"""
-        path = f"/voices"
+        path = f"/api/v1/voices"
         params: dict[str, Any] = {}
         if gender is not None:
             params["gender"] = gender

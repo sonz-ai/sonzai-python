@@ -29,7 +29,7 @@ class Habits(_HabitsBase):
         instance_id: str | None = None,
     ) -> HabitsResponse:
         """List habits for an agent"""
-        path = f"/agents/{agentId}/habits"
+        path = f"/api/v1/agents/{agent_id}/habits"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -43,15 +43,33 @@ class Habits(_HabitsBase):
         agent_id: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        category: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        name: str,
+        strength: float | None = None,
+        user_id: str | None = None,
     ) -> Habit:
         """Create a habit for an agent"""
-        path = f"/agents/{agentId}/habits"
+        path = f"/api/v1/agents/{agent_id}/habits"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(CreateHabitInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if category is not None:
+            _raw["category"] = category
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if name is not None:
+            _raw["name"] = name
+        if strength is not None:
+            _raw["strength"] = strength
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(CreateHabitInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return Habit.model_validate(data)
 
     def delete_habit(
@@ -63,7 +81,7 @@ class Habits(_HabitsBase):
         instance_id: str | None = None,
     ) -> Any:
         """Delete a habit"""
-        path = f"/agents/{agentId}/habits/{habitName}"
+        path = f"/api/v1/agents/{agent_id}/habits/{habit_name}"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -78,15 +96,30 @@ class Habits(_HabitsBase):
         habit_name: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        category: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        strength: float | None = None,
+        user_id: str | None = None,
     ) -> Habit:
         """Update a habit"""
-        path = f"/agents/{agentId}/habits/{habitName}"
+        path = f"/api/v1/agents/{agent_id}/habits/{habit_name}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(UpdateHabitInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if category is not None:
+            _raw["category"] = category
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if strength is not None:
+            _raw["strength"] = strength
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(UpdateHabitInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return Habit.model_validate(data)
 
 
@@ -99,7 +132,7 @@ class AsyncHabits(_HabitsBase):
         instance_id: str | None = None,
     ) -> HabitsResponse:
         """List habits for an agent"""
-        path = f"/agents/{agentId}/habits"
+        path = f"/api/v1/agents/{agent_id}/habits"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -113,15 +146,33 @@ class AsyncHabits(_HabitsBase):
         agent_id: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        category: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        name: str,
+        strength: float | None = None,
+        user_id: str | None = None,
     ) -> Habit:
         """Create a habit for an agent"""
-        path = f"/agents/{agentId}/habits"
+        path = f"/api/v1/agents/{agent_id}/habits"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(CreateHabitInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if category is not None:
+            _raw["category"] = category
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if name is not None:
+            _raw["name"] = name
+        if strength is not None:
+            _raw["strength"] = strength
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(CreateHabitInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return Habit.model_validate(data)
 
     async def delete_habit(
@@ -133,7 +184,7 @@ class AsyncHabits(_HabitsBase):
         instance_id: str | None = None,
     ) -> Any:
         """Delete a habit"""
-        path = f"/agents/{agentId}/habits/{habitName}"
+        path = f"/api/v1/agents/{agent_id}/habits/{habit_name}"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -148,13 +199,28 @@ class AsyncHabits(_HabitsBase):
         habit_name: str,
         *,
         instance_id: str | None = None,
-        **body_fields: Any,
+        category: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        strength: float | None = None,
+        user_id: str | None = None,
     ) -> Habit:
         """Update a habit"""
-        path = f"/agents/{agentId}/habits/{habitName}"
+        path = f"/api/v1/agents/{agent_id}/habits/{habit_name}"
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
-        body = encode_body(UpdateHabitInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if category is not None:
+            _raw["category"] = category
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if strength is not None:
+            _raw["strength"] = strength
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(UpdateHabitInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return Habit.model_validate(data)

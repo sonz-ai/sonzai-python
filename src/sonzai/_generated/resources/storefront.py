@@ -27,27 +27,55 @@ class Storefront(_StorefrontBase):
         self,
     ) -> StorefrontGetOutputBody:
         """Get storefront config"""
-        path = f"/storefront"
+        path = f"/api/v1/storefront"
         params = None
         data = self._http.get(path, params=params)
         return StorefrontGetOutputBody.model_validate(data)
 
     def update_storefront(
         self,
-        **body_fields: Any,
+        *,
+        access_type: str | None = None,
+        contact_email: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        hero_image_url: str | None = None,
+        invite_code: str | None = None,
+        max_visits_per_user: int | None = None,
+        slug: str | None = None,
+        theme: str | None = None,
     ) -> Storefront:
         """Update storefront config"""
-        path = f"/storefront"
+        path = f"/api/v1/storefront"
         params = None
-        body = encode_body(StorefrontUpdateInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if access_type is not None:
+            _raw["access_type"] = access_type
+        if contact_email is not None:
+            _raw["contact_email"] = contact_email
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if hero_image_url is not None:
+            _raw["hero_image_url"] = hero_image_url
+        if invite_code is not None:
+            _raw["invite_code"] = invite_code
+        if max_visits_per_user is not None:
+            _raw["max_visits_per_user"] = max_visits_per_user
+        if slug is not None:
+            _raw["slug"] = slug
+        if theme is not None:
+            _raw["theme"] = theme
+        body = encode_body(StorefrontUpdateInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return Storefront.model_validate(data)
 
     def list_storefront_agents(
         self,
     ) -> StorefrontListAgentsOutputBody:
         """List agents on the storefront"""
-        path = f"/storefront/agents"
+        path = f"/api/v1/storefront/agents"
         params = None
         data = self._http.get(path, params=params)
         return StorefrontListAgentsOutputBody.model_validate(data)
@@ -57,7 +85,7 @@ class Storefront(_StorefrontBase):
         agent_id: str,
     ) -> Any:
         """Remove an agent from the storefront"""
-        path = f"/storefront/agents/{agentId}"
+        path = f"/api/v1/storefront/agents/{agent_id}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -65,31 +93,50 @@ class Storefront(_StorefrontBase):
     def upsert_storefront_agent(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        avatar_url: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        featured: bool | None = None,
+        max_turns_per_visit: int | None = None,
+        slug: str | None = None,
     ) -> StorefrontAgent:
         """Add or update an agent on the storefront"""
-        path = f"/storefront/agents/{agentId}"
+        path = f"/api/v1/storefront/agents/{agent_id}"
         params = None
-        body = encode_body(StorefrontUpsertAgentInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if avatar_url is not None:
+            _raw["avatar_url"] = avatar_url
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if featured is not None:
+            _raw["featured"] = featured
+        if max_turns_per_visit is not None:
+            _raw["max_turns_per_visit"] = max_turns_per_visit
+        if slug is not None:
+            _raw["slug"] = slug
+        body = encode_body(StorefrontUpsertAgentInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return StorefrontAgent.model_validate(data)
 
     def publish_storefront(
         self,
     ) -> Any:
         """Publish the storefront"""
-        path = f"/storefront/publish"
+        path = f"/api/v1/storefront/publish"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return data
 
     def unpublish_storefront(
         self,
     ) -> Any:
         """Unpublish the storefront"""
-        path = f"/storefront/unpublish"
+        path = f"/api/v1/storefront/unpublish"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return data
 
 
@@ -98,27 +145,55 @@ class AsyncStorefront(_StorefrontBase):
         self,
     ) -> StorefrontGetOutputBody:
         """Get storefront config"""
-        path = f"/storefront"
+        path = f"/api/v1/storefront"
         params = None
         data = await self._http.get(path, params=params)
         return StorefrontGetOutputBody.model_validate(data)
 
     async def update_storefront(
         self,
-        **body_fields: Any,
+        *,
+        access_type: str | None = None,
+        contact_email: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        hero_image_url: str | None = None,
+        invite_code: str | None = None,
+        max_visits_per_user: int | None = None,
+        slug: str | None = None,
+        theme: str | None = None,
     ) -> Storefront:
         """Update storefront config"""
-        path = f"/storefront"
+        path = f"/api/v1/storefront"
         params = None
-        body = encode_body(StorefrontUpdateInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if access_type is not None:
+            _raw["access_type"] = access_type
+        if contact_email is not None:
+            _raw["contact_email"] = contact_email
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if hero_image_url is not None:
+            _raw["hero_image_url"] = hero_image_url
+        if invite_code is not None:
+            _raw["invite_code"] = invite_code
+        if max_visits_per_user is not None:
+            _raw["max_visits_per_user"] = max_visits_per_user
+        if slug is not None:
+            _raw["slug"] = slug
+        if theme is not None:
+            _raw["theme"] = theme
+        body = encode_body(StorefrontUpdateInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return Storefront.model_validate(data)
 
     async def list_storefront_agents(
         self,
     ) -> StorefrontListAgentsOutputBody:
         """List agents on the storefront"""
-        path = f"/storefront/agents"
+        path = f"/api/v1/storefront/agents"
         params = None
         data = await self._http.get(path, params=params)
         return StorefrontListAgentsOutputBody.model_validate(data)
@@ -128,7 +203,7 @@ class AsyncStorefront(_StorefrontBase):
         agent_id: str,
     ) -> Any:
         """Remove an agent from the storefront"""
-        path = f"/storefront/agents/{agentId}"
+        path = f"/api/v1/storefront/agents/{agent_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -136,29 +211,48 @@ class AsyncStorefront(_StorefrontBase):
     async def upsert_storefront_agent(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        avatar_url: str | None = None,
+        description: str | None = None,
+        display_name: str | None = None,
+        featured: bool | None = None,
+        max_turns_per_visit: int | None = None,
+        slug: str | None = None,
     ) -> StorefrontAgent:
         """Add or update an agent on the storefront"""
-        path = f"/storefront/agents/{agentId}"
+        path = f"/api/v1/storefront/agents/{agent_id}"
         params = None
-        body = encode_body(StorefrontUpsertAgentInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if avatar_url is not None:
+            _raw["avatar_url"] = avatar_url
+        if description is not None:
+            _raw["description"] = description
+        if display_name is not None:
+            _raw["display_name"] = display_name
+        if featured is not None:
+            _raw["featured"] = featured
+        if max_turns_per_visit is not None:
+            _raw["max_turns_per_visit"] = max_turns_per_visit
+        if slug is not None:
+            _raw["slug"] = slug
+        body = encode_body(StorefrontUpsertAgentInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return StorefrontAgent.model_validate(data)
 
     async def publish_storefront(
         self,
     ) -> Any:
         """Publish the storefront"""
-        path = f"/storefront/publish"
+        path = f"/api/v1/storefront/publish"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return data
 
     async def unpublish_storefront(
         self,
     ) -> Any:
         """Unpublish the storefront"""
-        path = f"/storefront/unpublish"
+        path = f"/api/v1/storefront/unpublish"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return data

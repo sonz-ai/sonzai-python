@@ -12,7 +12,7 @@
         limit: int = 100,
     ) -> Page[{{ op.pagination_item_type }}]:
         """{{ op.description or "Auto-generated paginated list." }}"""
-        path = f"{{ op.path }}"
+        path = f"{{ op.python_path }}"
         params: dict[str, Any] = {"limit": limit{% if op.pagination_mode == "offset" %}, "offset": 0{% else %}, "cursor": None{% endif %}}
 {% for qp in op.query_params %}
 {% if qp.name not in ("limit", "offset", "cursor") %}

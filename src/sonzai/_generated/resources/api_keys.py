@@ -25,7 +25,7 @@ class ApiKeys(_ApiKeysBase):
         project_id: str,
     ) -> Any:
         """List API keys for a project"""
-        path = f"/projects/{projectId}/keys"
+        path = f"/api/v1/projects/{project_id}/keys"
         params = None
         data = self._http.get(path, params=params)
         return data
@@ -33,13 +33,23 @@ class ApiKeys(_ApiKeysBase):
     def create_api_key(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        expires_days: int | None = None,
+        name: str | None = None,
+        scopes: list[Any] | None = None,
     ) -> CreateAPIKeyOutputBody:
         """Create an API key"""
-        path = f"/projects/{projectId}/keys"
+        path = f"/api/v1/projects/{project_id}/keys"
         params = None
-        body = encode_body(CreateAPIKeyInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if expires_days is not None:
+            _raw["expires_days"] = expires_days
+        if name is not None:
+            _raw["name"] = name
+        if scopes is not None:
+            _raw["scopes"] = scopes
+        body = encode_body(CreateAPIKeyInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return CreateAPIKeyOutputBody.model_validate(data)
 
     def revoke_api_key(
@@ -48,7 +58,7 @@ class ApiKeys(_ApiKeysBase):
         key_id: str,
     ) -> RevokeAPIKeyOutputBody:
         """Revoke an API key"""
-        path = f"/projects/{projectId}/keys/{keyId}"
+        path = f"/api/v1/projects/{project_id}/keys/{key_id}"
         params = None
         data = self._http.delete(path, params=params)
         return RevokeAPIKeyOutputBody.model_validate(data)
@@ -60,7 +70,7 @@ class AsyncApiKeys(_ApiKeysBase):
         project_id: str,
     ) -> Any:
         """List API keys for a project"""
-        path = f"/projects/{projectId}/keys"
+        path = f"/api/v1/projects/{project_id}/keys"
         params = None
         data = await self._http.get(path, params=params)
         return data
@@ -68,13 +78,23 @@ class AsyncApiKeys(_ApiKeysBase):
     async def create_api_key(
         self,
         project_id: str,
-        **body_fields: Any,
+        *,
+        expires_days: int | None = None,
+        name: str | None = None,
+        scopes: list[Any] | None = None,
     ) -> CreateAPIKeyOutputBody:
         """Create an API key"""
-        path = f"/projects/{projectId}/keys"
+        path = f"/api/v1/projects/{project_id}/keys"
         params = None
-        body = encode_body(CreateAPIKeyInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if expires_days is not None:
+            _raw["expires_days"] = expires_days
+        if name is not None:
+            _raw["name"] = name
+        if scopes is not None:
+            _raw["scopes"] = scopes
+        body = encode_body(CreateAPIKeyInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return CreateAPIKeyOutputBody.model_validate(data)
 
     async def revoke_api_key(
@@ -83,7 +103,7 @@ class AsyncApiKeys(_ApiKeysBase):
         key_id: str,
     ) -> RevokeAPIKeyOutputBody:
         """Revoke an API key"""
-        path = f"/projects/{projectId}/keys/{keyId}"
+        path = f"/api/v1/projects/{project_id}/keys/{key_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return RevokeAPIKeyOutputBody.model_validate(data)

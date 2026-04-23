@@ -20,9 +20,9 @@ class Chat(_ChatBase):
         agent_id: str,
     ) -> Any:
         """Chat with agent (SSE streaming)"""
-        path = f"/agents/{agentId}/chat"
+        path = f"/api/v1/agents/{agent_id}/chat"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return data
 
     def playground_chat(
@@ -30,9 +30,9 @@ class Chat(_ChatBase):
         agent_id: str,
     ) -> Any:
         """Playground chat with agent (SSE streaming)"""
-        path = f"/agents/{agentId}/playground/chat"
+        path = f"/api/v1/agents/{agent_id}/playground/chat"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return data
 
 
@@ -42,9 +42,9 @@ class AsyncChat(_ChatBase):
         agent_id: str,
     ) -> Any:
         """Chat with agent (SSE streaming)"""
-        path = f"/agents/{agentId}/chat"
+        path = f"/api/v1/agents/{agent_id}/chat"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return data
 
     async def playground_chat(
@@ -52,7 +52,7 @@ class AsyncChat(_ChatBase):
         agent_id: str,
     ) -> Any:
         """Playground chat with agent (SSE streaming)"""
-        path = f"/agents/{agentId}/playground/chat"
+        path = f"/api/v1/agents/{agent_id}/playground/chat"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return data

@@ -32,7 +32,7 @@ class Support(_SupportBase):
         limit: int = 100,
     ) -> Page[TicketSummary]:
         """List my support tickets"""
-        path = f"/support/tickets"
+        path = f"/api/v1/support/tickets"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if status is not None:
             params["status"] = status
@@ -49,13 +49,26 @@ class Support(_SupportBase):
 
     def create_support_ticket(
         self,
-        **body_fields: Any,
+        *,
+        description: str,
+        priority: str | None = None,
+        title: str,
+        type: str,
     ) -> SupportTicket:
         """Create a support ticket"""
-        path = f"/support/tickets"
+        path = f"/api/v1/support/tickets"
         params = None
-        body = encode_body(CreateTicketRequest, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if priority is not None:
+            _raw["priority"] = priority
+        if title is not None:
+            _raw["title"] = title
+        if type is not None:
+            _raw["type"] = type
+        body = encode_body(CreateTicketRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return SupportTicket.model_validate(data)
 
     def get_support_ticket(
@@ -63,7 +76,7 @@ class Support(_SupportBase):
         ticket_id: str,
     ) -> TicketDetailResponse:
         """Get a support ticket with comments"""
-        path = f"/support/tickets/{ticketId}"
+        path = f"/api/v1/support/tickets/{ticket_id}"
         params = None
         data = self._http.get(path, params=params)
         return TicketDetailResponse.model_validate(data)
@@ -73,21 +86,28 @@ class Support(_SupportBase):
         ticket_id: str,
     ) -> SupportTicket:
         """Close a support ticket (user)"""
-        path = f"/support/tickets/{ticketId}/close"
+        path = f"/api/v1/support/tickets/{ticket_id}/close"
         params = None
-        data = self._http.post(path, params=params, body=None)
+        data = self._http.post(path, params=params)
         return SupportTicket.model_validate(data)
 
     def add_support_ticket_comment(
         self,
         ticket_id: str,
-        **body_fields: Any,
+        *,
+        content: str,
+        is_internal: bool | None = None,
     ) -> SupportTicketComment:
         """Add a comment to a support ticket"""
-        path = f"/support/tickets/{ticketId}/comments"
+        path = f"/api/v1/support/tickets/{ticket_id}/comments"
         params = None
-        body = encode_body(AddCommentRequest, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if content is not None:
+            _raw["content"] = content
+        if is_internal is not None:
+            _raw["is_internal"] = is_internal
+        body = encode_body(AddCommentRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return SupportTicketComment.model_validate(data)
 
 
@@ -100,7 +120,7 @@ class AsyncSupport(_SupportBase):
         limit: int = 100,
     ) -> AsyncPage[TicketSummary]:
         """List my support tickets"""
-        path = f"/support/tickets"
+        path = f"/api/v1/support/tickets"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if status is not None:
             params["status"] = status
@@ -121,13 +141,26 @@ class AsyncSupport(_SupportBase):
 
     async def create_support_ticket(
         self,
-        **body_fields: Any,
+        *,
+        description: str,
+        priority: str | None = None,
+        title: str,
+        type: str,
     ) -> SupportTicket:
         """Create a support ticket"""
-        path = f"/support/tickets"
+        path = f"/api/v1/support/tickets"
         params = None
-        body = encode_body(CreateTicketRequest, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if priority is not None:
+            _raw["priority"] = priority
+        if title is not None:
+            _raw["title"] = title
+        if type is not None:
+            _raw["type"] = type
+        body = encode_body(CreateTicketRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return SupportTicket.model_validate(data)
 
     async def get_support_ticket(
@@ -135,7 +168,7 @@ class AsyncSupport(_SupportBase):
         ticket_id: str,
     ) -> TicketDetailResponse:
         """Get a support ticket with comments"""
-        path = f"/support/tickets/{ticketId}"
+        path = f"/api/v1/support/tickets/{ticket_id}"
         params = None
         data = await self._http.get(path, params=params)
         return TicketDetailResponse.model_validate(data)
@@ -145,19 +178,26 @@ class AsyncSupport(_SupportBase):
         ticket_id: str,
     ) -> SupportTicket:
         """Close a support ticket (user)"""
-        path = f"/support/tickets/{ticketId}/close"
+        path = f"/api/v1/support/tickets/{ticket_id}/close"
         params = None
-        data = await self._http.post(path, params=params, body=None)
+        data = await self._http.post(path, params=params)
         return SupportTicket.model_validate(data)
 
     async def add_support_ticket_comment(
         self,
         ticket_id: str,
-        **body_fields: Any,
+        *,
+        content: str,
+        is_internal: bool | None = None,
     ) -> SupportTicketComment:
         """Add a comment to a support ticket"""
-        path = f"/support/tickets/{ticketId}/comments"
+        path = f"/api/v1/support/tickets/{ticket_id}/comments"
         params = None
-        body = encode_body(AddCommentRequest, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if content is not None:
+            _raw["content"] = content
+        if is_internal is not None:
+            _raw["is_internal"] = is_internal
+        body = encode_body(AddCommentRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return SupportTicketComment.model_validate(data)

@@ -29,142 +29,418 @@ class _GenerationBase:
 class Generation(_GenerationBase):
     def generate_and_create_agent(
         self,
-        **body_fields: Any,
+        *,
+        agent_id: str | None = None,
+        description: str,
+        fields: list[Any] | None = None,
+        gender: str | None = None,
+        language: str | None = None,
+        model: str | None = None,
+        name: str,
+        project_id: str | None = None,
+        provider: str | None = None,
     ) -> Any:
         """Generate a character and create the agent"""
-        path = f"/agents/generate-and-create"
+        path = f"/api/v1/agents/generate-and-create"
         params = None
-        body = encode_body(GenerateAndCreateInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if agent_id is not None:
+            _raw["agent_id"] = agent_id
+        if description is not None:
+            _raw["description"] = description
+        if fields is not None:
+            _raw["fields"] = fields
+        if gender is not None:
+            _raw["gender"] = gender
+        if language is not None:
+            _raw["language"] = language
+        if model is not None:
+            _raw["model"] = model
+        if name is not None:
+            _raw["name"] = name
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if provider is not None:
+            _raw["provider"] = provider
+        body = encode_body(GenerateAndCreateInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return data
 
     def generate_character(
         self,
-        **body_fields: Any,
+        *,
+        agent_id: str | None = None,
+        description: str,
+        fields: list[Any] | None = None,
+        gender: str | None = None,
+        model: str | None = None,
+        name: str,
+        provider: str | None = None,
+        regenerate: bool | None = None,
     ) -> Any:
         """Generate a character profile from a description"""
-        path = f"/agents/generate-character"
+        path = f"/api/v1/agents/generate-character"
         params = None
-        body = encode_body(GenerateCharacterInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if agent_id is not None:
+            _raw["agent_id"] = agent_id
+        if description is not None:
+            _raw["description"] = description
+        if fields is not None:
+            _raw["fields"] = fields
+        if gender is not None:
+            _raw["gender"] = gender
+        if model is not None:
+            _raw["model"] = model
+        if name is not None:
+            _raw["name"] = name
+        if provider is not None:
+            _raw["provider"] = provider
+        if regenerate is not None:
+            _raw["regenerate"] = regenerate
+        body = encode_body(GenerateCharacterInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return data
 
     def regenerate_avatar(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        style: str | None = None,
     ) -> RegenerateAvatarOutputBody:
         """Regenerate agent avatar"""
-        path = f"/agents/{agentId}/avatar/generate"
+        path = f"/api/v1/agents/{agent_id}/avatar/generate"
         params = None
-        body = encode_body(RegenerateAvatarInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if style is not None:
+            _raw["style"] = style
+        body = encode_body(RegenerateAvatarInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return RegenerateAvatarOutputBody.model_validate(data)
 
     def generate_bio(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        current_bio: str | None = None,
+        description: str,
+        enriched_context_json: str | None = None,
+        gender: str | None = None,
+        instance_id: str | None = None,
+        name: str,
+        style: str | None = None,
+        user_id: str | None = None,
     ) -> GenerateBioOutputBody:
         """Generate agent bio"""
-        path = f"/agents/{agentId}/bio/generate"
+        path = f"/api/v1/agents/{agent_id}/bio/generate"
         params = None
-        body = encode_body(GenerateBioInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if current_bio is not None:
+            _raw["current_bio"] = current_bio
+        if description is not None:
+            _raw["description"] = description
+        if enriched_context_json is not None:
+            _raw["enriched_context_json"] = enriched_context_json
+        if gender is not None:
+            _raw["gender"] = gender
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if name is not None:
+            _raw["name"] = name
+        if style is not None:
+            _raw["style"] = style
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(GenerateBioInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return GenerateBioOutputBody.model_validate(data)
 
     def generate_image(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        model: str | None = None,
+        negative_prompt: str | None = None,
+        output_path: str | None = None,
+        prompt: str,
+        provider: str | None = None,
     ) -> GenerateImageOutputBody:
         """Generate an image"""
-        path = f"/agents/{agentId}/image/generate"
+        path = f"/api/v1/agents/{agent_id}/image/generate"
         params = None
-        body = encode_body(GenerateImageInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if model is not None:
+            _raw["model"] = model
+        if negative_prompt is not None:
+            _raw["negative_prompt"] = negative_prompt
+        if output_path is not None:
+            _raw["output_path"] = output_path
+        if prompt is not None:
+            _raw["prompt"] = prompt
+        if provider is not None:
+            _raw["provider"] = provider
+        body = encode_body(GenerateImageInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return GenerateImageOutputBody.model_validate(data)
 
     def generate_seed_memories(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        agent_name: str,
+        big5: str | None = None,
+        creator_display_name: str | None = None,
+        generate_origin_story: bool | None = None,
+        generate_personalized_memories: bool | None = None,
+        identity_memory_templates: list[Any] | None = None,
+        lore_generation_context: str | None = None,
+        personality_prompt: str,
+        primary_traits: list[Any] | None = None,
+        speech_patterns: list[Any],
+        static_lore_memories: list[Any] | None = None,
+        true_dislikes: list[Any] | None = None,
+        true_interests: list[Any],
     ) -> GenerateSeedMemoriesOutputBody:
         """Generate seed memories for an agent"""
-        path = f"/agents/{agentId}/memory/seed"
+        path = f"/api/v1/agents/{agent_id}/memory/seed"
         params = None
-        body = encode_body(GenerateSeedMemoriesInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if agent_name is not None:
+            _raw["agentName"] = agent_name
+        if big5 is not None:
+            _raw["big5"] = big5
+        if creator_display_name is not None:
+            _raw["creatorDisplayName"] = creator_display_name
+        if generate_origin_story is not None:
+            _raw["generateOriginStory"] = generate_origin_story
+        if generate_personalized_memories is not None:
+            _raw["generatePersonalizedMemories"] = generate_personalized_memories
+        if identity_memory_templates is not None:
+            _raw["identityMemoryTemplates"] = identity_memory_templates
+        if lore_generation_context is not None:
+            _raw["loreGenerationContext"] = lore_generation_context
+        if personality_prompt is not None:
+            _raw["personalityPrompt"] = personality_prompt
+        if primary_traits is not None:
+            _raw["primaryTraits"] = primary_traits
+        if speech_patterns is not None:
+            _raw["speechPatterns"] = speech_patterns
+        if static_lore_memories is not None:
+            _raw["staticLoreMemories"] = static_lore_memories
+        if true_dislikes is not None:
+            _raw["trueDislikes"] = true_dislikes
+        if true_interests is not None:
+            _raw["trueInterests"] = true_interests
+        body = encode_body(GenerateSeedMemoriesInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return GenerateSeedMemoriesOutputBody.model_validate(data)
 
 
 class AsyncGeneration(_GenerationBase):
     async def generate_and_create_agent(
         self,
-        **body_fields: Any,
+        *,
+        agent_id: str | None = None,
+        description: str,
+        fields: list[Any] | None = None,
+        gender: str | None = None,
+        language: str | None = None,
+        model: str | None = None,
+        name: str,
+        project_id: str | None = None,
+        provider: str | None = None,
     ) -> Any:
         """Generate a character and create the agent"""
-        path = f"/agents/generate-and-create"
+        path = f"/api/v1/agents/generate-and-create"
         params = None
-        body = encode_body(GenerateAndCreateInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if agent_id is not None:
+            _raw["agent_id"] = agent_id
+        if description is not None:
+            _raw["description"] = description
+        if fields is not None:
+            _raw["fields"] = fields
+        if gender is not None:
+            _raw["gender"] = gender
+        if language is not None:
+            _raw["language"] = language
+        if model is not None:
+            _raw["model"] = model
+        if name is not None:
+            _raw["name"] = name
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if provider is not None:
+            _raw["provider"] = provider
+        body = encode_body(GenerateAndCreateInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return data
 
     async def generate_character(
         self,
-        **body_fields: Any,
+        *,
+        agent_id: str | None = None,
+        description: str,
+        fields: list[Any] | None = None,
+        gender: str | None = None,
+        model: str | None = None,
+        name: str,
+        provider: str | None = None,
+        regenerate: bool | None = None,
     ) -> Any:
         """Generate a character profile from a description"""
-        path = f"/agents/generate-character"
+        path = f"/api/v1/agents/generate-character"
         params = None
-        body = encode_body(GenerateCharacterInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if agent_id is not None:
+            _raw["agent_id"] = agent_id
+        if description is not None:
+            _raw["description"] = description
+        if fields is not None:
+            _raw["fields"] = fields
+        if gender is not None:
+            _raw["gender"] = gender
+        if model is not None:
+            _raw["model"] = model
+        if name is not None:
+            _raw["name"] = name
+        if provider is not None:
+            _raw["provider"] = provider
+        if regenerate is not None:
+            _raw["regenerate"] = regenerate
+        body = encode_body(GenerateCharacterInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return data
 
     async def regenerate_avatar(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        style: str | None = None,
     ) -> RegenerateAvatarOutputBody:
         """Regenerate agent avatar"""
-        path = f"/agents/{agentId}/avatar/generate"
+        path = f"/api/v1/agents/{agent_id}/avatar/generate"
         params = None
-        body = encode_body(RegenerateAvatarInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if style is not None:
+            _raw["style"] = style
+        body = encode_body(RegenerateAvatarInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return RegenerateAvatarOutputBody.model_validate(data)
 
     async def generate_bio(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        current_bio: str | None = None,
+        description: str,
+        enriched_context_json: str | None = None,
+        gender: str | None = None,
+        instance_id: str | None = None,
+        name: str,
+        style: str | None = None,
+        user_id: str | None = None,
     ) -> GenerateBioOutputBody:
         """Generate agent bio"""
-        path = f"/agents/{agentId}/bio/generate"
+        path = f"/api/v1/agents/{agent_id}/bio/generate"
         params = None
-        body = encode_body(GenerateBioInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if current_bio is not None:
+            _raw["current_bio"] = current_bio
+        if description is not None:
+            _raw["description"] = description
+        if enriched_context_json is not None:
+            _raw["enriched_context_json"] = enriched_context_json
+        if gender is not None:
+            _raw["gender"] = gender
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if name is not None:
+            _raw["name"] = name
+        if style is not None:
+            _raw["style"] = style
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(GenerateBioInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return GenerateBioOutputBody.model_validate(data)
 
     async def generate_image(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        model: str | None = None,
+        negative_prompt: str | None = None,
+        output_path: str | None = None,
+        prompt: str,
+        provider: str | None = None,
     ) -> GenerateImageOutputBody:
         """Generate an image"""
-        path = f"/agents/{agentId}/image/generate"
+        path = f"/api/v1/agents/{agent_id}/image/generate"
         params = None
-        body = encode_body(GenerateImageInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if model is not None:
+            _raw["model"] = model
+        if negative_prompt is not None:
+            _raw["negative_prompt"] = negative_prompt
+        if output_path is not None:
+            _raw["output_path"] = output_path
+        if prompt is not None:
+            _raw["prompt"] = prompt
+        if provider is not None:
+            _raw["provider"] = provider
+        body = encode_body(GenerateImageInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return GenerateImageOutputBody.model_validate(data)
 
     async def generate_seed_memories(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        agent_name: str,
+        big5: str | None = None,
+        creator_display_name: str | None = None,
+        generate_origin_story: bool | None = None,
+        generate_personalized_memories: bool | None = None,
+        identity_memory_templates: list[Any] | None = None,
+        lore_generation_context: str | None = None,
+        personality_prompt: str,
+        primary_traits: list[Any] | None = None,
+        speech_patterns: list[Any],
+        static_lore_memories: list[Any] | None = None,
+        true_dislikes: list[Any] | None = None,
+        true_interests: list[Any],
     ) -> GenerateSeedMemoriesOutputBody:
         """Generate seed memories for an agent"""
-        path = f"/agents/{agentId}/memory/seed"
+        path = f"/api/v1/agents/{agent_id}/memory/seed"
         params = None
-        body = encode_body(GenerateSeedMemoriesInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if agent_name is not None:
+            _raw["agentName"] = agent_name
+        if big5 is not None:
+            _raw["big5"] = big5
+        if creator_display_name is not None:
+            _raw["creatorDisplayName"] = creator_display_name
+        if generate_origin_story is not None:
+            _raw["generateOriginStory"] = generate_origin_story
+        if generate_personalized_memories is not None:
+            _raw["generatePersonalizedMemories"] = generate_personalized_memories
+        if identity_memory_templates is not None:
+            _raw["identityMemoryTemplates"] = identity_memory_templates
+        if lore_generation_context is not None:
+            _raw["loreGenerationContext"] = lore_generation_context
+        if personality_prompt is not None:
+            _raw["personalityPrompt"] = personality_prompt
+        if primary_traits is not None:
+            _raw["primaryTraits"] = primary_traits
+        if speech_patterns is not None:
+            _raw["speechPatterns"] = speech_patterns
+        if static_lore_memories is not None:
+            _raw["staticLoreMemories"] = static_lore_memories
+        if true_dislikes is not None:
+            _raw["trueDislikes"] = true_dislikes
+        if true_interests is not None:
+            _raw["trueInterests"] = true_interests
+        body = encode_body(GenerateSeedMemoriesInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return GenerateSeedMemoriesOutputBody.model_validate(data)

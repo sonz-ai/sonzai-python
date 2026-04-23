@@ -23,7 +23,7 @@ class Relationships(_RelationshipsBase):
         agent_id: str,
     ) -> RelationshipsResponse:
         """Get agent relationships"""
-        path = f"/agents/{agentId}/relationships"
+        path = f"/api/v1/agents/{agent_id}/relationships"
         params = None
         data = self._http.get(path, params=params)
         return RelationshipsResponse.model_validate(data)
@@ -35,7 +35,7 @@ class AsyncRelationships(_RelationshipsBase):
         agent_id: str,
     ) -> RelationshipsResponse:
         """Get agent relationships"""
-        path = f"/agents/{agentId}/relationships"
+        path = f"/api/v1/agents/{agent_id}/relationships"
         params = None
         data = await self._http.get(path, params=params)
         return RelationshipsResponse.model_validate(data)

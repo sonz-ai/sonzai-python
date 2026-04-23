@@ -26,20 +26,30 @@ class UserPersonas(_UserPersonasBase):
         self,
     ) -> ListUserPersonasOutputBody:
         """List user personas"""
-        path = f"/user-personas"
+        path = f"/api/v1/user-personas"
         params = None
         data = self._http.get(path, params=params)
         return ListUserPersonasOutputBody.model_validate(data)
 
     def create_user_persona(
         self,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        name: str,
+        style: str | None = None,
     ) -> UserPersonaRecord:
         """Create a user persona"""
-        path = f"/user-personas"
+        path = f"/api/v1/user-personas"
         params = None
-        body = encode_body(CreateUserPersonaInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if name is not None:
+            _raw["name"] = name
+        if style is not None:
+            _raw["style"] = style
+        body = encode_body(CreateUserPersonaInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return UserPersonaRecord.model_validate(data)
 
     def delete_user_persona(
@@ -47,7 +57,7 @@ class UserPersonas(_UserPersonasBase):
         persona_id: str,
     ) -> DeleteUserPersonaOutputBody:
         """Delete a user persona"""
-        path = f"/user-personas/{personaId}"
+        path = f"/api/v1/user-personas/{persona_id}"
         params = None
         data = self._http.delete(path, params=params)
         return DeleteUserPersonaOutputBody.model_validate(data)
@@ -57,7 +67,7 @@ class UserPersonas(_UserPersonasBase):
         persona_id: str,
     ) -> UserPersonaRecord:
         """Get a user persona"""
-        path = f"/user-personas/{personaId}"
+        path = f"/api/v1/user-personas/{persona_id}"
         params = None
         data = self._http.get(path, params=params)
         return UserPersonaRecord.model_validate(data)
@@ -65,13 +75,23 @@ class UserPersonas(_UserPersonasBase):
     def update_user_persona(
         self,
         persona_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        name: str | None = None,
+        style: str | None = None,
     ) -> UserPersonaRecord:
         """Update a user persona"""
-        path = f"/user-personas/{personaId}"
+        path = f"/api/v1/user-personas/{persona_id}"
         params = None
-        body = encode_body(UpdateUserPersonaInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if name is not None:
+            _raw["name"] = name
+        if style is not None:
+            _raw["style"] = style
+        body = encode_body(UpdateUserPersonaInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return UserPersonaRecord.model_validate(data)
 
 
@@ -80,20 +100,30 @@ class AsyncUserPersonas(_UserPersonasBase):
         self,
     ) -> ListUserPersonasOutputBody:
         """List user personas"""
-        path = f"/user-personas"
+        path = f"/api/v1/user-personas"
         params = None
         data = await self._http.get(path, params=params)
         return ListUserPersonasOutputBody.model_validate(data)
 
     async def create_user_persona(
         self,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        name: str,
+        style: str | None = None,
     ) -> UserPersonaRecord:
         """Create a user persona"""
-        path = f"/user-personas"
+        path = f"/api/v1/user-personas"
         params = None
-        body = encode_body(CreateUserPersonaInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if name is not None:
+            _raw["name"] = name
+        if style is not None:
+            _raw["style"] = style
+        body = encode_body(CreateUserPersonaInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return UserPersonaRecord.model_validate(data)
 
     async def delete_user_persona(
@@ -101,7 +131,7 @@ class AsyncUserPersonas(_UserPersonasBase):
         persona_id: str,
     ) -> DeleteUserPersonaOutputBody:
         """Delete a user persona"""
-        path = f"/user-personas/{personaId}"
+        path = f"/api/v1/user-personas/{persona_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteUserPersonaOutputBody.model_validate(data)
@@ -111,7 +141,7 @@ class AsyncUserPersonas(_UserPersonasBase):
         persona_id: str,
     ) -> UserPersonaRecord:
         """Get a user persona"""
-        path = f"/user-personas/{personaId}"
+        path = f"/api/v1/user-personas/{persona_id}"
         params = None
         data = await self._http.get(path, params=params)
         return UserPersonaRecord.model_validate(data)
@@ -119,11 +149,21 @@ class AsyncUserPersonas(_UserPersonasBase):
     async def update_user_persona(
         self,
         persona_id: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        name: str | None = None,
+        style: str | None = None,
     ) -> UserPersonaRecord:
         """Update a user persona"""
-        path = f"/user-personas/{personaId}"
+        path = f"/api/v1/user-personas/{persona_id}"
         params = None
-        body = encode_body(UpdateUserPersonaInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if name is not None:
+            _raw["name"] = name
+        if style is not None:
+            _raw["style"] = style
+        body = encode_body(UpdateUserPersonaInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return UserPersonaRecord.model_validate(data)

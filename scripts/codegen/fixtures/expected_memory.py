@@ -43,13 +43,23 @@ class Memory(_MemoryBase):
     def add_fact(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        content: str,
+        fact_type: str,
+        user_id: str | None = None,
     ) -> StoredFact:
         """Auto-generated."""
         path = f"/api/v1/agents/{agent_id}/facts"
         params = None
-        body = encode_body(AddFactInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if content is not None:
+            _raw["content"] = content
+        if fact_type is not None:
+            _raw["fact_type"] = fact_type
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(AddFactInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return StoredFact.model_validate(data)
 
 
@@ -81,11 +91,21 @@ class AsyncMemory(_MemoryBase):
     async def add_fact(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        content: str,
+        fact_type: str,
+        user_id: str | None = None,
     ) -> StoredFact:
         """Auto-generated."""
         path = f"/api/v1/agents/{agent_id}/facts"
         params = None
-        body = encode_body(AddFactInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if content is not None:
+            _raw["content"] = content
+        if fact_type is not None:
+            _raw["fact_type"] = fact_type
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(AddFactInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return StoredFact.model_validate(data)

@@ -25,25 +25,69 @@ class Sessions(_SessionsBase):
     def end_session(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        duration_seconds: int,
+        instance_id: str | None = None,
+        messages: list[Any] | None = None,
+        session_id: str,
+        total_messages: int,
+        user_display_name: str | None = None,
+        user_id: str,
+        user_timezone: str | None = None,
+        wait: bool | None = None,
     ) -> EndSessionOutputBody:
         """End a chat session"""
-        path = f"/agents/{agentId}/sessions/end"
+        path = f"/api/v1/agents/{agent_id}/sessions/end"
         params = None
-        body = encode_body(EndSessionInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if duration_seconds is not None:
+            _raw["duration_seconds"] = duration_seconds
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if messages is not None:
+            _raw["messages"] = messages
+        if session_id is not None:
+            _raw["session_id"] = session_id
+        if total_messages is not None:
+            _raw["total_messages"] = total_messages
+        if user_display_name is not None:
+            _raw["user_display_name"] = user_display_name
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        if user_timezone is not None:
+            _raw["user_timezone"] = user_timezone
+        if wait is not None:
+            _raw["wait"] = wait
+        body = encode_body(EndSessionInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return EndSessionOutputBody.model_validate(data)
 
     def start_session(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        instance_id: str | None = None,
+        session_id: str,
+        tool_definitions: str | None = None,
+        user_display_name: str | None = None,
+        user_id: str,
     ) -> StartSessionOutputBody:
         """Start a chat session"""
-        path = f"/agents/{agentId}/sessions/start"
+        path = f"/api/v1/agents/{agent_id}/sessions/start"
         params = None
-        body = encode_body(StartSessionInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if session_id is not None:
+            _raw["session_id"] = session_id
+        if tool_definitions is not None:
+            _raw["tool_definitions"] = tool_definitions
+        if user_display_name is not None:
+            _raw["user_display_name"] = user_display_name
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(StartSessionInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return StartSessionOutputBody.model_validate(data)
 
     def set_session_tools(
@@ -52,9 +96,9 @@ class Sessions(_SessionsBase):
         session_id: str,
     ) -> SetSessionToolsOutputBody:
         """Set session tool definitions"""
-        path = f"/agents/{agentId}/sessions/{sessionId}/tools"
+        path = f"/api/v1/agents/{agent_id}/sessions/{session_id}/tools"
         params = None
-        data = self._http.put(path, params=params, body=None)
+        data = self._http.put(path, params=params)
         return SetSessionToolsOutputBody.model_validate(data)
 
 
@@ -62,25 +106,69 @@ class AsyncSessions(_SessionsBase):
     async def end_session(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        duration_seconds: int,
+        instance_id: str | None = None,
+        messages: list[Any] | None = None,
+        session_id: str,
+        total_messages: int,
+        user_display_name: str | None = None,
+        user_id: str,
+        user_timezone: str | None = None,
+        wait: bool | None = None,
     ) -> EndSessionOutputBody:
         """End a chat session"""
-        path = f"/agents/{agentId}/sessions/end"
+        path = f"/api/v1/agents/{agent_id}/sessions/end"
         params = None
-        body = encode_body(EndSessionInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if duration_seconds is not None:
+            _raw["duration_seconds"] = duration_seconds
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if messages is not None:
+            _raw["messages"] = messages
+        if session_id is not None:
+            _raw["session_id"] = session_id
+        if total_messages is not None:
+            _raw["total_messages"] = total_messages
+        if user_display_name is not None:
+            _raw["user_display_name"] = user_display_name
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        if user_timezone is not None:
+            _raw["user_timezone"] = user_timezone
+        if wait is not None:
+            _raw["wait"] = wait
+        body = encode_body(EndSessionInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return EndSessionOutputBody.model_validate(data)
 
     async def start_session(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        instance_id: str | None = None,
+        session_id: str,
+        tool_definitions: str | None = None,
+        user_display_name: str | None = None,
+        user_id: str,
     ) -> StartSessionOutputBody:
         """Start a chat session"""
-        path = f"/agents/{agentId}/sessions/start"
+        path = f"/api/v1/agents/{agent_id}/sessions/start"
         params = None
-        body = encode_body(StartSessionInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if instance_id is not None:
+            _raw["instance_id"] = instance_id
+        if session_id is not None:
+            _raw["session_id"] = session_id
+        if tool_definitions is not None:
+            _raw["tool_definitions"] = tool_definitions
+        if user_display_name is not None:
+            _raw["user_display_name"] = user_display_name
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(StartSessionInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return StartSessionOutputBody.model_validate(data)
 
     async def set_session_tools(
@@ -89,7 +177,7 @@ class AsyncSessions(_SessionsBase):
         session_id: str,
     ) -> SetSessionToolsOutputBody:
         """Set session tool definitions"""
-        path = f"/agents/{agentId}/sessions/{sessionId}/tools"
+        path = f"/api/v1/agents/{agent_id}/sessions/{session_id}/tools"
         params = None
-        data = await self._http.put(path, params=params, body=None)
+        data = await self._http.put(path, params=params)
         return SetSessionToolsOutputBody.model_validate(data)

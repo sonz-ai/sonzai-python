@@ -28,7 +28,7 @@ class Mood(_MoodBase):
         instance_id: str | None = None,
     ) -> MoodResponse:
         """Get agent mood state"""
-        path = f"/agents/{agentId}/mood"
+        path = f"/api/v1/agents/{agent_id}/mood"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -46,7 +46,7 @@ class Mood(_MoodBase):
         instance_id: str | None = None,
     ) -> MoodHistoryResponse:
         """Get agent mood history"""
-        path = f"/agents/{agentId}/mood-history"
+        path = f"/api/v1/agents/{agent_id}/mood-history"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -64,7 +64,7 @@ class Mood(_MoodBase):
         days: int | None = 5,
     ) -> MoodAggregateResponse:
         """Get aggregated mood across users"""
-        path = f"/agents/{agentId}/mood/aggregate"
+        path = f"/api/v1/agents/{agent_id}/mood/aggregate"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days
@@ -81,7 +81,7 @@ class AsyncMood(_MoodBase):
         instance_id: str | None = None,
     ) -> MoodResponse:
         """Get agent mood state"""
-        path = f"/agents/{agentId}/mood"
+        path = f"/api/v1/agents/{agent_id}/mood"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["user_id"] = user_id
@@ -99,7 +99,7 @@ class AsyncMood(_MoodBase):
         instance_id: str | None = None,
     ) -> MoodHistoryResponse:
         """Get agent mood history"""
-        path = f"/agents/{agentId}/mood-history"
+        path = f"/api/v1/agents/{agent_id}/mood-history"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -117,7 +117,7 @@ class AsyncMood(_MoodBase):
         days: int | None = 5,
     ) -> MoodAggregateResponse:
         """Get aggregated mood across users"""
-        path = f"/agents/{agentId}/mood/aggregate"
+        path = f"/api/v1/agents/{agent_id}/mood/aggregate"
         params: dict[str, Any] = {}
         if days is not None:
             params["days"] = days

@@ -29,7 +29,7 @@ class Schedules(_SchedulesBase):
         user_id: str,
     ) -> ListSchedulesOutputBody:
         """List all schedules for a (agent, user) pair."""
-        path = f"/agents/{agentId}/users/{userId}/schedules"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules"
         params = None
         data = self._http.get(path, params=params)
         return ListSchedulesOutputBody.model_validate(data)
@@ -38,13 +38,38 @@ class Schedules(_SchedulesBase):
         self,
         agent_id: str,
         user_id: str,
-        **body_fields: Any,
+        *,
+        active_window: str | None = None,
+        cadence: str,
+        check_type: str,
+        ends_at: str | None = None,
+        intent: str,
+        inventory_item_id: str | None = None,
+        metadata: str | None = None,
+        starts_at: str | None = None,
     ) -> CreateScheduleOutputBody:
         """Create a recurring schedule for a user."""
-        path = f"/agents/{agentId}/users/{userId}/schedules"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules"
         params = None
-        body = encode_body(CreateScheduleInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if active_window is not None:
+            _raw["active_window"] = active_window
+        if cadence is not None:
+            _raw["cadence"] = cadence
+        if check_type is not None:
+            _raw["check_type"] = check_type
+        if ends_at is not None:
+            _raw["ends_at"] = ends_at
+        if intent is not None:
+            _raw["intent"] = intent
+        if inventory_item_id is not None:
+            _raw["inventory_item_id"] = inventory_item_id
+        if metadata is not None:
+            _raw["metadata"] = metadata
+        if starts_at is not None:
+            _raw["starts_at"] = starts_at
+        body = encode_body(CreateScheduleInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return CreateScheduleOutputBody.model_validate(data)
 
     def delete_schedule(
@@ -54,7 +79,7 @@ class Schedules(_SchedulesBase):
         schedule_id: str,
     ) -> Any:
         """Delete a schedule. Idempotent — missing IDs return 204."""
-        path = f"/agents/{agentId}/users/{userId}/schedules/{scheduleId}"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -66,7 +91,7 @@ class Schedules(_SchedulesBase):
         schedule_id: str,
     ) -> ScheduleDTO:
         """Fetch a single schedule by ID."""
-        path = f"/agents/{agentId}/users/{userId}/schedules/{scheduleId}"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
         params = None
         data = self._http.get(path, params=params)
         return ScheduleDTO.model_validate(data)
@@ -76,13 +101,38 @@ class Schedules(_SchedulesBase):
         agent_id: str,
         user_id: str,
         schedule_id: str,
-        **body_fields: Any,
+        *,
+        active_window: str | None = None,
+        cadence: str | None = None,
+        check_type: str | None = None,
+        enabled: bool | None = None,
+        ends_at: str | None = None,
+        intent: str | None = None,
+        metadata: str | None = None,
+        starts_at: str | None = None,
     ) -> ScheduleDTO:
         """Partially update a schedule. Recomputes next_fire_at only when cadence/active_window/starts_at change."""
-        path = f"/agents/{agentId}/users/{userId}/schedules/{scheduleId}"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
         params = None
-        body = encode_body(PatchScheduleInputBody, body_fields)
-        data = self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if active_window is not None:
+            _raw["active_window"] = active_window
+        if cadence is not None:
+            _raw["cadence"] = cadence
+        if check_type is not None:
+            _raw["check_type"] = check_type
+        if enabled is not None:
+            _raw["enabled"] = enabled
+        if ends_at is not None:
+            _raw["ends_at"] = ends_at
+        if intent is not None:
+            _raw["intent"] = intent
+        if metadata is not None:
+            _raw["metadata"] = metadata
+        if starts_at is not None:
+            _raw["starts_at"] = starts_at
+        body = encode_body(PatchScheduleInputBody, _raw)
+        data = self._http.patch(path, params=params, json_data=body)
         return ScheduleDTO.model_validate(data)
 
     def upcoming_schedule(
@@ -94,7 +144,7 @@ class Schedules(_SchedulesBase):
         limit: int | None = 10,
     ) -> UpcomingScheduleOutputBody:
         """Preview the next N allowed fire times (honors active_window). Does not mutate state."""
-        path = f"/agents/{agentId}/users/{userId}/schedules/{scheduleId}/upcoming"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}/upcoming"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit
@@ -109,7 +159,7 @@ class AsyncSchedules(_SchedulesBase):
         user_id: str,
     ) -> ListSchedulesOutputBody:
         """List all schedules for a (agent, user) pair."""
-        path = f"/agents/{agentId}/users/{userId}/schedules"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules"
         params = None
         data = await self._http.get(path, params=params)
         return ListSchedulesOutputBody.model_validate(data)
@@ -118,13 +168,38 @@ class AsyncSchedules(_SchedulesBase):
         self,
         agent_id: str,
         user_id: str,
-        **body_fields: Any,
+        *,
+        active_window: str | None = None,
+        cadence: str,
+        check_type: str,
+        ends_at: str | None = None,
+        intent: str,
+        inventory_item_id: str | None = None,
+        metadata: str | None = None,
+        starts_at: str | None = None,
     ) -> CreateScheduleOutputBody:
         """Create a recurring schedule for a user."""
-        path = f"/agents/{agentId}/users/{userId}/schedules"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules"
         params = None
-        body = encode_body(CreateScheduleInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if active_window is not None:
+            _raw["active_window"] = active_window
+        if cadence is not None:
+            _raw["cadence"] = cadence
+        if check_type is not None:
+            _raw["check_type"] = check_type
+        if ends_at is not None:
+            _raw["ends_at"] = ends_at
+        if intent is not None:
+            _raw["intent"] = intent
+        if inventory_item_id is not None:
+            _raw["inventory_item_id"] = inventory_item_id
+        if metadata is not None:
+            _raw["metadata"] = metadata
+        if starts_at is not None:
+            _raw["starts_at"] = starts_at
+        body = encode_body(CreateScheduleInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return CreateScheduleOutputBody.model_validate(data)
 
     async def delete_schedule(
@@ -134,7 +209,7 @@ class AsyncSchedules(_SchedulesBase):
         schedule_id: str,
     ) -> Any:
         """Delete a schedule. Idempotent — missing IDs return 204."""
-        path = f"/agents/{agentId}/users/{userId}/schedules/{scheduleId}"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -146,7 +221,7 @@ class AsyncSchedules(_SchedulesBase):
         schedule_id: str,
     ) -> ScheduleDTO:
         """Fetch a single schedule by ID."""
-        path = f"/agents/{agentId}/users/{userId}/schedules/{scheduleId}"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
         params = None
         data = await self._http.get(path, params=params)
         return ScheduleDTO.model_validate(data)
@@ -156,13 +231,38 @@ class AsyncSchedules(_SchedulesBase):
         agent_id: str,
         user_id: str,
         schedule_id: str,
-        **body_fields: Any,
+        *,
+        active_window: str | None = None,
+        cadence: str | None = None,
+        check_type: str | None = None,
+        enabled: bool | None = None,
+        ends_at: str | None = None,
+        intent: str | None = None,
+        metadata: str | None = None,
+        starts_at: str | None = None,
     ) -> ScheduleDTO:
         """Partially update a schedule. Recomputes next_fire_at only when cadence/active_window/starts_at change."""
-        path = f"/agents/{agentId}/users/{userId}/schedules/{scheduleId}"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}"
         params = None
-        body = encode_body(PatchScheduleInputBody, body_fields)
-        data = await self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if active_window is not None:
+            _raw["active_window"] = active_window
+        if cadence is not None:
+            _raw["cadence"] = cadence
+        if check_type is not None:
+            _raw["check_type"] = check_type
+        if enabled is not None:
+            _raw["enabled"] = enabled
+        if ends_at is not None:
+            _raw["ends_at"] = ends_at
+        if intent is not None:
+            _raw["intent"] = intent
+        if metadata is not None:
+            _raw["metadata"] = metadata
+        if starts_at is not None:
+            _raw["starts_at"] = starts_at
+        body = encode_body(PatchScheduleInputBody, _raw)
+        data = await self._http.patch(path, params=params, json_data=body)
         return ScheduleDTO.model_validate(data)
 
     async def upcoming_schedule(
@@ -174,7 +274,7 @@ class AsyncSchedules(_SchedulesBase):
         limit: int | None = 10,
     ) -> UpcomingScheduleOutputBody:
         """Preview the next N allowed fire times (honors active_window). Does not mutate state."""
-        path = f"/agents/{agentId}/users/{userId}/schedules/{scheduleId}/upcoming"
+        path = f"/api/v1/agents/{agent_id}/users/{user_id}/schedules/{schedule_id}/upcoming"
         params: dict[str, Any] = {}
         if limit is not None:
             params["limit"] = limit

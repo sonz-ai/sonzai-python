@@ -52,7 +52,7 @@ class Agents(_AgentsBase):
         limit: int = 100,
     ) -> Page[AgentIndex]:
         """List agents"""
-        path = f"/agents"
+        path = f"/api/v1/agents"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if page_size is not None:
             params["page_size"] = page_size
@@ -72,13 +72,92 @@ class Agents(_AgentsBase):
 
     def create_agent(
         self,
-        **body_fields: Any,
+        *,
+        agent_id: str | None = None,
+        avatar_url: str | None = None,
+        behaviors: str | None = None,
+        big5: str | None = None,
+        bio: str | None = None,
+        capabilities: str | None = None,
+        dimensions: str | None = None,
+        gender: str | None = None,
+        generate_avatar: bool | None = None,
+        generate_origin_story: bool | None = None,
+        generate_personalized_memories: bool | None = None,
+        initial_goals: list[Any] | None = None,
+        language: str | None = None,
+        lore_generation_context: str | None = None,
+        name: str,
+        personality_prompt: str | None = None,
+        preferences: str | None = None,
+        primary_traits: list[Any] | None = None,
+        project_id: str | None = None,
+        seed_memories: list[Any] | None = None,
+        speech_patterns: list[Any] | None = None,
+        tool_capabilities: str | None = None,
+        true_dislikes: list[Any] | None = None,
+        true_interests: list[Any] | None = None,
+        user_display_name: str | None = None,
+        user_id: str | None = None,
     ) -> AgentDetailResponse:
         """Create or update an agent"""
-        path = f"/agents"
+        path = f"/api/v1/agents"
         params = None
-        body = encode_body(CreateAgentBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if agent_id is not None:
+            _raw["agent_id"] = agent_id
+        if avatar_url is not None:
+            _raw["avatar_url"] = avatar_url
+        if behaviors is not None:
+            _raw["behaviors"] = behaviors
+        if big5 is not None:
+            _raw["big5"] = big5
+        if bio is not None:
+            _raw["bio"] = bio
+        if capabilities is not None:
+            _raw["capabilities"] = capabilities
+        if dimensions is not None:
+            _raw["dimensions"] = dimensions
+        if gender is not None:
+            _raw["gender"] = gender
+        if generate_avatar is not None:
+            _raw["generate_avatar"] = generate_avatar
+        if generate_origin_story is not None:
+            _raw["generate_origin_story"] = generate_origin_story
+        if generate_personalized_memories is not None:
+            _raw["generate_personalized_memories"] = generate_personalized_memories
+        if initial_goals is not None:
+            _raw["initial_goals"] = initial_goals
+        if language is not None:
+            _raw["language"] = language
+        if lore_generation_context is not None:
+            _raw["lore_generation_context"] = lore_generation_context
+        if name is not None:
+            _raw["name"] = name
+        if personality_prompt is not None:
+            _raw["personality_prompt"] = personality_prompt
+        if preferences is not None:
+            _raw["preferences"] = preferences
+        if primary_traits is not None:
+            _raw["primary_traits"] = primary_traits
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if seed_memories is not None:
+            _raw["seed_memories"] = seed_memories
+        if speech_patterns is not None:
+            _raw["speech_patterns"] = speech_patterns
+        if tool_capabilities is not None:
+            _raw["tool_capabilities"] = tool_capabilities
+        if true_dislikes is not None:
+            _raw["true_dislikes"] = true_dislikes
+        if true_interests is not None:
+            _raw["true_interests"] = true_interests
+        if user_display_name is not None:
+            _raw["user_display_name"] = user_display_name
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(CreateAgentBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return AgentDetailResponse.model_validate(data)
 
     def delete_agent(
@@ -86,7 +165,7 @@ class Agents(_AgentsBase):
         agent_id: str,
     ) -> DeleteAgentOutputBody:
         """Delete an agent and all data"""
-        path = f"/agents/{agentId}"
+        path = f"/api/v1/agents/{agent_id}"
         params = None
         data = self._http.delete(path, params=params)
         return DeleteAgentOutputBody.model_validate(data)
@@ -96,7 +175,7 @@ class Agents(_AgentsBase):
         agent_id: str,
     ) -> AgentDetailResponse:
         """Get a single agent by ID"""
-        path = f"/agents/{agentId}"
+        path = f"/api/v1/agents/{agent_id}"
         params = None
         data = self._http.get(path, params=params)
         return AgentDetailResponse.model_validate(data)
@@ -106,7 +185,7 @@ class Agents(_AgentsBase):
         agent_id: str,
     ) -> AgentCapabilities:
         """Get agent capabilities"""
-        path = f"/agents/{agentId}/capabilities"
+        path = f"/api/v1/agents/{agent_id}/capabilities"
         params = None
         data = self._http.get(path, params=params)
         return AgentCapabilities.model_validate(data)
@@ -114,13 +193,32 @@ class Agents(_AgentsBase):
     def update_capabilities(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        image_generation: bool | None = None,
+        inventory: bool | None = None,
+        knowledge_base: bool | None = None,
+        memory_mode: str | None = None,
+        remember_name: bool | None = None,
+        web_search: bool | None = None,
     ) -> AgentCapabilities:
         """Update agent capabilities"""
-        path = f"/agents/{agentId}/capabilities"
+        path = f"/api/v1/agents/{agent_id}/capabilities"
         params = None
-        body = encode_body(UpdateCapabilitiesInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if image_generation is not None:
+            _raw["imageGeneration"] = image_generation
+        if inventory is not None:
+            _raw["inventory"] = inventory
+        if knowledge_base is not None:
+            _raw["knowledgeBase"] = knowledge_base
+        if memory_mode is not None:
+            _raw["memoryMode"] = memory_mode
+        if remember_name is not None:
+            _raw["rememberName"] = remember_name
+        if web_search is not None:
+            _raw["webSearch"] = web_search
+        body = encode_body(UpdateCapabilitiesInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return AgentCapabilities.model_validate(data)
 
     def get_effective_post_processing_model(
@@ -130,7 +228,7 @@ class Agents(_AgentsBase):
         chat_model: str,
     ) -> EffectivePostProcessingModelOutputBody:
         """Preview the resolved post-processing model for this agent"""
-        path = f"/agents/{agentId}/effective-post-processing-model"
+        path = f"/api/v1/agents/{agent_id}/effective-post-processing-model"
         params: dict[str, Any] = {}
         if chat_model is not None:
             params["chat_model"] = chat_model
@@ -140,13 +238,17 @@ class Agents(_AgentsBase):
     def fork_agent(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        name: str | None = None,
     ) -> ForkResponse:
         """Fork (clone) an agent"""
-        path = f"/agents/{agentId}/fork"
+        path = f"/api/v1/agents/{agent_id}/fork"
         params = None
-        body = encode_body(ForkAgentInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if name is not None:
+            _raw["name"] = name
+        body = encode_body(ForkAgentInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return ForkResponse.model_validate(data)
 
     def get_fork_status(
@@ -154,7 +256,7 @@ class Agents(_AgentsBase):
         agent_id: str,
     ) -> ForkStatusResponse:
         """Get fork operation status"""
-        path = f"/agents/{agentId}/fork/status"
+        path = f"/api/v1/agents/{agent_id}/fork/status"
         params = None
         data = self._http.get(path, params=params)
         return ForkStatusResponse.model_validate(data)
@@ -162,49 +264,83 @@ class Agents(_AgentsBase):
     def update_agent_post_processing_model(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        post_processing_model: str | None = None,
+        post_processing_provider: str | None = None,
     ) -> UpdateAgentPostProcessingModelOutputBody:
         """Set or clear agent-scope post-processing model override"""
-        path = f"/agents/{agentId}/post-processing-model"
+        path = f"/api/v1/agents/{agent_id}/post-processing-model"
         params = None
-        body = encode_body(UpdateAgentPostProcessingModelInputBody, body_fields)
-        data = self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if post_processing_model is not None:
+            _raw["post_processing_model"] = post_processing_model
+        if post_processing_provider is not None:
+            _raw["post_processing_provider"] = post_processing_provider
+        body = encode_body(UpdateAgentPostProcessingModelInputBody, _raw)
+        data = self._http.patch(path, params=params, json_data=body)
         return UpdateAgentPostProcessingModelOutputBody.model_validate(data)
 
     def update_agent_profile(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        bio: str | None = None,
+        name: str | None = None,
+        personality_prompt: str | None = None,
+        speech_patterns: list[Any] | None = None,
+        true_dislikes: list[Any] | None = None,
+        true_interests: list[Any] | None = None,
     ) -> UpdateAgentProfileOutputBody:
         """Update agent profile fields"""
-        path = f"/agents/{agentId}/profile"
+        path = f"/api/v1/agents/{agent_id}/profile"
         params = None
-        body = encode_body(UpdateAgentProfileInputBody, body_fields)
-        data = self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if bio is not None:
+            _raw["bio"] = bio
+        if name is not None:
+            _raw["name"] = name
+        if personality_prompt is not None:
+            _raw["personality_prompt"] = personality_prompt
+        if speech_patterns is not None:
+            _raw["speech_patterns"] = speech_patterns
+        if true_dislikes is not None:
+            _raw["true_dislikes"] = true_dislikes
+        if true_interests is not None:
+            _raw["true_interests"] = true_interests
+        body = encode_body(UpdateAgentProfileInputBody, _raw)
+        data = self._http.patch(path, params=params, json_data=body)
         return UpdateAgentProfileOutputBody.model_validate(data)
 
     def update_agent_project(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        project_id: str,
     ) -> UpdateAgentProjectOutputBody:
         """Assign an agent to a different project"""
-        path = f"/agents/{agentId}/project"
+        path = f"/api/v1/agents/{agent_id}/project"
         params = None
-        body = encode_body(UpdateAgentProjectInputBody, body_fields)
-        data = self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        body = encode_body(UpdateAgentProjectInputBody, _raw)
+        data = self._http.patch(path, params=params, json_data=body)
         return UpdateAgentProjectOutputBody.model_validate(data)
 
     def set_agent_status(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        is_active: bool,
     ) -> SetAgentStatusOutputBody:
         """Activate or deactivate an agent"""
-        path = f"/agents/{agentId}/status"
+        path = f"/api/v1/agents/{agent_id}/status"
         params = None
-        body = encode_body(SetAgentStatusInputBody, body_fields)
-        data = self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if is_active is not None:
+            _raw["is_active"] = is_active
+        body = encode_body(SetAgentStatusInputBody, _raw)
+        data = self._http.patch(path, params=params, json_data=body)
         return SetAgentStatusOutputBody.model_validate(data)
 
     def list_custom_tools(
@@ -212,7 +348,7 @@ class Agents(_AgentsBase):
         agent_id: str,
     ) -> ListCustomToolsOutputBody:
         """List custom tools"""
-        path = f"/agents/{agentId}/tools"
+        path = f"/api/v1/agents/{agent_id}/tools"
         params = None
         data = self._http.get(path, params=params)
         return ListCustomToolsOutputBody.model_validate(data)
@@ -220,13 +356,23 @@ class Agents(_AgentsBase):
     def create_custom_tool(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        description: str,
+        name: str,
+        parameters: str | None = None,
     ) -> CustomToolDefinition:
         """Create a custom tool"""
-        path = f"/agents/{agentId}/tools"
+        path = f"/api/v1/agents/{agent_id}/tools"
         params = None
-        body = encode_body(CreateCustomToolInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if name is not None:
+            _raw["name"] = name
+        if parameters is not None:
+            _raw["parameters"] = parameters
+        body = encode_body(CreateCustomToolInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return CustomToolDefinition.model_validate(data)
 
     def delete_custom_tool(
@@ -235,7 +381,7 @@ class Agents(_AgentsBase):
         tool_name: str,
     ) -> DeleteCustomToolOutputBody:
         """Delete a custom tool"""
-        path = f"/agents/{agentId}/tools/{toolName}"
+        path = f"/api/v1/agents/{agent_id}/tools/{tool_name}"
         params = None
         data = self._http.delete(path, params=params)
         return DeleteCustomToolOutputBody.model_validate(data)
@@ -244,13 +390,20 @@ class Agents(_AgentsBase):
         self,
         agent_id: str,
         tool_name: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        parameters: str | None = None,
     ) -> UpdateCustomToolOutputBody:
         """Update a custom tool"""
-        path = f"/agents/{agentId}/tools/{toolName}"
+        path = f"/api/v1/agents/{agent_id}/tools/{tool_name}"
         params = None
-        body = encode_body(UpdateCustomToolInputBody, body_fields)
-        data = self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if parameters is not None:
+            _raw["parameters"] = parameters
+        body = encode_body(UpdateCustomToolInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return UpdateCustomToolOutputBody.model_validate(data)
 
 
@@ -265,7 +418,7 @@ class AsyncAgents(_AgentsBase):
         limit: int = 100,
     ) -> AsyncPage[AgentIndex]:
         """List agents"""
-        path = f"/agents"
+        path = f"/api/v1/agents"
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if page_size is not None:
             params["page_size"] = page_size
@@ -289,13 +442,92 @@ class AsyncAgents(_AgentsBase):
 
     async def create_agent(
         self,
-        **body_fields: Any,
+        *,
+        agent_id: str | None = None,
+        avatar_url: str | None = None,
+        behaviors: str | None = None,
+        big5: str | None = None,
+        bio: str | None = None,
+        capabilities: str | None = None,
+        dimensions: str | None = None,
+        gender: str | None = None,
+        generate_avatar: bool | None = None,
+        generate_origin_story: bool | None = None,
+        generate_personalized_memories: bool | None = None,
+        initial_goals: list[Any] | None = None,
+        language: str | None = None,
+        lore_generation_context: str | None = None,
+        name: str,
+        personality_prompt: str | None = None,
+        preferences: str | None = None,
+        primary_traits: list[Any] | None = None,
+        project_id: str | None = None,
+        seed_memories: list[Any] | None = None,
+        speech_patterns: list[Any] | None = None,
+        tool_capabilities: str | None = None,
+        true_dislikes: list[Any] | None = None,
+        true_interests: list[Any] | None = None,
+        user_display_name: str | None = None,
+        user_id: str | None = None,
     ) -> AgentDetailResponse:
         """Create or update an agent"""
-        path = f"/agents"
+        path = f"/api/v1/agents"
         params = None
-        body = encode_body(CreateAgentBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if agent_id is not None:
+            _raw["agent_id"] = agent_id
+        if avatar_url is not None:
+            _raw["avatar_url"] = avatar_url
+        if behaviors is not None:
+            _raw["behaviors"] = behaviors
+        if big5 is not None:
+            _raw["big5"] = big5
+        if bio is not None:
+            _raw["bio"] = bio
+        if capabilities is not None:
+            _raw["capabilities"] = capabilities
+        if dimensions is not None:
+            _raw["dimensions"] = dimensions
+        if gender is not None:
+            _raw["gender"] = gender
+        if generate_avatar is not None:
+            _raw["generate_avatar"] = generate_avatar
+        if generate_origin_story is not None:
+            _raw["generate_origin_story"] = generate_origin_story
+        if generate_personalized_memories is not None:
+            _raw["generate_personalized_memories"] = generate_personalized_memories
+        if initial_goals is not None:
+            _raw["initial_goals"] = initial_goals
+        if language is not None:
+            _raw["language"] = language
+        if lore_generation_context is not None:
+            _raw["lore_generation_context"] = lore_generation_context
+        if name is not None:
+            _raw["name"] = name
+        if personality_prompt is not None:
+            _raw["personality_prompt"] = personality_prompt
+        if preferences is not None:
+            _raw["preferences"] = preferences
+        if primary_traits is not None:
+            _raw["primary_traits"] = primary_traits
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if seed_memories is not None:
+            _raw["seed_memories"] = seed_memories
+        if speech_patterns is not None:
+            _raw["speech_patterns"] = speech_patterns
+        if tool_capabilities is not None:
+            _raw["tool_capabilities"] = tool_capabilities
+        if true_dislikes is not None:
+            _raw["true_dislikes"] = true_dislikes
+        if true_interests is not None:
+            _raw["true_interests"] = true_interests
+        if user_display_name is not None:
+            _raw["user_display_name"] = user_display_name
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(CreateAgentBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return AgentDetailResponse.model_validate(data)
 
     async def delete_agent(
@@ -303,7 +535,7 @@ class AsyncAgents(_AgentsBase):
         agent_id: str,
     ) -> DeleteAgentOutputBody:
         """Delete an agent and all data"""
-        path = f"/agents/{agentId}"
+        path = f"/api/v1/agents/{agent_id}"
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteAgentOutputBody.model_validate(data)
@@ -313,7 +545,7 @@ class AsyncAgents(_AgentsBase):
         agent_id: str,
     ) -> AgentDetailResponse:
         """Get a single agent by ID"""
-        path = f"/agents/{agentId}"
+        path = f"/api/v1/agents/{agent_id}"
         params = None
         data = await self._http.get(path, params=params)
         return AgentDetailResponse.model_validate(data)
@@ -323,7 +555,7 @@ class AsyncAgents(_AgentsBase):
         agent_id: str,
     ) -> AgentCapabilities:
         """Get agent capabilities"""
-        path = f"/agents/{agentId}/capabilities"
+        path = f"/api/v1/agents/{agent_id}/capabilities"
         params = None
         data = await self._http.get(path, params=params)
         return AgentCapabilities.model_validate(data)
@@ -331,13 +563,32 @@ class AsyncAgents(_AgentsBase):
     async def update_capabilities(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        image_generation: bool | None = None,
+        inventory: bool | None = None,
+        knowledge_base: bool | None = None,
+        memory_mode: str | None = None,
+        remember_name: bool | None = None,
+        web_search: bool | None = None,
     ) -> AgentCapabilities:
         """Update agent capabilities"""
-        path = f"/agents/{agentId}/capabilities"
+        path = f"/api/v1/agents/{agent_id}/capabilities"
         params = None
-        body = encode_body(UpdateCapabilitiesInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if image_generation is not None:
+            _raw["imageGeneration"] = image_generation
+        if inventory is not None:
+            _raw["inventory"] = inventory
+        if knowledge_base is not None:
+            _raw["knowledgeBase"] = knowledge_base
+        if memory_mode is not None:
+            _raw["memoryMode"] = memory_mode
+        if remember_name is not None:
+            _raw["rememberName"] = remember_name
+        if web_search is not None:
+            _raw["webSearch"] = web_search
+        body = encode_body(UpdateCapabilitiesInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return AgentCapabilities.model_validate(data)
 
     async def get_effective_post_processing_model(
@@ -347,7 +598,7 @@ class AsyncAgents(_AgentsBase):
         chat_model: str,
     ) -> EffectivePostProcessingModelOutputBody:
         """Preview the resolved post-processing model for this agent"""
-        path = f"/agents/{agentId}/effective-post-processing-model"
+        path = f"/api/v1/agents/{agent_id}/effective-post-processing-model"
         params: dict[str, Any] = {}
         if chat_model is not None:
             params["chat_model"] = chat_model
@@ -357,13 +608,17 @@ class AsyncAgents(_AgentsBase):
     async def fork_agent(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        name: str | None = None,
     ) -> ForkResponse:
         """Fork (clone) an agent"""
-        path = f"/agents/{agentId}/fork"
+        path = f"/api/v1/agents/{agent_id}/fork"
         params = None
-        body = encode_body(ForkAgentInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if name is not None:
+            _raw["name"] = name
+        body = encode_body(ForkAgentInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return ForkResponse.model_validate(data)
 
     async def get_fork_status(
@@ -371,7 +626,7 @@ class AsyncAgents(_AgentsBase):
         agent_id: str,
     ) -> ForkStatusResponse:
         """Get fork operation status"""
-        path = f"/agents/{agentId}/fork/status"
+        path = f"/api/v1/agents/{agent_id}/fork/status"
         params = None
         data = await self._http.get(path, params=params)
         return ForkStatusResponse.model_validate(data)
@@ -379,49 +634,83 @@ class AsyncAgents(_AgentsBase):
     async def update_agent_post_processing_model(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        post_processing_model: str | None = None,
+        post_processing_provider: str | None = None,
     ) -> UpdateAgentPostProcessingModelOutputBody:
         """Set or clear agent-scope post-processing model override"""
-        path = f"/agents/{agentId}/post-processing-model"
+        path = f"/api/v1/agents/{agent_id}/post-processing-model"
         params = None
-        body = encode_body(UpdateAgentPostProcessingModelInputBody, body_fields)
-        data = await self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if post_processing_model is not None:
+            _raw["post_processing_model"] = post_processing_model
+        if post_processing_provider is not None:
+            _raw["post_processing_provider"] = post_processing_provider
+        body = encode_body(UpdateAgentPostProcessingModelInputBody, _raw)
+        data = await self._http.patch(path, params=params, json_data=body)
         return UpdateAgentPostProcessingModelOutputBody.model_validate(data)
 
     async def update_agent_profile(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        bio: str | None = None,
+        name: str | None = None,
+        personality_prompt: str | None = None,
+        speech_patterns: list[Any] | None = None,
+        true_dislikes: list[Any] | None = None,
+        true_interests: list[Any] | None = None,
     ) -> UpdateAgentProfileOutputBody:
         """Update agent profile fields"""
-        path = f"/agents/{agentId}/profile"
+        path = f"/api/v1/agents/{agent_id}/profile"
         params = None
-        body = encode_body(UpdateAgentProfileInputBody, body_fields)
-        data = await self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if bio is not None:
+            _raw["bio"] = bio
+        if name is not None:
+            _raw["name"] = name
+        if personality_prompt is not None:
+            _raw["personality_prompt"] = personality_prompt
+        if speech_patterns is not None:
+            _raw["speech_patterns"] = speech_patterns
+        if true_dislikes is not None:
+            _raw["true_dislikes"] = true_dislikes
+        if true_interests is not None:
+            _raw["true_interests"] = true_interests
+        body = encode_body(UpdateAgentProfileInputBody, _raw)
+        data = await self._http.patch(path, params=params, json_data=body)
         return UpdateAgentProfileOutputBody.model_validate(data)
 
     async def update_agent_project(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        project_id: str,
     ) -> UpdateAgentProjectOutputBody:
         """Assign an agent to a different project"""
-        path = f"/agents/{agentId}/project"
+        path = f"/api/v1/agents/{agent_id}/project"
         params = None
-        body = encode_body(UpdateAgentProjectInputBody, body_fields)
-        data = await self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        body = encode_body(UpdateAgentProjectInputBody, _raw)
+        data = await self._http.patch(path, params=params, json_data=body)
         return UpdateAgentProjectOutputBody.model_validate(data)
 
     async def set_agent_status(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        is_active: bool,
     ) -> SetAgentStatusOutputBody:
         """Activate or deactivate an agent"""
-        path = f"/agents/{agentId}/status"
+        path = f"/api/v1/agents/{agent_id}/status"
         params = None
-        body = encode_body(SetAgentStatusInputBody, body_fields)
-        data = await self._http.patch(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if is_active is not None:
+            _raw["is_active"] = is_active
+        body = encode_body(SetAgentStatusInputBody, _raw)
+        data = await self._http.patch(path, params=params, json_data=body)
         return SetAgentStatusOutputBody.model_validate(data)
 
     async def list_custom_tools(
@@ -429,7 +718,7 @@ class AsyncAgents(_AgentsBase):
         agent_id: str,
     ) -> ListCustomToolsOutputBody:
         """List custom tools"""
-        path = f"/agents/{agentId}/tools"
+        path = f"/api/v1/agents/{agent_id}/tools"
         params = None
         data = await self._http.get(path, params=params)
         return ListCustomToolsOutputBody.model_validate(data)
@@ -437,13 +726,23 @@ class AsyncAgents(_AgentsBase):
     async def create_custom_tool(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        description: str,
+        name: str,
+        parameters: str | None = None,
     ) -> CustomToolDefinition:
         """Create a custom tool"""
-        path = f"/agents/{agentId}/tools"
+        path = f"/api/v1/agents/{agent_id}/tools"
         params = None
-        body = encode_body(CreateCustomToolInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if name is not None:
+            _raw["name"] = name
+        if parameters is not None:
+            _raw["parameters"] = parameters
+        body = encode_body(CreateCustomToolInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return CustomToolDefinition.model_validate(data)
 
     async def delete_custom_tool(
@@ -452,7 +751,7 @@ class AsyncAgents(_AgentsBase):
         tool_name: str,
     ) -> DeleteCustomToolOutputBody:
         """Delete a custom tool"""
-        path = f"/agents/{agentId}/tools/{toolName}"
+        path = f"/api/v1/agents/{agent_id}/tools/{tool_name}"
         params = None
         data = await self._http.delete(path, params=params)
         return DeleteCustomToolOutputBody.model_validate(data)
@@ -461,11 +760,18 @@ class AsyncAgents(_AgentsBase):
         self,
         agent_id: str,
         tool_name: str,
-        **body_fields: Any,
+        *,
+        description: str | None = None,
+        parameters: str | None = None,
     ) -> UpdateCustomToolOutputBody:
         """Update a custom tool"""
-        path = f"/agents/{agentId}/tools/{toolName}"
+        path = f"/api/v1/agents/{agent_id}/tools/{tool_name}"
         params = None
-        body = encode_body(UpdateCustomToolInputBody, body_fields)
-        data = await self._http.put(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if description is not None:
+            _raw["description"] = description
+        if parameters is not None:
+            _raw["parameters"] = parameters
+        body = encode_body(UpdateCustomToolInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return UpdateCustomToolOutputBody.model_validate(data)

@@ -22,13 +22,32 @@ class Process(_ProcessBase):
     def process_messages(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        instance_id: str | None = None,
+        messages: list[Any],
+        model: str | None = None,
+        provider: str | None = None,
+        session_id: str | None = None,
+        user_id: str,
     ) -> ProcessResponse:
         """Process an external conversation transcript"""
-        path = f"/agents/{agentId}/process"
+        path = f"/api/v1/agents/{agent_id}/process"
         params = None
-        body = encode_body(ProcessInputBody, body_fields)
-        data = self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if instance_id is not None:
+            _raw["instanceId"] = instance_id
+        if messages is not None:
+            _raw["messages"] = messages
+        if model is not None:
+            _raw["model"] = model
+        if provider is not None:
+            _raw["provider"] = provider
+        if session_id is not None:
+            _raw["sessionId"] = session_id
+        if user_id is not None:
+            _raw["userId"] = user_id
+        body = encode_body(ProcessInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
         return ProcessResponse.model_validate(data)
 
 
@@ -36,11 +55,30 @@ class AsyncProcess(_ProcessBase):
     async def process_messages(
         self,
         agent_id: str,
-        **body_fields: Any,
+        *,
+        instance_id: str | None = None,
+        messages: list[Any],
+        model: str | None = None,
+        provider: str | None = None,
+        session_id: str | None = None,
+        user_id: str,
     ) -> ProcessResponse:
         """Process an external conversation transcript"""
-        path = f"/agents/{agentId}/process"
+        path = f"/api/v1/agents/{agent_id}/process"
         params = None
-        body = encode_body(ProcessInputBody, body_fields)
-        data = await self._http.post(path, params=params, body=body)
+        _raw: dict[str, Any] = {}
+        if instance_id is not None:
+            _raw["instanceId"] = instance_id
+        if messages is not None:
+            _raw["messages"] = messages
+        if model is not None:
+            _raw["model"] = model
+        if provider is not None:
+            _raw["provider"] = provider
+        if session_id is not None:
+            _raw["sessionId"] = session_id
+        if user_id is not None:
+            _raw["userId"] = user_id
+        body = encode_body(ProcessInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
         return ProcessResponse.model_validate(data)

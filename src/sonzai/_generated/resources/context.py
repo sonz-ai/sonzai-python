@@ -27,7 +27,7 @@ class Context(_ContextBase):
         timezone: str | None = None,
     ) -> Any:
         """Get enriched agent context"""
-        path = f"/agents/{agentId}/context"
+        path = f"/api/v1/agents/{agent_id}/context"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["userId"] = user_id
@@ -58,7 +58,7 @@ class AsyncContext(_ContextBase):
         timezone: str | None = None,
     ) -> Any:
         """Get enriched agent context"""
-        path = f"/agents/{agentId}/context"
+        path = f"/api/v1/agents/{agent_id}/context"
         params: dict[str, Any] = {}
         if user_id is not None:
             params["userId"] = user_id

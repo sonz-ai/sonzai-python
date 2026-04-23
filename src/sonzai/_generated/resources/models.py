@@ -24,7 +24,7 @@ class Models(_ModelsBase):
         agent_id: str,
     ) -> GetAgentModelsOutputBody:
         """List available models for an agent"""
-        path = f"/agents/{agentId}/models"
+        path = f"/api/v1/agents/{agent_id}/models"
         params = None
         data = self._http.get(path, params=params)
         return GetAgentModelsOutputBody.model_validate(data)
@@ -33,7 +33,7 @@ class Models(_ModelsBase):
         self,
     ) -> CachedModelsPayload:
         """List LLM providers and model variants"""
-        path = f"/models"
+        path = f"/api/v1/models"
         params = None
         data = self._http.get(path, params=params)
         return CachedModelsPayload.model_validate(data)
@@ -45,7 +45,7 @@ class AsyncModels(_ModelsBase):
         agent_id: str,
     ) -> GetAgentModelsOutputBody:
         """List available models for an agent"""
-        path = f"/agents/{agentId}/models"
+        path = f"/api/v1/agents/{agent_id}/models"
         params = None
         data = await self._http.get(path, params=params)
         return GetAgentModelsOutputBody.model_validate(data)
@@ -54,7 +54,7 @@ class AsyncModels(_ModelsBase):
         self,
     ) -> CachedModelsPayload:
         """List LLM providers and model variants"""
-        path = f"/models"
+        path = f"/api/v1/models"
         params = None
         data = await self._http.get(path, params=params)
         return CachedModelsPayload.model_validate(data)
