@@ -73,6 +73,25 @@ class AcknowledgeProjectNotificationsOutputBody(BaseModel):
     """
 
 
+class ActionLogEntry(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    action_name: str
+    agent_id: str
+    composio_app: str
+    composio_request_id: str | None = None
+    duration_ms: int
+    error_code: str | None = None
+    recorded_at: AwareDatetime
+    request_params_redacted: str
+    response_summary: str
+    status: str
+    turn_id: str
+    user_id: str
+
+
 class ActiveCharacterSummary(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -367,6 +386,26 @@ class AttributedRelation(BaseModel):
     source_ref: str | None = None
     to_id: str
     to_type: str
+
+
+class AvailableAction(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    description: str
+    name: str
+    parameters: dict[str, Any] | None = None
+
+
+class AvailableActionsApp(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    actions: list[AvailableAction] | None
+    app: str
+    connected_account_label: str | None = None
 
 
 class BatchGetPersonalitiesInputBody(BaseModel):
@@ -709,6 +748,42 @@ class ColumnMappingSpec(BaseModel):
     is_label: bool | None = None
     property: str
     type: str | None = None
+
+
+class ComposioConnectCallbackInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ComposioConnectCallbackInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    account_label: str | None = None
+    app: str
+    connected_account_id: str
+    connected_by_user_id: str | None = None
+
+
+class Connection(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    account_label: str
+    agent_id: str
+    app: str
+    connected_account_id: str
+    connected_at: AwareDatetime
+    connected_by_user_id: str
+    last_verified_at: AwareDatetime | None = None
+    scope: str
 
 
 class ConsumeNotificationOutputBody(BaseModel):
@@ -2782,6 +2857,46 @@ class ImportJob(BaseModel):
     warmth_score: int
 
 
+class InitiateComposioConnectInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/InitiateComposioConnectInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    app: str
+    """
+    Composio app slug (e.g. gmail, slack, github)
+    """
+
+
+class InitiateComposioConnectOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/InitiateComposioConnectOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    connected_account_id: str
+    redirect_url: str
+
+
 class InsertEdgeDetail(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3856,6 +3971,60 @@ class KbUploadDocumentOutputBody(BaseModel):
     """
     Processing status
     """
+
+
+class ListComposioAuditOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListComposioAuditOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    entries: list[ActionLogEntry] | None
+
+
+class ListComposioAvailableActionsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListComposioAvailableActionsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    apps: list[AvailableActionsApp] | None
+
+
+class ListComposioConnectionsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListComposioConnectionsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    connections: list[Connection] | None
 
 
 class ListCustomStatesOutputBody(BaseModel):
@@ -7905,6 +8074,25 @@ class ChatSSEChunk(BaseModel):
     """
     True when a continuation token was used to skip a full context rebuild (context_ready frame only)
     """
+
+
+class ComposioConnectCallbackOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ComposioConnectCallbackOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    connection: Connection | None = None
+    ok: bool
 
 
 class ConstellationResponse(BaseModel):

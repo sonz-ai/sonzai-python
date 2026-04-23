@@ -1,4 +1,5 @@
 from .agents import Agents, AsyncAgents
+from .composio import AsyncComposio, Composio
 from .custom_llm import AsyncCustomLLM, CustomLLM
 from .custom_states import AsyncCustomStates, CustomStates
 from .eval_runs import AsyncEvalRuns, EvalRuns
@@ -20,6 +21,8 @@ from .workbench import AsyncWorkbench, Workbench
 __all__ = [
     "Agents",
     "AsyncAgents",
+    "Composio",
+    "AsyncComposio",
     "CustomLLM",
     "AsyncCustomLLM",
     "CustomStates",

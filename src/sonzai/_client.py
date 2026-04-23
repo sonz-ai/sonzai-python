@@ -11,6 +11,7 @@ from ._retry import RetryPolicy
 from .resources.account_config import AccountConfig, AsyncAccountConfig
 from .resources.agents import Agents, AsyncAgents
 from .resources.analytics import Analytics, AsyncAnalytics
+from .resources.composio import AsyncComposio, Composio
 from .types import PlatformModelsResponse
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
@@ -152,6 +153,7 @@ class Sonzai:
         self.custom_llm = CustomLLM(self._http)
         self.project_notifications = ProjectNotifications(self._http)
         self.schedules = Schedules(self._http)
+        self.composio = Composio(self._http)
         self.skills = Skills(self._http)
         self.wisdom = Wisdom(self._http)
         self.workbench = Workbench(self._http)
@@ -280,6 +282,7 @@ class AsyncSonzai:
         self.custom_llm = AsyncCustomLLM(self._http)
         self.project_notifications = AsyncProjectNotifications(self._http)
         self.schedules = AsyncSchedules(self._http)
+        self.composio = AsyncComposio(self._http)
         self.skills = AsyncSkills(self._http)
         self.wisdom = AsyncWisdom(self._http)
         self.workbench = AsyncWorkbench(self._http)
