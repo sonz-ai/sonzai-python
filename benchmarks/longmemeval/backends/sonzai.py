@@ -258,6 +258,18 @@ async def _ask_question(
     # available — we keep it optional so callsites without an answer hint
     # still work.
     answer_text: str = ""
+    # Pollution-prevention: scope every bench chat to a per-user `instance_id`.
+    # Without it, each chat call creates a fresh server-side session whose
+    # verbatim turns leak back into the user's memory.search results on the
+    # next bench run (we observed R@1 dropping 0.81 → 0.00 after one round).
+    # Per-user instance_ids isolate the chat memory from haystack memory: the
+    # server's ScopedUserID() namespaces facts under (instance_id, user_id),
+    # so the chat sessions land in their own bucket and don't pollute the
+    # haystack-scoped retrieval that the bench grades. This is a fairness
+    # fix — not an answer-quality boost — because MemPalace's bench script
+    # doesn't write back to memory between questions, so it doesn't have the
+    # same self-pollution problem to start with.
+    bench_instance_id = f"bench-qa-{user_id}"
     try:
         async for event in client._http.stream_sse(  # type: ignore[attr-defined]
             "POST",
@@ -265,6 +277,7 @@ async def _ask_question(
             json_data={
                 "messages": [{"role": "user", "content": question}],
                 "user_id": user_id,
+                "instance_id": bench_instance_id,
             },
         ):
             etype = str(event.get("type") or "")

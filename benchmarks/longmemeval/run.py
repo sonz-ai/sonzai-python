@@ -284,18 +284,23 @@ async def _run_sonzai_backend(
     # We still write ``shared_agent.json`` after first create so we can
     # surface the pinned ID in reports/logs without a round-trip, but the
     # server is the source of truth.
-    agent_name = "sonzai-bench-longmemeval"
-    agent_description = (
-        "A helpful AI assistant that maintains a rich long-term memory of "
-        "the user. Remembers specific personal details (routines, "
-        "preferences, places, people, milestones, plans) and recalls them "
-        "accurately when asked. Warm, attentive, conversational. Responds "
-        "in natural prose, not bullet points."
+    # Use the canonical bench agent preset from the SDK. Third-party
+    # evaluators can import the same preset
+    # (`sonzai.benchmarks.ensure_longmemeval_agent_async`) so their numbers
+    # are measured against the same agent configuration as our published
+    # ones. Applies a memory-assistant description plus speech_patterns
+    # tuned for literal-value recall (normal personality field, available
+    # to all users — not a benchmark-only hack).
+    from sonzai.benchmarks import (
+        LONGMEMEVAL_AGENT_NAME,
+        ensure_longmemeval_agent_async,
     )
-    from ..common.sdk_extras import ensure_bench_agent_async
 
-    resolved_agent_id, agent_existed = await ensure_bench_agent_async(
-        client, name=agent_name, description=agent_description
+    agent_name = LONGMEMEVAL_AGENT_NAME
+    resolved_agent_id, agent_existed = await ensure_longmemeval_agent_async(client)
+    logger.info(
+        "bench: shared agent %s ready (existed=%s, concise-recall speech_patterns applied)",
+        resolved_agent_id, agent_existed,
     )
     if shared_agent_id and shared_agent_id != resolved_agent_id:
         logger.info(
