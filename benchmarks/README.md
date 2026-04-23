@@ -166,16 +166,31 @@ fairest axis for comparing very differently-architected systems.
 
 ### Head-to-head against MemPalace
 
-Canonical 10-question matched run, 6 sessions per question (pass
-`--max-sessions-per-question 6` on the Sonzai side; a dataset pre-trimmed to
-the same slice is passed as `--dataset-path` on the MemPalace side):
+Latest run: 100-question full-haystack slice, retrieval-only mode (no QA
+grading), session-level metrics. Sonzai run with `--reuse-agents` after a
+single fresh ingest; MemPalace run with `hybrid_v4` mode on the same slice.
 
-| Metric | Sonzai | MemPalace (raw) | MemPalace (hybrid_v4) |
+| Metric | Sonzai | MemPalace (hybrid_v4) | Δ vs MP |
 |---|---:|---:|---:|
-| R@G (session) | _run-updated_ | _run-updated_ | _run-updated_ |
-| R@10 (session) | _run-updated_ | _run-updated_ | _run-updated_ |
-| R@30 (session) | _run-updated_ | _run-updated_ | _run-updated_ |
-| QA accuracy | _run-updated_ | _run-updated_ | _run-updated_ |
+| R@G (session) | **0.773** | 0.741 | **+4.3%** |
+| R@1 (session) | **0.800** | 0.770 | **+3.9%** |
+| R@3 (session) | 0.880 | 0.900 | −2.2% |
+| R@5 (session) | **0.940** | 0.940 | parity |
+| R@10 (session) | 0.970 | 0.980 | −1.0% |
+| R@30 (session) | 1.000 | 1.000 | parity |
+| NDCG@10 (session) | 0.866 | 0.874 | −0.9% |
+
+Per question type (recall@10):
+
+| Type | Sonzai | MemPalace | Δ |
+|---|---:|---:|---:|
+| multi-session (n=30) | **1.000** | 1.000 | parity |
+| single-session-user (n=70) | 0.957 | 0.971 | −1.4% |
+
+Sonzai source files: `sonzai_20260423-073411.jsonl` (n=100, retrieval-only,
+elapsed 16.1s reused-agent, ~82min fresh-ingest). MemPalace source:
+`mempalace_20260422-105717.jsonl`. Both jsonls live in
+`benchmarks/longmemeval/results/`.
 
 Numbers are filled in by `scripts/update_readme_scores.py` after each
 `--compare` invocation — see `benchmarks/longmemeval/results/` for the raw
