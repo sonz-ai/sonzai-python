@@ -178,17 +178,26 @@ async def _retrieve(
     def _is_metadata_fact(fact_id: str) -> bool:
         return any(m in fact_id for m in _META_MARKERS)
 
+    # Drop session_ids that aren't in the haystack: those are chat sessions
+    # the bench itself created via /chat (auto-generated UUID per request)
+    # whose verbatim turns can leak back into memory.search and outrank
+    # real haystack sessions when the user replays the same question. Treat
+    # session_dates as the authoritative haystack manifest — anything not
+    # in it is bench-induced pollution. (Empty session_dates means "haystack
+    # not provided here", in which case we can't filter and fall back to
+    # passing everything through.)
+    haystack_sids = set(session_dates.keys()) if session_dates else None
+
     seen: set[str] = set()
     ranked_sessions: list[str] = []
     ranked_facts: list[str] = []
     ranked_items: list[RankedItem] = []
     dropped_metadata = 0
+    dropped_pollution = 0
     for r in results.results:
         if _is_metadata_fact(r.fact_id):
             dropped_metadata += 1
             continue
-        if r.content:
-            ranked_facts.append(r.content)
         # Server now populates session_id directly on the result for
         # verbatim-turn hits (the SP4 per-turn index) and for any fact
         # whose provenance it can surface without a timeline round-trip.
@@ -196,6 +205,11 @@ async def _retrieve(
         # leaves it empty.
         server_sid = str(getattr(r, "session_id", "") or "")
         sid = server_sid or fact_to_session.get(r.fact_id, "")
+        if haystack_sids is not None and sid and sid not in haystack_sids:
+            dropped_pollution += 1
+            continue
+        if r.content:
+            ranked_facts.append(r.content)
         corpus_id = sid or r.fact_id
         ranked_items.append(
             RankedItem(
@@ -207,10 +221,10 @@ async def _retrieve(
         if sid and sid not in seen:
             seen.add(sid)
             ranked_sessions.append(sid)
-    if dropped_metadata:
+    if dropped_metadata or dropped_pollution:
         logger.debug(
-            "memory.search: filtered %d metadata fact(s) (comm_style/side_effect/interest)",
-            dropped_metadata,
+            "memory.search filters: metadata=%d, bench-chat-pollution=%d",
+            dropped_metadata, dropped_pollution,
         )
     return ranked_sessions, ranked_facts, ranked_items
 
