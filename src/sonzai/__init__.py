@@ -18,6 +18,7 @@ from ._exceptions import (
     StreamError,
     ValidationError,
 )
+from ._retry import RetryPolicy
 from .types import (
     AcknowledgeResponse,
     Agent,
@@ -429,6 +430,8 @@ __all__ = [
     "CreateAPIKeyResponse",
     "RevokeAPIKeyResponse",
     "DeleteProjectResponse",
+    # Retry
+    "RetryPolicy",
     # Types - Inventory
     "BatchImportUser",
     "ImportJob",
