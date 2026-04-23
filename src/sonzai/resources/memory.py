@@ -1,4 +1,29 @@
-"""Memory resource for the Sonzai SDK."""
+"""Memory resource — thin convenience layer over the generated class.
+
+Any method defined in the spec is inherited from the generated parent
+class. Only non-spec helpers and spec-drift overrides belong here.
+
+B.2 CONCERNS SURFACED (all overrides below are marked TODO(B.2)):
+  1. Generator emits camelCase variable names in f-strings (e.g. {agentId})
+     but method params are snake_case (agent_id). All generated methods raise
+     NameError at runtime until this is fixed.
+  2. Generator calls self._http.post(..., body=body) but HTTPClient only
+     accepts json_data=. Wrong kwarg name breaks all POST/PUT calls.
+  3. Generator uses /agents/... path prefix instead of /api/v1/agents/...
+     (missing base path prefix).
+  4. Method names diverge: generated uses get_memory_tree / search_memories /
+     reset_memory / get_memory_timeline; historical SDK contract uses list /
+     search / reset / timeline.
+  5. search() uses `query` kwarg; generated uses `q`.
+  6. list_facts() has `offset` param not present in generated.
+  7. create_fact() / update_fact() use explicit kwargs; generated uses
+     **body_fields (loses IDE autocomplete and type checking).
+  8. seed() method is absent from the generated class entirely.
+
+Until B.2 fixes these, every method requires an override to preserve the
+historical SDK contract. The subclass structure is proven below — once the
+generator is corrected, overrides can be removed one by one.
+"""
 
 from __future__ import annotations
 
@@ -8,6 +33,8 @@ from urllib.parse import quote
 
 _list = builtins.list
 
+from .._generated.resources.memory import AsyncMemory as _GenAsyncMemory
+from .._generated.resources.memory import Memory as _GenMemory
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from .._generated.models import (
@@ -28,12 +55,24 @@ from ..types import (
 )
 
 
-class Memory:
-    """Sync memory operations for an agent."""
+class Memory(_GenMemory):
+    """Hand-written convenience layer on top of the generated Memory class.
 
+    Overrides every method because B.2 generator bugs (camelCase f-string
+    vars, wrong HTTP body kwarg, missing /api/v1 path prefix) make all
+    generated implementations non-functional at runtime. Each override is
+    marked TODO(B.2) and will shrink as the generator is hardened.
+    """
+
+    # TODO(B.2): Remove this __init__ override once the generated base class
+    # accepts the concrete HTTPClient type (currently typed as Any which is
+    # fine, but the historical __init__ is kept for explicitness).
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
+    # TODO(B.2): Generator names this get_memory_tree; historical contract is list.
+    # Also fixes: camelCase {agentId} → {agent_id}, /agents/ → /api/v1/agents/,
+    # include_contents default (False → str), limit default (50 → None).
     def list(
         self,
         agent_id: str,
@@ -64,6 +103,9 @@ class Memory:
         data = self._http.get(f"/api/v1/agents/{agent_id}/memory", params=params)
         return MemoryResponse.model_validate(data)
 
+    # TODO(B.2): Generator names this search_memories and uses `q` kwarg;
+    # historical contract is search(..., query=...). Also fixes path prefix
+    # and camelCase variable bug.
     def search(
         self,
         agent_id: str,
@@ -93,6 +135,8 @@ class Memory:
         )
         return MemorySearchResponse.model_validate(data)
 
+    # TODO(B.2): Generator names this get_memory_timeline; historical is timeline.
+    # Also fixes path prefix and camelCase variable bug.
     def timeline(
         self,
         agent_id: str,
@@ -118,6 +162,8 @@ class Memory:
         )
         return MemoryTimelineResponse.model_validate(data)
 
+    # TODO(B.2): seed() is absent from the generated class entirely. Generator
+    # needs to emit this method from the spec's seed endpoint.
     def seed(
         self,
         agent_id: str,
@@ -143,6 +189,8 @@ class Memory:
         )
         return SeedMemoriesResponse.model_validate(data)
 
+    # TODO(B.2): Generated list_facts uses **body_fields (should be explicit
+    # kwargs), is missing `offset` param, and has camelCase + path prefix bugs.
     def list_facts(
         self,
         agent_id: str,
@@ -168,6 +216,9 @@ class Memory:
         )
         return FactListResponse.model_validate(data)
 
+    # TODO(B.2): Generator names this reset_memory; historical contract is reset.
+    # Also fixes camelCase {agentId} and path prefix, and adds fallback for
+    # non-dict responses.
     def reset(
         self,
         agent_id: str,
@@ -188,6 +239,9 @@ class Memory:
             return MemoryResetResponse.model_validate(data)
         return MemoryResetResponse(agent_id=agent_id, status="reset")
 
+    # TODO(B.2): Generated create_fact uses **body_fields — loses explicit
+    # kwarg names for IDE autocomplete. Also has wrong HTTP body kwarg (body=
+    # vs json_data=), camelCase variable bug, and path prefix bug.
     def create_fact(
         self,
         agent_id: str,
@@ -218,10 +272,13 @@ class Memory:
         if metadata is not None:
             body["metadata"] = metadata
         data = self._http.post(
-            f"/api/v1/agents/{agent_id}/memory/facts", json_data=encode_body(CreateFactInputBody, body)
+            f"/api/v1/agents/{agent_id}/memory/facts",
+            json_data=encode_body(CreateFactInputBody, body),
         )
         return AtomicFact.model_validate(data)
 
+    # TODO(B.2): Generated update_fact uses **body_fields, wrong HTTP body
+    # kwarg (body= vs json_data=), camelCase variable, and path prefix bugs.
     def update_fact(
         self,
         agent_id: str,
@@ -249,20 +306,32 @@ class Memory:
         if metadata is not None:
             body["metadata"] = metadata
         data = self._http.put(
-            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}", json_data=encode_body(UpdateFactInputBody, body)
+            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}",
+            json_data=encode_body(UpdateFactInputBody, body),
         )
         return AtomicFact.model_validate(data)
 
+    # TODO(B.2): delete_fact signature matches generated but generated has
+    # camelCase {agentId}/{factId} and path prefix bugs.
     def delete_fact(self, agent_id: str, fact_id: str) -> None:
         """Delete a fact by ID."""
-        self._http.delete(f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}")
+        self._http.delete(
+            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}"
+        )
 
+    # TODO(B.2): get_fact_history signature matches generated but generated
+    # has camelCase {agentId}/{factId} and path prefix bugs.
     def get_fact_history(self, agent_id: str, fact_id: str) -> FactHistoryResponse:
         """Get the version history for a specific fact."""
         return FactHistoryResponse.model_validate(
-            self._http.get(f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history")
+            self._http.get(
+                f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history"
+            )
         )
 
+    # TODO(B.2): delete_wisdom_fact signature matches generated but generated
+    # has camelCase {agentId}/{factId}, path prefix bugs, and no non-dict
+    # response fallback.
     def delete_wisdom_fact(self, agent_id: str, fact_id: str) -> DeleteWisdomResponse:
         """Delete a wisdom fact by ID."""
         data = self._http.delete(
@@ -272,6 +341,8 @@ class Memory:
             return DeleteWisdomResponse.model_validate(data)
         return DeleteWisdomResponse(success=True, fact_id=fact_id)
 
+    # TODO(B.2): get_wisdom_audit signature matches generated but generated
+    # has camelCase {agentId}/{factId} and path prefix bugs.
     def get_wisdom_audit(self, agent_id: str, fact_id: str) -> WisdomAuditResponse:
         """Get the audit trail for a wisdom fact."""
         return WisdomAuditResponse.model_validate(
@@ -281,12 +352,18 @@ class Memory:
         )
 
 
-class AsyncMemory:
-    """Async memory operations for an agent."""
+class AsyncMemory(_GenAsyncMemory):
+    """Async mirror of Memory — thin convenience layer over generated AsyncMemory.
 
+    All overrides mirror the sync Memory class above. See TODO(B.2) comments
+    there for the generator bugs that necessitate each override.
+    """
+
+    # TODO(B.2): Same as sync — keep explicit HTTPClient type.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 
+    # TODO(B.2): Generator names this get_memory_tree; historical is list.
     async def list(
         self,
         agent_id: str,
@@ -318,6 +395,8 @@ class AsyncMemory:
         )
         return MemoryResponse.model_validate(data)
 
+    # TODO(B.2): Generator names this search_memories with `q` kwarg;
+    # historical is search(..., query=...).
     async def search(
         self,
         agent_id: str,
@@ -347,6 +426,7 @@ class AsyncMemory:
         )
         return MemorySearchResponse.model_validate(data)
 
+    # TODO(B.2): Generator names this get_memory_timeline; historical is timeline.
     async def timeline(
         self,
         agent_id: str,
@@ -371,6 +451,7 @@ class AsyncMemory:
         )
         return MemoryTimelineResponse.model_validate(data)
 
+    # TODO(B.2): seed() absent from generated class; generator must emit it.
     async def seed(
         self,
         agent_id: str,
@@ -393,6 +474,8 @@ class AsyncMemory:
         )
         return SeedMemoriesResponse.model_validate(data)
 
+    # TODO(B.2): Generated list_facts missing `offset`, uses **body_fields,
+    # camelCase variable, and path prefix bugs.
     async def list_facts(
         self,
         agent_id: str,
@@ -418,6 +501,7 @@ class AsyncMemory:
         )
         return FactListResponse.model_validate(data)
 
+    # TODO(B.2): Generator names this reset_memory; historical is reset.
     async def reset(
         self,
         agent_id: str,
@@ -438,6 +522,8 @@ class AsyncMemory:
             return MemoryResetResponse.model_validate(data)
         return MemoryResetResponse(agent_id=agent_id, status="reset")
 
+    # TODO(B.2): Generated create_fact uses **body_fields, wrong HTTP body
+    # kwarg, camelCase variable, and path prefix bugs.
     async def create_fact(
         self,
         agent_id: str,
@@ -468,10 +554,13 @@ class AsyncMemory:
         if metadata is not None:
             body["metadata"] = metadata
         data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/memory/facts", json_data=encode_body(CreateFactInputBody, body)
+            f"/api/v1/agents/{agent_id}/memory/facts",
+            json_data=encode_body(CreateFactInputBody, body),
         )
         return AtomicFact.model_validate(data)
 
+    # TODO(B.2): Generated update_fact uses **body_fields, wrong HTTP body
+    # kwarg, camelCase variable, and path prefix bugs.
     async def update_fact(
         self,
         agent_id: str,
@@ -499,21 +588,37 @@ class AsyncMemory:
         if metadata is not None:
             body["metadata"] = metadata
         data = await self._http.put(
-            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}", json_data=encode_body(UpdateFactInputBody, body)
+            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}",
+            json_data=encode_body(UpdateFactInputBody, body),
         )
         return AtomicFact.model_validate(data)
 
+    # TODO(B.2): delete_fact signature matches generated but generated has
+    # camelCase {agentId}/{factId} and path prefix bugs.
     async def delete_fact(self, agent_id: str, fact_id: str) -> None:
         """Delete a fact by ID."""
-        await self._http.delete(f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}")
-
-    async def get_fact_history(self, agent_id: str, fact_id: str) -> FactHistoryResponse:
-        """Get the version history for a specific fact."""
-        return FactHistoryResponse.model_validate(
-            await self._http.get(f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history")
+        await self._http.delete(
+            f"/api/v1/agents/{agent_id}/memory/facts/{quote(fact_id, safe='')}"
         )
 
-    async def delete_wisdom_fact(self, agent_id: str, fact_id: str) -> DeleteWisdomResponse:
+    # TODO(B.2): get_fact_history signature matches generated but generated
+    # has camelCase {agentId}/{factId} and path prefix bugs.
+    async def get_fact_history(
+        self, agent_id: str, fact_id: str
+    ) -> FactHistoryResponse:
+        """Get the version history for a specific fact."""
+        return FactHistoryResponse.model_validate(
+            await self._http.get(
+                f"/api/v1/agents/{agent_id}/memory/fact/{fact_id}/history"
+            )
+        )
+
+    # TODO(B.2): delete_wisdom_fact signature matches generated but generated
+    # has camelCase {agentId}/{factId}, path prefix bugs, and no non-dict
+    # fallback.
+    async def delete_wisdom_fact(
+        self, agent_id: str, fact_id: str
+    ) -> DeleteWisdomResponse:
         """Delete a wisdom fact by ID."""
         data = await self._http.delete(
             f"/api/v1/agents/{agent_id}/memory/wisdom/{quote(fact_id, safe='')}"
@@ -522,7 +627,11 @@ class AsyncMemory:
             return DeleteWisdomResponse.model_validate(data)
         return DeleteWisdomResponse(success=True, fact_id=fact_id)
 
-    async def get_wisdom_audit(self, agent_id: str, fact_id: str) -> WisdomAuditResponse:
+    # TODO(B.2): get_wisdom_audit signature matches generated but generated
+    # has camelCase {agentId}/{factId} and path prefix bugs.
+    async def get_wisdom_audit(
+        self, agent_id: str, fact_id: str
+    ) -> WisdomAuditResponse:
         """Get the audit trail for a wisdom fact."""
         return WisdomAuditResponse.model_validate(
             await self._http.get(
