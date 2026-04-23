@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.resources.personality import AsyncPersonality as _GenAsyncPersonality
+from .._generated.resources.personality import Personality as _GenPersonality
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from .._generated.models import BatchGetPersonalitiesInputBody
@@ -18,9 +20,16 @@ from ..types import (
 )
 
 
-class Personality:
-    """Sync personality operations for an agent."""
+class Personality(_GenPersonality):
+    """Hand-written overrides / convenience helpers on top of generated Personality.
 
+    All hand-written methods remain as overrides preserving the historical SDK
+    contract. The subclass inheritance makes future spec additions appear as
+    inherited methods automatically.
+    """
+
+    # TODO(B.3-followup): __init__ takes HTTPClient (typed); generated _PersonalityBase
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
@@ -112,9 +121,11 @@ class Personality:
         )
 
 
-class AsyncPersonality:
-    """Async personality operations for an agent."""
+class AsyncPersonality(_GenAsyncPersonality):
+    """Async hand-written overrides on top of generated AsyncPersonality."""
 
+    # TODO(B.3-followup): __init__ takes AsyncHTTPClient (typed); generated base
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 

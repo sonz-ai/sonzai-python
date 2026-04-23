@@ -8,6 +8,8 @@ from .._generated.models import (
     CreateInventoryItemHumaInputBody,
     InventoryWriteRequest,
 )
+from .._generated.resources.inventory import AsyncInventory as _GenAsyncInventory
+from .._generated.resources.inventory import Inventory as _GenInventory
 from .._http import HTTPClient, AsyncHTTPClient
 from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
@@ -21,9 +23,16 @@ from ..types import (
 )
 
 
-class Inventory:
-    """Inventory/asset tracking operations scoped to an agent + user."""
+class Inventory(_GenInventory):
+    """Hand-written overrides / convenience helpers on top of generated Inventory.
 
+    All hand-written methods remain as overrides preserving the historical SDK
+    contract. The subclass inheritance makes future spec additions appear as
+    inherited methods automatically.
+    """
+
+    # TODO(B.3-followup): __init__ takes HTTPClient (typed); generated _InventoryBase
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
@@ -253,9 +262,11 @@ class Inventory:
         )
 
 
-class AsyncInventory:
-    """Async inventory/asset tracking operations scoped to an agent + user."""
+class AsyncInventory(_GenAsyncInventory):
+    """Async hand-written overrides on top of generated AsyncInventory."""
 
+    # TODO(B.3-followup): __init__ takes AsyncHTTPClient (typed); generated base
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 

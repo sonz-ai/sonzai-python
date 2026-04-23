@@ -5,6 +5,8 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import quote
 
+from .._generated.resources.priming import AsyncPriming as _GenAsyncPriming
+from .._generated.resources.priming import Priming as _GenPriming
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from .._generated.models import (
@@ -25,9 +27,16 @@ from ..types import (
 )
 
 
-class Priming:
-    """Sync user priming operations for an agent."""
+class Priming(_GenPriming):
+    """Hand-written overrides / convenience helpers on top of generated Priming.
 
+    All hand-written methods remain as overrides preserving the historical SDK
+    contract. The subclass inheritance makes future spec additions appear as
+    inherited methods automatically.
+    """
+
+    # TODO(B.3-followup): __init__ takes HTTPClient (typed); generated _PrimingBase
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
@@ -151,9 +160,11 @@ class Priming:
         return ListImportJobUsersResponse.model_validate(data)
 
 
-class AsyncPriming:
-    """Async user priming operations for an agent."""
+class AsyncPriming(_GenAsyncPriming):
+    """Async hand-written overrides on top of generated AsyncPriming."""
 
+    # TODO(B.3-followup): __init__ takes AsyncHTTPClient (typed); generated base
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 

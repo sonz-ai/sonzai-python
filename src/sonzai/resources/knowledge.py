@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.resources.knowledge import AsyncKnowledge as _GenAsyncKnowledge
+from .._generated.resources.knowledge import Knowledge as _GenKnowledge
 from .._http import AsyncHTTPClient, HTTPClient
 from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
@@ -42,9 +44,16 @@ from ..types import (
 )
 
 
-class Knowledge:
-    """Sync knowledge base operations (project-scoped)."""
+class Knowledge(_GenKnowledge):
+    """Hand-written overrides / convenience helpers on top of generated Knowledge.
 
+    All hand-written methods remain as overrides preserving the historical SDK
+    contract. The subclass inheritance makes future spec additions appear as
+    inherited methods automatically.
+    """
+
+    # TODO(B.3-followup): __init__ takes HTTPClient (typed); generated _KnowledgeBase
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
@@ -431,9 +440,11 @@ class Knowledge:
         )
 
 
-class AsyncKnowledge:
-    """Async knowledge base operations (project-scoped)."""
+class AsyncKnowledge(_GenAsyncKnowledge):
+    """Async hand-written overrides on top of generated AsyncKnowledge."""
 
+    # TODO(B.3-followup): __init__ takes AsyncHTTPClient (typed); generated base
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 

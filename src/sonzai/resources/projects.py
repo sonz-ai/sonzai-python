@@ -9,6 +9,8 @@ from .._generated.models import (
     CreateProjectInputBody,
     UpdateProjectInputBody,
 )
+from .._generated.resources.projects import AsyncProjects as _GenAsyncProjects
+from .._generated.resources.projects import Projects as _GenProjects
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import (
@@ -22,9 +24,16 @@ from ..types import (
 )
 
 
-class Projects:
-    """Sync project management operations."""
+class Projects(_GenProjects):
+    """Hand-written overrides / convenience helpers on top of generated Projects.
 
+    All hand-written methods remain as overrides preserving the historical SDK
+    contract. The subclass inheritance makes future spec additions appear as
+    inherited methods automatically.
+    """
+
+    # TODO(B.3-followup): __init__ takes HTTPClient (typed); generated _ProjectsBase
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
@@ -113,9 +122,11 @@ class Projects:
         return RevokeAPIKeyResponse.model_validate(data)
 
 
-class AsyncProjects:
-    """Async project management operations."""
+class AsyncProjects(_GenAsyncProjects):
+    """Async hand-written overrides on top of generated AsyncProjects."""
 
+    # TODO(B.3-followup): __init__ takes AsyncHTTPClient (typed); generated base
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 

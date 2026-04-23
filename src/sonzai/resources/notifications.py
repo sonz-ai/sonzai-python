@@ -4,13 +4,22 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.resources.notifications import AsyncNotifications as _GenAsyncNotifications
+from .._generated.resources.notifications import Notifications as _GenNotifications
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import NotificationListResponse, SessionResponse
 
 
-class Notifications:
-    """Sync notification operations for an agent."""
+class Notifications(_GenNotifications):
+    """Hand-written overrides / convenience helpers on top of generated Notifications.
 
+    All hand-written methods remain as overrides preserving the historical SDK
+    contract. The subclass inheritance makes future spec additions appear as
+    inherited methods automatically.
+    """
+
+    # TODO(B.3-followup): __init__ takes HTTPClient (typed); generated _NotificationsBase
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
@@ -55,9 +64,11 @@ class Notifications:
         return NotificationListResponse.model_validate(data)
 
 
-class AsyncNotifications:
-    """Async notification operations for an agent."""
+class AsyncNotifications(_GenAsyncNotifications):
+    """Async hand-written overrides on top of generated AsyncNotifications."""
 
+    # TODO(B.3-followup): __init__ takes AsyncHTTPClient (typed); generated base
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 

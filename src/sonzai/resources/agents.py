@@ -6,6 +6,8 @@ from collections.abc import AsyncIterator, Iterator
 from typing import Any, Literal
 from urllib.parse import quote
 
+from .._generated.resources.agents import AsyncAgents as _GenAsyncAgents
+from .._generated.resources.agents import Agents as _GenAgents
 from .._http import AsyncHTTPClient, HTTPClient, _classify_chat_frame
 from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
@@ -99,9 +101,20 @@ from .sessions import AsyncSessions, Sessions
 from .voice import AsyncVoiceResource, VoiceResource
 
 
-class Agents:
-    """Sync agent operations: CRUD, chat, evaluate, simulate, and sub-resources."""
+class Agents(_GenAgents):
+    """Hand-written overrides / convenience helpers on top of generated Agents.
 
+    Most methods are overrides preserving the historical SDK contract. The
+    generated class exposes spec-aligned CRUD and tool operations; this class
+    adds the richer domain methods (chat, streaming, evaluate, simulate, etc.)
+    that span multiple sub-resources and aren't yet in the spec. The subclass
+    inheritance makes future spec additions appear as inherited methods
+    automatically.
+    """
+
+    # TODO(B.3-followup): __init__ takes HTTPClient (typed) and initialises
+    # sub-resource attributes; generated _AgentsBase only sets self._http.
+    # Override kept to preserve sub-resource wiring and typed constructor.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
         self.memory = Memory(http)
@@ -1502,9 +1515,15 @@ class Agents:
         )
 
 
-class AsyncAgents:
-    """Async agent operations."""
+class AsyncAgents(_GenAsyncAgents):
+    """Async hand-written overrides on top of generated AsyncAgents.
 
+    Mirrors the sync Agents class. See comments there for reasons.
+    """
+
+    # TODO(B.3-followup): __init__ takes AsyncHTTPClient (typed) and initialises
+    # async sub-resource attributes; generated _AgentsBase only sets self._http.
+    # Override kept to preserve sub-resource wiring and typed constructor.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
         self.memory = AsyncMemory(http)

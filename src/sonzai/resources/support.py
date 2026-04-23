@@ -15,6 +15,8 @@ from typing import Any
 from urllib.parse import quote
 
 from .._generated.models import AddCommentRequest, CreateTicketRequest
+from .._generated.resources.support import AsyncSupport as _GenAsyncSupport
+from .._generated.resources.support import Support as _GenSupport
 from .._http import AsyncHTTPClient, HTTPClient
 from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
@@ -27,9 +29,16 @@ from ..types import (
 )
 
 
-class Support:
-    """Sync support-ticket operations."""
+class Support(_GenSupport):
+    """Hand-written overrides / convenience helpers on top of generated Support.
 
+    All hand-written methods remain as overrides preserving the historical SDK
+    contract. The subclass inheritance makes future spec additions appear as
+    inherited methods automatically.
+    """
+
+    # TODO(B.3-followup): __init__ takes HTTPClient (typed); generated _SupportBase
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
@@ -127,9 +136,11 @@ class Support:
         return SupportTicket.model_validate(data)
 
 
-class AsyncSupport:
-    """Async support-ticket operations (mirror of :class:`Support`)."""
+class AsyncSupport(_GenAsyncSupport):
+    """Async hand-written overrides on top of generated AsyncSupport."""
 
+    # TODO(B.3-followup): __init__ takes AsyncHTTPClient (typed); generated base
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 

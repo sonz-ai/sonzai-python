@@ -10,6 +10,8 @@ from __future__ import annotations
 from typing import Any
 
 from .._generated.models import CreateScheduleInputBody, PatchScheduleInputBody
+from .._generated.resources.schedules import AsyncSchedules as _GenAsyncSchedules
+from .._generated.resources.schedules import Schedules as _GenSchedules
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import (
@@ -81,9 +83,16 @@ def _build_patch_body(
     return body
 
 
-class Schedules:
-    """Sync schedule operations for an (agent, user) pair."""
+class Schedules(_GenSchedules):
+    """Hand-written overrides / convenience helpers on top of generated Schedules.
 
+    All hand-written methods remain as overrides preserving the historical SDK
+    contract. The subclass inheritance makes future spec additions appear as
+    inherited methods automatically.
+    """
+
+    # TODO(B.3-followup): __init__ takes HTTPClient (typed); generated _SchedulesBase
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
@@ -200,9 +209,11 @@ class Schedules:
         return ScheduleUpcomingResponse.model_validate(data)
 
 
-class AsyncSchedules:
-    """Async schedule operations for an (agent, user) pair."""
+class AsyncSchedules(_GenAsyncSchedules):
+    """Async hand-written overrides on top of generated AsyncSchedules."""
 
+    # TODO(B.3-followup): __init__ takes AsyncHTTPClient (typed); generated base
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 

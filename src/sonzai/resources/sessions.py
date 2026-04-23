@@ -5,14 +5,23 @@ from __future__ import annotations
 from typing import Any
 
 from .._generated.models import EndSessionInputBody, StartSessionInputBody
+from .._generated.resources.sessions import AsyncSessions as _GenAsyncSessions
+from .._generated.resources.sessions import Sessions as _GenSessions
 from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import ChatMessage, SessionResponse
 
 
-class Sessions:
-    """Sync session lifecycle operations."""
+class Sessions(_GenSessions):
+    """Hand-written overrides / convenience helpers on top of generated Sessions.
 
+    All hand-written methods remain as overrides preserving the historical SDK
+    contract. The subclass inheritance makes future spec additions appear as
+    inherited methods automatically.
+    """
+
+    # TODO(B.3-followup): __init__ takes HTTPClient (typed); generated _SessionsBase
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
@@ -91,9 +100,11 @@ class Sessions:
         return SessionResponse.model_validate(data)
 
 
-class AsyncSessions:
-    """Async session lifecycle operations."""
+class AsyncSessions(_GenAsyncSessions):
+    """Async hand-written overrides on top of generated AsyncSessions."""
 
+    # TODO(B.3-followup): __init__ takes AsyncHTTPClient (typed); generated base
+    # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 
