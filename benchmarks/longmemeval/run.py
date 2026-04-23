@@ -345,18 +345,32 @@ async def _run_sonzai_backend(
                 user_already_ingested = entry is not None and entry.agent_id == shared_agent_id
 
             try:
-                br = await sonzai_backend.run_question(
-                    client,
-                    q,
-                    include_qa=(mode in {"qa", "both"}),
-                    skip_advance_time=skip_advance_time,
-                    max_sessions=max_sessions,
-                    existing_agent_id=shared_agent_id,
-                    existing_user_id=None,  # backend derives from question_id
-                    skip_ingest=user_already_ingested,
-                    clear_memory_before_reuse=clear_reused_memory,
-                    keep_agent_alive=True,  # never delete the shared agent
+                # Per-question hard ceiling. Without it, one stuck chat call
+                # (Cloudflare 524 retry storm, server-side stall, judge
+                # deadlock on a numeric answer) holds back the asyncio.gather
+                # below — we observed runs hung at 99/100 for 12+ minutes
+                # waiting on a single task while the other 99 sit idle in
+                # memory. 5 minutes is generous: a normal ingest+chat+QA
+                # round trips in 30-90s; anything past 5min is pathological
+                # and the partial result is more valuable than waiting.
+                br = await asyncio.wait_for(
+                    sonzai_backend.run_question(
+                        client,
+                        q,
+                        include_qa=(mode in {"qa", "both"}),
+                        skip_advance_time=skip_advance_time,
+                        max_sessions=max_sessions,
+                        existing_agent_id=shared_agent_id,
+                        existing_user_id=None,  # backend derives from question_id
+                        skip_ingest=user_already_ingested,
+                        clear_memory_before_reuse=clear_reused_memory,
+                        keep_agent_alive=True,  # never delete the shared agent
+                    ),
+                    timeout=300.0,
                 )
+            except asyncio.TimeoutError:
+                logger.error("sonzai backend TIMEOUT on %s after 300s", q.question_id)
+                return _error_row(q, "sonzai", "per-question timeout (300s)")
             except Exception as e:
                 logger.exception("sonzai backend failed on %s", q.question_id)
                 return _error_row(q, "sonzai", str(e))

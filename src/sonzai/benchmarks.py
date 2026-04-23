@@ -82,15 +82,18 @@ LONGMEMEVAL_AGENT_DESCRIPTION = (
 # any end user who wants a Sonzai agent that answers lookup questions
 # directly would set similar patterns via `client.agents.update(
 # speech_patterns=[...])`.
+#
+# NOTE: deliberately ONE pattern. Earlier iterations bundled "say I don't
+# know if not in memory" and "enumerate then count" cues — both made the
+# agent over-conservative. Even when 37 relevant facts were loaded into
+# context, an explicit "say I don't know" cue caused the agent to bail
+# instead of answering, dropping single-session QA from 0.94 → 0.76.
+# The model already knows when to admit uncertainty; nudging that
+# behavior in a Voice cue overweights it. Lead-with-value is the only
+# cue that consistently correlates with grading without backfiring.
 LONGMEMEVAL_SPEECH_PATTERNS: list[str] = [
     "Answers recall questions with the literal value first — a number, "
     "name, date, or short phrase — before any optional context.",
-    "Avoids hedging, throat-clearing, and warm pleasantries when the user "
-    "is asking a factual lookup.",
-    "On counting questions, briefly enumerates the matched items and then "
-    "states the count as a digit.",
-    "Says 'I don't know' when the answer isn't in memory rather than "
-    "guessing or padding with related facts.",
 ]
 
 
