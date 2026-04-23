@@ -466,11 +466,12 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     p.add_argument(
         "--backend",
-        choices=("sonzai", "mempalace"),
+        choices=("sonzai", "mempalace", "mem0"),
         default="sonzai",
         help="Memory system under test (default: sonzai). 'mempalace' pairs "
         "MemPalace retrieval with Gemini Flash Lite for the agent role so "
-        "both sides of the comparison use the same generator.",
+        "both sides of the comparison use the same generator. 'mem0' pairs "
+        "mem0 cloud's hosted memory with the same Gemini generator.",
     )
     p.add_argument(
         "--mempalace-search-k",
@@ -485,6 +486,25 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Truncate each retrieved drawer to this many chars when building "
         "the agent prompt (MemPalace backend).",
     )
+    p.add_argument(
+        "--mem0-search-k",
+        type=int,
+        default=5,
+        help="Top-K memories to retrieve per agent turn (mem0 backend).",
+    )
+    p.add_argument(
+        "--mem0-max-memory-chars",
+        type=int,
+        default=600,
+        help="Truncate each retrieved mem0 memory to this many chars (mem0 backend).",
+    )
+    p.add_argument(
+        "--mem0-ingest-wait",
+        type=float,
+        default=3.0,
+        help="Seconds to wait after each session's add() so mem0's async "
+        "server-side extraction completes before the next search (mem0 backend).",
+    )
     p.add_argument("-v", "--verbose", action="count", default=0)
     return p.parse_args(argv)
 
@@ -497,6 +517,9 @@ async def _amain(args: argparse.Namespace) -> int:
 
     if args.backend == "sonzai" and not os.environ.get("SONZAI_API_KEY"):
         print("error: SONZAI_API_KEY must be set", file=sys.stderr)
+        return 2
+    if args.backend == "mem0" and not os.environ.get("MEM0_API_KEY"):
+        print("error: MEM0_API_KEY must be set for --backend mem0", file=sys.stderr)
         return 2
     if not os.environ.get("GEMINI_API_KEY"):
         print("error: GEMINI_API_KEY must be set", file=sys.stderr)
@@ -535,6 +558,40 @@ async def _amain(args: argparse.Namespace) -> int:
         ts = time.strftime("%Y%m%d-%H%M%S")
         results_dir = Path(__file__).parent / "results"
         jsonl_out = args.output or results_dir / f"sotopia_mempalace_{ts}.jsonl"
+        chart_out = jsonl_out.with_suffix("").with_name(
+            jsonl_out.stem + "_trajectory.png"
+        )
+        _write_runs_jsonl(jsonl_out, all_runs)
+        _plot_trajectory(chart_out, all_runs)
+        _print_summary(all_runs, at_sessions)
+        print(f"\nElapsed: {elapsed:.1f}s")
+        print(f"Output : {jsonl_out}")
+        print(f"Chart  : {chart_out}")
+        return 0
+
+    # --- mem0 backend short-circuit ----------------------------------------
+    # mem0 has no agents / server sessions / simulated time on our side; state
+    # lives in mem0 cloud, scoped per scenario by user_id. Local progress
+    # marker at ``~/.cache/sonzai-bench/sotopia-mem0/<scenario>.progress``
+    # lets `--sessions-per-scenario 90` continue where a prior `30` left off.
+    if args.backend == "mem0":
+        from .backends.mem0 import run_all_scenarios_mem0
+
+        t0 = time.time()
+        all_runs = await run_all_scenarios_mem0(
+            scenarios=scenarios,
+            sessions_per_scenario=args.sessions_per_scenario,
+            scenario_concurrency=args.scenario_concurrency,
+            judge=judge,
+            search_k=args.mem0_search_k,
+            max_memory_chars=args.mem0_max_memory_chars,
+            ingest_wait=args.mem0_ingest_wait,
+        )
+        elapsed = time.time() - t0
+
+        ts = time.strftime("%Y%m%d-%H%M%S")
+        results_dir = Path(__file__).parent / "results"
+        jsonl_out = args.output or results_dir / f"sotopia_mem0_{ts}.jsonl"
         chart_out = jsonl_out.with_suffix("").with_name(
             jsonl_out.stem + "_trajectory.png"
         )

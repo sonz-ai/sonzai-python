@@ -20,8 +20,13 @@ committed spec snapshot, run `just sync-spec` and commit the diff.
 
 ## Benchmarks
 
-Sonzai beats MemPalace on LongMemEval — the retrieval benchmark MemPalace was
-purpose-built to win — while running on the cheap end of the LLM stack:
+Sonzai beats MemPalace on **two** benchmarks, running on the cheap end of the
+LLM stack — chat, judge, and partner agent all run on **Gemini 3.1 Flash
+Lite**. No frontier-model arms race propping up the numbers; the lift is
+from the memory architecture. Drop in a heavier model and the ceiling goes
+up from there.
+
+### LongMemEval — retrieval (MemPalace's home turf)
 
 | Metric | Sonzai | MemPalace (hybrid_v4) |
 |---|---:|---:|
@@ -29,13 +34,43 @@ purpose-built to win — while running on the cheap end of the LLM stack:
 | R@1 (top-hit accuracy) | **0.800** | 0.770 |
 | Recall@10, multi-session | **1.000** | 1.000 |
 
-Chat, judge, and partner agent all run on **Gemini 3.1 Flash Lite** — no
-frontier-model arms race propping up the numbers. The lift is from the memory
-architecture, not from spending more on inference. Drop in a heavier model and
-the ceiling goes up from there.
+### SOTOPIA longitudinal — compounding across sessions
 
-Full scores, methodology, per-question-type breakdown, and reproduction steps
-(including comparison against MemPalace's canonical `longmemeval_bench.py`):
+**Sonzai's USP: agents that compound.** Same agent, same partner, N sessions,
+`advance_time` between each. Canonical SOTOPIA scores session 1 only — we
+also run it at s10, s20, s30 and add an 8th judge-scored dim
+`memory_continuity` (0..10) grading whether the agent treats the
+relationship as continuous with prior sessions.
+
+**Head-to-head at session 1** (no accumulated memory, standard SOTOPIA):
+
+| Dimension (session 1) | Sonzai | MemPalace | Δ |
+|---|---:|---:|---:|
+| Believability (0..10) | **9.00** | 9.00 | tie |
+| Relationship (−5..5) | **4.25** | 4.00 | **+0.25** |
+| Knowledge (0..10) | **7.75** | 6.50 | **+1.25** |
+| Goal (0..10) | **9.00** | 8.75 | **+0.25** |
+| **Overall** | **8.44** | 8.03 | **+0.41** ✅ |
+
+**Sonzai improves across sessions** (same agent, rolling history):
+
+| Dim | s1 | s10 | s20 | s30 | Δ s1→s30 |
+|---|---:|---:|---:|---:|---:|
+| Believability (0..10) | 9.00 | 9.75 | 9.62 | **10.00** (ceiling) | **+1.00 ↑** |
+| Relationship (−5..5) | 4.25 | 5.00 | 4.75 | **5.00** (ceiling) | **+0.75 ↑** |
+| Knowledge (0..10) | 7.75 | 8.50 | 7.75 | **8.50** | **+0.75 ↑** |
+| Goal (0..10) | 9.00 | 9.75 | 9.50 | **9.75** | **+0.75 ↑** |
+| `memory_continuity` (0..10) | 5.00 | **10.00** (ceiling) | 9.75 | **10.00** (ceiling) | **+5.00 ↑** |
+| **Overall** | 8.44 | 9.45 | 9.38 | **9.56** | **+1.13 ↑** |
+
+Every non-floor dim climbs. Believability and relationship hit the rubric
+ceiling by s30; `memory_continuity` hits the ceiling by s10 — Sonzai's
+identity model is producing accurate unprompted callbacks before a
+verbatim-retrieval baseline has history to compete.
+
+Full scores, methodology, per-question-type breakdown, and reproduction
+steps (including comparison against MemPalace's canonical
+`longmemeval_bench.py`):
 
 → [benchmarks/README.md](benchmarks/README.md)
 

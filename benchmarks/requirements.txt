@@ -25,3 +25,7 @@ matplotlib>=3.8
 # MemPalace comparison backend (optional — only needed for `--backend mempalace`).
 # Install on demand; not imported unless the MemPalace backend is selected.
 # mempalace>=0.1
+
+# mem0 cloud comparison backend (optional — only needed for `--backend mem0`).
+# Requires MEM0_API_KEY. Not imported unless the mem0 backend is selected.
+# mem0ai>=2.0

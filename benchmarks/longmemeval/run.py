@@ -87,9 +87,10 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     p.add_argument(
         "--backend",
-        choices=["sonzai", "mempalace"],
+        choices=["sonzai", "mempalace", "mem0"],
         default="sonzai",
-        help="Memory system to evaluate (default: sonzai).",
+        help="Memory system to evaluate (default: sonzai). 'mem0' uses mem0 "
+        "cloud via the mem0ai SDK (requires MEM0_API_KEY).",
     )
     p.add_argument(
         "--limit",
@@ -473,6 +474,36 @@ async def _run_mempalace_backend(
         return await _score_and_serialize(q, br, backend="mempalace", judge=judge, mode=mode)
 
     return await tqdm_asyncio.gather(*(one(q) for q in questions), desc="mempalace")
+
+
+# ---------------------------------------------------------------------------
+# mem0 backend orchestration (ingest → search via mem0 cloud; QA via Gemini reader)
+# ---------------------------------------------------------------------------
+
+
+async def _run_mem0_backend(
+    questions: list[LongMemEvalQuestion],
+    *,
+    mode: str,
+    judge: GeminiJudge | None,
+    concurrency: int,
+) -> list[dict]:
+    from .backends import mem0 as mem0_backend
+
+    results = await mem0_backend.run_all(questions, concurrency=concurrency)
+
+    sem = asyncio.Semaphore(concurrency)
+
+    async def one(q: LongMemEvalQuestion) -> dict:
+        br = results.get(q.question_id, BackendResult())
+        if mode in {"qa", "both"} and br.ranked_session_ids and judge is not None:
+            async with sem:
+                br.agent_answer = await _mempalace_read_answer(
+                    judge, question=q, ranked_session_ids=br.ranked_session_ids
+                )
+        return await _score_and_serialize(q, br, backend="mem0", judge=judge, mode=mode)
+
+    return await tqdm_asyncio.gather(*(one(q) for q in questions), desc="mem0-score")
 
 
 # ---------------------------------------------------------------------------
@@ -910,6 +941,9 @@ async def _amain(args: argparse.Namespace) -> int:
     if not os.environ.get("SONZAI_API_KEY") and args.backend == "sonzai":
         print("error: SONZAI_API_KEY must be set for the sonzai backend", file=sys.stderr)
         return 2
+    if not os.environ.get("MEM0_API_KEY") and args.backend == "mem0":
+        print("error: MEM0_API_KEY must be set for --backend mem0", file=sys.stderr)
+        return 2
     if not os.environ.get("GEMINI_API_KEY") and args.mode in {"qa", "both"}:
         print("error: GEMINI_API_KEY must be set for QA scoring", file=sys.stderr)
         return 2
@@ -938,6 +972,13 @@ async def _amain(args: argparse.Namespace) -> int:
             reuse_agents_path=args.reuse_agents,
             clear_reused_memory=args.clear_reused_memory,
             dataset_path_hint=str(args.dataset_path) if args.dataset_path else None,
+        )
+    elif args.backend == "mem0":
+        rows = await _run_mem0_backend(
+            questions,
+            mode=args.mode,
+            judge=judge,
+            concurrency=min(args.concurrency, 2),
         )
     else:
         rows = await _run_mempalace_backend(

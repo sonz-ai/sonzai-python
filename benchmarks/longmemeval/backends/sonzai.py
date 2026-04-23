@@ -423,7 +423,25 @@ async def run_question(
     consolidation_events = 0
     advance_failures = 0
 
-    if reuse and clear_memory_before_reuse:
+    # Pre-ingest memory wipe for shared-agent path: with a stable agent_id and
+    # deterministic per-question user_id, rerunning the bench lands on the same
+    # (agent, user) pair as the prior run. Without a reset, the prior run's
+    # chat turns (question text + agent reply) live alongside the haystack and
+    # pollute retrieval. Wiping here makes the bench **idempotent across runs**
+    # — same question_id → same post-ingest memory → reproducible numbers —
+    # without creating new agents each run. Cost: ~1 API call per question.
+    #
+    # Gated on ``existing_agent_id`` so the legacy per-question-agent path
+    # (which creates a fresh agent anyway) doesn't pay for a no-op reset.
+    # In reuse mode we only wipe when explicitly asked — the whole point of
+    # reuse is to skip ingest AND retain prior state for fast iteration.
+    if existing_agent_id and not reuse:
+        from ...common.sdk_extras import clear_agent_memory_async
+
+        await clear_agent_memory_async(
+            client, agent_id=agent_id, user_id=user_id
+        )
+    elif reuse and clear_memory_before_reuse:
         from ...common.sdk_extras import clear_agent_memory_async
 
         await clear_agent_memory_async(
