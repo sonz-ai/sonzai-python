@@ -29,6 +29,7 @@ class Models(_ModelsBase):
         params = None
         data = self._http.get(path, params=params)
         return GetAgentModelsOutputBody.model_validate(data)
+
     def list_models(
         self,
     ) -> CachedModelsPayload:
@@ -49,6 +50,7 @@ class AsyncModels(_ModelsBase):
         params = None
         data = await self._http.get(path, params=params)
         return GetAgentModelsOutputBody.model_validate(data)
+
     async def list_models(
         self,
     ) -> CachedModelsPayload:

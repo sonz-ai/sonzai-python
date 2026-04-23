@@ -30,6 +30,7 @@ class ApiKeys(_ApiKeysBase):
         params = None
         data = self._http.get(path, params=params)
         return data
+
     def create_api_key(
         self,
         project_id: str,
@@ -51,6 +52,7 @@ class ApiKeys(_ApiKeysBase):
         body = encode_body(CreateAPIKeyInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return CreateAPIKeyOutputBody.model_validate(data)
+
     def revoke_api_key(
         self,
         project_id: str,
@@ -75,6 +77,7 @@ class AsyncApiKeys(_ApiKeysBase):
         params = None
         data = await self._http.get(path, params=params)
         return data
+
     async def create_api_key(
         self,
         project_id: str,
@@ -96,6 +99,7 @@ class AsyncApiKeys(_ApiKeysBase):
         body = encode_body(CreateAPIKeyInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return CreateAPIKeyOutputBody.model_validate(data)
+
     async def revoke_api_key(
         self,
         project_id: str,

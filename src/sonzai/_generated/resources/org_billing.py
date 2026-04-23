@@ -37,6 +37,7 @@ class OrgBilling(_OrgBillingBase):
         params = None
         data = self._http.get(path, params=params)
         return TenantBillingProfile.model_validate(data)
+
     def create_org_billing_checkout(
         self,
         *,
@@ -54,6 +55,7 @@ class OrgBilling(_OrgBillingBase):
         body = encode_body(OrgBillingCheckoutInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return OrgBillingURLBody.model_validate(data)
+
     def create_org_billing_portal(
         self,
     ) -> OrgBillingURLBody:
@@ -62,6 +64,7 @@ class OrgBilling(_OrgBillingBase):
         params = None
         data = self._http.post(path, params=params)
         return OrgBillingURLBody.model_validate(data)
+
     def list_org_active_characters(
         self,
         *,
@@ -74,6 +77,7 @@ class OrgBilling(_OrgBillingBase):
             params["days"] = days
         data = self._http.get(path, params=params)
         return ActiveCharacterSummary.model_validate(data)
+
     def get_org_contract(
         self,
     ) -> EnterpriseContract:
@@ -82,6 +86,7 @@ class OrgBilling(_OrgBillingBase):
         params = None
         data = self._http.get(path, params=params)
         return EnterpriseContract.model_validate(data)
+
     def subscribe_to_org_contract(
         self,
         *,
@@ -96,6 +101,7 @@ class OrgBilling(_OrgBillingBase):
         body = encode_body(OrgBillingSubscribeInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return OrgBillingURLBody.model_validate(data)
+
     def get_org_context_engine_events(
         self,
         *,
@@ -108,6 +114,7 @@ class OrgBilling(_OrgBillingBase):
             params["days"] = days
         data = self._http.get(path, params=params)
         return ContextEngineEventSummary.model_validate(data)
+
     def get_org_ledger(
         self,
         *,
@@ -120,6 +127,7 @@ class OrgBilling(_OrgBillingBase):
             params["days"] = days
         data = self._http.get(path, params=params)
         return data
+
     def get_org_model_pricing(
         self,
     ) -> Any:
@@ -128,6 +136,7 @@ class OrgBilling(_OrgBillingBase):
         params = None
         data = self._http.get(path, params=params)
         return data
+
     def list_org_service_agreements(
         self,
     ) -> Any:
@@ -136,6 +145,7 @@ class OrgBilling(_OrgBillingBase):
         params = None
         data = self._http.get(path, params=params)
         return data
+
     def get_org_service_usage(
         self,
         *,
@@ -148,6 +158,7 @@ class OrgBilling(_OrgBillingBase):
             params["days"] = days
         data = self._http.get(path, params=params)
         return ServiceUsageSummary.model_validate(data)
+
     def get_org_usage_summary(
         self,
         *,
@@ -160,6 +171,7 @@ class OrgBilling(_OrgBillingBase):
             params["days"] = days
         data = self._http.get(path, params=params)
         return OrgUsageSummaryBody.model_validate(data)
+
     def redeem_org_voucher(
         self,
         *,
@@ -185,6 +197,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         params = None
         data = await self._http.get(path, params=params)
         return TenantBillingProfile.model_validate(data)
+
     async def create_org_billing_checkout(
         self,
         *,
@@ -202,6 +215,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         body = encode_body(OrgBillingCheckoutInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return OrgBillingURLBody.model_validate(data)
+
     async def create_org_billing_portal(
         self,
     ) -> OrgBillingURLBody:
@@ -210,6 +224,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         params = None
         data = await self._http.post(path, params=params)
         return OrgBillingURLBody.model_validate(data)
+
     async def list_org_active_characters(
         self,
         *,
@@ -222,6 +237,7 @@ class AsyncOrgBilling(_OrgBillingBase):
             params["days"] = days
         data = await self._http.get(path, params=params)
         return ActiveCharacterSummary.model_validate(data)
+
     async def get_org_contract(
         self,
     ) -> EnterpriseContract:
@@ -230,6 +246,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         params = None
         data = await self._http.get(path, params=params)
         return EnterpriseContract.model_validate(data)
+
     async def subscribe_to_org_contract(
         self,
         *,
@@ -244,6 +261,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         body = encode_body(OrgBillingSubscribeInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return OrgBillingURLBody.model_validate(data)
+
     async def get_org_context_engine_events(
         self,
         *,
@@ -256,6 +274,7 @@ class AsyncOrgBilling(_OrgBillingBase):
             params["days"] = days
         data = await self._http.get(path, params=params)
         return ContextEngineEventSummary.model_validate(data)
+
     async def get_org_ledger(
         self,
         *,
@@ -268,6 +287,7 @@ class AsyncOrgBilling(_OrgBillingBase):
             params["days"] = days
         data = await self._http.get(path, params=params)
         return data
+
     async def get_org_model_pricing(
         self,
     ) -> Any:
@@ -276,6 +296,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         params = None
         data = await self._http.get(path, params=params)
         return data
+
     async def list_org_service_agreements(
         self,
     ) -> Any:
@@ -284,6 +305,7 @@ class AsyncOrgBilling(_OrgBillingBase):
         params = None
         data = await self._http.get(path, params=params)
         return data
+
     async def get_org_service_usage(
         self,
         *,
@@ -296,6 +318,7 @@ class AsyncOrgBilling(_OrgBillingBase):
             params["days"] = days
         data = await self._http.get(path, params=params)
         return ServiceUsageSummary.model_validate(data)
+
     async def get_org_usage_summary(
         self,
         *,
@@ -308,6 +331,7 @@ class AsyncOrgBilling(_OrgBillingBase):
             params["days"] = days
         data = await self._http.get(path, params=params)
         return OrgUsageSummaryBody.model_validate(data)
+
     async def redeem_org_voucher(
         self,
         *,

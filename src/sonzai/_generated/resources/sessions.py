@@ -62,6 +62,7 @@ class Sessions(_SessionsBase):
         body = encode_body(EndSessionInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return EndSessionOutputBody.model_validate(data)
+
     def start_session(
         self,
         agent_id: str,
@@ -89,13 +90,16 @@ class Sessions(_SessionsBase):
         body = encode_body(StartSessionInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return StartSessionOutputBody.model_validate(data)
+
     def set_session_tools(
         self,
         agent_id: str,
         session_id: str,
     ) -> SetSessionToolsOutputBody:
         """Set session tool definitions"""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/{quote(session_id, safe='')}/tools"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/{quote(session_id, safe='')}/tools"
+        )
         params = None
         data = self._http.put(path, params=params)
         return SetSessionToolsOutputBody.model_validate(data)
@@ -141,6 +145,7 @@ class AsyncSessions(_SessionsBase):
         body = encode_body(EndSessionInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return EndSessionOutputBody.model_validate(data)
+
     async def start_session(
         self,
         agent_id: str,
@@ -168,13 +173,16 @@ class AsyncSessions(_SessionsBase):
         body = encode_body(StartSessionInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return StartSessionOutputBody.model_validate(data)
+
     async def set_session_tools(
         self,
         agent_id: str,
         session_id: str,
     ) -> SetSessionToolsOutputBody:
         """Set session tool definitions"""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/{quote(session_id, safe='')}/tools"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/{quote(session_id, safe='')}/tools"
+        )
         params = None
         data = await self._http.put(path, params=params)
         return SetSessionToolsOutputBody.model_validate(data)

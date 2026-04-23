@@ -44,6 +44,7 @@ class Analytics(_AnalyticsBase):
             params["project_id"] = project_id
         data = self._http.get(path, params=params)
         return CostResponse.model_validate(data)
+
     def analytics_cost_breakdown(
         self,
         *,
@@ -65,6 +66,7 @@ class Analytics(_AnalyticsBase):
             params["project_id"] = project_id
         data = self._http.get(path, params=params)
         return CostBreakdownResponse.model_validate(data)
+
     def analytics_overview(
         self,
     ) -> AnalyticsOverview:
@@ -73,6 +75,7 @@ class Analytics(_AnalyticsBase):
         params = None
         data = self._http.get(path, params=params)
         return AnalyticsOverview.model_validate(data)
+
     def analytics_realtime(
         self,
     ) -> AnalyticsRealtimeResponse:
@@ -81,6 +84,7 @@ class Analytics(_AnalyticsBase):
         params = None
         data = self._http.get(path, params=params)
         return AnalyticsRealtimeResponse.model_validate(data)
+
     def analytics_usage(
         self,
         *,
@@ -120,6 +124,7 @@ class AsyncAnalytics(_AnalyticsBase):
             params["project_id"] = project_id
         data = await self._http.get(path, params=params)
         return CostResponse.model_validate(data)
+
     async def analytics_cost_breakdown(
         self,
         *,
@@ -141,6 +146,7 @@ class AsyncAnalytics(_AnalyticsBase):
             params["project_id"] = project_id
         data = await self._http.get(path, params=params)
         return CostBreakdownResponse.model_validate(data)
+
     async def analytics_overview(
         self,
     ) -> AnalyticsOverview:
@@ -149,6 +155,7 @@ class AsyncAnalytics(_AnalyticsBase):
         params = None
         data = await self._http.get(path, params=params)
         return AnalyticsOverview.model_validate(data)
+
     async def analytics_realtime(
         self,
     ) -> AnalyticsRealtimeResponse:
@@ -157,6 +164,7 @@ class AsyncAnalytics(_AnalyticsBase):
         params = None
         data = await self._http.get(path, params=params)
         return AnalyticsRealtimeResponse.model_validate(data)
+
     async def analytics_usage(
         self,
         *,

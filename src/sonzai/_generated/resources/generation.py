@@ -66,6 +66,7 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateAndCreateInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
+
     def generate_character(
         self,
         *,
@@ -101,6 +102,7 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateCharacterInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
+
     def regenerate_avatar(
         self,
         agent_id: str,
@@ -116,6 +118,7 @@ class Generation(_GenerationBase):
         body = encode_body(RegenerateAvatarInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return RegenerateAvatarOutputBody.model_validate(data)
+
     def generate_bio(
         self,
         agent_id: str,
@@ -152,6 +155,7 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateBioInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return GenerateBioOutputBody.model_validate(data)
+
     def generate_image(
         self,
         agent_id: str,
@@ -179,6 +183,7 @@ class Generation(_GenerationBase):
         body = encode_body(GenerateImageInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return GenerateImageOutputBody.model_validate(data)
+
     def generate_seed_memories(
         self,
         agent_id: str,
@@ -271,6 +276,7 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateAndCreateInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
+
     async def generate_character(
         self,
         *,
@@ -306,6 +312,7 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateCharacterInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
+
     async def regenerate_avatar(
         self,
         agent_id: str,
@@ -321,6 +328,7 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(RegenerateAvatarInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return RegenerateAvatarOutputBody.model_validate(data)
+
     async def generate_bio(
         self,
         agent_id: str,
@@ -357,6 +365,7 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateBioInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return GenerateBioOutputBody.model_validate(data)
+
     async def generate_image(
         self,
         agent_id: str,
@@ -384,6 +393,7 @@ class AsyncGeneration(_GenerationBase):
         body = encode_body(GenerateImageInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return GenerateImageOutputBody.model_validate(data)
+
     async def generate_seed_memories(
         self,
         agent_id: str,

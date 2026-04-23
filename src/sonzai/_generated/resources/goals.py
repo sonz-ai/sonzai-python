@@ -36,6 +36,7 @@ class Goals(_GoalsBase):
             params["user_id"] = user_id
         data = self._http.get(path, params=params)
         return BreakthroughsResponse.model_validate(data)
+
     def list_goals(
         self,
         agent_id: str,
@@ -49,6 +50,7 @@ class Goals(_GoalsBase):
             params["user_id"] = user_id
         data = self._http.get(path, params=params)
         return GoalsResponse.model_validate(data)
+
     def create_goal(
         self,
         agent_id: str,
@@ -79,6 +81,7 @@ class Goals(_GoalsBase):
         body = encode_body(CreateGoalInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return Goal.model_validate(data)
+
     def delete_goal(
         self,
         agent_id: str,
@@ -93,6 +96,7 @@ class Goals(_GoalsBase):
             params["user_id"] = user_id
         data = self._http.delete(path, params=params)
         return data
+
     def update_goal(
         self,
         agent_id: str,
@@ -140,6 +144,7 @@ class AsyncGoals(_GoalsBase):
             params["user_id"] = user_id
         data = await self._http.get(path, params=params)
         return BreakthroughsResponse.model_validate(data)
+
     async def list_goals(
         self,
         agent_id: str,
@@ -153,6 +158,7 @@ class AsyncGoals(_GoalsBase):
             params["user_id"] = user_id
         data = await self._http.get(path, params=params)
         return GoalsResponse.model_validate(data)
+
     async def create_goal(
         self,
         agent_id: str,
@@ -183,6 +189,7 @@ class AsyncGoals(_GoalsBase):
         body = encode_body(CreateGoalInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return Goal.model_validate(data)
+
     async def delete_goal(
         self,
         agent_id: str,
@@ -197,6 +204,7 @@ class AsyncGoals(_GoalsBase):
             params["user_id"] = user_id
         data = await self._http.delete(path, params=params)
         return data
+
     async def update_goal(
         self,
         agent_id: str,

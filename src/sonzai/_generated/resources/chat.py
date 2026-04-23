@@ -25,6 +25,7 @@ class Chat(_ChatBase):
         params = None
         data = self._http.post(path, params=params)
         return data
+
     def playground_chat(
         self,
         agent_id: str,
@@ -46,6 +47,7 @@ class AsyncChat(_ChatBase):
         params = None
         data = await self._http.post(path, params=params)
         return data
+
     async def playground_chat(
         self,
         agent_id: str,

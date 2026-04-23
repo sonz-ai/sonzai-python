@@ -32,6 +32,7 @@ class Insights(_InsightsBase):
         params = None
         data = self._http.get(path, params=params)
         return RecentShiftsResponse.model_validate(data)
+
     def get_significant_moments(
         self,
         agent_id: str,
@@ -45,6 +46,7 @@ class Insights(_InsightsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return SignificantMomentsResponse.model_validate(data)
+
     def list_user_overlays(
         self,
         agent_id: str,
@@ -54,6 +56,7 @@ class Insights(_InsightsBase):
         params = None
         data = self._http.get(path, params=params)
         return UserOverlaysListResponse.model_validate(data)
+
     def get_user_personality_overlay(
         self,
         agent_id: str,
@@ -63,7 +66,9 @@ class Insights(_InsightsBase):
         since: str | None = None,
     ) -> UserOverlayDetailResponse:
         """Get user personality overlay"""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality/users/{quote(user_id, safe='')}"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/personality/users/{quote(user_id, safe='')}"
+        )
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -71,6 +76,7 @@ class Insights(_InsightsBase):
             params["since"] = since
         data = self._http.get(path, params=params)
         return UserOverlayDetailResponse.model_validate(data)
+
     def get_time_machine(
         self,
         agent_id: str,
@@ -96,6 +102,7 @@ class AsyncInsights(_InsightsBase):
         params = None
         data = await self._http.get(path, params=params)
         return RecentShiftsResponse.model_validate(data)
+
     async def get_significant_moments(
         self,
         agent_id: str,
@@ -109,6 +116,7 @@ class AsyncInsights(_InsightsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return SignificantMomentsResponse.model_validate(data)
+
     async def list_user_overlays(
         self,
         agent_id: str,
@@ -118,6 +126,7 @@ class AsyncInsights(_InsightsBase):
         params = None
         data = await self._http.get(path, params=params)
         return UserOverlaysListResponse.model_validate(data)
+
     async def get_user_personality_overlay(
         self,
         agent_id: str,
@@ -127,7 +136,9 @@ class AsyncInsights(_InsightsBase):
         since: str | None = None,
     ) -> UserOverlayDetailResponse:
         """Get user personality overlay"""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/personality/users/{quote(user_id, safe='')}"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/personality/users/{quote(user_id, safe='')}"
+        )
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -135,6 +146,7 @@ class AsyncInsights(_InsightsBase):
             params["since"] = since
         data = await self._http.get(path, params=params)
         return UserOverlayDetailResponse.model_validate(data)
+
     async def get_time_machine(
         self,
         agent_id: str,

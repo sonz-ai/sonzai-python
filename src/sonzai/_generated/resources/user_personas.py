@@ -31,6 +31,7 @@ class UserPersonas(_UserPersonasBase):
         params = None
         data = self._http.get(path, params=params)
         return ListUserPersonasOutputBody.model_validate(data)
+
     def create_user_persona(
         self,
         *,
@@ -51,6 +52,7 @@ class UserPersonas(_UserPersonasBase):
         body = encode_body(CreateUserPersonaInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return UserPersonaRecord.model_validate(data)
+
     def delete_user_persona(
         self,
         persona_id: str,
@@ -62,6 +64,7 @@ class UserPersonas(_UserPersonasBase):
         if isinstance(data, dict):
             return DeleteUserPersonaOutputBody.model_validate(data)
         return DeleteUserPersonaOutputBody()
+
     def get_user_persona(
         self,
         persona_id: str,
@@ -71,6 +74,7 @@ class UserPersonas(_UserPersonasBase):
         params = None
         data = self._http.get(path, params=params)
         return UserPersonaRecord.model_validate(data)
+
     def update_user_persona(
         self,
         persona_id: str,
@@ -103,6 +107,7 @@ class AsyncUserPersonas(_UserPersonasBase):
         params = None
         data = await self._http.get(path, params=params)
         return ListUserPersonasOutputBody.model_validate(data)
+
     async def create_user_persona(
         self,
         *,
@@ -123,6 +128,7 @@ class AsyncUserPersonas(_UserPersonasBase):
         body = encode_body(CreateUserPersonaInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return UserPersonaRecord.model_validate(data)
+
     async def delete_user_persona(
         self,
         persona_id: str,
@@ -134,6 +140,7 @@ class AsyncUserPersonas(_UserPersonasBase):
         if isinstance(data, dict):
             return DeleteUserPersonaOutputBody.model_validate(data)
         return DeleteUserPersonaOutputBody()
+
     async def get_user_persona(
         self,
         persona_id: str,
@@ -143,6 +150,7 @@ class AsyncUserPersonas(_UserPersonasBase):
         params = None
         data = await self._http.get(path, params=params)
         return UserPersonaRecord.model_validate(data)
+
     async def update_user_persona(
         self,
         persona_id: str,

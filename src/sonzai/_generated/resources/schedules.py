@@ -30,10 +30,13 @@ class Schedules(_SchedulesBase):
         user_id: str,
     ) -> ListSchedulesOutputBody:
         """List all schedules for a (agent, user) pair."""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
+        )
         params = None
         data = self._http.get(path, params=params)
         return ListSchedulesOutputBody.model_validate(data)
+
     def create_schedule(
         self,
         agent_id: str,
@@ -49,7 +52,9 @@ class Schedules(_SchedulesBase):
         starts_at: str | None = None,
     ) -> CreateScheduleOutputBody:
         """Create a recurring schedule for a user."""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
+        )
         params = None
         _raw: dict[str, Any] = {}
         if active_window is not None:
@@ -71,6 +76,7 @@ class Schedules(_SchedulesBase):
         body = encode_body(CreateScheduleInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return CreateScheduleOutputBody.model_validate(data)
+
     def delete_schedule(
         self,
         agent_id: str,
@@ -82,6 +88,7 @@ class Schedules(_SchedulesBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def get_schedule(
         self,
         agent_id: str,
@@ -93,6 +100,7 @@ class Schedules(_SchedulesBase):
         params = None
         data = self._http.get(path, params=params)
         return ScheduleDTO.model_validate(data)
+
     def patch_schedule(
         self,
         agent_id: str,
@@ -131,6 +139,7 @@ class Schedules(_SchedulesBase):
         body = encode_body(PatchScheduleInputBody, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return ScheduleDTO.model_validate(data)
+
     def upcoming_schedule(
         self,
         agent_id: str,
@@ -155,10 +164,13 @@ class AsyncSchedules(_SchedulesBase):
         user_id: str,
     ) -> ListSchedulesOutputBody:
         """List all schedules for a (agent, user) pair."""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
+        )
         params = None
         data = await self._http.get(path, params=params)
         return ListSchedulesOutputBody.model_validate(data)
+
     async def create_schedule(
         self,
         agent_id: str,
@@ -174,7 +186,9 @@ class AsyncSchedules(_SchedulesBase):
         starts_at: str | None = None,
     ) -> CreateScheduleOutputBody:
         """Create a recurring schedule for a user."""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/schedules"
+        )
         params = None
         _raw: dict[str, Any] = {}
         if active_window is not None:
@@ -196,6 +210,7 @@ class AsyncSchedules(_SchedulesBase):
         body = encode_body(CreateScheduleInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return CreateScheduleOutputBody.model_validate(data)
+
     async def delete_schedule(
         self,
         agent_id: str,
@@ -207,6 +222,7 @@ class AsyncSchedules(_SchedulesBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def get_schedule(
         self,
         agent_id: str,
@@ -218,6 +234,7 @@ class AsyncSchedules(_SchedulesBase):
         params = None
         data = await self._http.get(path, params=params)
         return ScheduleDTO.model_validate(data)
+
     async def patch_schedule(
         self,
         agent_id: str,
@@ -256,6 +273,7 @@ class AsyncSchedules(_SchedulesBase):
         body = encode_body(PatchScheduleInputBody, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return ScheduleDTO.model_validate(data)
+
     async def upcoming_schedule(
         self,
         agent_id: str,

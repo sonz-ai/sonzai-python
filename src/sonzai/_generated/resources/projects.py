@@ -37,6 +37,7 @@ class Projects(_ProjectsBase):
             params["offset"] = offset
         data = self._http.get(path, params=params)
         return data
+
     def create_project(
         self,
         *,
@@ -54,6 +55,7 @@ class Projects(_ProjectsBase):
         body = encode_body(CreateProjectInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return Project.model_validate(data)
+
     def delete_project(
         self,
         project_id: str,
@@ -65,6 +67,7 @@ class Projects(_ProjectsBase):
         if isinstance(data, dict):
             return DeleteProjectOutputBody.model_validate(data)
         return DeleteProjectOutputBody()
+
     def get_project(
         self,
         project_id: str,
@@ -74,6 +77,7 @@ class Projects(_ProjectsBase):
         params = None
         data = self._http.get(path, params=params)
         return Project.model_validate(data)
+
     def update_project(
         self,
         project_id: str,
@@ -113,6 +117,7 @@ class AsyncProjects(_ProjectsBase):
             params["offset"] = offset
         data = await self._http.get(path, params=params)
         return data
+
     async def create_project(
         self,
         *,
@@ -130,6 +135,7 @@ class AsyncProjects(_ProjectsBase):
         body = encode_body(CreateProjectInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return Project.model_validate(data)
+
     async def delete_project(
         self,
         project_id: str,
@@ -141,6 +147,7 @@ class AsyncProjects(_ProjectsBase):
         if isinstance(data, dict):
             return DeleteProjectOutputBody.model_validate(data)
         return DeleteProjectOutputBody()
+
     async def get_project(
         self,
         project_id: str,
@@ -150,6 +157,7 @@ class AsyncProjects(_ProjectsBase):
         params = None
         data = await self._http.get(path, params=params)
         return Project.model_validate(data)
+
     async def update_project(
         self,
         project_id: str,

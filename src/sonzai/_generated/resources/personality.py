@@ -37,6 +37,7 @@ class Personality(_PersonalityBase):
         body = encode_body(BatchGetPersonalitiesInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return BatchPersonalityResponse.model_validate(data)
+
     def get_personality(
         self,
         agent_id: str,
@@ -53,6 +54,7 @@ class Personality(_PersonalityBase):
             params["since"] = since
         data = self._http.get(path, params=params)
         return PersonalityResponse.model_validate(data)
+
     def update_personality(
         self,
         agent_id: str,
@@ -88,6 +90,7 @@ class AsyncPersonality(_PersonalityBase):
         body = encode_body(BatchGetPersonalitiesInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return BatchPersonalityResponse.model_validate(data)
+
     async def get_personality(
         self,
         agent_id: str,
@@ -104,6 +107,7 @@ class AsyncPersonality(_PersonalityBase):
             params["since"] = since
         data = await self._http.get(path, params=params)
         return PersonalityResponse.model_validate(data)
+
     async def update_personality(
         self,
         agent_id: str,

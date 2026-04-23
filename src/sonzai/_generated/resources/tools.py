@@ -37,6 +37,7 @@ class Tools(_ToolsBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return KbSearchResponse.model_validate(data)
+
     def agent_kb_search(
         self,
         agent_id: str,
@@ -55,6 +56,7 @@ class Tools(_ToolsBase):
         body = encode_body(AgentKBSearchInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return KbSearchResponse.model_validate(data)
+
     def get_tool_schemas(
         self,
         agent_id: str,
@@ -83,6 +85,7 @@ class AsyncTools(_ToolsBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return KbSearchResponse.model_validate(data)
+
     async def agent_kb_search(
         self,
         agent_id: str,
@@ -101,6 +104,7 @@ class AsyncTools(_ToolsBase):
         body = encode_body(AgentKBSearchInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return KbSearchResponse.model_validate(data)
+
     async def get_tool_schemas(
         self,
         agent_id: str,

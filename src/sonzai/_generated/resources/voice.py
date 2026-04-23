@@ -47,6 +47,7 @@ class Voice(_VoiceBase):
         body = encode_body(VoiceLiveWSTokenInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return VoiceLiveWSTokenOutputBody.model_validate(data)
+
     def speech_to_text(
         self,
         agent_id: str,
@@ -68,6 +69,7 @@ class Voice(_VoiceBase):
         body = encode_body(SpeechToTextInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
+
     def text_to_speech(
         self,
         agent_id: str,
@@ -92,6 +94,7 @@ class Voice(_VoiceBase):
         body = encode_body(TextToSpeechInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
+
     def list_voices(
         self,
         *,
@@ -131,6 +134,7 @@ class AsyncVoice(_VoiceBase):
         body = encode_body(VoiceLiveWSTokenInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return VoiceLiveWSTokenOutputBody.model_validate(data)
+
     async def speech_to_text(
         self,
         agent_id: str,
@@ -152,6 +156,7 @@ class AsyncVoice(_VoiceBase):
         body = encode_body(SpeechToTextInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
+
     async def text_to_speech(
         self,
         agent_id: str,
@@ -176,6 +181,7 @@ class AsyncVoice(_VoiceBase):
         body = encode_body(TextToSpeechInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
+
     async def list_voices(
         self,
         *,

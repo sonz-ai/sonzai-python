@@ -45,6 +45,7 @@ class CustomStates(_CustomStatesBase):
             params["key"] = key
         data = self._http.get(path, params=params)
         return ListCustomStatesOutputBody.model_validate(data)
+
     def create_custom_state(
         self,
         agent_id: str,
@@ -75,6 +76,7 @@ class CustomStates(_CustomStatesBase):
         body = encode_body(CreateCustomStateInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return CustomState.model_validate(data)
+
     def delete_custom_state_by_key(
         self,
         agent_id: str,
@@ -97,6 +99,7 @@ class CustomStates(_CustomStatesBase):
             params["instance_id"] = instance_id
         data = self._http.delete(path, params=params)
         return data
+
     def get_custom_state_by_key(
         self,
         agent_id: str,
@@ -119,6 +122,7 @@ class CustomStates(_CustomStatesBase):
             params["instance_id"] = instance_id
         data = self._http.get(path, params=params)
         return CustomState.model_validate(data)
+
     def upsert_custom_state_by_key(
         self,
         agent_id: str,
@@ -149,6 +153,7 @@ class CustomStates(_CustomStatesBase):
         body = encode_body(UpsertCustomStateByKeyInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return CustomState.model_validate(data)
+
     def delete_custom_state(
         self,
         agent_id: str,
@@ -159,6 +164,7 @@ class CustomStates(_CustomStatesBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def update_custom_state(
         self,
         agent_id: str,
@@ -203,6 +209,7 @@ class AsyncCustomStates(_CustomStatesBase):
             params["key"] = key
         data = await self._http.get(path, params=params)
         return ListCustomStatesOutputBody.model_validate(data)
+
     async def create_custom_state(
         self,
         agent_id: str,
@@ -233,6 +240,7 @@ class AsyncCustomStates(_CustomStatesBase):
         body = encode_body(CreateCustomStateInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return CustomState.model_validate(data)
+
     async def delete_custom_state_by_key(
         self,
         agent_id: str,
@@ -255,6 +263,7 @@ class AsyncCustomStates(_CustomStatesBase):
             params["instance_id"] = instance_id
         data = await self._http.delete(path, params=params)
         return data
+
     async def get_custom_state_by_key(
         self,
         agent_id: str,
@@ -277,6 +286,7 @@ class AsyncCustomStates(_CustomStatesBase):
             params["instance_id"] = instance_id
         data = await self._http.get(path, params=params)
         return CustomState.model_validate(data)
+
     async def upsert_custom_state_by_key(
         self,
         agent_id: str,
@@ -307,6 +317,7 @@ class AsyncCustomStates(_CustomStatesBase):
         body = encode_body(UpsertCustomStateByKeyInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return CustomState.model_validate(data)
+
     async def delete_custom_state(
         self,
         agent_id: str,
@@ -317,6 +328,7 @@ class AsyncCustomStates(_CustomStatesBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def update_custom_state(
         self,
         agent_id: str,

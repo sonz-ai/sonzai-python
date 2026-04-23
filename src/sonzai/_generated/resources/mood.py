@@ -37,6 +37,7 @@ class Mood(_MoodBase):
             params["instance_id"] = instance_id
         data = self._http.get(path, params=params)
         return MoodResponse.model_validate(data)
+
     def get_mood_history(
         self,
         agent_id: str,
@@ -56,6 +57,7 @@ class Mood(_MoodBase):
             params["instance_id"] = instance_id
         data = self._http.get(path, params=params)
         return MoodHistoryResponse.model_validate(data)
+
     def get_mood_aggregate(
         self,
         agent_id: str,
@@ -88,6 +90,7 @@ class AsyncMood(_MoodBase):
             params["instance_id"] = instance_id
         data = await self._http.get(path, params=params)
         return MoodResponse.model_validate(data)
+
     async def get_mood_history(
         self,
         agent_id: str,
@@ -107,6 +110,7 @@ class AsyncMood(_MoodBase):
             params["instance_id"] = instance_id
         data = await self._http.get(path, params=params)
         return MoodHistoryResponse.model_validate(data)
+
     async def get_mood_aggregate(
         self,
         agent_id: str,

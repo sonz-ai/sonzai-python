@@ -32,6 +32,7 @@ class Storefront(_StorefrontBase):
         params = None
         data = self._http.get(path, params=params)
         return StorefrontGetOutputBody.model_validate(data)
+
     def update_storefront(
         self,
         *,
@@ -70,6 +71,7 @@ class Storefront(_StorefrontBase):
         body = encode_body(StorefrontUpdateInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return Storefront.model_validate(data)
+
     def list_storefront_agents(
         self,
     ) -> StorefrontListAgentsOutputBody:
@@ -78,6 +80,7 @@ class Storefront(_StorefrontBase):
         params = None
         data = self._http.get(path, params=params)
         return StorefrontListAgentsOutputBody.model_validate(data)
+
     def remove_storefront_agent(
         self,
         agent_id: str,
@@ -87,6 +90,7 @@ class Storefront(_StorefrontBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def upsert_storefront_agent(
         self,
         agent_id: str,
@@ -117,6 +121,7 @@ class Storefront(_StorefrontBase):
         body = encode_body(StorefrontUpsertAgentInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return StorefrontAgent.model_validate(data)
+
     def publish_storefront(
         self,
     ) -> Any:
@@ -125,6 +130,7 @@ class Storefront(_StorefrontBase):
         params = None
         data = self._http.post(path, params=params)
         return data
+
     def unpublish_storefront(
         self,
     ) -> Any:
@@ -144,6 +150,7 @@ class AsyncStorefront(_StorefrontBase):
         params = None
         data = await self._http.get(path, params=params)
         return StorefrontGetOutputBody.model_validate(data)
+
     async def update_storefront(
         self,
         *,
@@ -182,6 +189,7 @@ class AsyncStorefront(_StorefrontBase):
         body = encode_body(StorefrontUpdateInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return Storefront.model_validate(data)
+
     async def list_storefront_agents(
         self,
     ) -> StorefrontListAgentsOutputBody:
@@ -190,6 +198,7 @@ class AsyncStorefront(_StorefrontBase):
         params = None
         data = await self._http.get(path, params=params)
         return StorefrontListAgentsOutputBody.model_validate(data)
+
     async def remove_storefront_agent(
         self,
         agent_id: str,
@@ -199,6 +208,7 @@ class AsyncStorefront(_StorefrontBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def upsert_storefront_agent(
         self,
         agent_id: str,
@@ -229,6 +239,7 @@ class AsyncStorefront(_StorefrontBase):
         body = encode_body(StorefrontUpsertAgentInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return StorefrontAgent.model_validate(data)
+
     async def publish_storefront(
         self,
     ) -> Any:
@@ -237,6 +248,7 @@ class AsyncStorefront(_StorefrontBase):
         params = None
         data = await self._http.post(path, params=params)
         return data
+
     async def unpublish_storefront(
         self,
     ) -> Any:

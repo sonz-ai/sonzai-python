@@ -33,6 +33,7 @@ class Instances(_InstancesBase):
         params = None
         data = self._http.get(path, params=params)
         return ListInstancesOutputBody.model_validate(data)
+
     def create_instance(
         self,
         agent_id: str,
@@ -51,6 +52,7 @@ class Instances(_InstancesBase):
         body = encode_body(CreateInstanceInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return AgentInstance.model_validate(data)
+
     def delete_instance(
         self,
         agent_id: str,
@@ -63,6 +65,7 @@ class Instances(_InstancesBase):
         if isinstance(data, dict):
             return DeleteInstanceOutputBody.model_validate(data)
         return DeleteInstanceOutputBody()
+
     def get_instance(
         self,
         agent_id: str,
@@ -73,6 +76,7 @@ class Instances(_InstancesBase):
         params = None
         data = self._http.get(path, params=params)
         return AgentInstance.model_validate(data)
+
     def update_instance(
         self,
         agent_id: str,
@@ -95,6 +99,7 @@ class Instances(_InstancesBase):
         body = encode_body(UpdateInstanceInputBody, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return AgentInstance.model_validate(data)
+
     def reset_instance(
         self,
         agent_id: str,
@@ -117,6 +122,7 @@ class AsyncInstances(_InstancesBase):
         params = None
         data = await self._http.get(path, params=params)
         return ListInstancesOutputBody.model_validate(data)
+
     async def create_instance(
         self,
         agent_id: str,
@@ -135,6 +141,7 @@ class AsyncInstances(_InstancesBase):
         body = encode_body(CreateInstanceInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return AgentInstance.model_validate(data)
+
     async def delete_instance(
         self,
         agent_id: str,
@@ -147,6 +154,7 @@ class AsyncInstances(_InstancesBase):
         if isinstance(data, dict):
             return DeleteInstanceOutputBody.model_validate(data)
         return DeleteInstanceOutputBody()
+
     async def get_instance(
         self,
         agent_id: str,
@@ -157,6 +165,7 @@ class AsyncInstances(_InstancesBase):
         params = None
         data = await self._http.get(path, params=params)
         return AgentInstance.model_validate(data)
+
     async def update_instance(
         self,
         agent_id: str,
@@ -179,6 +188,7 @@ class AsyncInstances(_InstancesBase):
         body = encode_body(UpdateInstanceInputBody, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return AgentInstance.model_validate(data)
+
     async def reset_instance(
         self,
         agent_id: str,

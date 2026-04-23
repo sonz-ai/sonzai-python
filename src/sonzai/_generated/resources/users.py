@@ -44,6 +44,7 @@ class Users(_UsersBase):
             mode="offset",
             total_key="total",
         )
+
     def get_my_org(
         self,
     ) -> MeResponse:
@@ -82,6 +83,7 @@ class AsyncUsers(_UsersBase):
             mode="offset",
             total_key="total",
         )
+
     async def get_my_org(
         self,
     ) -> MeResponse:

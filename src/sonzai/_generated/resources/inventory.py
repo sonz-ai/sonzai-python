@@ -45,7 +45,9 @@ class Inventory(_InventoryBase):
         limit: int = 100,
     ) -> Page[GroupResult]:
         """Query user inventory"""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/inventory"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/inventory"
+        )
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -74,6 +76,7 @@ class Inventory(_InventoryBase):
             item_parser=GroupResult.model_validate,
             mode="offset",
         )
+
     def update_inventory(
         self,
         agent_id: str,
@@ -89,7 +92,9 @@ class Inventory(_InventoryBase):
         properties: dict[str, Any] | None = None,
     ) -> InventoryWriteResponse:
         """Add, update, or remove an inventory item"""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/inventory"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/inventory"
+        )
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -111,6 +116,7 @@ class Inventory(_InventoryBase):
         body = encode_body(InventoryWriteRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return InventoryWriteResponse.model_validate(data)
+
     def batch_import_inventory(
         self,
         agent_id: str,
@@ -133,6 +139,7 @@ class Inventory(_InventoryBase):
         body = encode_body(BatchInventoryRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return BatchInventoryResponse.model_validate(data)
+
     def create_inventory_item(
         self,
         agent_id: str,
@@ -167,6 +174,7 @@ class Inventory(_InventoryBase):
         body = encode_body(CreateInventoryItemHumaInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return InventoryWriteResponse.model_validate(data)
+
     def direct_delete_inventory(
         self,
         agent_id: str,
@@ -184,6 +192,7 @@ class Inventory(_InventoryBase):
         if isinstance(data, dict):
             return DirectUpdateResponse.model_validate(data)
         return DirectUpdateResponse()
+
     def direct_update_inventory(
         self,
         agent_id: str,
@@ -225,7 +234,9 @@ class AsyncInventory(_InventoryBase):
         limit: int = 100,
     ) -> AsyncPage[GroupResult]:
         """Query user inventory"""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/inventory"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/inventory"
+        )
         params: dict[str, Any] = {"limit": limit, "offset": 0}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -258,6 +269,7 @@ class AsyncInventory(_InventoryBase):
             item_parser=GroupResult.model_validate,
             mode="offset",
         )
+
     async def update_inventory(
         self,
         agent_id: str,
@@ -273,7 +285,9 @@ class AsyncInventory(_InventoryBase):
         properties: dict[str, Any] | None = None,
     ) -> InventoryWriteResponse:
         """Add, update, or remove an inventory item"""
-        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/inventory"
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/inventory"
+        )
         params: dict[str, Any] = {}
         if instance_id is not None:
             params["instance_id"] = instance_id
@@ -295,6 +309,7 @@ class AsyncInventory(_InventoryBase):
         body = encode_body(InventoryWriteRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return InventoryWriteResponse.model_validate(data)
+
     async def batch_import_inventory(
         self,
         agent_id: str,
@@ -317,6 +332,7 @@ class AsyncInventory(_InventoryBase):
         body = encode_body(BatchInventoryRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return BatchInventoryResponse.model_validate(data)
+
     async def create_inventory_item(
         self,
         agent_id: str,
@@ -351,6 +367,7 @@ class AsyncInventory(_InventoryBase):
         body = encode_body(CreateInventoryItemHumaInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return InventoryWriteResponse.model_validate(data)
+
     async def direct_delete_inventory(
         self,
         agent_id: str,
@@ -368,6 +385,7 @@ class AsyncInventory(_InventoryBase):
         if isinstance(data, dict):
             return DirectUpdateResponse.model_validate(data)
         return DirectUpdateResponse()
+
     async def direct_update_inventory(
         self,
         agent_id: str,

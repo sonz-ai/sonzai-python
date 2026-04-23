@@ -47,6 +47,7 @@ class Support(_SupportBase):
             mode="offset",
             total_key="total",
         )
+
     def create_support_ticket(
         self,
         *,
@@ -70,6 +71,7 @@ class Support(_SupportBase):
         body = encode_body(CreateTicketRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return SupportTicket.model_validate(data)
+
     def get_support_ticket(
         self,
         ticket_id: str,
@@ -79,6 +81,7 @@ class Support(_SupportBase):
         params = None
         data = self._http.get(path, params=params)
         return TicketDetailResponse.model_validate(data)
+
     def close_support_ticket(
         self,
         ticket_id: str,
@@ -88,6 +91,7 @@ class Support(_SupportBase):
         params = None
         data = self._http.post(path, params=params)
         return SupportTicket.model_validate(data)
+
     def add_support_ticket_comment(
         self,
         ticket_id: str,
@@ -135,6 +139,7 @@ class AsyncSupport(_SupportBase):
             mode="offset",
             total_key="total",
         )
+
     async def create_support_ticket(
         self,
         *,
@@ -158,6 +163,7 @@ class AsyncSupport(_SupportBase):
         body = encode_body(CreateTicketRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return SupportTicket.model_validate(data)
+
     async def get_support_ticket(
         self,
         ticket_id: str,
@@ -167,6 +173,7 @@ class AsyncSupport(_SupportBase):
         params = None
         data = await self._http.get(path, params=params)
         return TicketDetailResponse.model_validate(data)
+
     async def close_support_ticket(
         self,
         ticket_id: str,
@@ -176,6 +183,7 @@ class AsyncSupport(_SupportBase):
         params = None
         data = await self._http.post(path, params=params)
         return SupportTicket.model_validate(data)
+
     async def add_support_ticket_comment(
         self,
         ticket_id: str,

@@ -53,6 +53,7 @@ class Memory(_MemoryBase):
         if isinstance(data, dict):
             return MemoryResetResponse.model_validate(data)
         return MemoryResetResponse()
+
     def list(
         self,
         agent_id: str,
@@ -84,6 +85,7 @@ class Memory(_MemoryBase):
             params["memory_type"] = memory_type
         data = self._http.get(path, params=params)
         return MemoryResponse.model_validate(data)
+
     def consolidate_memory(
         self,
         agent_id: str,
@@ -102,6 +104,7 @@ class Memory(_MemoryBase):
         body = encode_body(TriggerConsolidationInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return TriggerConsolidationOutputBody.model_validate(data)
+
     def get_fact_history(
         self,
         agent_id: str,
@@ -112,6 +115,7 @@ class Memory(_MemoryBase):
         params = None
         data = self._http.get(path, params=params)
         return FactHistoryResponse.model_validate(data)
+
     def list_facts(
         self,
         agent_id: str,
@@ -134,6 +138,7 @@ class Memory(_MemoryBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return ListFactsResponse.model_validate(data)
+
     def create_fact(
         self,
         agent_id: str,
@@ -173,6 +178,7 @@ class Memory(_MemoryBase):
         body = encode_body(CreateFactInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return AtomicFact.model_validate(data)
+
     def delete_fact(
         self,
         agent_id: str,
@@ -183,6 +189,7 @@ class Memory(_MemoryBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def update_fact(
         self,
         agent_id: str,
@@ -214,6 +221,7 @@ class Memory(_MemoryBase):
         body = encode_body(UpdateFactInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return AtomicFact.model_validate(data)
+
     def search(
         self,
         agent_id: str,
@@ -242,6 +250,7 @@ class Memory(_MemoryBase):
             params["include_verbatim"] = include_verbatim
         data = self._http.get(path, params=params)
         return SearchResponse.model_validate(data)
+
     def list_summaries(
         self,
         agent_id: str,
@@ -258,6 +267,7 @@ class Memory(_MemoryBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return SummariesResponse.model_validate(data)
+
     def timeline(
         self,
         agent_id: str,
@@ -280,6 +290,7 @@ class Memory(_MemoryBase):
             params["end"] = end
         data = self._http.get(path, params=params)
         return TimelineResponse.model_validate(data)
+
     def get_wisdom_audit(
         self,
         agent_id: str,
@@ -290,6 +301,7 @@ class Memory(_MemoryBase):
         params = None
         data = self._http.get(path, params=params)
         return WisdomAuditResponse.model_validate(data)
+
     def delete_wisdom_fact(
         self,
         agent_id: str,
@@ -302,6 +314,7 @@ class Memory(_MemoryBase):
         if isinstance(data, dict):
             return DeleteWisdomResponse.model_validate(data)
         return DeleteWisdomResponse()
+
     def list_user_facts(
         self,
         agent_id: str,
@@ -346,6 +359,7 @@ class AsyncMemory(_MemoryBase):
         if isinstance(data, dict):
             return MemoryResetResponse.model_validate(data)
         return MemoryResetResponse()
+
     async def list(
         self,
         agent_id: str,
@@ -377,6 +391,7 @@ class AsyncMemory(_MemoryBase):
             params["memory_type"] = memory_type
         data = await self._http.get(path, params=params)
         return MemoryResponse.model_validate(data)
+
     async def consolidate_memory(
         self,
         agent_id: str,
@@ -395,6 +410,7 @@ class AsyncMemory(_MemoryBase):
         body = encode_body(TriggerConsolidationInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return TriggerConsolidationOutputBody.model_validate(data)
+
     async def get_fact_history(
         self,
         agent_id: str,
@@ -405,6 +421,7 @@ class AsyncMemory(_MemoryBase):
         params = None
         data = await self._http.get(path, params=params)
         return FactHistoryResponse.model_validate(data)
+
     async def list_facts(
         self,
         agent_id: str,
@@ -427,6 +444,7 @@ class AsyncMemory(_MemoryBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return ListFactsResponse.model_validate(data)
+
     async def create_fact(
         self,
         agent_id: str,
@@ -466,6 +484,7 @@ class AsyncMemory(_MemoryBase):
         body = encode_body(CreateFactInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return AtomicFact.model_validate(data)
+
     async def delete_fact(
         self,
         agent_id: str,
@@ -476,6 +495,7 @@ class AsyncMemory(_MemoryBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def update_fact(
         self,
         agent_id: str,
@@ -507,6 +527,7 @@ class AsyncMemory(_MemoryBase):
         body = encode_body(UpdateFactInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return AtomicFact.model_validate(data)
+
     async def search(
         self,
         agent_id: str,
@@ -535,6 +556,7 @@ class AsyncMemory(_MemoryBase):
             params["include_verbatim"] = include_verbatim
         data = await self._http.get(path, params=params)
         return SearchResponse.model_validate(data)
+
     async def list_summaries(
         self,
         agent_id: str,
@@ -551,6 +573,7 @@ class AsyncMemory(_MemoryBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return SummariesResponse.model_validate(data)
+
     async def timeline(
         self,
         agent_id: str,
@@ -573,6 +596,7 @@ class AsyncMemory(_MemoryBase):
             params["end"] = end
         data = await self._http.get(path, params=params)
         return TimelineResponse.model_validate(data)
+
     async def get_wisdom_audit(
         self,
         agent_id: str,
@@ -583,6 +607,7 @@ class AsyncMemory(_MemoryBase):
         params = None
         data = await self._http.get(path, params=params)
         return WisdomAuditResponse.model_validate(data)
+
     async def delete_wisdom_fact(
         self,
         agent_id: str,
@@ -595,6 +620,7 @@ class AsyncMemory(_MemoryBase):
         if isinstance(data, dict):
             return DeleteWisdomResponse.model_validate(data)
         return DeleteWisdomResponse()
+
     async def list_user_facts(
         self,
         agent_id: str,

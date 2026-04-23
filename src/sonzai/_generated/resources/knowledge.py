@@ -66,6 +66,7 @@ class Knowledge(_KnowledgeBase):
             params["segment"] = segment
         data = self._http.get(path, params=params)
         return KbGetConversionStatsOutputBody.model_validate(data)
+
     def kb_record_feedback(
         self,
         project_id: str,
@@ -96,6 +97,7 @@ class Knowledge(_KnowledgeBase):
         body = encode_body(KbRecordFeedbackInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return KbRecordFeedbackOutputBody.model_validate(data)
+
     def kb_get_trend_rankings(
         self,
         project_id: str,
@@ -118,6 +120,7 @@ class Knowledge(_KnowledgeBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return KbGetTrendRankingsOutputBody.model_validate(data)
+
     def kb_get_recommendations(
         self,
         project_id: str,
@@ -137,6 +140,7 @@ class Knowledge(_KnowledgeBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return KbGetRecommendationsOutputBody.model_validate(data)
+
     def kb_list_analytics_rules(
         self,
         project_id: str,
@@ -146,6 +150,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.get(path, params=params)
         return KbListAnalyticsRulesOutputBody.model_validate(data)
+
     def kb_create_analytics_rule(
         self,
         project_id: str,
@@ -173,6 +178,7 @@ class Knowledge(_KnowledgeBase):
         body = encode_body(KbCreateAnalyticsRuleInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return KBAnalyticsRule.model_validate(data)
+
     def kb_delete_analytics_rule(
         self,
         project_id: str,
@@ -183,6 +189,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def kb_get_analytics_rule(
         self,
         project_id: str,
@@ -193,6 +200,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.get(path, params=params)
         return KBAnalyticsRule.model_validate(data)
+
     def kb_update_analytics_rule(
         self,
         project_id: str,
@@ -218,6 +226,7 @@ class Knowledge(_KnowledgeBase):
         body = encode_body(KbUpdateAnalyticsRuleInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return KBAnalyticsRule.model_validate(data)
+
     def kb_run_analytics_rule(
         self,
         project_id: str,
@@ -228,6 +237,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.post(path, params=params)
         return KbRunAnalyticsRuleOutputBody.model_validate(data)
+
     def kb_get_trends(
         self,
         project_id: str,
@@ -241,6 +251,7 @@ class Knowledge(_KnowledgeBase):
             params["node_id"] = node_id
         data = self._http.get(path, params=params)
         return KbGetTrendsOutputBody.model_validate(data)
+
     def kb_bulk_update_properties(
         self,
         project_id: str,
@@ -262,6 +273,7 @@ class Knowledge(_KnowledgeBase):
         body = encode_body(KbBulkUpdateInputBody, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return KbBulkUpdateOutputBody.model_validate(data)
+
     def kb_list_documents(
         self,
         project_id: str,
@@ -275,6 +287,7 @@ class Knowledge(_KnowledgeBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return KbListDocumentsOutputBody.model_validate(data)
+
     def kb_upload_document(
         self,
         project_id: str,
@@ -284,6 +297,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.post(path, params=params)
         return KbUploadDocumentOutputBody.model_validate(data)
+
     def kb_delete_document(
         self,
         project_id: str,
@@ -294,6 +308,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def kb_get_document(
         self,
         project_id: str,
@@ -304,6 +319,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.get(path, params=params)
         return KBDocument.model_validate(data)
+
     def kb_insert_facts(
         self,
         project_id: str,
@@ -325,6 +341,7 @@ class Knowledge(_KnowledgeBase):
         body = encode_body(KbInsertFactsInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return KbInsertFactsOutputBody.model_validate(data)
+
     def kb_list_nodes(
         self,
         project_id: str,
@@ -351,6 +368,7 @@ class Knowledge(_KnowledgeBase):
             mode="offset",
             total_key="total",
         )
+
     def kb_delete_node(
         self,
         project_id: str,
@@ -361,6 +379,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def kb_get_node(
         self,
         project_id: str,
@@ -375,6 +394,7 @@ class Knowledge(_KnowledgeBase):
             params["history"] = history
         data = self._http.get(path, params=params)
         return KbGetNodeOutputBody.model_validate(data)
+
     def kb_get_node_history(
         self,
         project_id: str,
@@ -389,6 +409,7 @@ class Knowledge(_KnowledgeBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return KbGetNodeHistoryOutputBody.model_validate(data)
+
     def kb_promote_node_to_org(
         self,
         project_id: str,
@@ -405,6 +426,7 @@ class Knowledge(_KnowledgeBase):
         body = encode_body(KbPromoteNodeInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return KBNodeWithScope.model_validate(data)
+
     def kb_list_schemas(
         self,
         project_id: str,
@@ -414,6 +436,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.get(path, params=params)
         return KbListSchemasOutputBody.model_validate(data)
+
     def kb_create_schema(
         self,
         project_id: str,
@@ -441,6 +464,7 @@ class Knowledge(_KnowledgeBase):
         body = encode_body(KbCreateSchemaInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return KBEntitySchema.model_validate(data)
+
     def kb_delete_schema(
         self,
         project_id: str,
@@ -451,6 +475,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.delete(path, params=params)
         return data
+
     def kb_update_schema(
         self,
         project_id: str,
@@ -479,6 +504,7 @@ class Knowledge(_KnowledgeBase):
         body = encode_body(KbUpdateSchemaInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return KBEntitySchema.model_validate(data)
+
     def kb_search(
         self,
         project_id: str,
@@ -510,6 +536,7 @@ class Knowledge(_KnowledgeBase):
             params["filters"] = filters
         data = self._http.get(path, params=params)
         return KBSearchResponse.model_validate(data)
+
     def kb_get_stats(
         self,
         project_id: str,
@@ -519,6 +546,7 @@ class Knowledge(_KnowledgeBase):
         params = None
         data = self._http.get(path, params=params)
         return KbGetStatsOutputBody.model_validate(data)
+
     def kb_list_org_nodes(
         self,
         tenant_id: str,
@@ -532,6 +560,7 @@ class Knowledge(_KnowledgeBase):
             params["limit"] = limit
         data = self._http.get(path, params=params)
         return KbListOrgNodesOutputBody.model_validate(data)
+
     def kb_create_org_node(
         self,
         tenant_id: str,
@@ -575,6 +604,7 @@ class AsyncKnowledge(_KnowledgeBase):
             params["segment"] = segment
         data = await self._http.get(path, params=params)
         return KbGetConversionStatsOutputBody.model_validate(data)
+
     async def kb_record_feedback(
         self,
         project_id: str,
@@ -605,6 +635,7 @@ class AsyncKnowledge(_KnowledgeBase):
         body = encode_body(KbRecordFeedbackInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return KbRecordFeedbackOutputBody.model_validate(data)
+
     async def kb_get_trend_rankings(
         self,
         project_id: str,
@@ -627,6 +658,7 @@ class AsyncKnowledge(_KnowledgeBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return KbGetTrendRankingsOutputBody.model_validate(data)
+
     async def kb_get_recommendations(
         self,
         project_id: str,
@@ -646,6 +678,7 @@ class AsyncKnowledge(_KnowledgeBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return KbGetRecommendationsOutputBody.model_validate(data)
+
     async def kb_list_analytics_rules(
         self,
         project_id: str,
@@ -655,6 +688,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.get(path, params=params)
         return KbListAnalyticsRulesOutputBody.model_validate(data)
+
     async def kb_create_analytics_rule(
         self,
         project_id: str,
@@ -682,6 +716,7 @@ class AsyncKnowledge(_KnowledgeBase):
         body = encode_body(KbCreateAnalyticsRuleInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return KBAnalyticsRule.model_validate(data)
+
     async def kb_delete_analytics_rule(
         self,
         project_id: str,
@@ -692,6 +727,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def kb_get_analytics_rule(
         self,
         project_id: str,
@@ -702,6 +738,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.get(path, params=params)
         return KBAnalyticsRule.model_validate(data)
+
     async def kb_update_analytics_rule(
         self,
         project_id: str,
@@ -727,6 +764,7 @@ class AsyncKnowledge(_KnowledgeBase):
         body = encode_body(KbUpdateAnalyticsRuleInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return KBAnalyticsRule.model_validate(data)
+
     async def kb_run_analytics_rule(
         self,
         project_id: str,
@@ -737,6 +775,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.post(path, params=params)
         return KbRunAnalyticsRuleOutputBody.model_validate(data)
+
     async def kb_get_trends(
         self,
         project_id: str,
@@ -750,6 +789,7 @@ class AsyncKnowledge(_KnowledgeBase):
             params["node_id"] = node_id
         data = await self._http.get(path, params=params)
         return KbGetTrendsOutputBody.model_validate(data)
+
     async def kb_bulk_update_properties(
         self,
         project_id: str,
@@ -771,6 +811,7 @@ class AsyncKnowledge(_KnowledgeBase):
         body = encode_body(KbBulkUpdateInputBody, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return KbBulkUpdateOutputBody.model_validate(data)
+
     async def kb_list_documents(
         self,
         project_id: str,
@@ -784,6 +825,7 @@ class AsyncKnowledge(_KnowledgeBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return KbListDocumentsOutputBody.model_validate(data)
+
     async def kb_upload_document(
         self,
         project_id: str,
@@ -793,6 +835,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.post(path, params=params)
         return KbUploadDocumentOutputBody.model_validate(data)
+
     async def kb_delete_document(
         self,
         project_id: str,
@@ -803,6 +846,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def kb_get_document(
         self,
         project_id: str,
@@ -813,6 +857,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.get(path, params=params)
         return KBDocument.model_validate(data)
+
     async def kb_insert_facts(
         self,
         project_id: str,
@@ -834,6 +879,7 @@ class AsyncKnowledge(_KnowledgeBase):
         body = encode_body(KbInsertFactsInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return KbInsertFactsOutputBody.model_validate(data)
+
     async def kb_list_nodes(
         self,
         project_id: str,
@@ -864,6 +910,7 @@ class AsyncKnowledge(_KnowledgeBase):
             mode="offset",
             total_key="total",
         )
+
     async def kb_delete_node(
         self,
         project_id: str,
@@ -874,6 +921,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def kb_get_node(
         self,
         project_id: str,
@@ -888,6 +936,7 @@ class AsyncKnowledge(_KnowledgeBase):
             params["history"] = history
         data = await self._http.get(path, params=params)
         return KbGetNodeOutputBody.model_validate(data)
+
     async def kb_get_node_history(
         self,
         project_id: str,
@@ -902,6 +951,7 @@ class AsyncKnowledge(_KnowledgeBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return KbGetNodeHistoryOutputBody.model_validate(data)
+
     async def kb_promote_node_to_org(
         self,
         project_id: str,
@@ -918,6 +968,7 @@ class AsyncKnowledge(_KnowledgeBase):
         body = encode_body(KbPromoteNodeInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return KBNodeWithScope.model_validate(data)
+
     async def kb_list_schemas(
         self,
         project_id: str,
@@ -927,6 +978,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.get(path, params=params)
         return KbListSchemasOutputBody.model_validate(data)
+
     async def kb_create_schema(
         self,
         project_id: str,
@@ -954,6 +1006,7 @@ class AsyncKnowledge(_KnowledgeBase):
         body = encode_body(KbCreateSchemaInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return KBEntitySchema.model_validate(data)
+
     async def kb_delete_schema(
         self,
         project_id: str,
@@ -964,6 +1017,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.delete(path, params=params)
         return data
+
     async def kb_update_schema(
         self,
         project_id: str,
@@ -992,6 +1046,7 @@ class AsyncKnowledge(_KnowledgeBase):
         body = encode_body(KbUpdateSchemaInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return KBEntitySchema.model_validate(data)
+
     async def kb_search(
         self,
         project_id: str,
@@ -1023,6 +1078,7 @@ class AsyncKnowledge(_KnowledgeBase):
             params["filters"] = filters
         data = await self._http.get(path, params=params)
         return KBSearchResponse.model_validate(data)
+
     async def kb_get_stats(
         self,
         project_id: str,
@@ -1032,6 +1088,7 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.get(path, params=params)
         return KbGetStatsOutputBody.model_validate(data)
+
     async def kb_list_org_nodes(
         self,
         tenant_id: str,
@@ -1045,6 +1102,7 @@ class AsyncKnowledge(_KnowledgeBase):
             params["limit"] = limit
         data = await self._http.get(path, params=params)
         return KbListOrgNodesOutputBody.model_validate(data)
+
     async def kb_create_org_node(
         self,
         tenant_id: str,

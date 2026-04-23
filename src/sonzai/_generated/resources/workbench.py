@@ -35,6 +35,7 @@ class Workbench(_WorkbenchBase):
         params = None
         data = self._http.post(path, params=params)
         return data
+
     def workbench_get_advance_time_job(
         self,
         job_id: str,
@@ -44,6 +45,7 @@ class Workbench(_WorkbenchBase):
         params = None
         data = self._http.get(path, params=params)
         return WorkbenchAdvanceTimeJobBody.model_validate(data)
+
     def workbench_chat(
         self,
     ) -> Any:
@@ -52,6 +54,7 @@ class Workbench(_WorkbenchBase):
         params = None
         data = self._http.post(path, params=params)
         return data
+
     def workbench_generate_bio(
         self,
     ) -> WorkbenchGenerateBioBody:
@@ -60,6 +63,7 @@ class Workbench(_WorkbenchBase):
         params = None
         data = self._http.post(path, params=params)
         return WorkbenchGenerateBioBody.model_validate(data)
+
     def workbench_generate_character(
         self,
     ) -> WorkbenchGenerateCharacterBody:
@@ -68,6 +72,7 @@ class Workbench(_WorkbenchBase):
         params = None
         data = self._http.post(path, params=params)
         return WorkbenchGenerateCharacterBody.model_validate(data)
+
     def workbench_generate_seed_memories(
         self,
     ) -> WorkbenchGenerateSeedMemoriesBody:
@@ -76,6 +81,7 @@ class Workbench(_WorkbenchBase):
         params = None
         data = self._http.post(path, params=params)
         return WorkbenchGenerateSeedMemoriesBody.model_validate(data)
+
     def workbench_prepare(
         self,
     ) -> WorkbenchPrepareBody:
@@ -84,6 +90,7 @@ class Workbench(_WorkbenchBase):
         params = None
         data = self._http.post(path, params=params)
         return WorkbenchPrepareBody.model_validate(data)
+
     def workbench_reset_agent(
         self,
     ) -> WorkbenchResetAgentBody:
@@ -92,6 +99,7 @@ class Workbench(_WorkbenchBase):
         params = None
         data = self._http.post(path, params=params)
         return WorkbenchResetAgentBody.model_validate(data)
+
     def workbench_session_end(
         self,
     ) -> WorkbenchSessionEndBody:
@@ -100,6 +108,7 @@ class Workbench(_WorkbenchBase):
         params = None
         data = self._http.post(path, params=params)
         return WorkbenchSessionEndBody.model_validate(data)
+
     def workbench_simulate_user(
         self,
     ) -> WorkbenchSimulateUserBody:
@@ -108,6 +117,7 @@ class Workbench(_WorkbenchBase):
         params = None
         data = self._http.post(path, params=params)
         return WorkbenchSimulateUserBody.model_validate(data)
+
     def workbench_get_state(
         self,
     ) -> WorkbenchStateResponse:
@@ -127,6 +137,7 @@ class AsyncWorkbench(_WorkbenchBase):
         params = None
         data = await self._http.post(path, params=params)
         return data
+
     async def workbench_get_advance_time_job(
         self,
         job_id: str,
@@ -136,6 +147,7 @@ class AsyncWorkbench(_WorkbenchBase):
         params = None
         data = await self._http.get(path, params=params)
         return WorkbenchAdvanceTimeJobBody.model_validate(data)
+
     async def workbench_chat(
         self,
     ) -> Any:
@@ -144,6 +156,7 @@ class AsyncWorkbench(_WorkbenchBase):
         params = None
         data = await self._http.post(path, params=params)
         return data
+
     async def workbench_generate_bio(
         self,
     ) -> WorkbenchGenerateBioBody:
@@ -152,6 +165,7 @@ class AsyncWorkbench(_WorkbenchBase):
         params = None
         data = await self._http.post(path, params=params)
         return WorkbenchGenerateBioBody.model_validate(data)
+
     async def workbench_generate_character(
         self,
     ) -> WorkbenchGenerateCharacterBody:
@@ -160,6 +174,7 @@ class AsyncWorkbench(_WorkbenchBase):
         params = None
         data = await self._http.post(path, params=params)
         return WorkbenchGenerateCharacterBody.model_validate(data)
+
     async def workbench_generate_seed_memories(
         self,
     ) -> WorkbenchGenerateSeedMemoriesBody:
@@ -168,6 +183,7 @@ class AsyncWorkbench(_WorkbenchBase):
         params = None
         data = await self._http.post(path, params=params)
         return WorkbenchGenerateSeedMemoriesBody.model_validate(data)
+
     async def workbench_prepare(
         self,
     ) -> WorkbenchPrepareBody:
@@ -176,6 +192,7 @@ class AsyncWorkbench(_WorkbenchBase):
         params = None
         data = await self._http.post(path, params=params)
         return WorkbenchPrepareBody.model_validate(data)
+
     async def workbench_reset_agent(
         self,
     ) -> WorkbenchResetAgentBody:
@@ -184,6 +201,7 @@ class AsyncWorkbench(_WorkbenchBase):
         params = None
         data = await self._http.post(path, params=params)
         return WorkbenchResetAgentBody.model_validate(data)
+
     async def workbench_session_end(
         self,
     ) -> WorkbenchSessionEndBody:
@@ -192,6 +210,7 @@ class AsyncWorkbench(_WorkbenchBase):
         params = None
         data = await self._http.post(path, params=params)
         return WorkbenchSessionEndBody.model_validate(data)
+
     async def workbench_simulate_user(
         self,
     ) -> WorkbenchSimulateUserBody:
@@ -200,6 +219,7 @@ class AsyncWorkbench(_WorkbenchBase):
         params = None
         data = await self._http.post(path, params=params)
         return WorkbenchSimulateUserBody.model_validate(data)
+
     async def workbench_get_state(
         self,
     ) -> WorkbenchStateResponse:
