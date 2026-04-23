@@ -2771,9 +2771,23 @@ class AdvanceTimeResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Resolve forward references
 # ---------------------------------------------------------------------------
-# ChatStreamEvent (in _customizations/chat.py) has `usage: "ChatUsage | None"`
+# _ChatStreamEventBase and all concrete subclasses have `usage: "ChatUsage | None"`
 # as a forward reference to avoid a circular import at definition time.
-# Now that ChatUsage is defined above, tell Pydantic to resolve it.
-from sonzai._customizations.chat import ChatStreamEvent as _ChatStreamEvent  # noqa: E402
+# Now that ChatUsage is defined above, tell Pydantic to resolve it for each
+# concrete subclass. (ChatStreamEvent is now a Union alias, not a class.)
+from sonzai._customizations.chat import (  # noqa: E402
+    ChatCompleteEvent as _ChatCompleteEvent,
+    ChatContextReadyEvent as _ChatContextReadyEvent,
+    ChatDeltaEvent as _ChatDeltaEvent,
+    ChatErrorEvent as _ChatErrorEvent,
+    ChatMessageBoundaryEvent as _ChatMessageBoundaryEvent,
+    ChatSideEffectsEvent as _ChatSideEffectsEvent,
+)
 
-_ChatStreamEvent.model_rebuild(_types_namespace={"ChatUsage": ChatUsage})
+_ns = {"ChatUsage": ChatUsage}
+_ChatDeltaEvent.model_rebuild(_types_namespace=_ns)
+_ChatContextReadyEvent.model_rebuild(_types_namespace=_ns)
+_ChatSideEffectsEvent.model_rebuild(_types_namespace=_ns)
+_ChatMessageBoundaryEvent.model_rebuild(_types_namespace=_ns)
+_ChatCompleteEvent.model_rebuild(_types_namespace=_ns)
+_ChatErrorEvent.model_rebuild(_types_namespace=_ns)
