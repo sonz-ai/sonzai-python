@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Pre-push drift checks:
 #  1. openapi.json in repo vs live production spec.
-#  2. src/sonzai/_generated/models.py vs what the generator would produce
+#  2. src/sonzai/_generated/models.py vs what datamodel-codegen would
+#     produce from the committed openapi.json.
+#  3. src/sonzai/_generated/resources/ vs what the Jinja resource
+#     generator (scripts/codegen/generate_resources.py) would produce
 #     from the committed openapi.json.
 #
 # Skip with `git push --no-verify`.
@@ -66,6 +69,32 @@ if [ -f "src/sonzai/_generated/models.py" ]; then
   if ! diff -q "src/sonzai/_generated/models.py" "$TMP_OUT/models.py" > /dev/null 2>&1; then
     echo ""
     echo "⚠️  _generated/models.py is out of sync with openapi.json."
+    echo ""
+    echo "   → Run 'just regenerate-sdk' and commit the result."
+    echo "   → To bypass: git push --no-verify"
+    echo ""
+    exit 1
+  fi
+fi
+
+# --- Check 3: regenerate resources and compare ----------------------------
+
+if [ -d "src/sonzai/_generated/resources" ]; then
+  TMP_RES="$(mktemp -d)"
+  trap 'rm -rf "$TMP_OUT" "$LIVE_SPEC" "$TMP_RES"' EXIT
+
+  if ! uv run --extra dev python -m scripts.codegen.generate_resources \
+      openapi.json "$TMP_RES" > /dev/null 2>&1; then
+    echo "⚠ Resource generator failed — skipping regen-drift check."
+    exit 0
+  fi
+
+  # Format tmp output same way `just regenerate-sdk` does, so diff compares apples-to-apples.
+  uv run --extra dev ruff format "$TMP_RES" > /dev/null 2>&1 || true
+
+  if ! diff -rq --exclude=__pycache__ "src/sonzai/_generated/resources" "$TMP_RES" > /dev/null 2>&1; then
+    echo ""
+    echo "⚠️  _generated/resources/ is out of sync with openapi.json."
     echo ""
     echo "   → Run 'just regenerate-sdk' and commit the result."
     echo "   → To bypass: git push --no-verify"
