@@ -159,6 +159,16 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "Answer-bearing sessions are kept preferentially. Use for fast smoke runs.",
     )
     p.add_argument(
+        "--question-type",
+        default=None,
+        help="Filter to a single question_type (e.g. multi-session, "
+        "single-session-user, single-session-assistant, single-session-preference, "
+        "temporal-reasoning, knowledge-update). Applied AFTER --limit slicing: "
+        "if --limit=20 and --question-type=multi-session, you get the first "
+        "multi-session questions within the initial 20-row slice. Pass "
+        "--limit=0 to search the full 500-row dataset for the subtype.",
+    )
+    p.add_argument(
         "--dataset-path",
         type=Path,
         default=None,
@@ -1326,7 +1336,22 @@ async def _amain(args: argparse.Namespace) -> int:
         return 2
 
     dataset_path = resolve_dataset_path(str(args.dataset_path) if args.dataset_path else None)
-    questions = load_questions(limit=args.limit, path=str(dataset_path))
+    # When --question-type is set, load the full dataset first so the subtype
+    # filter sees every candidate row; then re-slice to --limit so the filter
+    # result respects the requested size. Without this, --limit would cut off
+    # subtypes that don't appear in the first N rows of the shuffled file.
+    load_limit = 0 if args.question_type else args.limit
+    questions = load_questions(limit=load_limit, path=str(dataset_path))
+    if args.question_type:
+        before = len(questions)
+        questions = [q for q in questions if q.question_type == args.question_type]
+        print(
+            f"Filtered to question_type={args.question_type}: "
+            f"{len(questions)} of {before} kept.",
+            file=sys.stderr,
+        )
+        if args.limit and len(questions) > args.limit:
+            questions = questions[: args.limit]
     print(
         f"Loaded {len(questions)} questions from LongMemEval "
         f"(cache: {cache_root()}).",
