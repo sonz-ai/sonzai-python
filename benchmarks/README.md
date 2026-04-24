@@ -316,6 +316,61 @@ knowledge, goal — are what actually matter in long-running
 conversations, and they're what the Sonzai architecture is built
 to improve.
 
+## ConvoMem
+
+[ConvoMem](https://github.com/SalesforceAIResearch/ConvoMem) (Salesforce,
+2025) tests conversational memory across **six evidence categories**:
+user facts, assistant facts, changing facts, abstention, preferences, and
+implicit connections.
+
+We mirror [Supermemory MemoryBench](https://github.com/supermemoryai/memorybench)'s
+slice exactly — one `batched_000.json` per category from the HuggingFace
+dataset — so numbers compare line-for-line against their published
+leaderboard entry.
+
+### Running it yourself
+
+```bash
+# Smoke run — 20 questions proportionally sliced across all 6 categories
+python -m benchmarks.convomem --limit 20
+
+# Full Supermemory slice (all batched_000.json items across 6 categories)
+python -m benchmarks.convomem --limit 0 --concurrency 8
+
+# Baseline without self-learning (delta = measured CE-worker lift)
+python -m benchmarks.convomem --limit 20 --skip-advance-time
+
+# Compare two JSONL result files (head-to-head)
+python -m benchmarks.convomem --compare \
+    benchmarks/convomem/results/sonzai_<ts>.jsonl \
+    benchmarks/convomem/results/<other>_<ts>.jsonl
+```
+
+### Methodology — the only call that differs from a normal Sonzai app
+
+ConvoMem's dataset has no timestamps. Per question, the bench replays each
+conversation via `sessions.end(messages=<transcript>, wait=True)` — one call
+per conversation, back-to-back. After all N conversations land, **one**
+`workbench.advance_time(168h)` flush fires so daily consolidation and the
+server-side weekly gate (`sessionCount % 7 == 0`) complete before retrieval.
+One advance_time per question, not N — matters because advance_time takes
+1–5 minutes per call.
+
+Everything else (`agents.chat`, `memory.search`) hits the same production
+endpoints.
+
+### Metrics
+
+- **QA accuracy** — Gemini 3.1 Flash Lite judges each answer against ground
+  truth. Abstention category uses a dedicated prompt that rewards correct
+  "I don't know" responses and penalizes fabrication.
+- **Per-category breakdown** — six rows matching ConvoMem's categories.
+- **MemScore** — `accuracy% / avg_latency_ms / avg_context_tokens`, Supermemory-
+  compatible triple. Context-tokens is sourced from the chat handler's
+  `context_ready.loaded_facts` count, not the raw haystack size.
+- **advance_time diagnostics** — total CE-worker calls, consolidations fired,
+  failures. Proves self-learning actually ran.
+
 ## Cost and time
 
 Ballpark per 1 full-limit run:
