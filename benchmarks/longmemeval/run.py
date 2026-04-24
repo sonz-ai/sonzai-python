@@ -201,8 +201,11 @@ async def _run_sonzai_backend(
     dataset_path_hint: str | None = None,
 ) -> list[dict]:
     # advance_time runs the full CE worker stack per simulated day and can take
-    # minutes per call. The SDK default timeout (30s) is way too short.
-    client = AsyncSonzai(timeout=600.0)
+    # minutes per call. sessions/end with wait=true also serializes fact
+    # extraction / episode-finalize / dedup through Gemini inside the platform
+    # API — observed ~100s tail on prod — so the SDK timeout has to outlast
+    # the per-question asyncio ceiling below. 1200s = 20min.
+    client = AsyncSonzai(timeout=1200.0)
     sem = asyncio.Semaphore(concurrency)
 
     # --- Snapshot setup for --reuse-agents ---------------------------------
@@ -354,9 +357,12 @@ async def _run_sonzai_backend(
                 # deadlock on a numeric answer) holds back the asyncio.gather
                 # below — we observed runs hung at 99/100 for 12+ minutes
                 # waiting on a single task while the other 99 sit idle in
-                # memory. 5 minutes is generous: a normal ingest+chat+QA
-                # round trips in 30-90s; anything past 5min is pathological
-                # and the partial result is more valuable than waiting.
+                # memory. 15 minutes is the working ceiling: ingest + N chat
+                # turns + session-end (wait=true runs the full CE pipeline
+                # synchronously — segmenter + episode-finalize + fact
+                # extraction + dedup + side-effect storage, all Gemini-
+                # gated) + final QA. Prod tail is ~100s on a bad day so we
+                # want headroom without masking truly-hung sessions.
                 br = await asyncio.wait_for(
                     sonzai_backend.run_question(
                         client,
@@ -370,11 +376,11 @@ async def _run_sonzai_backend(
                         clear_memory_before_reuse=clear_reused_memory,
                         keep_agent_alive=True,  # never delete the shared agent
                     ),
-                    timeout=300.0,
+                    timeout=900.0,
                 )
             except asyncio.TimeoutError:
-                logger.error("sonzai backend TIMEOUT on %s after 300s", q.question_id)
-                return _error_row(q, "sonzai", "per-question timeout (300s)")
+                logger.error("sonzai backend TIMEOUT on %s after 900s", q.question_id)
+                return _error_row(q, "sonzai", "per-question timeout (900s)")
             except Exception as e:
                 logger.exception("sonzai backend failed on %s", q.question_id)
                 return _error_row(q, "sonzai", str(e))
