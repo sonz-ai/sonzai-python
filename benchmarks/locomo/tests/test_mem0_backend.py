@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+from benchmarks.locomo.backends import RankedMemoryItem
 from benchmarks.locomo.backends.mem0 import (
+    MEM0_CUSTOM_INSTRUCTIONS,
+    _hits_to_items,
     _mem0_user_id,
     _session_messages_mem0,
-    _hits_to_items,
-    MEM0_CUSTOM_INSTRUCTIONS,
 )
-from benchmarks.locomo.backends import RankedMemoryItem
 from benchmarks.locomo.dataset import LocomoSession, LocomoTurn
 
 

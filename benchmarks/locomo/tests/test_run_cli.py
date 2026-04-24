@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
-from benchmarks.locomo.run import _parse_args, _default_output_path
+from benchmarks.locomo.run import _default_output_path, _parse_args
 
 
 def test_parse_args_defaults():

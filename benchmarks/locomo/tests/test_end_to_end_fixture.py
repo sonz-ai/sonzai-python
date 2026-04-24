@@ -8,15 +8,14 @@ and judge correctly.
 
 from __future__ import annotations
 
-import asyncio
 import json
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from benchmarks.locomo.dataset import load_samples
 from benchmarks.locomo import run as run_mod
+from benchmarks.locomo.dataset import load_samples
 
 FIXTURE = Path(__file__).parent / "fixtures" / "mini_locomo.json"
 
@@ -35,7 +34,7 @@ async def test_sonzai_pipeline_writes_expected_rows(tmp_path: Path, monkeypatch)
     fake_br.extra = {}
 
     async def fake_ingest(*args, **kwargs):
-        return {"process_calls": 4, "facts_extracted": 7, "advance_time_calls": 1, "advance_time_failures": 0}
+        return {"process_calls": 4, "facts_extracted": 7, "advance_time_calls": 1, "advance_time_failures": 0}  # noqa: E501
 
     async def fake_answer_one(*args, **kwargs):
         return fake_br

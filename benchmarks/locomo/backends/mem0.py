@@ -16,7 +16,7 @@ import os
 import re
 from typing import Any
 
-from ..dataset import LocomoSample, LocomoSession, LocomoTurn
+from ..dataset import LocomoSample, LocomoSession
 from . import LocomoBackendResult, RankedMemoryItem
 
 logger = logging.getLogger("benchmarks.locomo.mem0")
@@ -51,7 +51,8 @@ Generate personal memories that follow these guidelines:
 
 4. Extract memories only from user messages, not incorporating assistant responses
 
-5. Format each memory as a paragraph with a clear narrative structure that captures the person's experience, challenges, and aspirations
+5. Format each memory as a paragraph with a clear narrative structure that captures
+   the person's experience, challenges, and aspirations
 """
 
 DEFAULT_TOP_K = 30
@@ -143,8 +144,8 @@ def ingest_sample_sync(
     user_a = _mem0_user_id(sample.sample_id, sample.speaker_a)
     user_b = _mem0_user_id(sample.sample_id, sample.speaker_b)
 
-    _call_with_retry_sync(lambda: mem0_client.delete_all(user_id=user_a), op=f"delete_all({user_a})")
-    _call_with_retry_sync(lambda: mem0_client.delete_all(user_id=user_b), op=f"delete_all({user_b})")
+    _call_with_retry_sync(lambda: mem0_client.delete_all(user_id=user_a), op=f"delete_all({user_a})")  # noqa: E501
+    _call_with_retry_sync(lambda: mem0_client.delete_all(user_id=user_b), op=f"delete_all({user_b})")  # noqa: E501
 
     for session in sample.sessions:
         msgs_a = _session_messages_mem0(session, sample.speaker_a, sample.speaker_b, pov="a")
@@ -203,8 +204,8 @@ async def answer_one_qa(
     a_mems = _hits_to_items(a_raw)
     b_mems = _hits_to_items(b_raw)
 
-    from .sonzai import _ask_reader
     from ..scoring import merge_speaker_rankings
+    from .sonzai import _ask_reader
 
     answer = await _ask_reader(
         reader,
@@ -228,11 +229,11 @@ async def answer_one_qa(
 
 
 def build_client():
-    MemoryClient = _import_mem0()
+    memory_client_cls = _import_mem0()
     api_key = os.environ.get("MEM0_API_KEY")
     if not api_key:
         raise RuntimeError("MEM0_API_KEY is required for --backend mem0.")
-    client = MemoryClient(
+    client = memory_client_cls(
         api_key=api_key,
         org_id=os.environ.get("MEM0_ORGANIZATION_ID"),
         project_id=os.environ.get("MEM0_PROJECT_ID"),

@@ -169,7 +169,7 @@ def _build_sample(raw: dict, sample_id_fallback: str) -> LocomoSample:
     )
 
 
-def load_samples(*, limit: int = 0, path: "str | Path | None" = None) -> list[LocomoSample]:
+def load_samples(*, limit: int = 0, path: str | Path | None = None) -> list[LocomoSample]:
     """Load LoCoMo samples, auto-downloading the dataset on first run.
 
     ``limit=0`` returns all samples. ``path`` overrides the cached default —

@@ -105,7 +105,7 @@ def merge_speaker_rankings(
 
 
 def recall_any_at_k(
-    retrieved: Sequence[str], ground_truth: "set[str] | Sequence[str]", k: int,
+    retrieved: Sequence[str], ground_truth: set[str] | Sequence[str], k: int,
 ) -> float:
     """1.0 iff any ground-truth session appears in the top-k retrieval."""
     gt = set(ground_truth)
@@ -120,7 +120,7 @@ def _dcg(relevances: Sequence[float], k: int) -> float:
 
 
 def ndcg_at_k(
-    retrieved: Sequence[str], ground_truth: "set[str] | Sequence[str]", k: int,
+    retrieved: Sequence[str], ground_truth: set[str] | Sequence[str], k: int,
 ) -> float:
     gt = set(ground_truth)
     if not gt:
@@ -134,7 +134,7 @@ def ndcg_at_k(
 
 
 def retrieval_metrics_grid(
-    retrieved: Sequence[str], ground_truth: "set[str] | Sequence[str]",
+    retrieved: Sequence[str], ground_truth: set[str] | Sequence[str],
 ) -> dict[str, float]:
     out: dict[str, float] = {}
     for k in KS:

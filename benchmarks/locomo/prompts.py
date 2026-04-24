@@ -1,3 +1,4 @@
+# ruff: noqa: E501
 """Ported LoCoMo evaluation prompts from mem0's upstream evaluation suite.
 
 These prompts are reproduced BYTE-FOR-BYTE from mem0's published evaluation

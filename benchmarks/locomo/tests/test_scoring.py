@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pytest
 
+from benchmarks.locomo.backends import RankedMemoryItem
 from benchmarks.locomo.scoring import (
     aggregate_rows,
     evidence_to_session_ids,
@@ -12,7 +13,6 @@ from benchmarks.locomo.scoring import (
     recall_any_at_k,
     token_f1,
 )
-from benchmarks.locomo.backends import RankedMemoryItem
 
 
 def test_token_f1_identical():

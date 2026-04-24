@@ -15,7 +15,7 @@ from pathlib import Path
 from .scoring import KS, aggregate_rows
 
 
-def load_jsonl(path: "str | Path") -> list[dict]:
+def load_jsonl(path: str | Path) -> list[dict]:
     rows: list[dict] = []
     with open(path) as f:
         for line in f:
@@ -26,7 +26,7 @@ def load_jsonl(path: "str | Path") -> list[dict]:
     return rows
 
 
-def _label_for(path: "str | Path", rows: list[dict]) -> str:
+def _label_for(path: str | Path, rows: list[dict]) -> str:
     # Prefer explicit "backend" tag; fall back to filename stem.
     if rows and "backend" in rows[0]:
         return str(rows[0]["backend"])

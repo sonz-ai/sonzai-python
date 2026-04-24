@@ -62,7 +62,7 @@ def test_batch_messages_default_size_2():
 
 
 def test_batch_messages_whole_session_when_size_zero():
-    msgs = [{"role": "user", "content": "a"}, {"role": "assistant", "content": "b"}, {"role": "user", "content": "c"}]
+    msgs = [{"role": "user", "content": "a"}, {"role": "assistant", "content": "b"}, {"role": "user", "content": "c"}]  # noqa: E501
     batches = list(_batch_messages(msgs, 0))
     assert len(batches) == 1
     assert batches[0] == msgs
@@ -100,10 +100,10 @@ def test_is_metadata_fact_allows_regular_fact_id():
 
 
 def test_render_answer_prompt_has_all_placeholders_substituted():
-    from benchmarks.locomo.backends.sonzai import _render_answer_prompt
     from benchmarks.locomo.backends import RankedMemoryItem
+    from benchmarks.locomo.backends.sonzai import _render_answer_prompt
 
-    a = [RankedMemoryItem(memory_id="m1", text="Alice wants to be a data scientist", timestamp="8 May 2023")]
+    a = [RankedMemoryItem(memory_id="m1", text="Alice wants to be a data scientist", timestamp="8 May 2023")]  # noqa: E501
     b = [RankedMemoryItem(memory_id="m2", text="Bob bought a bike", timestamp="12 May 2023")]
     prompt = _render_answer_prompt(
         question="Who bought a bike?",

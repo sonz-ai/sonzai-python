@@ -20,11 +20,14 @@ import sys
 import time
 from pathlib import Path
 
-from sonzai import AsyncSonzai
 from tqdm.asyncio import tqdm_asyncio
+
+from sonzai import AsyncSonzai
 
 from ..common.gemini_judge import (
     DEFAULT_MODEL as DEFAULT_JUDGE_MODEL,
+)
+from ..common.gemini_judge import (
     GeminiJudge,
     judge_locomo_async,
 )
@@ -55,15 +58,15 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p.add_argument("--concurrency", type=int, default=2)
     p.add_argument("--top-k", type=int, default=30)
     p.add_argument("--ingest-batch-size", type=int, default=2,
-                   help="Batch size for /process calls (default 2, matches mem0; 0 = whole-session).")
+                   help="Batch size for /process calls (default 2, matches mem0; 0 = whole-session).")  # noqa: E501
     p.add_argument("--skip-advance-time", action="store_true",
-                   help="Sonzai only: skip advance_time between sessions (no-self-learning baseline).")
+                   help="Sonzai only: skip advance_time between sessions (no-self-learning baseline).")  # noqa: E501
     p.add_argument("--include-adversarial", action="store_true",
                    help="Include category-5 questions (filtered by default to match mem0).")
     p.add_argument("--reuse-agents", nargs="?",
                    const=str(Path(__file__).parent / "results" / "reuse_agents.json"),
                    default=None, metavar="PATH",
-                   help="Sonzai only: persist {sample_id → ingest-state} so subsequent runs skip ingest.")
+                   help="Sonzai only: persist {sample_id → ingest-state} so subsequent runs skip ingest.")  # noqa: E501
     p.add_argument("--clear-reused-memory", action="store_true",
                    help="Sonzai only: memory.reset before reuse (rarely needed).")
     p.add_argument("--mode", choices=["retrieval", "qa", "both"], default="both")
@@ -87,7 +90,7 @@ def _default_output_path(backend: str) -> Path:
 
 def _score_row(
     sample: LocomoSample, qa: LocomoQA, qa_index: int, br: LocomoBackendResult,
-    *, backend: str, llm_correct: "bool | None", llm_rationale: str,
+    *, backend: str, llm_correct: bool | None, llm_rationale: str,
 ) -> dict:
     evidence_sids = evidence_to_session_ids(qa.evidence)
     retrieval = retrieval_metrics_grid(br.retrieved_session_ids, evidence_sids)
@@ -129,17 +132,22 @@ def _item_to_json(m: RankedMemoryItem) -> dict:
 async def _run_sonzai(
     samples: list[LocomoSample],
     *,
-    concurrency: int, mode: str, judge: "GeminiJudge | None",
+    concurrency: int, mode: str, judge: GeminiJudge | None,
     top_k: int, ingest_batch_size: int, skip_advance_time: bool,
     include_adversarial: bool,
-    reuse_agents_path: "str | None", clear_reused_memory: bool,
+    reuse_agents_path: str | None, clear_reused_memory: bool,
 ) -> list[dict]:
-    from .backends import sonzai as sb
-    from ..common.agent_reuse import (
-        SliceKey, load_snapshot, new_snapshot, save_snapshot,
-        should_reuse, upsert_agent,
-    )
     from sonzai.benchmarks import ensure_benchmark_agent_async
+
+    from ..common.agent_reuse import (
+        SliceKey,
+        load_snapshot,
+        new_snapshot,
+        save_snapshot,
+        should_reuse,
+        upsert_agent,
+    )
+    from .backends import sonzai as sb
 
     client = AsyncSonzai(timeout=600.0)
     try:
@@ -147,12 +155,15 @@ async def _run_sonzai(
         logger.info("bench agent: %s (existed=%s)", shared_agent_id, existed)
 
         snapshot = None
-        snapshot_lock: "asyncio.Lock | None" = None
+        snapshot_lock: asyncio.Lock | None = None
         current_slice = None
         if reuse_agents_path:
             current_slice = SliceKey(benchmark="locomo", limit=len(samples))
             loaded = load_snapshot(reuse_agents_path)
-            snapshot = loaded if (loaded and loaded.slice.matches(current_slice)) else new_snapshot(current_slice)
+            snapshot = (
+                loaded if (loaded and loaded.slice.matches(current_slice))
+                else new_snapshot(current_slice)
+            )
             snapshot_lock = asyncio.Lock()
 
         sem_sample = asyncio.Semaphore(concurrency)
@@ -203,7 +214,7 @@ async def _run_sonzai(
                         br.extra = dict(br.extra or {})
                         br.extra.update(ingest_diag)
 
-                    llm_correct: "bool | None" = None
+                    llm_correct: bool | None = None
                     llm_rationale = ""
                     if mode in {"qa", "both"} and judge is not None:
                         try:
@@ -237,7 +248,7 @@ async def _run_sonzai(
 async def _run_mem0(
     samples: list[LocomoSample],
     *,
-    concurrency: int, mode: str, judge: "GeminiJudge | None",
+    concurrency: int, mode: str, judge: GeminiJudge | None,
     top_k: int, ingest_batch_size: int, include_adversarial: bool,
 ) -> list[dict]:
     from .backends import mem0 as mb
@@ -262,7 +273,7 @@ async def _run_mem0(
                 br = await mb.answer_one_qa(
                     mem0_client, sample, qa.question, top_k=top_k, reader=judge,
                 )
-                llm_correct: "bool | None" = None
+                llm_correct: bool | None = None
                 llm_rationale = ""
                 if mode in {"qa", "both"} and judge is not None:
                     try:
@@ -309,10 +320,13 @@ def _print_summary(rows: list[dict]) -> None:
           f"token-F1={o['token_f1']:.3f} R@5={o.get('recall_any@5', 0):.3f}")
 
 
-def main(argv: "list[str] | None" = None) -> int:
+def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv)
     logging.basicConfig(
-        level=logging.DEBUG if args.verbose >= 2 else (logging.INFO if args.verbose else logging.WARNING),
+        level=(
+            logging.DEBUG if args.verbose >= 2
+            else (logging.INFO if args.verbose else logging.WARNING)
+        ),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
 
@@ -325,7 +339,7 @@ def main(argv: "list[str] | None" = None) -> int:
         print("no samples loaded", file=sys.stderr)
         return 1
 
-    judge: "GeminiJudge | None" = None
+    judge: GeminiJudge | None = None
     if args.mode in {"qa", "both"}:
         judge = GeminiJudge(model=args.judge_model)
 

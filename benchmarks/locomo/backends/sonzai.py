@@ -20,6 +20,7 @@ import logging
 from collections.abc import Iterator
 
 from pydantic import BaseModel
+
 from sonzai import AsyncSonzai
 
 from ...common.sdk_extras import (
@@ -28,7 +29,7 @@ from ...common.sdk_extras import (
     clear_agent_memory_async,
 )
 from ...common.workbench_compat import advance_time_chunked_async
-from ..dataset import LocomoSample, LocomoSession, LocomoTurn
+from ..dataset import LocomoSample, LocomoSession
 from . import LocomoBackendResult, RankedMemoryItem
 
 logger = logging.getLogger(__name__)
@@ -244,6 +245,7 @@ def _render_answer_prompt(
     under our control (ported verbatim).
     """
     import json
+
     from ..prompts import ANSWER_PROMPT
 
     def _fmt(mems: list[RankedMemoryItem]) -> str:
