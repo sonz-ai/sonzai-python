@@ -52,6 +52,11 @@ __all__ = [
     "LONGMEMEVAL_SPEECH_PATTERNS",
     "ensure_longmemeval_agent",
     "ensure_longmemeval_agent_async",
+    "CONVOMEM_AGENT_NAME",
+    "CONVOMEM_AGENT_DESCRIPTION",
+    "CONVOMEM_SPEECH_PATTERNS",
+    "ensure_convomem_agent",
+    "ensure_convomem_agent_async",
 ]
 
 logger = logging.getLogger(__name__)
@@ -195,3 +200,77 @@ def _unpack_generate_create_response(resp: object) -> tuple[str, bool]:
             f"generate-and-create response missing agent_id: keys={list(resp.keys())}"
         )
     return agent_id, bool(resp.get("existing"))
+
+
+# ---------------------------------------------------------------------------
+# ConvoMem preset
+# ---------------------------------------------------------------------------
+#
+# Same idea as the LongMemEval preset: one canonical agent so third-party
+# evaluators measure against the same configuration we publish against.
+# ConvoMem's six evidence categories mostly want literal-value recall (user
+# facts, assistant facts, changing facts) with correct abstention behavior
+# on the unanswerable category. The longmemeval speech pattern — "answer
+# with the literal value first" — also serves ConvoMem well; abstention is
+# a capability of the underlying model, nudged (not forced) by the voice.
+
+CONVOMEM_AGENT_NAME = "sonzai-bench-convomem"
+
+CONVOMEM_AGENT_DESCRIPTION = (
+    "A helpful AI assistant that maintains a rich long-term memory of the "
+    "user across many conversations. Remembers user-stated facts, its own "
+    "prior statements, evolving preferences, and multi-hop connections. "
+    "Answers factual recall questions with the specific value first, and "
+    "declines clearly when the topic was never discussed."
+)
+
+CONVOMEM_SPEECH_PATTERNS: list[str] = [
+    "Answers recall questions with the literal value first — a number, "
+    "name, date, or short phrase — before any optional context.",
+]
+
+
+def ensure_convomem_agent(
+    client: "Sonzai",
+    *,
+    name: str = CONVOMEM_AGENT_NAME,
+    description: str = CONVOMEM_AGENT_DESCRIPTION,
+    speech_patterns: list[str] | None = None,
+) -> tuple[str, bool]:
+    """Create or return the canonical ConvoMem benchmark agent (sync).
+
+    Behavior mirrors :func:`ensure_longmemeval_agent` exactly — idempotent,
+    keyed by ``name`` server-side, speech_patterns re-applied on every call.
+    """
+    sp = speech_patterns if speech_patterns is not None else CONVOMEM_SPEECH_PATTERNS
+    agent_id, existed = _generate_and_create_sync(client, name=name, description=description)
+    try:
+        client.agents.update(agent_id, speech_patterns=sp)
+    except Exception as exc:
+        logger.warning(
+            "sonzai.benchmarks: failed to apply speech_patterns to %s (continuing): %s",
+            agent_id, exc,
+        )
+    return agent_id, existed
+
+
+async def ensure_convomem_agent_async(
+    client: "AsyncSonzai",
+    *,
+    name: str = CONVOMEM_AGENT_NAME,
+    description: str = CONVOMEM_AGENT_DESCRIPTION,
+    speech_patterns: list[str] | None = None,
+) -> tuple[str, bool]:
+    """Async variant of :func:`ensure_convomem_agent`."""
+    sp = speech_patterns if speech_patterns is not None else CONVOMEM_SPEECH_PATTERNS
+    agent_id, existed = await _generate_and_create_async(
+        client, name=name, description=description
+    )
+    try:
+        await client.agents.update(agent_id, speech_patterns=sp)
+    except Exception as exc:
+        logger.warning(
+            "sonzai.benchmarks: failed to apply speech_patterns to %s (continuing): %s",
+            agent_id, exc,
+        )
+    return agent_id, existed
