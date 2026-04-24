@@ -447,3 +447,58 @@ __all__ = [
     "partner_turn_async",
     "summarize_session_async",
 ]
+
+
+# ---------------------------------------------------------------------------
+# ConvoMem abstention rubric — "correct iff the agent declines to answer"
+# ---------------------------------------------------------------------------
+
+_ABSTENTION_PROMPT = """You are grading whether an AI assistant CORRECTLY ABSTAINED
+from answering a question. The question is designed to be UNANSWERABLE from the
+conversation history — no evidence has been provided.
+
+Question:
+{question}
+
+Assistant's answer:
+{agent_answer}
+
+The assistant's answer is CORRECT if it clearly declines to answer, says it
+doesn't have the information, says the topic was not mentioned, or otherwise
+acknowledges the absence of relevant context. Examples of correct abstention:
+
+- "I don't have that information."
+- "You didn't mention that in our conversation."
+- "I'm not sure — I don't recall a prior discussion of this."
+- "I can't answer that without more context."
+
+The answer is INCORRECT if it fabricates details, guesses, or invents a
+specific answer as though it were known.
+
+Respond with JSON matching this schema:
+{{"correct": <bool>, "rationale": "<one short sentence>"}}
+"""
+
+
+def judge_abstention(
+    judge: GeminiJudge, *, question: str, agent_answer: str
+) -> QAVerdict:
+    return judge.grade(
+        _ABSTENTION_PROMPT.format(
+            question=question.strip(),
+            agent_answer=agent_answer.strip() or "[no answer]",
+        ),
+        QAVerdict,
+    )
+
+
+async def judge_abstention_async(
+    judge: GeminiJudge, *, question: str, agent_answer: str
+) -> QAVerdict:
+    return await judge.grade_async(
+        _ABSTENTION_PROMPT.format(
+            question=question.strip(),
+            agent_answer=agent_answer.strip() or "[no answer]",
+        ),
+        QAVerdict,
+    )
