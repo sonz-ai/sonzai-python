@@ -1,0 +1,44 @@
+[
+  {
+    "evidenceItems": [
+      {
+        "question": "How many kids do I have?",
+        "answer": "3",
+        "message_evidences": [
+          {"speaker": "User", "text": "I have 3 kids named Emma, Josh, and Lily."}
+        ],
+        "conversations": [
+          {
+            "messages": [
+              {"speaker": "User", "text": "Morning. Quick thing."},
+              {"speaker": "Assistant", "text": "Morning! What's up?"},
+              {"speaker": "User", "text": "I have 3 kids named Emma, Josh, and Lily."},
+              {"speaker": "Assistant", "text": "Got it — three kids."}
+            ]
+          },
+          {
+            "messages": [
+              {"speaker": "User", "text": "Unrelated: recipe ideas?"},
+              {"speaker": "Assistant", "text": "Sure — what cuisine?"}
+            ]
+          }
+        ]
+      },
+      {
+        "question": "What color do I use for hot leads?",
+        "answer": "Green",
+        "message_evidences": [
+          {"speaker": "User", "text": "I use green for hot leads in my personal spreadsheet."}
+        ],
+        "conversations": [
+          {
+            "messages": [
+              {"speaker": "User", "text": "I use green for hot leads in my personal spreadsheet."},
+              {"speaker": "Assistant", "text": "Nice, clear color coding."}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
