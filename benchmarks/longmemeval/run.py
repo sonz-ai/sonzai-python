@@ -303,7 +303,7 @@ async def _run_sonzai_backend(
     # server is the source of truth.
     # Use the canonical bench agent preset from the SDK. Third-party
     # evaluators can import the same preset
-    # (`sonzai.benchmarks.ensure_longmemeval_agent_async`) so their numbers
+    # (`sonzai.benchmarks.ensure_benchmark_agent_async`) so their numbers
     # are measured against the same agent configuration as our published
     # ones. Applies a memory-assistant description plus speech_patterns
     # tuned for literal-value recall (normal personality field, available
