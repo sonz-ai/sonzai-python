@@ -139,3 +139,57 @@ async def ensure_bench_agent_async(
         )
     existed = bool(resp.get("existing"))
     return agent_id, existed
+
+
+# ---------------------------------------------------------------------------
+# /process endpoint shim — runs full CE pipeline on externally-generated
+# transcripts. Used by benchmarks ingesting pre-scripted conversations
+# (LoCoMo, potentially others) where sessions.start/end ceremony is
+# unnecessary. Forward-compat: delegates to client.process when the
+# regenerated SDK exposes a native binding.
+# ---------------------------------------------------------------------------
+
+
+async def async_process(
+    client: AsyncSonzai,
+    *,
+    agent_id: str,
+    user_id: str,
+    messages: list[dict[str, str]],
+    session_id: str = "",
+    instance_id: str = "",
+    provider: str = "",
+    model: str = "",
+) -> dict:
+    """POST /api/v1/agents/{agent_id}/process. Requires >=2 messages.
+
+    Returns the server response dict as-is: {success, facts_extracted, side_effects}.
+    Raises ValueError if fewer than 2 messages are supplied (mirrors server
+    validation so we fail fast with a clear message).
+    """
+    if len(messages) < 2:
+        raise ValueError("/process requires at least 2 messages")
+
+    native = getattr(client, "process", None)
+    if native is not None and callable(native):
+        return await native(
+            agent_id=agent_id,
+            user_id=user_id,
+            messages=messages,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+        )
+
+    body: dict[str, object] = {
+        "userId": user_id,
+        "messages": messages,
+        "sessionId": session_id,
+        "instanceId": instance_id,
+        "provider": provider,
+        "model": model,
+    }
+    return await client._http.post(  # type: ignore[attr-defined]
+        f"/api/v1/agents/{agent_id}/process", json_data=body,
+    )
