@@ -55,11 +55,7 @@ misses one in this slice.
 Canonical SOTOPIA grades a single interaction — no prior history, no
 accumulated memory. Same rubric applied here: both systems enter
 session 1 with only the scenario and the agent seed. Same Gemini 3.1
-Flash Lite generates the reply on both sides. The only thing that
-varies is what the memory layer offers the generator on turn 1 — for
-Sonzai, the Big5 / traits / speech patterns / preferences /
-behaviors that `generate-and-create` expanded out of the same seed
-MemPalace receives as a plain system prompt:
+Flash Lite generates the reply on both sides.
 
 | Dimension (session 1) | Sonzai | MemPalace | Δ |
 |---|---:|---:|---:|
