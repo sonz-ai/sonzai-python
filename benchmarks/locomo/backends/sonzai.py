@@ -19,6 +19,7 @@ import asyncio
 import logging
 from collections.abc import Iterator
 
+from pydantic import BaseModel
 from sonzai import AsyncSonzai
 
 from ...common.sdk_extras import (
@@ -221,3 +222,187 @@ async def ingest_sample(
         "advance_time_calls": advance_calls,
         "advance_time_failures": advance_failures,
     }
+
+
+# ---------------------------------------------------------------------------
+# QA — memory.search per user + Gemini reader
+# ---------------------------------------------------------------------------
+
+
+def _render_answer_prompt(
+    *,
+    question: str,
+    speaker_1: str,
+    speaker_1_memories: list[RankedMemoryItem],
+    speaker_2: str,
+    speaker_2_memories: list[RankedMemoryItem],
+) -> str:
+    """Render mem0's ANSWER_PROMPT with Jinja-style placeholders.
+
+    mem0 uses Jinja Template — we do a light string-replace so we don't need
+    Jinja at runtime. Placeholders are all well-known and the template is
+    under our control (ported verbatim).
+    """
+    import json
+    from ..prompts import ANSWER_PROMPT
+
+    def _fmt(mems: list[RankedMemoryItem]) -> str:
+        # mem0 formats each memory as "{timestamp}: {memory_text}" in a JSON array
+        return json.dumps(
+            [f"{m.timestamp}: {m.text}" if m.timestamp else m.text for m in mems],
+            indent=4,
+        )
+
+    return (
+        ANSWER_PROMPT
+        .replace("{{speaker_1_user_id}}", speaker_1)
+        .replace("{{speaker_2_user_id}}", speaker_2)
+        .replace("{{speaker_1_memories}}", _fmt(speaker_1_memories))
+        .replace("{{speaker_2_memories}}", _fmt(speaker_2_memories))
+        .replace("{{question}}", question)
+    )
+
+
+class _ReaderAnswer(BaseModel):
+    answer: str
+
+
+async def _ask_reader(
+    judge,
+    *,
+    question: str,
+    speaker_1: str, speaker_1_memories: list[RankedMemoryItem],
+    speaker_2: str, speaker_2_memories: list[RankedMemoryItem],
+) -> str:
+    """Run the Gemini reader over mem0's ported ANSWER_PROMPT."""
+    prompt = _render_answer_prompt(
+        question=question,
+        speaker_1=speaker_1, speaker_1_memories=speaker_1_memories,
+        speaker_2=speaker_2, speaker_2_memories=speaker_2_memories,
+    )
+    verdict = await judge.grade_async(prompt, _ReaderAnswer)
+    return verdict.answer
+
+
+async def _build_fact_to_session_map(
+    client: AsyncSonzai, *, agent_id: str, user_id: str,
+) -> dict[str, str]:
+    """Map fact_id → Sonzai session_id for this (agent, user).
+
+    Mirrors the LongMemEval helper of the same name. The session_id returned
+    here is the one we passed to /process (e.g. "lc-sample0-s3-a"), not
+    LoCoMo's "session_3" yet — caller does the final projection.
+    """
+    memory = async_memory(client)
+    mapping: dict[str, str] = {}
+    try:
+        timeline = await memory.timeline(agent_id=agent_id, user_id=user_id)
+        for sess in timeline.sessions:
+            fallback = sess.session_id if sess.session_id and sess.session_id != "unknown" else ""
+            for fact in sess.facts:
+                sid = fact.session_id or fallback
+                if fact.fact_id and sid and sid != "unknown":
+                    mapping[fact.fact_id] = sid
+    except Exception as e:
+        logger.debug("memory.timeline failed: %s", e)
+
+    try:
+        facts = await memory.list_facts(agent_id=agent_id, user_id=user_id, limit=5000)
+        for fact in facts.facts:
+            if fact.fact_id in mapping:
+                continue
+            sid = fact.session_id or fact.source_id
+            if sid and sid != "unknown":
+                mapping[fact.fact_id] = sid
+    except Exception as e:
+        logger.debug("memory.list_facts failed: %s", e)
+
+    return mapping
+
+
+def _sonzai_sid_to_locomo(sonzai_sid: str) -> str:
+    """Project "lc-{sample}-s{N}-{a|b}" → "session_{N}"."""
+    import re as _re
+    m = _re.search(r"-s(\d+)-[ab]$", sonzai_sid or "")
+    if not m:
+        return ""
+    return f"session_{int(m.group(1))}"
+
+
+async def _retrieve_for_user(
+    client: AsyncSonzai,
+    *,
+    agent_id: str,
+    user_id: str,
+    query: str,
+    top_k: int,
+    session_dates: dict[str, str],
+) -> list[RankedMemoryItem]:
+    """Run memory.search and project to RankedMemoryItem with LoCoMo session_ids."""
+    memory = async_memory(client)
+    fact_to_sid = await _build_fact_to_session_map(client, agent_id=agent_id, user_id=user_id)
+    results = await memory.search(
+        agent_id=agent_id, user_id=user_id, query=query, limit=top_k,
+    )
+    out: list[RankedMemoryItem] = []
+    for r in results.results:
+        if _is_metadata_fact(r.fact_id):
+            continue
+        sonzai_sid = str(getattr(r, "session_id", "") or "") or fact_to_sid.get(r.fact_id, "")
+        locomo_sid = _sonzai_sid_to_locomo(sonzai_sid)
+        out.append(
+            RankedMemoryItem(
+                memory_id=r.fact_id,
+                text=r.content or "",
+                timestamp=session_dates.get(locomo_sid, ""),
+                score=float(getattr(r, "score", 0.0) or 0.0),
+                session_id=locomo_sid,
+            )
+        )
+    return out
+
+
+async def answer_one_qa(
+    client: AsyncSonzai,
+    sample: LocomoSample,
+    qa_question: str,
+    *,
+    shared_agent_id: str,
+    top_k: int,
+    reader,
+) -> LocomoBackendResult:
+    user_a = f"lc-{sample.sample_id}-a"
+    user_b = f"lc-{sample.sample_id}-b"
+
+    session_dates: dict[str, str] = {
+        f"session_{s.index}": s.date_time for s in sample.sessions
+    }
+
+    a_mems, b_mems = await asyncio.gather(
+        _retrieve_for_user(
+            client, agent_id=shared_agent_id, user_id=user_a,
+            query=qa_question, top_k=top_k, session_dates=session_dates,
+        ),
+        _retrieve_for_user(
+            client, agent_id=shared_agent_id, user_id=user_b,
+            query=qa_question, top_k=top_k, session_dates=session_dates,
+        ),
+    )
+
+    from ..scoring import merge_speaker_rankings
+    merged = merge_speaker_rankings(a_mems, b_mems)
+
+    answer = await _ask_reader(
+        reader,
+        question=qa_question,
+        speaker_1=sample.speaker_a, speaker_1_memories=a_mems,
+        speaker_2=sample.speaker_b, speaker_2_memories=b_mems,
+    )
+
+    return LocomoBackendResult(
+        speaker_a_memories=a_mems,
+        speaker_b_memories=b_mems,
+        agent_answer=answer,
+        retrieved_session_ids=merged,
+        extra={},
+    )

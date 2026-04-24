@@ -92,3 +92,27 @@ def test_is_metadata_fact_flags_interest():
 
 def test_is_metadata_fact_allows_regular_fact_id():
     assert _is_metadata_fact("fact-12345") is False
+
+
+# ---------------------------------------------------------------------------
+# Reader prompt formatting — mem0-parity ANSWER_PROMPT rendering
+# ---------------------------------------------------------------------------
+
+
+def test_render_answer_prompt_has_all_placeholders_substituted():
+    from benchmarks.locomo.backends.sonzai import _render_answer_prompt
+    from benchmarks.locomo.backends import RankedMemoryItem
+
+    a = [RankedMemoryItem(memory_id="m1", text="Alice wants to be a data scientist", timestamp="8 May 2023")]
+    b = [RankedMemoryItem(memory_id="m2", text="Bob bought a bike", timestamp="12 May 2023")]
+    prompt = _render_answer_prompt(
+        question="Who bought a bike?",
+        speaker_1="Alice", speaker_1_memories=a,
+        speaker_2="Bob",   speaker_2_memories=b,
+    )
+    assert "{{" not in prompt  # jinja placeholders substituted
+    assert "Alice" in prompt
+    assert "Bob" in prompt
+    assert "data scientist" in prompt
+    assert "bought a bike" in prompt
+    assert "Who bought a bike?" in prompt
