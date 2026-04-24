@@ -371,6 +371,75 @@ endpoints.
 - **advance_time diagnostics** — total CE-worker calls, consolidations fired,
   failures. Proves self-learning actually ran.
 
+## LoCoMo
+
+10 dialogues (19–35 sessions, 300–600 turns each) between two peer speakers.
+Each dialogue has QA pairs across 5 reasoning categories (single-hop,
+multi-hop, temporal, open-domain, adversarial). Category 5 (adversarial) is
+filtered by default to match mem0's published methodology.
+
+```bash
+# Smoke run — 2 samples against Sonzai
+python -m benchmarks.locomo --backend sonzai --limit 2
+
+# Same 2 samples through mem0 cloud
+export MEM0_API_KEY=...
+python -m benchmarks.locomo --backend mem0 --limit 2
+
+# Head-to-head comparison
+python -m benchmarks.locomo --compare \
+    benchmarks/locomo/results/sonzai_*.jsonl \
+    benchmarks/locomo/results/mem0_*.jsonl
+
+# Full 10-dialogue run
+python -m benchmarks.locomo --backend sonzai --limit 0 --concurrency 4
+```
+
+**Metrics reported** — mirror mem0's LoCoMo paper table line-for-line:
+
+- **LLM-judge accuracy (J)** per category 1–4 + overall — binary CORRECT/WRONG
+  graded by Gemini using mem0's `ACCURACY_PROMPT` ported verbatim.
+- **Token-F1** (secondary) — paper-original SQuAD-style token overlap.
+- **Session-level Recall@K / NDCG@K** at k ∈ {1, 3, 5, 10, 30} — Sonzai-native
+  retrieval diagnostic. dia_id-level recall isn't comparable (neither system
+  tracks per-turn provenance), so we project `"D3:14" → session_3` on both sides.
+
+**What's Sonzai-specific** (the difference from mem0 on the memory side):
+
+- `/process` ingest per speaker POV — the dedicated external-transcript endpoint,
+  not `sessions.start/end`, not `/chat`, not `memory/facts/bulk`.
+- `advance_time(gap_hours)` between sessions per user — fires CE workers
+  (diary, consolidation, decay) on the real date gap from
+  `session_N_date_time`.
+- Dual-user search at QA time (`memory.search(user_id=a)` + `user_id=b`),
+  merged by score, fed to the same Gemini reader mem0's run uses.
+
+### Methodology
+
+Dual-perspective ingest: each session is fed through `/process` twice, once as
+speaker_a's POV (speaker_a turns → role `"user"`, speaker_b → `"assistant"`)
+and once mirrored for speaker_b. Default batch size is 2 messages per call,
+matching mem0's published ingest cadence (flag `--ingest-batch-size 0` sends
+whole sessions — our ablation). Each message's content is prefixed with
+`"{speaker_name}: "` so the extractor preserves speaker attribution.
+
+Between sessions, `workbench.advance_time(gap_hours)` runs concurrently for
+both users, floored at 25h so at least one daily-worker pass fires per gap.
+A final 25h flush runs after the last session so the final day's consolidation
+completes before QA.
+
+At QA time: `memory.search(query, user_id=speaker_a)` and `user_id=speaker_b`
+each return top-30, metadata facts (comm_style/side_effect/interest:*) are
+filtered, and both lists are rendered as `"{timestamp}: {text}"` strings into
+mem0's `ANSWER_PROMPT` for Gemini 3.1 Flash Lite to produce the final answer.
+The same Gemini judges with `ACCURACY_PROMPT`.
+
+**Agent**: the same `sonzai-benchmark-agent` used by LongMemEval. Third
+parties replicate by calling `sonzai.benchmarks.ensure_benchmark_agent_async`.
+
+**Headline receipts** (paste-ready): will land in
+`benchmarks/locomo/results/` after the first production run.
+
 ## Cost and time
 
 Ballpark per 1 full-limit run:

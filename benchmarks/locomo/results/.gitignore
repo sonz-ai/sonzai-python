@@ -1,0 +1,9 @@
+# Iteration runs are gitignored; headline receipts can be allow-listed below.
+*.jsonl
+*.png
+reuse_agents.json
+shared_agent.json
+pinned_agents.json
+
+# Allow-list published receipts here — format matches sotopia/longmemeval.
+# !locomo_<date>_<hash>.jsonl
