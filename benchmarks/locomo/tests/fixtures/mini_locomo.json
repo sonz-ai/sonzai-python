@@ -1,0 +1,44 @@
+[
+  {
+    "sample_id": "fixture-sample-0",
+    "qa": [
+      {
+        "question": "What job does Alice want?",
+        "answer": "data scientist",
+        "evidence": ["D1:3"],
+        "category": 1
+      },
+      {
+        "question": "When did Bob buy his bike?",
+        "answer": "May 2023",
+        "evidence": ["D2:4"],
+        "category": 3
+      },
+      {
+        "question": "Adversarial question about unknowns",
+        "answer": "no answer",
+        "adversarial_answer": "I don't know",
+        "evidence": [],
+        "category": 5
+      }
+    ],
+    "conversation": {
+      "speaker_a": "Alice",
+      "speaker_b": "Bob",
+      "session_1_date_time": "1:00 pm on 8 May, 2023",
+      "session_1": [
+        {"speaker": "Alice", "dia_id": "D1:1", "text": "Hi Bob!"},
+        {"speaker": "Bob", "dia_id": "D1:2", "text": "Hey Alice, what's new?"},
+        {"speaker": "Alice", "dia_id": "D1:3", "text": "I'm applying for data science roles."},
+        {"speaker": "Bob", "dia_id": "D1:4", "text": "Nice, good luck!"}
+      ],
+      "session_2_date_time": "9:00 am on 12 May, 2023",
+      "session_2": [
+        {"speaker": "Bob", "dia_id": "D2:1", "text": "I got something cool yesterday."},
+        {"speaker": "Alice", "dia_id": "D2:2", "text": "Oh yeah?"},
+        {"speaker": "Bob", "dia_id": "D2:3", "text": "Yeah, new bicycle."},
+        {"speaker": "Alice", "dia_id": "D2:4", "text": "Awesome, when?"}
+      ]
+    }
+  }
+]
