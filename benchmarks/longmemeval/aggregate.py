@@ -11,7 +11,15 @@ No dependencies beyond the standard library.
 
 from __future__ import annotations
 
+import argparse
+import json
 import math
+import sys
+from collections import defaultdict
+from dataclasses import dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import Iterable
 
 
 def wilson_ci(*, successes: int, n: int, z: float = 1.96) -> tuple[float, float]:
@@ -51,12 +59,6 @@ def flip_rate(*, correct: int, runs: int) -> float:
         return 0.0
     p = correct / runs
     return 2 * p * (1 - p)
-
-
-import json
-from enum import Enum
-from pathlib import Path
-from typing import Iterable
 
 
 class FailureBucket(str, Enum):
@@ -141,3 +143,161 @@ def load_records(paths: Iterable[Path | str]) -> list[dict]:
                 except json.JSONDecodeError as e:
                     print(f"warn: {path}:{lineno} skipped malformed JSON: {e}")
     return out
+
+
+@dataclass
+class SubtypeSummary:
+    subtype: str
+    n_total: int
+    n_correct: int
+    accuracy: float
+    ci_lo: float
+    ci_hi: float
+    mean_flip_rate: float
+    bucket_counts: dict[str, int]
+
+
+@dataclass
+class AggregateResult:
+    total_scored: int  # (question × run) pairs with qa_correct present
+    errored_count: int
+    missing_qa_count: int
+    subtypes: list[SubtypeSummary]
+    failures: list[dict] = field(default_factory=list)
+
+
+def aggregate_runs(
+    paths: Iterable[Path | str],
+    *,
+    failures_out: Path | str | None = None,
+) -> AggregateResult:
+    """Aggregate across N bench runs. See module docstring for shape."""
+    records = load_records(paths)
+
+    # Group correct/total by (question_id, subtype) for flip-rate;
+    # separately group records by subtype for bucket classification + CI.
+    # A record is scoreable iff it has qa_correct and no error.
+    per_question_runs: dict[str, list[dict]] = defaultdict(list)
+    scoreable: list[dict] = []
+    errored = 0
+    missing_qa = 0
+    for r in records:
+        if r.get("extra", {}).get("error"):
+            errored += 1
+            continue
+        if "qa_correct" not in r:
+            missing_qa += 1
+            continue
+        scoreable.append(r)
+        per_question_runs[r["question_id"]].append(r)
+
+    # Per-subtype accumulators.
+    by_subtype: dict[str, list[dict]] = defaultdict(list)
+    for r in scoreable:
+        by_subtype[r.get("question_type", "unknown")].append(r)
+
+    subtypes: list[SubtypeSummary] = []
+    failures: list[dict] = []
+    for subtype, rs in sorted(by_subtype.items()):
+        n_total = len(rs)
+        n_correct = sum(1 for r in rs if r["qa_correct"])
+        accuracy = n_correct / n_total if n_total else 0.0
+        lo, hi = wilson_ci(successes=n_correct, n=n_total)
+
+        # Bucket counts and failures list.
+        bucket_counts: dict[str, int] = defaultdict(int)
+        for r in rs:
+            bucket = classify_failure(r)
+            if bucket is not None:
+                bucket_counts[bucket.value] += 1
+                failures.append(_failure_entry(r, bucket))
+
+        # Per-question flip rate, meaned across the questions in this subtype.
+        qids_in_subtype = {r["question_id"] for r in rs}
+        fr_values: list[float] = []
+        for qid in qids_in_subtype:
+            runs_of_q = per_question_runs[qid]
+            fr_values.append(flip_rate(
+                correct=sum(1 for r in runs_of_q if r["qa_correct"]),
+                runs=len(runs_of_q),
+            ))
+        mean_fr = sum(fr_values) / len(fr_values) if fr_values else 0.0
+
+        subtypes.append(SubtypeSummary(
+            subtype=subtype,
+            n_total=n_total,
+            n_correct=n_correct,
+            accuracy=accuracy,
+            ci_lo=lo,
+            ci_hi=hi,
+            mean_flip_rate=mean_fr,
+            bucket_counts=dict(bucket_counts),
+        ))
+
+    result = AggregateResult(
+        total_scored=len(scoreable),
+        errored_count=errored,
+        missing_qa_count=missing_qa,
+        subtypes=subtypes,
+        failures=failures,
+    )
+
+    if failures_out is not None:
+        Path(failures_out).write_text(json.dumps(failures, indent=2))
+
+    return result
+
+
+def _failure_entry(record: dict, bucket: FailureBucket) -> dict:
+    """Shape the record consumed by inspect.py."""
+    retrieved_items = (record.get("retrieval_results") or {}).get("ranked_items") or []
+    top10 = [it.get("corpus_id") for it in retrieved_items[:10]]
+    expected = list(record.get("answer_session_ids") or [])
+    hit_ranks = [i for i, cid in enumerate(top10) if cid in set(expected)]
+    return {
+        "question_id": record.get("question_id"),
+        "question_type": record.get("question_type"),
+        "bucket": bucket.value,
+        "question": record.get("question"),
+        "answer": record.get("answer"),
+        "agent_answer": record.get("agent_answer"),
+        "qa_rationale": record.get("qa_rationale"),
+        "expected_sessions": expected,
+        "retrieved_top10": top10,
+        "hit_ranks": hit_ranks,
+    }
+
+
+def _print_summary(result: AggregateResult) -> None:
+    """Human-readable summary table on stdout."""
+    print(f"scored: {result.total_scored}  errored: {result.errored_count}  missing_qa: {result.missing_qa_count}")
+    print()
+    header = f"{'subtype':<30} {'n':>4} {'acc':>6} {'CI 95%':>16} {'flip':>6}  R-miss / R-hit-QA / marginal / ambig"
+    print(header)
+    print("-" * len(header))
+    for s in result.subtypes:
+        ci = f"[{s.ci_lo:.2f}, {s.ci_hi:.2f}]"
+        bc = s.bucket_counts
+        buckets = f"{bc.get('retrieval-miss', 0):>6} / {bc.get('retrieval-hit / qa-miss', 0):>8} / {bc.get('marginal', 0):>8} / {bc.get('ambiguous', 0):>5}"
+        print(f"{s.subtype:<30} {s.n_total:>4} {s.accuracy:>6.3f} {ci:>16} {s.mean_flip_rate:>6.3f}  {buckets}")
+
+
+def main(argv: list[str] | None = None) -> int:
+    p = argparse.ArgumentParser(description="Aggregate LongMemEval bench runs")
+    p.add_argument("paths", nargs="+", help="JSONL files to aggregate (glob-expanded by shell)")
+    p.add_argument(
+        "--output",
+        default="failures.json",
+        help="Path to write failures.json sidecar (default: ./failures.json)",
+    )
+    args = p.parse_args(argv)
+
+    result = aggregate_runs(args.paths, failures_out=Path(args.output))
+    _print_summary(result)
+    print()
+    print(f"failures written: {len(result.failures)} → {args.output}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

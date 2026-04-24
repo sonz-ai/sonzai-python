@@ -12,6 +12,7 @@ from pathlib import Path
 
 from benchmarks.longmemeval.aggregate import (
     FailureBucket,
+    aggregate_runs,
     classify_failure,
     load_records,
 )
@@ -133,3 +134,72 @@ def test_load_records_skips_blank_lines(tmp_path):
     src.write_text('{"question_id":"a","question_type":"t"}\n\n{"question_id":"b","question_type":"t"}\n')
     records = load_records([src])
     assert [r["question_id"] for r in records] == ["a", "b"]
+
+
+def test_aggregate_runs_single_fixture_returns_expected_shape():
+    result = aggregate_runs([FIXTURE_PATH])
+
+    # One errored record (q6), five scoreable (q1..q5).
+    assert result.errored_count == 1
+    assert result.total_scored == 5
+
+    # Per-subtype breakdown present for each observed type.
+    by_type = {s.subtype: s for s in result.subtypes}
+    assert "single-session-user" in by_type
+    assert "multi-session" in by_type
+    assert "temporal-reasoning" not in by_type  # q6 was errored, so excluded
+
+    # single-session-user: 1/1 correct (q1).
+    ssu = by_type["single-session-user"]
+    assert ssu.n_correct == 1
+    assert ssu.n_total == 1
+    assert ssu.ci_lo > 0.2
+    assert ssu.ci_hi == 1.0
+
+    # multi-session: 0/4 correct (q2..q5 all failing across the four buckets).
+    ms = by_type["multi-session"]
+    assert ms.n_correct == 0
+    assert ms.n_total == 4
+    assert ms.bucket_counts["retrieval-miss"] == 1
+    assert ms.bucket_counts["retrieval-hit / qa-miss"] == 1
+    assert ms.bucket_counts["marginal"] == 1
+    assert ms.bucket_counts["ambiguous"] == 1
+
+    # Failures list: 4 entries, all from multi-session.
+    assert len(result.failures) == 4
+
+
+def test_aggregate_runs_writes_failures_json(tmp_path):
+    out_path = tmp_path / "failures.json"
+    aggregate_runs([FIXTURE_PATH], failures_out=out_path)
+
+    data = json.loads(out_path.read_text())
+    assert len(data) == 4
+    # Each entry must carry the fields inspect.py consumes.
+    for entry in data:
+        for key in ("question_id", "question_type", "bucket", "expected_sessions",
+                    "retrieved_top10", "hit_ranks", "question", "answer",
+                    "agent_answer", "qa_rationale"):
+            assert key in entry, f"missing {key}"
+
+
+def test_aggregate_runs_multi_run_flip_rate(tmp_path):
+    # Same question twice: once correct, once wrong → flip_rate = 0.5.
+    run_a = tmp_path / "run_a.jsonl"
+    run_b = tmp_path / "run_b.jsonl"
+    run_a.write_text(json.dumps({
+        "question_id": "qx", "question_type": "multi-session",
+        "answer_session_ids": ["s"], "qa_correct": True,
+        "retrieval_results": {"ranked_items": [{"corpus_id": "s"}]},
+    }) + "\n")
+    run_b.write_text(json.dumps({
+        "question_id": "qx", "question_type": "multi-session",
+        "answer_session_ids": ["s"], "qa_correct": False,
+        "qa_rationale": "incorrect",
+        "retrieval_results": {"ranked_items": [{"corpus_id": "s"}]},
+    }) + "\n")
+
+    result = aggregate_runs([run_a, run_b])
+    ms = next(s for s in result.subtypes if s.subtype == "multi-session")
+    # Mean flip rate across the 1 question in this subtype = 2 * 0.5 * 0.5 = 0.5.
+    assert abs(ms.mean_flip_rate - 0.5) < 1e-9
