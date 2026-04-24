@@ -9,7 +9,7 @@
 #
 # Produces N timestamped JSONL files under results/, named
 #   sonzai_YYYYMMDD-HHMMSS_runK.jsonl
-# so they can be passed to `python -m longmemeval.aggregate results/sonzai_*.jsonl`.
+# so they can be passed to `python -m benchmarks.longmemeval.aggregate results/sonzai_*.jsonl`.
 #
 # Never passes --reuse-agents: agent reuse corrupts multi-run variance measurements.
 set -euo pipefail
@@ -33,6 +33,10 @@ here="$(cd "$(dirname "$0")" && pwd)"
 out_dir="$here/results"
 mkdir -p "$out_dir"
 
+# python -m benchmarks.longmemeval needs the repo root on sys.path.
+repo_root="$(cd "$here/../.." && pwd)"
+cd "$repo_root"
+
 # One timestamp for the whole batch so all N files sort together.
 ts="$(date +%Y%m%d-%H%M%S)"
 
@@ -42,9 +46,9 @@ for i in $(seq 1 "$N"); do
   echo "---"
   echo "run $i/$N  ->  $out"
   echo "---"
-  python -m longmemeval.run --output "$out" "$@"
+  python -m benchmarks.longmemeval --output "$out" "$@"
 done
 
 echo
 echo "run_loop: $N runs complete. Aggregate with:"
-echo "  python -m longmemeval.aggregate $out_dir/sonzai_${ts}_run*.jsonl"
+echo "  python -m benchmarks.longmemeval.aggregate $out_dir/sonzai_${ts}_run*.jsonl"
