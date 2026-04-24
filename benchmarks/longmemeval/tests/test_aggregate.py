@@ -203,3 +203,18 @@ def test_aggregate_runs_multi_run_flip_rate(tmp_path):
     ms = next(s for s in result.subtypes if s.subtype == "multi-session")
     # Mean flip rate across the 1 question in this subtype = 2 * 0.5 * 0.5 = 0.5.
     assert abs(ms.mean_flip_rate - 0.5) < 1e-9
+
+
+from benchmarks.longmemeval.aggregate import main as aggregate_main
+
+
+def test_aggregate_main_cli_end_to_end(tmp_path, capsys):
+    out = tmp_path / "failures.json"
+    rc = aggregate_main([str(FIXTURE_PATH), "--output", str(out)])
+    assert rc == 0
+    assert out.exists()
+    captured = capsys.readouterr()
+    # Header line must appear.
+    assert "subtype" in captured.out
+    # Resolved absolute-path line must appear.
+    assert str(out.resolve()) in captured.out

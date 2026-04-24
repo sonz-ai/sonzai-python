@@ -78,3 +78,29 @@ def test_format_report_empty_failures_is_valid_markdown():
     md = format_report([])
     # Header always present even with no failures.
     assert md.startswith("# LongMemEval Failure Report")
+
+
+from pathlib import Path
+
+from benchmarks.longmemeval.inspect import main as inspect_main
+
+
+def test_inspect_main_cli_end_to_end(tmp_path, capsys):
+    failures_path = tmp_path / "failures.json"
+    report_path = tmp_path / "report.md"
+    failures_path.write_text(__import__("json").dumps(SAMPLE_FAILURES))
+
+    rc = inspect_main(["--failures", str(failures_path), "--output", str(report_path)])
+    assert rc == 0
+    assert report_path.exists()
+    content = report_path.read_text()
+    assert content.startswith("# LongMemEval Failure Report")
+    assert "### multi-session" in content
+
+
+def test_inspect_main_missing_failures_file_returns_2(tmp_path, capsys):
+    missing = tmp_path / "nope.json"
+    rc = inspect_main(["--failures", str(missing), "--output", str(tmp_path / "out.md")])
+    assert rc == 2
+    err = capsys.readouterr().err
+    assert "not found" in err

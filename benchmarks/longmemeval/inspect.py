@@ -92,7 +92,15 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--bucket", default=None, help="Filter to one bucket")
     args = p.parse_args(argv)
 
-    failures = json.loads(Path(args.failures).read_text())
+    failures_path = Path(args.failures)
+    if not failures_path.exists():
+        print(
+            f"error: {failures_path} not found. Run `python -m benchmarks.longmemeval.aggregate <jsonl> --output {failures_path}` first.",
+            file=sys.stderr,
+        )
+        return 2
+
+    failures = json.loads(failures_path.read_text())
     md = format_report(failures, subtype=args.subtype, bucket=args.bucket)
     Path(args.output).write_text(md)
     print(f"wrote {args.output} ({len(failures)} failures, filtered subtype={args.subtype} bucket={args.bucket})")
