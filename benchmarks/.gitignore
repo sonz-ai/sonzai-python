@@ -3,6 +3,7 @@
 # stay tracked (needed for per-file allow-listing below).
 longmemeval/results/*
 sotopia/results/*
+convomem/results/*
 *.jsonl
 *.png
 __pycache__/
@@ -21,3 +22,5 @@ __pycache__/
 !sotopia/results/sotopia_20260423-222834_trajectory.png
 !sotopia/results/sotopia_mempalace_20260423-203813.jsonl
 !sotopia/results/sotopia_mempalace_20260423-203813_trajectory.png
+# ConvoMem receipts — add one line per published JSONL as they land.
+!convomem/results/.gitkeep
