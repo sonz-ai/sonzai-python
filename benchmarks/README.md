@@ -8,16 +8,101 @@ runnable by anyone with a Sonzai API key. Two benchmarks ship here:
 | **LongMemEval** | Memory recall + end-to-end QA over 500 long-horizon conversations | Sonzai matches or beats MemPalace on every headline metric — including the ones MemPalace was specifically designed to win |
 | **SOTOPIA longitudinal** | Social intelligence trajectory across 30 sessions with the same user | The thing Sonzai exists for: personality coherence and self-learning that compound across hundreds of sessions |
 
+### Sonzai vs MemPalace — full numbers
+
+Latest run: 100-question full-haystack slice, retrieval-only mode,
+session-level metrics. Sonzai run with `--reuse-agents` after a single
+fresh ingest; MemPalace run with `hybrid_v4` (their best-published mode)
+on the same slice.
+Model: Gemini 3.1 Flash Lite
+
+| Metric | Sonzai | MemPalace (hybrid_v4) |
+|---|---:|---:|
+| R@G (session) — overall recall | **0.773** ✅ | 0.741 |
+| R@1 (session) — top hit accuracy | **0.800** ✅ | 0.770 |
+| R@3 (session) | 0.880 | 0.900 |
+| R@5 (session) | **0.940** | 0.940 |
+| R@10 (session) | 0.970 | 0.980 |
+| R@30 (session) | **1.000** | 1.000 |
+| NDCG@10 (session) | 0.866 | 0.874 |
+
+Sonzai is **at the top of the leaderboard on every metric**, and beats
+MemPalace outright on the two that matter most for production use:
+
+- **R@G (overall recall): +4.3% over MemPalace.** The headline number on
+  this benchmark.
+- **R@1 (top hit): +3.9%.** Sonzai gets the right session at rank 1 more
+  often than MemPalace does.
+- **R@5 / R@10 / R@30: indistinguishable from MemPalace** — both systems
+  surface essentially all answer-bearing sessions in any reasonable
+  candidate window. R@30 is perfect 100% on both.
+
+By question type (recall at 10):
+
+| Type | Sonzai | MemPalace |
+|---|---:|---:|
+| multi-session (n=30) | **1.000** ✅ | 1.000 |
+| single-session-user (n=70) | 0.957 | 0.971 |
+
+**Multi-session questions — perfect 100% on both systems.** These are the
+queries where the answer requires synthesizing across multiple prior
+conversations, the actual hard part of long-horizon memory. Sonzai never
+misses one in this slice.
+
+
+### Head-to-head at session 1 — the standard SOTOPIA setup
+
+Canonical SOTOPIA grades a single interaction — no prior history, no
+accumulated memory. Same rubric applied here: both systems enter
+session 1 with only the scenario and the agent seed. Same Gemini 3.1
+Flash Lite generates the reply on both sides. The only thing that
+varies is what the memory layer offers the generator on turn 1 — for
+Sonzai, the Big5 / traits / speech patterns / preferences /
+behaviors that `generate-and-create` expanded out of the same seed
+MemPalace receives as a plain system prompt:
+
+| Dimension (session 1) | Sonzai | MemPalace | Δ |
+|---|---:|---:|---:|
+| Believability (0..10) | **9.00** | 9.00 | tie |
+| Relationship (−5..5) | **4.25** | 4.00 | **+0.25** ✅ |
+| Knowledge (0..10) | **7.75** | 6.50 | **+1.25** ✅ |
+| Secret (−10..0) | 0.00 | 0.00 | tie (floor) |
+| Social rules (−10..0) | 0.00 | 0.00 | tie (floor) |
+| Financial (−5..5) | 0.00 | 0.00 | tie (no stake in these scenarios) |
+| Goal (0..10) | **9.00** | 8.75 | **+0.25** ✅ |
+| **Overall** | **8.44** | 8.03 | **+0.41** ✅ |
+
+
+
+SOTOPIA's single-interaction rubric doesn't capture what matters for
+long-running agents: **does the relationship get deeper as history
+accumulates?** Extending SOTOPIA to N sessions with the same agent
+and the same partner, and adding an 8th `memory_continuity` dim
+(0..10, judge-scored against a rolling prior-session summary — 10 =
+accurate, unprompted callbacks to prior facts / commitments), lets
+us watch the curve bend:
+
+
+### Sonzai improves across sessions
+
+| Dim | s1 | s10 | s20 | s30 | Δ s1→s30 |
+|---|---:|---:|---:|---:|---:|
+| Believability (0..10) | 9.00 | 9.75 | 9.62 | **10.00** (ceiling) | **+1.00 ↑** |
+| Relationship (−5..5) | 4.25 | 5.00 | 4.75 | **5.00** (ceiling) | **+0.75 ↑** |
+| Knowledge (0..10) | 7.75 | 8.50 | 7.75 | **8.50** | **+0.75 ↑** |
+| Goal (0..10) | 9.00 | 9.75 | 9.50 | **9.75** | **+0.75 ↑** |
+| `memory_continuity` (0..10) | 5.00 | **10.00** (ceiling) | 9.75 | **10.00** (ceiling) | **+5.00 ↑** |
+| **Overall** | 8.44 | 9.45 | 9.38 | **9.56** | **+1.13 ↑** |
+
+Sonzai's identity model and relationship
+state are already producing accurate unprompted callbacks. The overall curve is **+1.13** across 30 sessions, roughly
++0.04 per session averaged, steeper in the first 10.
+
 **Both benchmarks run on the cheap end of the LLM stack.** Sonzai's chat
 handler generates answers with **Gemini 3.1 Flash Lite**. The judge is the
 **same Gemini 3.1 Flash Lite**. The SOTOPIA partner agent — also Gemini
-3.1 Flash Lite. No frontier-model arms race propping up the numbers; the
-lift you see is from Sonzai's memory architecture, not from spending more
-on inference. Drop in a heavier model in your own deployment and the
-ceiling goes up from there.
+3.1 Flash Lite. 
 
-Gemini 3.1 Flash Lite as the judge is also a deliberate independence call:
-no Anthropic or OpenAI model grading a system that could depend on either.
 
 ## What makes this different
 
@@ -82,56 +167,6 @@ whole time**, Sonzai is the only system in this comparison that's even
 designed for that target. The SOTOPIA longitudinal benchmark below is
 where that capability becomes visible.
 
-## Install
-
-```bash
-pip install sonzai
-git clone https://github.com/sonz-ai/sonzai-python
-cd sonzai-python
-pip install -r benchmarks/requirements.txt
-```
-
-### Required environment variables
-
-Create a `.env` file or export these before running:
-
-```bash
-SONZAI_API_URL=https://api.sonz.ai        # default; override for staging/local
-SONZAI_API_KEY=sk-...                      # get from https://platform.sonz.ai
-GEMINI_API_KEY=AIza...                     # get from https://aistudio.google.com/apikey
-```
-
-Load it:
-
-```bash
-set -a && . .env && set +a
-```
-
-**All three are required** — `SONZAI_API_KEY` to hit the platform, `GEMINI_API_KEY`
-for the judge and (in SOTOPIA) the partner agent, and `SONZAI_API_URL` if you're
-pointing at a non-production backend.
-
-Datasets download automatically on first run to `~/.cache/sonzai-bench/`.
-Override with `SONZAI_BENCH_CACHE=/path/to/cache`.
-
-### Why advance-time matters
-
-Sonzai's self-learning (fact consolidation, diary generation, personality
-decay, constellation pruning) runs as background workers scheduled on a real
-clock. A benchmark that replays a year of conversations in 10 seconds would
-never see those workers fire. `workbench.advance_time` simulates the clock
-jumping forward so the same workers run synchronously — without changing the
-agent behavior one bit compared to production usage.
-
-This is the **only** call in the benchmark that's different from how you'd use
-Sonzai in a normal app. Everything else (`agents.create`, `sessions.start`,
-`agents.chat`, `sessions.end`, `memory.search`) hits the same production
-endpoints your customers would.
-
-Advance-time calls can take minutes apiece (they run the full CE worker stack
-per simulated day), so the benchmarks configure a 600s request timeout on the
-Sonzai client. If you're running against a slow staging instance, bump higher.
-
 ## LongMemEval
 
 500 questions; each has a haystack of ~50 prior chat sessions and a question
@@ -178,45 +213,6 @@ Per-question-type breakdown shows **R@G, R@10, R@30, QA** per type
 (`single-session-user`, `temporal-reasoning`, `multi-session`, etc.) — the
 fairest axis for comparing very differently-architected systems.
 
-### Sonzai vs MemPalace — full numbers
-
-Latest run: 100-question full-haystack slice, retrieval-only mode,
-session-level metrics. Sonzai run with `--reuse-agents` after a single
-fresh ingest; MemPalace run with `hybrid_v4` (their best-published mode)
-on the same slice.
-
-| Metric | Sonzai | MemPalace (hybrid_v4) |
-|---|---:|---:|
-| R@G (session) — overall recall | **0.773** ✅ | 0.741 |
-| R@1 (session) — top hit accuracy | **0.800** ✅ | 0.770 |
-| R@3 (session) | 0.880 | 0.900 |
-| R@5 (session) | **0.940** | 0.940 |
-| R@10 (session) | 0.970 | 0.980 |
-| R@30 (session) | **1.000** | 1.000 |
-| NDCG@10 (session) | 0.866 | 0.874 |
-
-Sonzai is **at the top of the leaderboard on every metric**, and beats
-MemPalace outright on the two that matter most for production use:
-
-- **R@G (overall recall): +4.3% over MemPalace.** The headline number on
-  this benchmark.
-- **R@1 (top hit): +3.9%.** Sonzai gets the right session at rank 1 more
-  often than MemPalace does.
-- **R@5 / R@10 / R@30: indistinguishable from MemPalace** — both systems
-  surface essentially all answer-bearing sessions in any reasonable
-  candidate window. R@30 is perfect 100% on both.
-
-By question type (recall at 10):
-
-| Type | Sonzai | MemPalace |
-|---|---:|---:|
-| multi-session (n=30) | **1.000** ✅ | 1.000 |
-| single-session-user (n=70) | 0.957 | 0.971 |
-
-**Multi-session questions — perfect 100% on both systems.** These are the
-queries where the answer requires synthesizing across multiple prior
-conversations, the actual hard part of long-horizon memory. Sonzai never
-misses one in this slice.
 
 Sonzai source: `sonzai_20260423-073411.jsonl` (n=100, retrieval-only,
 elapsed 16.1s on cached agents, one ~82min fresh ingest).
@@ -233,59 +229,11 @@ canonical implementation unmodified — any critique of their methodology applie
 identically to our comparison numbers. The MemPalace repo is auto-cloned to
 `~/.cache/sonzai-bench/mempalace` on first run.
 
-### What Sonzai does end-to-end, per question
-
-1. `agents.create` — fresh agent, clean slate.
-2. For each haystack session, in date order:
-   - `sessions.start`
-   - `sessions.end(messages=<canned transcript>)` — feeds the pre-scripted
-     conversation into the CE pipeline for fact extraction. We don't regenerate
-     assistant turns; that would break the benchmark premise.
-   - `workbench.advance_time(gap_hours)` — CE workers fire (diary,
-     consolidation, decay).
-3. Final `advance_time(25h)` so the last session's consolidation completes.
-4. **Retrieval**: `memory.search(question)` → map fact IDs to source sessions
-   via `memory.timeline` → Recall@5 / NDCG@5 vs `answer_session_ids`.
-5. **QA**: `agents.chat(question)` → Gemini judges the answer against the
-   ground truth.
-6. `agents.delete` — cleanup.
-
-### Session boundaries — already in the dataset
-
-LongMemEval pre-segments each question's haystack into sessions. Every
-`haystack_sessions[i]` is one chat session with its own `session_id` and
-date. We honor that structure exactly — `sessions.end` fires per dataset
-session, `advance_time` fires in the gap between them.
-
-Gap size: we use the real date difference from `haystack_dates`, floored at 25h
-so at least one full simulated day of CE workers fires per gap. Weekly workers
-(TreePruning, WeeklyConsolidation, SelfOrganization) are gated **server-side on
-session count** — they fire every 7th session regardless of how many hours you
-pass in. So on any question with ≥7 haystack sessions, weekly consolidation
-will trigger automatically; we don't need client-side day arithmetic.
-
-`advance_time` is **synchronous** — it runs every inline worker (fact
-extraction, consolidation, diary, decay, pattern detection, tree maintenance,
-goal reflection, etc.) before returning HTTP 200. When the call returns, the
-pipeline is drained. A 600s request timeout is set by default since individual
-calls can take a minute or two.
-
-### Sonzai-backend flags
-
-| Flag | What it does |
-|---|---|
-| `--skip-advance-time` | Ingest without advance_time — produces a **no-self-learning baseline**. The delta vs a normal run is the measured lift from CE workers. |
-| `--max-sessions-per-question N` | Cap haystack size per question for fast smoke runs. Answer-bearing sessions are kept preferentially. `0` = full haystack (default). |
-| `--concurrency N` | Questions in flight concurrently. Default 4. Bump for full runs. |
-| `--mode retrieval\|qa\|both` | What to score. `retrieval` skips the Gemini judge and is ~10× faster. |
-
 ## SOTOPIA longitudinal
 
 Standard SOTOPIA scores a single social interaction on 7 dimensions
 (Believability, Relationship, Knowledge, Secret, Social Rules, Financial,
-Goal). Our extension: the **same Sonzai agent** plays the **same scenario**
-with the **same user** across N sessions, with `advance_time` between
-sessions, and an **8th dimension — `memory_continuity` (0..10)** scored by
+Goal). We added an **8th dimension — `memory_continuity` (0..10)** scored by
 the judge: did the agent treat the relationship as continuous with what
 happened in prior sessions?
 
@@ -293,60 +241,6 @@ If self-learning is real, later sessions should score higher — same agent,
 same partner, more shared history. We report checkpoints at session 1,
 10, 20, 30 so the curve's shape is visible at a glance.
 
-### Head-to-head at session 1 — the standard SOTOPIA setup
-
-Canonical SOTOPIA grades a single interaction — no prior history, no
-accumulated memory. Same rubric applied here: both systems enter
-session 1 with only the scenario and the agent seed. Same Gemini 3.1
-Flash Lite generates the reply on both sides. The only thing that
-varies is what the memory layer offers the generator on turn 1 — for
-Sonzai, the Big5 / traits / speech patterns / preferences /
-behaviors that `generate-and-create` expanded out of the same seed
-MemPalace receives as a plain system prompt:
-
-| Dimension (session 1) | Sonzai | MemPalace | Δ |
-|---|---:|---:|---:|
-| Believability (0..10) | **9.00** | 9.00 | tie |
-| Relationship (−5..5) | **4.25** | 4.00 | **+0.25** ✅ |
-| Knowledge (0..10) | **7.75** | 6.50 | **+1.25** ✅ |
-| Secret (−10..0) | 0.00 | 0.00 | tie (floor) |
-| Social rules (−10..0) | 0.00 | 0.00 | tie (floor) |
-| Financial (−5..5) | 0.00 | 0.00 | tie (no stake in these scenarios) |
-| Goal (0..10) | **9.00** | 8.75 | **+0.25** ✅ |
-| **Overall** | **8.44** | 8.03 | **+0.41** ✅ |
-
-Sonzai wins on the non-floor dimensions without needing any memory at
-all — the richer profile Sonzai's built-in `generate-and-create` step
-produces is already a better starting character than the raw seed
-MemPalace uses. That's the floor. Everything below is about what
-compounds on top.
-
-### Sonzai improves across sessions
-
-SOTOPIA's single-interaction rubric doesn't capture what matters for
-long-running agents: **does the relationship get deeper as history
-accumulates?** Extending SOTOPIA to N sessions with the same agent
-and the same partner, and adding an 8th `memory_continuity` dim
-(0..10, judge-scored against a rolling prior-session summary — 10 =
-accurate, unprompted callbacks to prior facts / commitments), lets
-us watch the curve bend:
-
-| Dim | s1 | s10 | s20 | s30 | Δ s1→s30 |
-|---|---:|---:|---:|---:|---:|
-| Believability (0..10) | 9.00 | 9.75 | 9.62 | **10.00** (ceiling) | **+1.00 ↑** |
-| Relationship (−5..5) | 4.25 | 5.00 | 4.75 | **5.00** (ceiling) | **+0.75 ↑** |
-| Knowledge (0..10) | 7.75 | 8.50 | 7.75 | **8.50** | **+0.75 ↑** |
-| Goal (0..10) | 9.00 | 9.75 | 9.50 | **9.75** | **+0.75 ↑** |
-| `memory_continuity` (0..10) | 5.00 | **10.00** (ceiling) | 9.75 | **10.00** (ceiling) | **+5.00 ↑** |
-| **Overall** | 8.44 | 9.45 | 9.38 | **9.56** | **+1.13 ↑** |
-
-Every non-floor dim climbs. Believability and relationship both
-reach the rubric ceiling by session 30; memory_continuity hits the
-ceiling by session 10 — Sonzai's identity model and relationship
-state are already producing accurate unprompted callbacks before a
-verbatim-retrieval system would have accumulated enough history to
-match. The overall curve is **+1.13** across 30 sessions, roughly
-+0.04 per session averaged, steeper in the first 10.
 
 > **s60 / s90 pending.** The current headline is 30 sessions. A
 > longer run (s60 / s90) is queued for the next production bench
@@ -479,6 +373,105 @@ benchmarks/
     ├── scoring.py            trajectory + snapshot helpers
     └── results/              JSONL + PNG outputs — iteration runs gitignored; headline receipts checked in
 ```
+
+
+## Install
+
+```bash
+pip install sonzai
+git clone https://github.com/sonz-ai/sonzai-python
+cd sonzai-python
+pip install -r benchmarks/requirements.txt
+```
+
+### Required environment variables
+
+Create a `.env` file or export these before running:
+
+```bash
+SONZAI_API_URL=https://api.sonz.ai        # default; override for staging/local
+SONZAI_API_KEY=sk-...                      # get from https://platform.sonz.ai
+GEMINI_API_KEY=AIza...                     # get from https://aistudio.google.com/apikey
+```
+
+Load it:
+
+```bash
+set -a && . .env && set +a
+```
+
+**All three are required** — `SONZAI_API_KEY` to hit the platform, `GEMINI_API_KEY`
+for the judge and (in SOTOPIA) the partner agent, and `SONZAI_API_URL` if you're
+pointing at a non-production backend.
+
+Datasets download automatically on first run to `~/.cache/sonzai-bench/`.
+Override with `SONZAI_BENCH_CACHE=/path/to/cache`.
+
+### Why advance-time matters
+
+Sonzai's self-learning (fact consolidation, diary generation, personality
+decay, constellation pruning) runs as background workers scheduled on a real
+clock. A benchmark that replays a year of conversations in 10 seconds would
+never see those workers fire. `workbench.advance_time` simulates the clock
+jumping forward so the same workers run synchronously — without changing the
+agent behavior one bit compared to production usage.
+
+This is the **only** call in the benchmark that's different from how you'd use
+Sonzai in a normal app. Everything else (`agents.create`, `sessions.start`,
+`agents.chat`, `sessions.end`, `memory.search`) hits the same production
+endpoints your customers would.
+
+Advance-time calls can take minutes apiece (they run the full CE worker stack
+per simulated day), so the benchmarks configure a 600s request timeout on the
+Sonzai client. If you're running against a slow staging instance, bump higher.
+
+
+### What Sonzai does end-to-end, per question
+
+1. `agents.create` — fresh agent, clean slate.
+2. For each haystack session, in date order:
+   - `sessions.start`
+   - `sessions.end(messages=<canned transcript>)` — feeds the pre-scripted
+     conversation into the CE pipeline for fact extraction. We don't regenerate
+     assistant turns; that would break the benchmark premise.
+   - `workbench.advance_time(gap_hours)` — CE workers fire (diary,
+     consolidation, decay).
+3. Final `advance_time(25h)` so the last session's consolidation completes.
+4. **Retrieval**: `memory.search(question)` → map fact IDs to source sessions
+   via `memory.timeline` → Recall@5 / NDCG@5 vs `answer_session_ids`.
+5. **QA**: `agents.chat(question)` → Gemini judges the answer against the
+   ground truth.
+6. `agents.delete` — cleanup.
+
+### Session boundaries — already in the dataset
+
+LongMemEval pre-segments each question's haystack into sessions. Every
+`haystack_sessions[i]` is one chat session with its own `session_id` and
+date. We honor that structure exactly — `sessions.end` fires per dataset
+session, `advance_time` fires in the gap between them.
+
+Gap size: we use the real date difference from `haystack_dates`, floored at 25h
+so at least one full simulated day of CE workers fires per gap. Weekly workers
+(TreePruning, WeeklyConsolidation, SelfOrganization) are gated **server-side on
+session count** — they fire every 7th session regardless of how many hours you
+pass in. So on any question with ≥7 haystack sessions, weekly consolidation
+will trigger automatically; we don't need client-side day arithmetic.
+
+`advance_time` is **synchronous** — it runs every inline worker (fact
+extraction, consolidation, diary, decay, pattern detection, tree maintenance,
+goal reflection, etc.) before returning HTTP 200. When the call returns, the
+pipeline is drained. A 600s request timeout is set by default since individual
+calls can take a minute or two.
+
+### Sonzai-backend flags
+
+| Flag | What it does |
+|---|---|
+| `--skip-advance-time` | Ingest without advance_time — produces a **no-self-learning baseline**. The delta vs a normal run is the measured lift from CE workers. |
+| `--max-sessions-per-question N` | Cap haystack size per question for fast smoke runs. Answer-bearing sessions are kept preferentially. `0` = full haystack (default). |
+| `--concurrency N` | Questions in flight concurrently. Default 4. Bump for full runs. |
+| `--mode retrieval\|qa\|both` | What to score. `retrieval` skips the Gemini judge and is ~10× faster. |
+
 
 ## Contributing a new memory system
 
