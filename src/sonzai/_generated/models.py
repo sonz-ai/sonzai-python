@@ -750,6 +750,16 @@ class ColumnMappingSpec(BaseModel):
     type: str | None = None
 
 
+class ComposioAppUsage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    app: str
+    calls: int
+    cost_usd: float
+
+
 class ComposioConnectCallbackInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -769,6 +779,24 @@ class ComposioConnectCallbackInputBody(BaseModel):
     app: str
     connected_account_id: str
     connected_by_user_id: str | None = None
+
+
+class ComposioUsageResponsePeriodStruct(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    end: str
+    start: str
+
+
+class ComposioUsageResponseSummaryStruct(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    total_calls: int
+    total_cost_usd: float
 
 
 class Connection(BaseModel):
@@ -8093,6 +8121,23 @@ class ComposioConnectCallbackOutputBody(BaseModel):
     """
     connection: Connection | None = None
     ok: bool
+
+
+class ComposioUsageResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ComposioUsageResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    by_app: list[ComposioAppUsage] | None
+    period: ComposioUsageResponsePeriodStruct
+    summary: ComposioUsageResponseSummaryStruct
 
 
 class ConstellationResponse(BaseModel):

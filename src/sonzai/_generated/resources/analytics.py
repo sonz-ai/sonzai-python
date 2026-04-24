@@ -9,6 +9,7 @@ from urllib.parse import quote
 from sonzai._generated.models import (
     AnalyticsOverview,
     AnalyticsRealtimeResponse,
+    ComposioUsageResponse,
     CostBreakdownResponse,
     CostResponse,
     UsageResponse,
@@ -23,6 +24,25 @@ class _AnalyticsBase:
 
 
 class Analytics(_AnalyticsBase):
+    def analytics_composio_usage(
+        self,
+        *,
+        start: str | None = None,
+        end: str | None = None,
+        agent_id: str | None = None,
+    ) -> ComposioUsageResponse:
+        """Composio plugin usage analytics"""
+        path = f"/api/v1/analytics/composio"
+        params: dict[str, Any] = {}
+        if start is not None:
+            params["start"] = start
+        if end is not None:
+            params["end"] = end
+        if agent_id is not None:
+            params["agent_id"] = agent_id
+        data = self._http.get(path, params=params)
+        return ComposioUsageResponse.model_validate(data)
+
     def analytics_cost(
         self,
         *,
@@ -103,6 +123,25 @@ class Analytics(_AnalyticsBase):
 
 
 class AsyncAnalytics(_AnalyticsBase):
+    async def analytics_composio_usage(
+        self,
+        *,
+        start: str | None = None,
+        end: str | None = None,
+        agent_id: str | None = None,
+    ) -> ComposioUsageResponse:
+        """Composio plugin usage analytics"""
+        path = f"/api/v1/analytics/composio"
+        params: dict[str, Any] = {}
+        if start is not None:
+            params["start"] = start
+        if end is not None:
+            params["end"] = end
+        if agent_id is not None:
+            params["agent_id"] = agent_id
+        data = await self._http.get(path, params=params)
+        return ComposioUsageResponse.model_validate(data)
+
     async def analytics_cost(
         self,
         *,
