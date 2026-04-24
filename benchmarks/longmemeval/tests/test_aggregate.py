@@ -7,7 +7,21 @@ these tests fast and deterministic.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
+from benchmarks.longmemeval.aggregate import (
+    FailureBucket,
+    classify_failure,
+    load_records,
+)
 from benchmarks.longmemeval.aggregate import wilson_ci
+
+FIXTURE_PATH = Path(__file__).parent / "fixtures" / "sample_run.jsonl"
+
+
+def _by_id(records):
+    return {r["question_id"]: r for r in records}
 
 
 def test_wilson_ci_perfect_score_on_small_n():
@@ -73,3 +87,49 @@ def test_flip_rate_asymmetric_case():
 def test_flip_rate_zero_runs_is_zero():
     # Never-observed question: degenerate to 0.
     assert flip_rate(correct=0, runs=0) == 0.0
+
+
+def test_classify_retrieval_miss():
+    records = _by_id(load_records([FIXTURE_PATH]))
+    bucket = classify_failure(records["q2"])
+    assert bucket == FailureBucket.RETRIEVAL_MISS
+
+
+def test_classify_retrieval_hit_qa_miss():
+    records = _by_id(load_records([FIXTURE_PATH]))
+    bucket = classify_failure(records["q3"])
+    assert bucket == FailureBucket.RETRIEVAL_HIT_QA_MISS
+
+
+def test_classify_marginal():
+    records = _by_id(load_records([FIXTURE_PATH]))
+    bucket = classify_failure(records["q4"])
+    assert bucket == FailureBucket.MARGINAL
+
+
+def test_classify_ambiguous_via_rationale_phrase():
+    records = _by_id(load_records([FIXTURE_PATH]))
+    bucket = classify_failure(records["q5"])
+    assert bucket == FailureBucket.AMBIGUOUS
+
+
+def test_classify_correct_answer_returns_none():
+    records = _by_id(load_records([FIXTURE_PATH]))
+    bucket = classify_failure(records["q1"])
+    assert bucket is None
+
+
+def test_classify_errored_returns_none():
+    # Errored questions shouldn't be classified as a failure bucket —
+    # they're a separate category surfaced in the summary header.
+    records = _by_id(load_records([FIXTURE_PATH]))
+    bucket = classify_failure(records["q6"])
+    assert bucket is None
+
+
+def test_load_records_skips_blank_lines(tmp_path):
+    # Real bench JSONL may have trailing newlines; loader must handle them.
+    src = tmp_path / "run.jsonl"
+    src.write_text('{"question_id":"a","question_type":"t"}\n\n{"question_id":"b","question_type":"t"}\n')
+    records = load_records([src])
+    assert [r["question_id"] for r in records] == ["a", "b"]

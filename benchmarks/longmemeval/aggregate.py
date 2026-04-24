@@ -51,3 +51,93 @@ def flip_rate(*, correct: int, runs: int) -> float:
         return 0.0
     p = correct / runs
     return 2 * p * (1 - p)
+
+
+import json
+from enum import Enum
+from pathlib import Path
+from typing import Iterable
+
+
+class FailureBucket(str, Enum):
+    """Classification of a failing (question, run) pair.
+
+    Each bucket points at a different class of intervention:
+      RETRIEVAL_MISS     → upstream retrieval-side fix (decomposition,
+                           graph walks, entity seeding).
+      RETRIEVAL_HIT_QA_MISS → downstream composition fix (ensemble
+                              answering, better prompting, render-cap
+                              logic).
+      MARGINAL           → render-cap tuning or fact-ordering fix.
+      AMBIGUOUS          → not a system failure; judge-side noise.
+    """
+
+    RETRIEVAL_MISS = "retrieval-miss"
+    RETRIEVAL_HIT_QA_MISS = "retrieval-hit / qa-miss"
+    MARGINAL = "marginal"
+    AMBIGUOUS = "ambiguous"
+
+
+# String-match phrases that signal the judge found the answer defensible
+# despite marking it wrong. Imperfect heuristic by design — see spec.
+_AMBIGUOUS_PHRASES = (
+    "partially correct",
+    "partially",
+    "defensible",
+    "close to",
+    "not quite",
+    "mostly",
+)
+
+
+def classify_failure(record: dict) -> FailureBucket | None:
+    """Classify a single bench record into a failure bucket, or None.
+
+    Returns None for:
+      - correct answers (qa_correct=True)
+      - errored records (extra.error present)
+      - records with no qa_correct field (retrieval-only runs)
+    """
+    if record.get("extra", {}).get("error"):
+        return None
+    if "qa_correct" not in record:
+        return None
+    if record.get("qa_correct") is True:
+        return None
+
+    expected = set(record.get("answer_session_ids") or [])
+    retrieved_items = (record.get("retrieval_results") or {}).get("ranked_items") or []
+    retrieved_top10 = [it.get("corpus_id") for it in retrieved_items[:10]]
+    hit_ranks = [i for i, cid in enumerate(retrieved_top10) if cid in expected]
+
+    if not hit_ranks:
+        return FailureBucket.RETRIEVAL_MISS
+    if min(hit_ranks) >= 8:
+        return FailureBucket.MARGINAL
+
+    rationale = (record.get("qa_rationale") or "").lower()
+    if any(phrase in rationale for phrase in _AMBIGUOUS_PHRASES):
+        return FailureBucket.AMBIGUOUS
+
+    return FailureBucket.RETRIEVAL_HIT_QA_MISS
+
+
+def load_records(paths: Iterable[Path | str]) -> list[dict]:
+    """Read JSONL records from each path; skip blank lines and malformed JSON.
+
+    Malformed lines are skipped with a printed warning — we don't want
+    a single truncated record to abort a 5-run aggregation.
+    """
+    out: list[dict] = []
+    for p in paths:
+        path = Path(p)
+        with path.open() as f:
+            for lineno, line in enumerate(f, start=1):
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    out.append(json.loads(line))
+                except json.JSONDecodeError as e:
+                    print(f"warn: {path}:{lineno} skipped malformed JSON: {e}")
+    return out

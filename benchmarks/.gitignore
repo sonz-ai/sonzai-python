@@ -8,6 +8,9 @@ sotopia/results/*
 __pycache__/
 *.pyc
 
+# Test fixtures — small hand-crafted JSONL records used by unit tests.
+!longmemeval/tests/fixtures/*.jsonl
+
 # Headline receipts — intentionally checked in so the numbers cited in
 # benchmarks/README.md are verifiable from the public repo. Add one
 # line per published result (JSONL + optional trajectory PNG). Keep
