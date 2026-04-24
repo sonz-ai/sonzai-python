@@ -69,21 +69,19 @@ async def _replay_session(
     messages: list[ChatMessage | dict[str, str]] = [
         {"role": t.role, "content": t.content} for t in session.turns
     ]
-    # ``wait=True`` asks the server to run the full OnSessionEnd pipeline
-    # (segmentation, memory.ProcessSessionEnd for fact extraction, summary
-    # storage, side-effects) synchronously before responding. Without this,
-    # the pipeline runs in a detached goroutine with a 5-min budget — the
-    # bench's next step (advance_time or the final memory.search) would
-    # race the extractor and potentially measure an incomplete memory state.
-    # This makes the dev-API session-end behave like the workbench's
-    # SSE-waiting path: deterministic "data is ready" semantics.
+    # Omit ``wait`` so the server enqueues via the durable async endpoint
+    # (NATS work queue + Redis status). The SDK transparently polls
+    # ``/sessions/end/status/{processing_id}`` and blocks until the worker
+    # writes state="done" — exactly the "memory is ready" guarantee
+    # ``wait=True`` used to provide, without the 100s Cloudflare edge
+    # timeout on the inline path. Any later advance_time / memory.search
+    # still races nothing.
     await sessions.end(
         agent_id=agent_id,
         user_id=user_id,
         session_id=session_id,
         total_messages=len(messages),
         messages=messages,
-        wait=True,
     )
 
 
