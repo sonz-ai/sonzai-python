@@ -167,9 +167,12 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     p.add_argument(
         "--compare",
-        nargs=2,
-        metavar=("FILE_A", "FILE_B"),
-        help="Compare two JSONL result files; print a markdown table and exit.",
+        nargs="+",
+        metavar="FILE",
+        help="Compare two or more JSONL result files. Prints per-system headline, "
+        "side-by-side R@K (when exactly two files), and the per-question-type QA "
+        "breakdown table (text + markdown) so you can paste straight into the README. "
+        "Order of files = column order in the table.",
     )
     p.add_argument(
         "-v",
@@ -760,6 +763,7 @@ def _summarize(rows: list[dict]) -> dict:
             t,
             {
                 "n": 0,
+                "qa_scored": 0,         # rows where qa_correct is True/False (i.e., QA actually attempted)
                 "qa_correct_sum": 0,
                 "rg_sum": 0.0,
                 "r10_sum": 0.0,
@@ -767,15 +771,26 @@ def _summarize(rows: list[dict]) -> dict:
             },
         )
         bucket["n"] += 1
-        if r.get("qa_correct") is True:
-            bucket["qa_correct_sum"] += 1
+        # Track QA scored separately from totals so retrieval-only runs report
+        # qa_accuracy=None per type (rendered as "-") instead of a misleading
+        # 0.00% (which falsely implies "tried QA, got everything wrong").
+        qc = r.get("qa_correct")
+        if qc is True or qc is False:
+            bucket["qa_scored"] += 1
+            if qc is True:
+                bucket["qa_correct_sum"] += 1
         session_metrics = _metrics_from_row(r).get("session") or {}
         bucket["rg_sum"] += float(session_metrics.get("recall_at_g", 0.0))
         bucket["r10_sum"] += float(session_metrics.get("recall_any@10", 0.0))
         bucket["r30_sum"] += float(session_metrics.get("recall_any@30", 0.0))
     for t, b in by_type.items():
         if b["n"]:
-            b["qa_accuracy"] = b["qa_correct_sum"] / b["n"]
+            # qa_accuracy is None when no question of this type was QA-scored
+            # — preserves the "QA wasn't run" signal through the summary so
+            # downstream tables print "-" instead of 0.00%.
+            b["qa_accuracy"] = (
+                (b["qa_correct_sum"] / b["qa_scored"]) if b["qa_scored"] else None
+            )
             b["recall_at_g"] = b["rg_sum"] / b["n"]
             b["recall_any@10"] = b["r10_sum"] / b["n"]
             b["recall_any@30"] = b["r30_sum"] / b["n"]
@@ -859,10 +874,16 @@ def _print_summary(summary: dict, *, label: str) -> None:
 
     by_type = summary.get("by_type") or {}
     if by_type:
+        # Detailed per-type table — retrieval + QA columns side-by-side.
+        # Sorted by canonical published order (matches Supermemory/Zep
+        # comparison shape) with any unexpected types appended alphabetically.
+        ordered = [t for t in _QA_TYPE_ORDER if t in by_type]
+        ordered += sorted(t for t in by_type if t not in _QA_TYPE_ORDER)
         print(
             f"  {'type':<30} {'n':>4} {'R@G':>6} {'R@10':>6} {'R@30':>6} {'QA':>6}"
         )
-        for t, b in sorted(by_type.items()):
+        for t in ordered:
+            b = by_type[t]
             qa_s = (
                 f"{b['qa_accuracy']:.3f}" if b.get("qa_accuracy") is not None else "  -  "
             )
@@ -879,48 +900,176 @@ def _print_summary(summary: dict, *, label: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _compare(file_a: Path, file_b: Path) -> None:
-    rows_a = [json.loads(l) for l in open(file_a)]
-    rows_b = [json.loads(l) for l in open(file_b)]
-    sum_a, sum_b = _summarize(rows_a), _summarize(rows_b)
-    label_a = rows_a[0].get("backend", file_a.stem) if rows_a else file_a.stem
-    label_b = rows_b[0].get("backend", file_b.stem) if rows_b else file_b.stem
-    _print_summary(sum_a, label=label_a)
-    _print_summary(sum_b, label=label_b)
+# Canonical LongMemEval question-type display order. Matches the published
+# "LONGMEMEVAL-S BENCHMARK: SUPERMEMORY VS ZEP VS FULL CONTEXT" table layout
+# so screenshots / READMEs render in the same row order across systems.
+# Types not in this list (future dataset additions) get appended alphabetically.
+_QA_TYPE_ORDER = [
+    "single-session-user",
+    "single-session-assistant",
+    "single-session-preference",
+    "knowledge-update",
+    "temporal-reasoning",
+    "multi-session",
+]
 
-    print("\n### Side-by-side (session-level)\n")
-    print(f"| Metric                 | {label_a:>12} | {label_b:>12} |")
-    print("|------------------------|-------------:|-------------:|")
 
-    # Headline row order: n, R@G, R@10, R@30, then the rest of the k-grid, then QA.
-    headline_keys: list[tuple[str, str]] = [
-        ("n", "n"),
-        ("recall_at_g", "R@G"),
-        ("recall_any@10", "R@10"),
-        ("recall_any@30", "R@30"),
+def _format_pct(v: float | None) -> str:
+    """Format a 0..1 accuracy as XX.YY%, or '-' for missing/unscored."""
+    if v is None:
+        return "-"
+    return f"{v * 100:.2f}%"
+
+
+def _qa_breakdown_rows(summary: dict) -> dict[str, tuple[float | None, int]]:
+    """Extract {question_type: (qa_accuracy, n)} from a summary, including 'Overall'."""
+    out: dict[str, tuple[float | None, int]] = {}
+    for t, b in (summary.get("by_type") or {}).items():
+        out[t] = (b.get("qa_accuracy"), b.get("n", 0))
+    out["Overall"] = (summary.get("qa_accuracy"), summary.get("n", 0))
+    return out
+
+
+def _print_qa_breakdown_table(
+    summaries: list[dict],
+    labels: list[str],
+    *,
+    fmt: str = "text",
+) -> None:
+    """Render a per-question-type QA accuracy table comparing N backends.
+
+    Matches the standard LongMemEval comparison shape (rows = question
+    types, columns = backends + Overall row at bottom). Two formats:
+
+    - ``text``: aligned columns for the terminal.
+    - ``markdown``: pipe-table for pasting into the README directly.
+    """
+    # Union of types across all summaries, ordered canonically.
+    seen: set[str] = set()
+    rows: list[str] = []
+    for t in _QA_TYPE_ORDER:
+        for s in summaries:
+            if t in (s.get("by_type") or {}):
+                if t not in seen:
+                    rows.append(t)
+                    seen.add(t)
+                break
+    # Append any unexpected types alphabetically so dataset additions don't
+    # silently drop from the table.
+    extras: set[str] = set()
+    for s in summaries:
+        for t in (s.get("by_type") or {}):
+            if t not in seen:
+                extras.add(t)
+    rows.extend(sorted(extras))
+
+    per_summary = [_qa_breakdown_rows(s) for s in summaries]
+
+    if fmt == "markdown":
+        header = "| Category | " + " | ".join(labels) + " |"
+        sep = "|---|" + "|".join(["---:"] * len(labels)) + "|"
+        print(header)
+        print(sep)
+        for t in rows:
+            cells = []
+            for ps in per_summary:
+                v, _ = ps.get(t, (None, 0))
+                cells.append(_format_pct(v))
+            print(f"| {t} | " + " | ".join(cells) + " |")
+        # Overall row last.
+        cells = []
+        for ps in per_summary:
+            v, _ = ps["Overall"]
+            cells.append(f"**{_format_pct(v)}**")
+        print(f"| **Overall** | " + " | ".join(cells) + " |")
+        return
+
+    # Text mode — match the screenshot's right-aligned numeric columns.
+    label_w = max(len("Category"), *(len(t) for t in rows + ["Overall"]))
+    col_w = max(8, *(len(l) for l in labels))
+    head = f"  {'Category':<{label_w}}  " + "  ".join(f"{l:>{col_w}}" for l in labels)
+    print(head)
+    print("  " + "-" * (len(head) - 2))
+    for t in rows:
+        cells = []
+        for ps in per_summary:
+            v, _ = ps.get(t, (None, 0))
+            cells.append(f"{_format_pct(v):>{col_w}}")
+        print(f"  {t:<{label_w}}  " + "  ".join(cells))
+    overall_cells = [
+        f"{_format_pct(ps['Overall'][0]):>{col_w}}" for ps in per_summary
     ]
-    for k in KS:
-        headline_keys.append((f"recall_any@{k}", f"recall_any@{k}"))
-        headline_keys.append((f"ndcg_any@{k}", f"ndcg_any@{k}"))
-    headline_keys.append(("qa_accuracy", "qa_accuracy"))
+    print(f"  {'Overall':<{label_w}}  " + "  ".join(overall_cells))
 
-    def _lookup(summary: dict, key: str):
-        if key == "n":
-            return summary.get("n")
-        if key == "qa_accuracy":
-            return summary.get("qa_accuracy")
-        return (summary.get("retrieval") or {}).get("session", {}).get(key)
 
-    seen_labels: set[str] = set()
-    for key, label in headline_keys:
-        if label in seen_labels:
-            continue
-        seen_labels.add(label)
-        va = _lookup(sum_a, key)
-        vb = _lookup(sum_b, key)
-        va_s = f"{va:.3f}" if isinstance(va, float) else str(va if va is not None else "-")
-        vb_s = f"{vb:.3f}" if isinstance(vb, float) else str(vb if vb is not None else "-")
-        print(f"| {label:<22} | {va_s:>12} | {vb_s:>12} |")
+def _compare(files: list[Path]) -> None:
+    """Compare N JSONL result files. Prints:
+
+      1. Per-system summary block (n, R@G/R@10/R@30, QA, advance_time, etc.)
+      2. Side-by-side R@K markdown table (when exactly two files)
+      3. Per-question-type QA breakdown — text (terminal) + markdown (README)
+
+    Order of files = column order in the breakdown table.
+    """
+    parsed = []
+    for path in files:
+        rows = [json.loads(line) for line in open(path)]
+        summary = _summarize(rows)
+        label = (
+            rows[0].get("backend", path.stem) if rows else path.stem
+        )
+        parsed.append((path, label, rows, summary))
+
+    for _, label, _, summary in parsed:
+        _print_summary(summary, label=label)
+
+    # Pairwise R@K side-by-side only meaningful for exactly 2 backends —
+    # the original two-file shape. For 3+ backends we skip this and rely
+    # on the per-system summaries above + the QA breakdown table below.
+    if len(parsed) == 2:
+        _, label_a, _, sum_a = parsed[0]
+        _, label_b, _, sum_b = parsed[1]
+        print("\n### Side-by-side (session-level)\n")
+        print(f"| Metric                 | {label_a:>12} | {label_b:>12} |")
+        print("|------------------------|-------------:|-------------:|")
+        headline_keys: list[tuple[str, str]] = [
+            ("n", "n"),
+            ("recall_at_g", "R@G"),
+            ("recall_any@10", "R@10"),
+            ("recall_any@30", "R@30"),
+        ]
+        for k in KS:
+            headline_keys.append((f"recall_any@{k}", f"recall_any@{k}"))
+            headline_keys.append((f"ndcg_any@{k}", f"ndcg_any@{k}"))
+        headline_keys.append(("qa_accuracy", "qa_accuracy"))
+
+        def _lookup(summary: dict, key: str):
+            if key == "n":
+                return summary.get("n")
+            if key == "qa_accuracy":
+                return summary.get("qa_accuracy")
+            return (summary.get("retrieval") or {}).get("session", {}).get(key)
+
+        seen_labels: set[str] = set()
+        for key, label in headline_keys:
+            if label in seen_labels:
+                continue
+            seen_labels.add(label)
+            va = _lookup(sum_a, key)
+            vb = _lookup(sum_b, key)
+            va_s = f"{va:.3f}" if isinstance(va, float) else str(va if va is not None else "-")
+            vb_s = f"{vb:.3f}" if isinstance(vb, float) else str(vb if vb is not None else "-")
+            print(f"| {label:<22} | {va_s:>12} | {vb_s:>12} |")
+
+    # Per-question-type QA breakdown — the load-bearing table for the README.
+    # Matches the published Supermemory/Zep/Full-context comparison shape.
+    summaries = [s for _, _, _, s in parsed]
+    labels = [l for _, l, _, _ in parsed]
+
+    print("\n### Per-question-type QA accuracy\n")
+    _print_qa_breakdown_table(summaries, labels, fmt="text")
+    print()
+    _print_qa_breakdown_table(summaries, labels, fmt="markdown")
 
 
 # ---------------------------------------------------------------------------
@@ -935,7 +1084,10 @@ async def _amain(args: argparse.Namespace) -> int:
     )
 
     if args.compare:
-        _compare(Path(args.compare[0]), Path(args.compare[1]))
+        if len(args.compare) < 2:
+            print("error: --compare requires at least two JSONL files", file=sys.stderr)
+            return 2
+        _compare([Path(p) for p in args.compare])
         return 0
 
     if not os.environ.get("SONZAI_API_KEY") and args.backend == "sonzai":
@@ -996,6 +1148,17 @@ async def _amain(args: argparse.Namespace) -> int:
 
     summary = _summarize(rows)
     _print_summary(summary, label=args.backend)
+
+    # Per-question-type QA breakdown — always emitted when QA was scored
+    # so the numbers are ready to paste into the README without a second
+    # tool invocation. Matches the published Supermemory/Zep comparison shape.
+    by_type = summary.get("by_type") or {}
+    if any(b.get("qa_accuracy") is not None for b in by_type.values()):
+        print("\n### Per-question-type QA accuracy\n")
+        _print_qa_breakdown_table([summary], [args.backend], fmt="text")
+        print()
+        _print_qa_breakdown_table([summary], [args.backend], fmt="markdown")
+
     print(f"\nElapsed: {elapsed:.1f}s")
     print(f"Output : {output}")
     return 0
