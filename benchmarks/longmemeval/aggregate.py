@@ -83,7 +83,6 @@ class FailureBucket(str, Enum):
 # String-match phrases that signal the judge found the answer defensible
 # despite marking it wrong. Imperfect heuristic by design — see spec.
 _AMBIGUOUS_PHRASES = (
-    "partially correct",
     "partially",
     "defensible",
     "close to",
@@ -141,7 +140,7 @@ def load_records(paths: Iterable[Path | str]) -> list[dict]:
                 try:
                     out.append(json.loads(line))
                 except json.JSONDecodeError as e:
-                    print(f"warn: {path}:{lineno} skipped malformed JSON: {e}")
+                    print(f"warn: {path}:{lineno} skipped malformed JSON: {e}", file=sys.stderr)
     return out
 
 
@@ -272,7 +271,8 @@ def _print_summary(result: AggregateResult) -> None:
     """Human-readable summary table on stdout."""
     print(f"scored: {result.total_scored}  errored: {result.errored_count}  missing_qa: {result.missing_qa_count}")
     print()
-    header = f"{'subtype':<30} {'n':>4} {'acc':>6} {'CI 95%':>16} {'flip':>6}  R-miss / R-hit-QA / marginal / ambig"
+    bucket_header = f"{'R-miss':>6} / {'R-hit-QA':>8} / {'marginal':>8} / {'ambig':>5}"
+    header = f"{'subtype':<30} {'n':>4} {'acc':>6} {'CI 95%':>16} {'flip':>6}  {bucket_header}"
     print(header)
     print("-" * len(header))
     for s in result.subtypes:
@@ -292,10 +292,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = p.parse_args(argv)
 
-    result = aggregate_runs(args.paths, failures_out=Path(args.output))
+    out_path = Path(args.output).resolve()
+    result = aggregate_runs(args.paths, failures_out=out_path)
     _print_summary(result)
     print()
-    print(f"failures written: {len(result.failures)} → {args.output}")
+    print(f"failures written: {len(result.failures)} → {out_path}")
     return 0
 
 
