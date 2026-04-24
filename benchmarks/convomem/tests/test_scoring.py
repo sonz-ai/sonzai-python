@@ -24,7 +24,8 @@ class _FakeJudge:
     canned: dict[str, QAVerdict]
 
     async def grade_async(self, prompt: str, schema: Any) -> Any:  # noqa: ANN401
-        # The abstention prompt embeds the agent_answer; find the matching key.
+        # The abstention prompt embeds the agent_answer; match on needles that
+        # only appear in the agent_answer (not in the rubric template itself).
         for needle, verdict in self.canned.items():
             if needle in prompt:
                 return verdict
@@ -35,14 +36,18 @@ class _FakeJudge:
 async def test_judge_abstention_recognises_decline():
     from benchmarks.common.gemini_judge import judge_abstention_async
 
+    # Needles must be distinctive enough not to appear in _ABSTENTION_PROMPT's
+    # own example list — otherwise the mock matches the rubric instead of the
+    # agent_answer. "no prior chat about this" is unique to the decline answer;
+    # "555-1234" is unique to the fabricated answer.
     judge = _FakeJudge(canned={
-        "I don't have that information": QAVerdict(correct=True, rationale="declined"),
-        "His number is 555-1234":          QAVerdict(correct=False, rationale="fabricated"),
+        "no prior chat about this": QAVerdict(correct=True, rationale="declined"),
+        "555-1234":                  QAVerdict(correct=False, rationale="fabricated"),
     })
     decline = await judge_abstention_async(
         judge,  # type: ignore[arg-type]
         question="What is John's phone number?",
-        agent_answer="I don't have that information in our prior conversation.",
+        agent_answer="There's no prior chat about this topic from what I see.",
     )
     assert decline.correct is True
 
