@@ -121,8 +121,7 @@ hybrid BM25+vector lookup at query time. MemPalace was designed
 specifically for this shape and topped the leaderboard last year.
 
 **Sonzai matches MemPalace on this benchmark while being built for the
-much harder problem.** Our architecture goes in the opposite direction
-from "store everything": Sonzai is built for a different target — **long-horizon chat where the same
+much harder problem.**: Sonzai is built for a different target — **long-horizon chat where the same
 agent talks to the same person across hundreds or thousands of sessions,
 maintaining a coherent personality the whole time**. That target pushes the
 architecture in the opposite direction from "store everything":
@@ -152,7 +151,7 @@ architecture in the opposite direction from "store everything":
   per turn.
 
 The result on LongMemEval: Sonzai matches MemPalace on every retrieval
-metric the benchmark measures (full numbers below), while shipping the
+metric the benchmark measures, while shipping the
 durability and personality-coherence machinery that lookup-optimized
 systems can't represent at all.
 
@@ -160,8 +159,7 @@ If you're building a chatbot for a single conversation, any retrieval
 layer works. If you're building an **agent that keeps talking to the same
 person across hundreds of sessions and stays the same character the
 whole time**, Sonzai is the only system in this comparison that's even
-designed for that target. The SOTOPIA longitudinal benchmark below is
-where that capability becomes visible.
+designed for that target.
 
 ## LongMemEval
 
@@ -284,11 +282,8 @@ allow-listed in `benchmarks/.gitignore`. One line per published file.
 scenarios — mentorship 1:1, therapy, Spanish tutoring, strength coaching.
 Each scenario has ~1200–1600 chars of **partner** persona (family,
 career, communication style, current-life context, a secret) and a
-matching ~1400–1600 char **agent** seed that Sonzai's
-`generate-and-create` expands into a full profile (Big5 + traits +
-speech patterns + preferences + behaviors). MemPalace gets the same
-seed as a raw system-prompt; the profile expansion is a Sonzai
-feature.
+matching ~1400–1600 char **agent** seed that Sonzai's harness uses to generate a realistic agent. MemPalace gets the same
+seed.
 
 **Stateful partner**: the partner Gemini is given a rolling summary of
 the last 10 sessions so it can naturally reference prior exchanges
