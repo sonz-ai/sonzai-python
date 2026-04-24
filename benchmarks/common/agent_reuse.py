@@ -56,7 +56,7 @@ class SliceKey:
     affects scoring (judge model, mode, concurrency) stays out.
     """
 
-    benchmark: str  # "longmemeval" | "sotopia"
+    benchmark: str  # "longmemeval" | "sotopia" | "locomo"
     limit: int
     max_sessions_per_question: int = 0
     # SOTOPIA-specific: count of sessions per scenario run so far.
@@ -80,6 +80,9 @@ class SliceKey:
             any target ≥ N. Including it in equality would throw away the
             last_session_index every time the user bumps ``--sessions-per-
             scenario`` from 30 → 60 → 90.
+          * LoCoMo: ingests the full conversation every run — there is no
+            per-question session cap, so ``max_sessions_per_question`` is
+            not part of identity.
         """
         if self.benchmark != other.benchmark:
             return False
@@ -88,6 +91,10 @@ class SliceKey:
         if self.dataset_tag != other.dataset_tag:
             return False
         if self.benchmark == "sotopia":
+            return True
+        if self.benchmark == "locomo":
+            # LoCoMo ingests the full conversation every time — no per-question
+            # session cap, so max_sessions_per_question is not part of identity.
             return True
         return self.max_sessions_per_question == other.max_sessions_per_question
 
