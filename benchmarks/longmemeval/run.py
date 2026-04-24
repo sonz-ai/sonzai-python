@@ -309,12 +309,12 @@ async def _run_sonzai_backend(
     # tuned for literal-value recall (normal personality field, available
     # to all users — not a benchmark-only hack).
     from sonzai.benchmarks import (
-        LONGMEMEVAL_AGENT_NAME,
-        ensure_longmemeval_agent_async,
+        BENCHMARK_AGENT_NAME,
+        ensure_benchmark_agent_async,
     )
 
-    agent_name = LONGMEMEVAL_AGENT_NAME
-    resolved_agent_id, agent_existed = await ensure_longmemeval_agent_async(client)
+    agent_name = BENCHMARK_AGENT_NAME
+    resolved_agent_id, agent_existed = await ensure_benchmark_agent_async(client)
     logger.info(
         "bench: shared agent %s ready (existed=%s, concise-recall speech_patterns applied)",
         resolved_agent_id, agent_existed,

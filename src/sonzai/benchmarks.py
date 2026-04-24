@@ -13,29 +13,33 @@ call for the common case).
 Usage — async (the typical benchmark driver):
 
     from sonzai import AsyncSonzai
-    from sonzai.benchmarks import ensure_longmemeval_agent_async
+    from sonzai.benchmarks import ensure_benchmark_agent_async
 
     client = AsyncSonzai(api_key=os.environ["SONZAI_API_KEY"])
-    agent_id, existed = await ensure_longmemeval_agent_async(client)
+    agent_id, existed = await ensure_benchmark_agent_async(client)
     # ... now run your benchmark against agent_id
 
 Usage — sync:
 
     from sonzai import Sonzai
-    from sonzai.benchmarks import ensure_longmemeval_agent
+    from sonzai.benchmarks import ensure_benchmark_agent
 
     client = Sonzai(api_key=os.environ["SONZAI_API_KEY"])
-    agent_id, existed = ensure_longmemeval_agent(client)
+    agent_id, existed = ensure_benchmark_agent(client)
 
 Idempotent: the agent is keyed by `name` server-side, so repeated calls
 return the same agent_id. The `speech_patterns` are re-applied on every
 call (cheap PATCH), so if you ever want to tweak them you can pass
 `speech_patterns=[...]` to override.
 
-Why this lives in the SDK, not the benchmark scripts: the LongMemEval and
-SOTOPIA benches in `sonzai-python/benchmarks/` both import from here, and
-so can any third-party harness. Keeping the canonical preset in one place
-means our published scores and yours are measuring the same agent.
+Why this lives in the SDK, not the benchmark scripts: the LongMemEval,
+LoCoMo, and SOTOPIA benches in `sonzai-python/benchmarks/` all import from
+here, and so can any third-party harness. Keeping the canonical preset in
+one place means our published scores and yours are measuring the same agent.
+
+The old ``LONGMEMEVAL_*`` / ``ensure_longmemeval_*`` names are preserved as
+identity aliases for one release cycle and will be removed in a future
+version. Prefer the ``BENCHMARK_*`` / ``ensure_benchmark_*`` names.
 """
 
 from __future__ import annotations
@@ -47,6 +51,13 @@ if TYPE_CHECKING:
     from ._client import AsyncSonzai, Sonzai
 
 __all__ = [
+    # Unified exports (new canonical names)
+    "BENCHMARK_AGENT_NAME",
+    "BENCHMARK_AGENT_DESCRIPTION",
+    "BENCHMARK_SPEECH_PATTERNS",
+    "ensure_benchmark_agent",
+    "ensure_benchmark_agent_async",
+    # Back-compat aliases — keep exporting the old names one-for-one.
     "LONGMEMEVAL_AGENT_NAME",
     "LONGMEMEVAL_AGENT_DESCRIPTION",
     "LONGMEMEVAL_SPEECH_PATTERNS",
@@ -62,7 +73,7 @@ __all__ = [
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# LongMemEval preset
+# Unified benchmark preset (canonical names)
 # ---------------------------------------------------------------------------
 #
 # Description is the seed the server's `generate-and-create` endpoint expands
@@ -70,10 +81,13 @@ logger = logging.getLogger(__name__)
 # We keep the character's memory-assistant framing but then override
 # speech_patterns explicitly (next constant) so the agent answers in the
 # shape the grader expects.
+#
+# This single agent preset is used across all memory benchmarks (LongMemEval,
+# LoCoMo, ConvoMem, SOTOPIA, etc.) to ensure a consistent baseline.
 
-LONGMEMEVAL_AGENT_NAME = "sonzai-bench-longmemeval"
+BENCHMARK_AGENT_NAME = "sonzai-benchmark-agent"
 
-LONGMEMEVAL_AGENT_DESCRIPTION = (
+BENCHMARK_AGENT_DESCRIPTION = (
     "A helpful AI assistant that maintains a rich long-term memory of the "
     "user. Remembers specific personal details (routines, preferences, "
     "places, people, milestones, plans) and recalls them accurately when "
@@ -96,10 +110,15 @@ LONGMEMEVAL_AGENT_DESCRIPTION = (
 # The model already knows when to admit uncertainty; nudging that
 # behavior in a Voice cue overweights it. Lead-with-value is the only
 # cue that consistently correlates with grading without backfiring.
-LONGMEMEVAL_SPEECH_PATTERNS: list[str] = [
+BENCHMARK_SPEECH_PATTERNS: list[str] = [
     "Answers recall questions with the literal value first — a number, "
     "name, date, or short phrase — before any optional context.",
 ]
+
+# Back-compat aliases — deprecated, kept for one release cycle.
+LONGMEMEVAL_AGENT_NAME = BENCHMARK_AGENT_NAME
+LONGMEMEVAL_AGENT_DESCRIPTION = BENCHMARK_AGENT_DESCRIPTION
+LONGMEMEVAL_SPEECH_PATTERNS = BENCHMARK_SPEECH_PATTERNS
 
 
 # ---------------------------------------------------------------------------
@@ -107,24 +126,25 @@ LONGMEMEVAL_SPEECH_PATTERNS: list[str] = [
 # ---------------------------------------------------------------------------
 
 
-def ensure_longmemeval_agent(
+def ensure_benchmark_agent(
     client: "Sonzai",
     *,
-    name: str = LONGMEMEVAL_AGENT_NAME,
-    description: str = LONGMEMEVAL_AGENT_DESCRIPTION,
+    name: str = BENCHMARK_AGENT_NAME,
+    description: str = BENCHMARK_AGENT_DESCRIPTION,
     speech_patterns: list[str] | None = None,
 ) -> tuple[str, bool]:
-    """Create or return the canonical LongMemEval benchmark agent (sync).
+    """Create or return the canonical benchmark agent (sync).
 
     Returns ``(agent_id, existed_before)``. The agent is generated via
     ``/agents/generate-and-create`` on first call (LLM expands the
     description into a Big5 + personality_prompt profile) and cached by
     name server-side. Speech patterns are then applied via PATCH so the
-    agent answers in the shape LongMemEval grades on.
+    agent answers in the shape recall benchmarks grade on.
 
+    Used across all memory benchmarks (LongMemEval, LoCoMo, etc.).
     Override any field by passing it explicitly.
     """
-    sp = speech_patterns if speech_patterns is not None else LONGMEMEVAL_SPEECH_PATTERNS
+    sp = speech_patterns if speech_patterns is not None else BENCHMARK_SPEECH_PATTERNS
     agent_id, existed = _generate_and_create_sync(client, name=name, description=description)
     try:
         client.agents.update(agent_id, speech_patterns=sp)
@@ -136,15 +156,15 @@ def ensure_longmemeval_agent(
     return agent_id, existed
 
 
-async def ensure_longmemeval_agent_async(
+async def ensure_benchmark_agent_async(
     client: "AsyncSonzai",
     *,
-    name: str = LONGMEMEVAL_AGENT_NAME,
-    description: str = LONGMEMEVAL_AGENT_DESCRIPTION,
+    name: str = BENCHMARK_AGENT_NAME,
+    description: str = BENCHMARK_AGENT_DESCRIPTION,
     speech_patterns: list[str] | None = None,
 ) -> tuple[str, bool]:
-    """Async variant of :func:`ensure_longmemeval_agent`."""
-    sp = speech_patterns if speech_patterns is not None else LONGMEMEVAL_SPEECH_PATTERNS
+    """Async variant of :func:`ensure_benchmark_agent`."""
+    sp = speech_patterns if speech_patterns is not None else BENCHMARK_SPEECH_PATTERNS
     agent_id, existed = await _generate_and_create_async(
         client, name=name, description=description
     )
@@ -156,6 +176,11 @@ async def ensure_longmemeval_agent_async(
             agent_id, exc,
         )
     return agent_id, existed
+
+
+# Back-compat aliases — identity assignments so `is` comparisons hold.
+ensure_longmemeval_agent = ensure_benchmark_agent
+ensure_longmemeval_agent_async = ensure_benchmark_agent_async
 
 
 # ---------------------------------------------------------------------------
@@ -239,7 +264,7 @@ def ensure_convomem_agent(
 ) -> tuple[str, bool]:
     """Create or return the canonical ConvoMem benchmark agent (sync).
 
-    Behavior mirrors :func:`ensure_longmemeval_agent` exactly — idempotent,
+    Behavior mirrors :func:`ensure_benchmark_agent` exactly — idempotent,
     keyed by ``name`` server-side, speech_patterns re-applied on every call.
     """
     sp = speech_patterns if speech_patterns is not None else CONVOMEM_SPEECH_PATTERNS
