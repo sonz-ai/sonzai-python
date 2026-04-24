@@ -434,11 +434,13 @@ __all__ = [
     "DEFAULT_MODEL",
     "AgentTurn",
     "GeminiJudge",
+    "LocomoVerdict",
     "PartnerTurn",
     "QAVerdict",
     "SessionSummary",
     "SotopiaScore",
     "agent_turn_async",
+    "judge_locomo_async",
     "judge_qa",
     "judge_qa_async",
     "judge_sotopia",
@@ -447,6 +449,41 @@ __all__ = [
     "partner_turn_async",
     "summarize_session_async",
 ]
+
+
+# ---------------------------------------------------------------------------
+# LoCoMo judge — mirrors mem0's LLM-judge binary CORRECT/WRONG rubric.
+# The prompt is ported verbatim in benchmarks/locomo/prompts.py. Kept here
+# (not in locomo/) because common/gemini_judge.py is the hub for all
+# structured-output grading wrappers.
+# ---------------------------------------------------------------------------
+
+
+class LocomoVerdict(BaseModel):
+    """Binary verdict matching mem0's llm_judge output schema."""
+    label: str  # "CORRECT" or "WRONG"
+
+
+async def judge_locomo_async(
+    judge: GeminiJudge,
+    *,
+    question: str,
+    gold_answer: str,
+    generated_answer: str,
+) -> LocomoVerdict:
+    """Grade a LoCoMo answer against the gold using mem0's ACCURACY_PROMPT.
+
+    Prompt is imported from benchmarks.locomo.prompts to keep the single
+    source of truth there (alongside ANSWER_PROMPT).
+    """
+    from benchmarks.locomo.prompts import ACCURACY_PROMPT
+
+    prompt = ACCURACY_PROMPT.format(
+        question=question.strip(),
+        gold_answer=gold_answer.strip(),
+        generated_answer=generated_answer.strip() or "[no answer]",
+    )
+    return await judge.grade_async(prompt, LocomoVerdict)
 
 
 # ---------------------------------------------------------------------------
