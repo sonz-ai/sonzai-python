@@ -33,3 +33,21 @@ def wilson_ci(*, successes: int, n: int, z: float = 1.96) -> tuple[float, float]
     lo = max(0.0, center - half)
     hi = min(1.0, center + half)
     return (lo, hi)
+
+
+def flip_rate(*, correct: int, runs: int) -> float:
+    """Per-question noise estimator across N bench runs.
+
+    Given how many of ``runs`` marked a question correct, returns
+    ``2 * p * (1 - p)`` where ``p = correct / runs``. Maxes at 0.5 when
+    perfectly split, drops to 0 when the question is stable (all-correct
+    or all-wrong across runs).
+
+    Interpretation: the mean flip_rate across a subtype is an empirical
+    lower bound on how much of that subtype's miss rate is reducible
+    via better retrieval vs. judge/LLM stochasticity.
+    """
+    if runs <= 0:
+        return 0.0
+    p = correct / runs
+    return 2 * p * (1 - p)
