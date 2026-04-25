@@ -77,11 +77,21 @@ def _build_question(raw: dict) -> LongMemEvalQuestion:
     # LongMemEval haystacks are already in chronological order but sort defensively.
     sessions.sort(key=lambda s: s.parsed_date)
 
+    # LongMemEval encodes numeric answers (counts, sums, dollar amounts) as
+    # raw int / float in the JSON, e.g. {"answer": 3} for "How many items".
+    # The dataclass declares answer: str and downstream consumers (the
+    # Gemini judge's prompt formatter, scoring's _contains_answer) call
+    # str methods directly. Coerce at the producer so the type hint isn't
+    # a lie and 'int has no attribute strip' can't appear in judge logs.
+    raw_answer = raw["answer"]
+    if not isinstance(raw_answer, str):
+        raw_answer = str(raw_answer)
+
     return LongMemEvalQuestion(
         question_id=raw["question_id"],
         question_type=raw["question_type"],
         question=raw["question"],
-        answer=raw["answer"],
+        answer=raw_answer,
         question_date=raw.get("question_date", ""),
         sessions=sessions,
         answer_session_ids=list(raw.get("answer_session_ids", [])),
