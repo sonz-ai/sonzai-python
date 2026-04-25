@@ -320,6 +320,7 @@ class AtomicFact(BaseModel):
     agent_id: str
     atomic_text: str
     character_salience: float | None = None
+    chunk_id: str | None = None
     cluster_id: str | None = None
     confidence: float
     created_at: AwareDatetime
@@ -2083,9 +2084,29 @@ class EndSessionOutputBody(BaseModel):
     """
     A URL to the JSON Schema for this object.
     """
+    agent_id: str | None = None
+    """
+    Echo of the resolved agent_id.
+    """
     async_: Annotated[bool, Field(alias='async')]
     """
     Whether processing continues asynchronously
+    """
+    enqueued_at: str | None = None
+    """
+    RFC3339 timestamp the worker saw the enqueue.
+    """
+    processing_id: str | None = None
+    """
+    Set when the server is in async=true mode. Poll /sessions/end/status/{processing_id} for completion.
+    """
+    session_id: str | None = None
+    """
+    Echo of the session_id — convenience for SDK pollers.
+    """
+    status_url: str | None = None
+    """
+    Set when processing_id is set. Relative URL the caller should GET to poll state.
     """
     success: bool
     """
@@ -5511,6 +5532,55 @@ class ServiceUsageSummary(BaseModel):
     month: str
     total_charge_usd: Annotated[float, Field(alias='totalChargeUsd')]
     total_events: Annotated[int, Field(alias='totalEvents')]
+
+
+class SessionEndStatusOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/SessionEndStatusOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    """
+    Echo of the resolved agent_id.
+    """
+    attempt: int | None = None
+    """
+    1-based attempt counter (bumps on JetStream redeliveries).
+    """
+    enqueued_at: str
+    """
+    RFC3339 timestamp the handler saw the enqueue.
+    """
+    error: str | None = None
+    """
+    Populated on state=failed with the dispatch or terminal reason.
+    """
+    finished_at: str | None = None
+    """
+    Present on terminal states (done/failed).
+    """
+    session_id: str
+    """
+    Echo of the session_id so callers can correlate.
+    """
+    started_at: str | None = None
+    """
+    Present once the worker has picked the message up.
+    """
+    state: str
+    """
+    One of: pending | processing | done | failed.
+    """
 
 
 class SessionMessage(BaseModel):

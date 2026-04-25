@@ -9,6 +9,7 @@ from urllib.parse import quote
 from sonzai._generated.models import (
     EndSessionInputBody,
     EndSessionOutputBody,
+    SessionEndStatusOutputBody,
     SetSessionToolsOutputBody,
     StartSessionInputBody,
     StartSessionOutputBody,
@@ -27,6 +28,7 @@ class Sessions(_SessionsBase):
         self,
         agent_id: str,
         *,
+        force_sync: bool | None = None,
         duration_seconds: int,
         instance_id: str | None = None,
         messages: list[Any] | None = None,
@@ -39,7 +41,9 @@ class Sessions(_SessionsBase):
     ) -> EndSessionOutputBody:
         """End a chat session"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/end"
-        params = None
+        params: dict[str, Any] = {}
+        if force_sync is not None:
+            params["force_sync"] = force_sync
         _raw: dict[str, Any] = {}
         if duration_seconds is not None:
             _raw["duration_seconds"] = duration_seconds
@@ -104,12 +108,23 @@ class Sessions(_SessionsBase):
         data = self._http.put(path, params=params)
         return SetSessionToolsOutputBody.model_validate(data)
 
+    def get_session_end_status(
+        self,
+        processing_id: str,
+    ) -> SessionEndStatusOutputBody:
+        """Poll async session-end processing status"""
+        path = f"/api/v1/sessions/end/status/{quote(processing_id, safe='')}"
+        params = None
+        data = self._http.get(path, params=params)
+        return SessionEndStatusOutputBody.model_validate(data)
+
 
 class AsyncSessions(_SessionsBase):
     async def end_session(
         self,
         agent_id: str,
         *,
+        force_sync: bool | None = None,
         duration_seconds: int,
         instance_id: str | None = None,
         messages: list[Any] | None = None,
@@ -122,7 +137,9 @@ class AsyncSessions(_SessionsBase):
     ) -> EndSessionOutputBody:
         """End a chat session"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/sessions/end"
-        params = None
+        params: dict[str, Any] = {}
+        if force_sync is not None:
+            params["force_sync"] = force_sync
         _raw: dict[str, Any] = {}
         if duration_seconds is not None:
             _raw["duration_seconds"] = duration_seconds
@@ -186,3 +203,13 @@ class AsyncSessions(_SessionsBase):
         params = None
         data = await self._http.put(path, params=params)
         return SetSessionToolsOutputBody.model_validate(data)
+
+    async def get_session_end_status(
+        self,
+        processing_id: str,
+    ) -> SessionEndStatusOutputBody:
+        """Poll async session-end processing status"""
+        path = f"/api/v1/sessions/end/status/{quote(processing_id, safe='')}"
+        params = None
+        data = await self._http.get(path, params=params)
+        return SessionEndStatusOutputBody.model_validate(data)

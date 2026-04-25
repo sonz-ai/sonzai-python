@@ -27,6 +27,7 @@ Flow per question:
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import uuid
 
@@ -478,9 +479,46 @@ async def run_question(
             # 24h of advance, weekly consolidation every 7 days) without
             # inflating the advance-time budget when the haystack contains
             # morning+evening chats on the same date.
+            #
+            # Within a day, session replays are independent: they write to
+            # different session_ids, the extraction pipeline is per-session,
+            # and no fact-update ordering is implied between sessions with
+            # the same simulated clock. Running them in parallel cuts the
+            # 38–54 session haystack's ingest time from O(N × 30–60s) down
+            # to O(N/concurrency × 30–60s) — the difference between 25–55
+            # minutes per question (serial, always blowing the bench
+            # budget) and 3–6 minutes (concurrent, fits comfortably).
+            #
+            # Cross-day ordering is preserved because we still await all
+            # sessions for day D before calling _try_advance() for day D+1.
+            from itertools import groupby
+
+            # haystack is already date-sorted by the caller; groupby works.
+            grouped = [
+                (day, list(sessions))
+                for day, sessions in groupby(
+                    haystack, key=lambda s: s.parsed_date.date()
+                )
+            ]
+
             prev_date = None
-            for session in haystack:
-                sess_date = session.parsed_date.date()
+            # Concurrency ceiling: don't drown the backend's session-end
+            # worker (concurrency=8 per VM). 6 leaves headroom for the
+            # bench's outer question-level concurrency (4) while still
+            # cutting within-day latency 6×.
+            intra_day_sem = asyncio.Semaphore(6)
+
+            async def _replay_with_sem(session):
+                async with intra_day_sem:
+                    await _replay_session(
+                        client,
+                        agent_id=agent_id,
+                        user_id=user_id,
+                        session_id=session.session_id,
+                        session=session,
+                    )
+
+            for sess_date, day_sessions in grouped:
                 if prev_date is not None and sess_date != prev_date:
                     day_gap = (sess_date - prev_date).days
                     # advance_time_chunked_async splits into 24h chunks — an
@@ -488,16 +526,13 @@ async def run_question(
                     # the weekly consolidation every 7 cumulative days.
                     await _try_advance(float(day_gap) * 24.0)
 
-                # Use LongMemEval's own session IDs (e.g., "answer_280352e9",
-                # "sharegpt_xxx_0") so memory.timeline groups extracted facts
-                # under the same IDs that `answer_session_ids` references —
-                # that's what session-level Recall@5 is scored against.
-                await _replay_session(
-                    client,
-                    agent_id=agent_id,
-                    user_id=user_id,
-                    session_id=session.session_id,
-                    session=session,
+                # Fire every session for this day concurrently; wait for
+                # all to complete before crossing into the next day's
+                # advance_time. Using gather so any individual session
+                # failure propagates (we want TIMEOUT to surface, not
+                # silently drop partial ingest).
+                await asyncio.gather(
+                    *[_replay_with_sem(s) for s in day_sessions]
                 )
                 prev_date = sess_date
 
