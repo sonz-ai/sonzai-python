@@ -6,4 +6,4 @@ shared_agent.json
 pinned_agents.json
 
 # Allow-list published receipts here — format matches sotopia/longmemeval.
-# !locomo_<date>_<hash>.jsonl
+!sonzai_20260425-134301.jsonl

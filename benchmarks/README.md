@@ -1,12 +1,50 @@
 # Sonzai benchmark suite
 
 Open-source benchmarks for the [Sonzai Mind Layer](https://sonz.ai). Reproducible,
-runnable by anyone with a Sonzai API key. Two benchmarks ship here:
+runnable by anyone with a Sonzai API key. Three benchmarks ship here:
 
 | Benchmark | What it measures | Result |
 |-----------|------------------|--------|
+| **LoCoMo** | Long-term conversational memory over 10 dialogues × ~30 sessions, 4 reasoning categories | Sonzai **0.732** overall LLM-judge accuracy — beats mem0's published headline |
 | **LongMemEval** | Memory recall + end-to-end QA over 500 long-horizon conversations | Sonzai matches or beats MemPalace on every headline metric — including the ones MemPalace was specifically designed to win |
 | **SOTOPIA longitudinal** | Social intelligence trajectory across 30 sessions with the same user | The thing Sonzai exists for: personality coherence and self-learning that compound across hundreds of sessions |
+
+### Sonzai vs mem0 on LoCoMo — head-to-head accuracy
+
+Latest run: full 10-dialogue slice (n=1540 QAs across 4 categories), Gemini
+3.1 Flash Lite reader + judge, mem0's `ANSWER_PROMPT` and `ACCURACY_PROMPT`
+ported byte-for-byte from their evaluation suite.
+[`results/sonzai_20260425-134301.jsonl`](locomo/results/sonzai_20260425-134301.jsonl)
+
+| Category | n | Sonzai (J) | mem0 (J, published) |
+|---|---:|---:|---:|
+| 1. single-hop | 282 | **0.720** | ~0.65 |
+| 2. multi-hop | 321 | **0.723** | ~0.55 |
+| 3. temporal reasoning | 96 | 0.531 | ~0.55 |
+| 4. open-domain | 841 | **0.762** | ~0.71 |
+| **Overall** | 1540 | **0.732** ✅ | ~0.67 |
+
+Plus retrieval-side numbers (Sonzai-native diagnostics — neither system
+publishes these on LoCoMo):
+
+| k | Sonzai R@k | Sonzai NDCG@k |
+|---:|---:|---:|
+| 5 | 0.888 | — |
+| 10 | 0.953 | — |
+
+**Multi-hop is Sonzai's strongest category (+~17 points over mem0).** Multi-hop
+QA is the hardest LoCoMo bucket and the one where mem0's graph variant
+typically claims its lift. Sonzai matches/beats it without graph-specific
+machinery — facts are extracted, deduped, and indexed once at session-end;
+the SP4 KNN dedup gate + SPO triple-graph dedup keep the corpus clean
+across thousands of `/process` calls.
+
+Temporal reasoning (cat 3) is where the published numbers tighten —
+this slice rewards systems that fire `advance_time`-driven consolidation
+between sessions to bake date arithmetic into the corpus. The numbers above
+are with `--skip-advance-time` (no self-learning); the production-flow
+number with workbench advance_time enabled is queued for the next bench
+cycle and expected to push cat 3 past 0.65.
 
 ### Sonzai vs MemPalace — full numbers
 
