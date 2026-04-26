@@ -29,8 +29,20 @@ publishes these on LoCoMo):
 
 | k | Sonzai R@k | Sonzai NDCG@k |
 |---:|---:|---:|
-| 5 | 0.888 | — |
-| 10 | 0.953 | — |
+| 1 | 0.674 | 0.674 |
+| 3 | 0.843 | 0.772 |
+| 5 | 0.888 | 0.787 |
+| 10 | 0.948 | 0.804 |
+| 30 | 0.992 | 0.810 |
+
+Per-category retrieval breakdown:
+
+| Category | n | R@5 | NDCG@5 | R@10 | NDCG@10 | R@30 | NDCG@30 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 1. single-hop | 282 | 0.908 | 0.792 | 0.982 | 0.801 | 0.993 | 0.779 |
+| 2. multi-hop | 321 | 0.913 | 0.831 | 0.953 | 0.843 | **1.000** | 0.854 |
+| 3. temporal | 96 | 0.635 | 0.512 | 0.740 | 0.542 | 0.917 | 0.580 |
+| 4. open-domain | 841 | 0.900 | 0.801 | 0.958 | 0.820 | 0.998 | 0.830 |
 
 **Multi-hop is Sonzai's strongest category (+~17 points over mem0).** Multi-hop
 QA is the hardest LoCoMo bucket and the one where mem0's graph variant
