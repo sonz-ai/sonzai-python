@@ -502,11 +502,17 @@ async def run_question(
             ]
 
             prev_date = None
-            # Concurrency ceiling: don't drown the backend's session-end
-            # worker (concurrency=8 per VM). 6 leaves headroom for the
-            # bench's outer question-level concurrency (4) while still
-            # cutting within-day latency 6×.
-            intra_day_sem = asyncio.Semaphore(6)
+            # Concurrency ceiling: backend's session-end worker is now
+            # 96 per xlarge VM (services/platform/api/internal/config/
+            # compute_size.go SessionEndWorkerConcurrency). The historical
+            # value of 6 was a 16× under-utilisation that turned 30-session
+            # haystacks into 4-5 minute serial walls and blew the bench's
+            # 900s per-question budget. 24 leaves comfortable headroom for
+            # the bench's outer question-level concurrency (4 × 24 = 96
+            # parallel session-ends across all 4 questions in flight,
+            # exactly saturating one xlarge VM) while still cutting
+            # within-day latency far below the prior bottleneck.
+            intra_day_sem = asyncio.Semaphore(24)
 
             async def _replay_with_sem(session):
                 async with intra_day_sem:
