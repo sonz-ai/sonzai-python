@@ -19,3 +19,4 @@ venv/
 .worktrees/
 REQUEST_BODY_MAP.csv
 PAGINATE_MAP.csv
+failures.json

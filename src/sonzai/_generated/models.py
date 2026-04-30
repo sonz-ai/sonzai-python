@@ -212,6 +212,7 @@ class AgentIndex(BaseModel):
     instance_count: int
     is_active: bool
     last_seen_at: AwareDatetime | None = None
+    mcp_enabled: list[str] | None = None
     name: str | None = None
     owner_display_name: str | None = None
     owner_email: str | None = None
@@ -1076,7 +1077,10 @@ class CreateAgentBodyCapabilitiesStruct(BaseModel):
         populate_by_name=True,
     )
     image_generation: bool
-    inventory: bool
+    inventory: bool | None = None
+    """
+    Inventory aggregate-compute tools (count/sum/avg). Server default ON; pass false to disable.
+    """
 
 
 class CreateAgentBodyDimensionsStruct(BaseModel):
@@ -1113,10 +1117,17 @@ class CreateAgentBodyToolCapabilitiesStruct(BaseModel):
         populate_by_name=True,
     )
     image_generation: bool
-    inventory: bool
+    inventory: bool | None = None
+    """
+    Inventory aggregate-compute tools (sonzai_inventory + sonzai_inventory_update). Server default ON; pass false to disable.
+    """
     knowledge_base: bool | None = None
     """
     Enable the knowledge_search tool (reads from the agent's project-scoped KB).
+    """
+    mcp_enabled: list[str] | None = None
+    """
+    IDs of project MCP catalog entries this agent uses
     """
     memory_mode: Literal['sync', 'async'] | None = None
     """
@@ -4327,6 +4338,136 @@ class LoadSkillOutputBody(BaseModel):
     when_to_use: str | None = None
 
 
+class MCPCatalogAuth(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    bearer_secret_ref: str | None = None
+    """
+    sm:// reference (read only)
+    """
+    bearer_token: str | None = None
+    """
+    Bearer token (write only)
+    """
+    header_name: str | None = None
+    """
+    Custom header name when kind=header
+    """
+    header_secret_ref: str | None = None
+    """
+    sm:// reference (read only)
+    """
+    header_value: str | None = None
+    """
+    Header value (write only)
+    """
+    kind: Literal['none', 'bearer', 'header', 'oauth']
+    """
+    Auth discriminator
+    """
+
+
+class MCPCatalogCreateBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/MCPCatalogCreateBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    auth: MCPCatalogAuth
+    description: str | None = None
+    name: Annotated[str, Field(max_length=128, min_length=1)]
+    transport: Literal['streamable-http', 'sse']
+    url: AnyUrl
+    """
+    Must be HTTPS
+    """
+
+
+class MCPCatalogUpdateBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/MCPCatalogUpdateBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    auth: MCPCatalogAuth | None = None
+    description: str | None = None
+    name: str | None = None
+    transport: str | None = None
+    url: str | None = None
+
+
+class MCPCatalogUsagesResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/MCPCatalogUsagesResponse.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_ids: list[str] | None
+
+
+class MCPHealthDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    failures_1h: int
+    last_auth_rejected_at: str | None = None
+    last_error: str | None = None
+    last_error_at: str | None = None
+    last_ok_at: str | None = None
+    status: str
+
+
+class MCPProbeResponseBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/MCPProbeResponseBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    error: str | None = None
+    latency_ms: int
+    ok: bool
+    tool_count: int
+
+
+class MCPToolDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    description: str | None = None
+    input_schema: dict[str, Any] | None = None
+    name: str
+
+
 class MemoryNode(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6726,6 +6867,10 @@ class UpdateCapabilitiesInputBody(BaseModel):
     """
     Enable/disable knowledge base search
     """
+    mcp_enabled: Annotated[list[str] | None, Field(alias='mcpEnabled')] = None
+    """
+    IDs of project MCP catalog entries this agent uses
+    """
     memory_mode: Annotated[
         Literal['sync', 'async'] | None, Field(alias='memoryMode')
     ] = None
@@ -7990,6 +8135,7 @@ class AgentCapabilities(BaseModel):
     knowledge_base_scope_mode: Annotated[
         str | None, Field(alias='knowledgeBaseScopeMode')
     ] = None
+    mcp_enabled: list[str] | None = None
     memory_mode: Annotated[str | None, Field(alias='memoryMode')] = None
     music_generation: Annotated[bool, Field(alias='musicGeneration')]
     music_unlocked_at: Annotated[
@@ -9107,6 +9253,46 @@ class ListWebhooksOutputBody(BaseModel):
     """
 
 
+class MCPCatalogEntry(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/MCPCatalogEntry.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    auth: MCPCatalogAuth
+    created_at: str
+    description: str
+    health: MCPHealthDTO
+    id: str
+    name: str
+    transport: str
+    updated_at: str
+    url: str
+
+
+class MCPCatalogToolsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/MCPCatalogToolsResponse.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    tools: list[MCPToolDTO] | None
+
+
 class MeResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -9629,6 +9815,7 @@ class AgentDetailResponse(BaseModel):
     instance_count: int
     is_active: bool
     last_seen_at: AwareDatetime | None = None
+    mcp_enabled: list[str] | None = None
     name: str | None = None
     owner_display_name: str | None = None
     owner_email: str | None = None
@@ -9683,6 +9870,26 @@ class BatchPersonalityResponse(BaseModel):
     A URL to the JSON Schema for this object.
     """
     personalities: dict[str, BatchPersonalityEntry]
+
+
+class ListMCPCatalogOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ListMCPCatalogOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    entries: list[MCPCatalogEntry] | None
+    """
+    Catalog entries
+    """
 
 
 class RunEvalRequest(BaseModel):

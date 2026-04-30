@@ -26,6 +26,7 @@ ported byte-for-byte from their evaluation suite.
 
 Plus retrieval-side numbers (Sonzai-native diagnostics — neither system
 publishes these on LoCoMo):
+Demonstrates Sonzai's self-learning system via online learning and reinforcement learning across sessions.
 
 | k | Sonzai R@k | Sonzai NDCG@k |
 |---:|---:|---:|

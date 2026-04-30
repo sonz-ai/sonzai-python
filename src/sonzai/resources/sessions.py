@@ -14,14 +14,19 @@ from .._http import AsyncHTTPClient, HTTPClient
 from .._request_helpers import encode_body
 from ..types import ChatMessage, SessionResponse
 
-# Polling tunables for the async session-end path. The server's status
-# entry has a 1h TTL so overall_timeout=900s (15m) leaves generous
-# headroom for a stalled OnSessionEnd call while still surfacing a clear
-# error to the caller when the pipeline is truly wedged.
+# Polling tunables for the async session-end path. The server-side status
+# is now backed by CockroachDB with 30-day retention (was Redis 1h-TTL),
+# so the overall timeout no longer needs to align with TTL eviction.
+# Bumped 900s → 1800s (30m) on 2026-04-26 because longmemeval haystacks
+# with 100+ sessions can saturate worker concurrency briefly and tail
+# latencies on individual session-ends were exceeding 15m even though
+# the worker was making forward progress. The pipeline is durable; a
+# truly wedged job will still surface as state='failed' from the worker
+# rather than via this client-side cap.
 _SESSION_END_POLL_INITIAL_INTERVAL = 0.5  # seconds
 _SESSION_END_POLL_MAX_INTERVAL = 5.0  # seconds
 _SESSION_END_POLL_BACKOFF = 1.5
-_SESSION_END_OVERALL_TIMEOUT = 900.0
+_SESSION_END_OVERALL_TIMEOUT = 1800.0
 
 
 def _next_poll_interval(previous: float) -> float:

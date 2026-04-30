@@ -200,6 +200,7 @@ class Agents(_AgentsBase):
         image_generation: bool | None = None,
         inventory: bool | None = None,
         knowledge_base: bool | None = None,
+        mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
         remember_name: bool | None = None,
         web_search: bool | None = None,
@@ -214,6 +215,8 @@ class Agents(_AgentsBase):
             _raw["inventory"] = inventory
         if knowledge_base is not None:
             _raw["knowledgeBase"] = knowledge_base
+        if mcp_enabled is not None:
+            _raw["mcpEnabled"] = mcp_enabled
         if memory_mode is not None:
             _raw["memoryMode"] = memory_mode
         if remember_name is not None:
@@ -574,6 +577,7 @@ class AsyncAgents(_AgentsBase):
         image_generation: bool | None = None,
         inventory: bool | None = None,
         knowledge_base: bool | None = None,
+        mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
         remember_name: bool | None = None,
         web_search: bool | None = None,
@@ -588,6 +592,8 @@ class AsyncAgents(_AgentsBase):
             _raw["inventory"] = inventory
         if knowledge_base is not None:
             _raw["knowledgeBase"] = knowledge_base
+        if mcp_enabled is not None:
+            _raw["mcpEnabled"] = mcp_enabled
         if memory_mode is not None:
             _raw["memoryMode"] = memory_mode
         if remember_name is not None:
