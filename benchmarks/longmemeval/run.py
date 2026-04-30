@@ -99,6 +99,15 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Number of questions to evaluate (0 = all 500). Default 20 for a smoke run.",
     )
     p.add_argument(
+        "--skip",
+        type=int,
+        default=0,
+        help="Number of leading questions to skip (sliding-window iteration). "
+        "Use with --limit for non-overlapping batches: --skip 0 --limit 5 covers "
+        "questions 1-5; --skip 5 --limit 5 covers 6-10; etc. Applied AFTER "
+        "--question-type filtering. Default 0 (start from the first question).",
+    )
+    p.add_argument(
         "--concurrency",
         type=int,
         default=4,
@@ -150,6 +159,19 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Sonzai only: when reusing agents, call memory.reset before each "
         "question to wipe stale state. Rarely needed — delete the snapshot "
         "file to force re-ingest instead.",
+    )
+    p.add_argument(
+        "--fresh-agent",
+        action="store_true",
+        help="Sonzai only: create a brand-new agent for this run by appending a "
+        "timestamp suffix to BENCHMARK_AGENT_NAME. Skips shared_agent.json "
+        "load/save so the agent has zero orphan-posting history in BM25 / "
+        "vector indexes from prior bench runs. Required for clean attribution "
+        "of retrieval-pipeline fixes — without it, every bench run pins to "
+        "the SAME server-side agent (idempotent get-or-create on name) and "
+        "BM25/vector indexes accumulate orphans across iterations forever. "
+        "Cost: pays the ~19min full-ingest tax per question. Use only when "
+        "validating a behaviour change in retrieval / dedup / consolidation.",
     )
     p.add_argument(
         "--max-sessions-per-question",
@@ -209,6 +231,8 @@ async def _run_sonzai_backend(
     reuse_agents_path: str | None = None,
     clear_reused_memory: bool = False,
     dataset_path_hint: str | None = None,
+    skip_offset: int = 0,
+    fresh_agent: bool = False,
 ) -> list[dict]:
     # advance_time runs the full CE worker stack per simulated day and can take
     # minutes per call. sessions/end with wait=true also serializes fact
@@ -243,11 +267,19 @@ async def _run_sonzai_backend(
             upsert_agent,
         )
 
+        # Include --skip in dataset_tag so different sliding-window
+        # offsets don't collide on the snapshot file. Without this,
+        # --skip 0 --limit 5 and --skip 5 --limit 5 produce slices
+        # with the same `limit=5`, matching each other's snapshot →
+        # wrong agent_ids reused for the wrong questions.
+        tag = dataset_tag(dataset_path_hint)
+        if skip_offset:
+            tag = f"{tag}#skip={skip_offset}" if tag else f"#skip={skip_offset}"
         current_slice = SliceKey(
             benchmark="longmemeval",
             limit=len(questions),
             max_sessions_per_question=max_sessions,
-            dataset_tag=dataset_tag(dataset_path_hint),
+            dataset_tag=tag,
         )
         loaded = load_snapshot(reuse_agents_path)
         if loaded and loaded.slice.matches(current_slice):
@@ -282,7 +314,11 @@ async def _run_sonzai_backend(
 
     bench_results_dir = Path(__file__).parent / "results"
 
-    if not shared_agent_id:
+    if not shared_agent_id and not fresh_agent:
+        # Skip the disk pin entirely when --fresh-agent is set: the whole
+        # point of --fresh-agent is "no orphan-posting history", and the
+        # disk pin would resolve us back to the agent that has 4+ runs
+        # of cumulative BM25/vector orphan state.
         pinned = load_pinned_agent(bench_results_dir, benchmark="longmemeval")
         if pinned and pinned.agent_id:
             shared_agent_id = pinned.agent_id
@@ -313,8 +349,25 @@ async def _run_sonzai_backend(
         ensure_benchmark_agent_async,
     )
 
-    agent_name = BENCHMARK_AGENT_NAME
-    resolved_agent_id, agent_existed = await ensure_benchmark_agent_async(client)
+    # --fresh-agent forces a brand-new agent by suffixing a timestamp to
+    # the canonical name. ensure_benchmark_agent_async is idempotent on
+    # `name`, so without the suffix every bench run resolves to the
+    # SAME server-side agent and accumulates BM25/vector orphan postings
+    # across iterations — masking the lift of any retrieval / dedup /
+    # consolidation fix. The fresh-suffix path produces a never-used
+    # agent_id with zero orphan history.
+    if fresh_agent:
+        import datetime
+        fresh_suffix = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%d-%H%M%S")
+        agent_name = f"{BENCHMARK_AGENT_NAME}-{fresh_suffix}"
+        logger.info(
+            "fresh-agent: using unique name %s (suffix=%s) — server creates a "
+            "brand-new agent with no orphan-posting history", agent_name, fresh_suffix,
+        )
+    else:
+        agent_name = BENCHMARK_AGENT_NAME
+
+    resolved_agent_id, agent_existed = await ensure_benchmark_agent_async(client, name=agent_name)
     logger.info(
         "bench: shared agent %s ready (existed=%s, concise-recall speech_patterns applied)",
         resolved_agent_id, agent_existed,
@@ -329,12 +382,18 @@ async def _run_sonzai_backend(
         "reuse-agents: shared agent %s (name=%s, existed=%s)",
         shared_agent_id, agent_name, agent_existed,
     )
-    save_pinned_agent(
-        bench_results_dir,
-        benchmark="longmemeval",
-        agent_id=shared_agent_id,
-        name=agent_name,
-    )
+    # Skip the disk pin write when --fresh-agent: the timestamped name
+    # is intentionally not durable across runs, and writing it to
+    # shared_agent.json would teach future runs to reuse this fresh
+    # agent (defeating the point of --fresh-agent). The agent stays
+    # alive on the server but the bench treats it as ephemeral.
+    if not fresh_agent:
+        save_pinned_agent(
+            bench_results_dir,
+            benchmark="longmemeval",
+            agent_id=shared_agent_id,
+            name=agent_name,
+        )
 
     # Also stamp the shared agent into the slice-specific snapshot so
     # reuse-snapshot loads can verify the shared-agent identity matches.
@@ -386,11 +445,11 @@ async def _run_sonzai_backend(
                         clear_memory_before_reuse=clear_reused_memory,
                         keep_agent_alive=True,  # never delete the shared agent
                     ),
-                    timeout=900.0,
+                    timeout=1800.0,
                 )
             except asyncio.TimeoutError:
-                logger.error("sonzai backend TIMEOUT on %s after 900s", q.question_id)
-                return _error_row(q, "sonzai", "per-question timeout (900s)")
+                logger.error("sonzai backend TIMEOUT on %s after 1800s", q.question_id)
+                return _error_row(q, "sonzai", "per-question timeout (1800s)")
             except Exception as e:
                 logger.exception("sonzai backend failed on %s", q.question_id)
                 return _error_row(q, "sonzai", str(e))
@@ -1340,7 +1399,13 @@ async def _amain(args: argparse.Namespace) -> int:
     # filter sees every candidate row; then re-slice to --limit so the filter
     # result respects the requested size. Without this, --limit would cut off
     # subtypes that don't appear in the first N rows of the shuffled file.
-    load_limit = 0 if args.question_type else args.limit
+    # When --skip is set we always need the FULL filtered set first so we can
+    # offset into it; --limit alone (no skip) keeps the legacy load-then-cap
+    # path so behaviour is unchanged for callers that don't use --skip.
+    if args.question_type or args.skip:
+        load_limit = 0
+    else:
+        load_limit = args.limit
     questions = load_questions(limit=load_limit, path=str(dataset_path))
     if args.question_type:
         before = len(questions)
@@ -1350,8 +1415,21 @@ async def _amain(args: argparse.Namespace) -> int:
             f"{len(questions)} of {before} kept.",
             file=sys.stderr,
         )
-        if args.limit and len(questions) > args.limit:
-            questions = questions[: args.limit]
+    if args.skip:
+        if args.skip >= len(questions):
+            print(
+                f"--skip={args.skip} >= total questions {len(questions)}; nothing to run.",
+                file=sys.stderr,
+            )
+            questions = []
+        else:
+            questions = questions[args.skip :]
+            print(
+                f"Skipped first {args.skip} questions; {len(questions)} remaining.",
+                file=sys.stderr,
+            )
+    if args.limit and len(questions) > args.limit:
+        questions = questions[: args.limit]
     print(
         f"Loaded {len(questions)} questions from LongMemEval "
         f"(cache: {cache_root()}).",
@@ -1362,6 +1440,19 @@ async def _amain(args: argparse.Namespace) -> int:
         GeminiJudge(model=args.judge_model) if args.mode in {"qa", "both"} else None
     )
 
+    # Make --reuse-agents skip-aware so non-overlapping batches
+    # (--skip 0 --limit 5 vs --skip 5 --limit 5) don't clobber each
+    # other's snapshot file. When the user accepted the default path
+    # (didn't pass an explicit one) AND --skip > 0, append the skip
+    # offset to the filename. Explicit paths are honoured verbatim.
+    reuse_path = args.reuse_agents
+    if reuse_path and args.skip > 0:
+        default_path = str(Path(__file__).parent / "results" / "reuse_agents.json")
+        if reuse_path == default_path:
+            reuse_path = str(
+                Path(__file__).parent / "results" / f"reuse_agents_skip{args.skip}.json"
+            )
+
     t0 = time.time()
     if args.backend == "sonzai":
         rows = await _run_sonzai_backend(
@@ -1371,9 +1462,11 @@ async def _amain(args: argparse.Namespace) -> int:
             judge=judge,
             skip_advance_time=args.skip_advance_time,
             max_sessions=args.max_sessions_per_question,
-            reuse_agents_path=args.reuse_agents,
+            reuse_agents_path=reuse_path,
             clear_reused_memory=args.clear_reused_memory,
             dataset_path_hint=str(args.dataset_path) if args.dataset_path else None,
+            skip_offset=args.skip,
+            fresh_agent=args.fresh_agent,
         )
     elif args.backend == "mem0":
         rows = await _run_mem0_backend(
