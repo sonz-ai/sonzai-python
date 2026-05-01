@@ -19,6 +19,7 @@ from ._exceptions import (
     ValidationError,
 )
 from ._retry import RetryPolicy
+from .sse_chunk import DEFAULT_MAX_CHUNK_SIZE, chunk_payload
 from .types import (
     AcknowledgeResponse,
     Agent,
@@ -432,6 +433,9 @@ __all__ = [
     "DeleteProjectResponse",
     # Retry
     "RetryPolicy",
+    # SSE Chunking
+    "DEFAULT_MAX_CHUNK_SIZE",
+    "chunk_payload",
     # Types - Inventory
     "BatchImportUser",
     "ImportJob",
