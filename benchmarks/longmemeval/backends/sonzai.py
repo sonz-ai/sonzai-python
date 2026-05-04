@@ -229,7 +229,13 @@ async def _retrieve(
 
 
 async def _ask_question(
-    client: AsyncSonzai, *, agent_id: str, user_id: str, question: str
+    client: AsyncSonzai,
+    *,
+    agent_id: str,
+    user_id: str,
+    question: str,
+    chat_provider: str | None = None,
+    chat_model: str | None = None,
 ) -> tuple[str, dict]:
     """Send the question and return ``(agent_answer, diagnostic)``.
 
@@ -268,14 +274,19 @@ async def _ask_question(
     # to almost everything. Single-session QA collapsed 0.94 → 0.59. So
     # we accept the chat-pollution and rely on the bench-side filter in
     # _retrieve (haystack-only) to stop pollution from skewing scoring.
+    chat_body: dict = {
+        "messages": [{"role": "user", "content": question}],
+        "user_id": user_id,
+    }
+    if chat_provider:
+        chat_body["provider"] = chat_provider
+    if chat_model:
+        chat_body["model"] = chat_model
     try:
         async for event in client._http.stream_sse(  # type: ignore[attr-defined]
             "POST",
             f"/api/v1/agents/{agent_id}/chat",
-            json_data={
-                "messages": [{"role": "user", "content": question}],
-                "user_id": user_id,
-            },
+            json_data=chat_body,
         ):
             etype = str(event.get("type") or "")
             if etype == "context_ready":
@@ -319,6 +330,8 @@ async def _ask_question(
             agent_id=agent_id,
             user_id=user_id,
             messages=[{"role": "user", "content": question}],
+            provider=chat_provider,
+            model=chat_model,
         )
         return getattr(resp, "content", "") or "", diag
 
@@ -339,6 +352,8 @@ async def run_question(
     skip_ingest: bool = False,
     clear_memory_before_reuse: bool = False,
     keep_agent_alive: bool = False,
+    chat_provider: str | None = None,
+    chat_model: str | None = None,
 ) -> BackendResult:
     """Ingest one LongMemEval question's haystack and evaluate Sonzai's memory.
 
@@ -559,7 +574,8 @@ async def run_question(
         chat_diag: dict = {}
         if include_qa:
             agent_answer, chat_diag = await _ask_question(
-                client, agent_id=agent_id, user_id=user_id, question=question.question
+                client, agent_id=agent_id, user_id=user_id, question=question.question,
+                chat_provider=chat_provider, chat_model=chat_model,
             )
 
         # Diagnostic: count facts actually stored for this (agent, user).

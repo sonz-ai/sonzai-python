@@ -207,6 +207,21 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "Order of files = column order in the table.",
     )
     p.add_argument(
+        "--provider",
+        default=None,
+        help="Sonzai only: override the LLM provider for this run "
+        "(e.g. 'openai', 'gemini', 'xai'). Applied per chat call AND set on "
+        "the shared bench agent's post-processing model so background fact "
+        "extraction / judges run on the same provider. Requires --model.",
+    )
+    p.add_argument(
+        "--model",
+        default=None,
+        help="Sonzai only: override the LLM model for this run "
+        "(e.g. 'gpt-5.4-mini', 'gemini-3.1-flash-lite-preview'). "
+        "See --provider.",
+    )
+    p.add_argument(
         "-v",
         "--verbose",
         action="count",
@@ -233,6 +248,8 @@ async def _run_sonzai_backend(
     dataset_path_hint: str | None = None,
     skip_offset: int = 0,
     fresh_agent: bool = False,
+    chat_provider: str | None = None,
+    chat_model: str | None = None,
 ) -> list[dict]:
     # advance_time runs the full CE worker stack per simulated day and can take
     # minutes per call. sessions/end with wait=true also serializes fact
@@ -372,6 +389,25 @@ async def _run_sonzai_backend(
         "bench: shared agent %s ready (existed=%s, concise-recall speech_patterns applied)",
         resolved_agent_id, agent_existed,
     )
+    # Apply --provider/--model overrides to the shared agent's
+    # post-processing config so background fact extraction, episode
+    # finalization, and judge calls all route through the requested
+    # provider. Chat answers get the same override per-call below.
+    if chat_provider and chat_model:
+        try:
+            await client.agents.update_post_processing_model(
+                resolved_agent_id, provider=chat_provider, model=chat_model,
+            )
+            logger.info(
+                "bench: post-processing model set to %s/%s on agent %s",
+                chat_provider, chat_model, resolved_agent_id,
+            )
+        except Exception as exc:
+            logger.warning(
+                "bench: failed to set post-processing model %s/%s on agent %s "
+                "(continuing — chat overrides still apply): %s",
+                chat_provider, chat_model, resolved_agent_id, exc,
+            )
     if shared_agent_id and shared_agent_id != resolved_agent_id:
         logger.info(
             "reuse-agents: pinned agent_id %s differs from server-resolved %s — "
@@ -444,6 +480,8 @@ async def _run_sonzai_backend(
                         skip_ingest=user_already_ingested,
                         clear_memory_before_reuse=clear_reused_memory,
                         keep_agent_alive=True,  # never delete the shared agent
+                        chat_provider=chat_provider,
+                        chat_model=chat_model,
                     ),
                     timeout=1800.0,
                 )
@@ -1467,6 +1505,8 @@ async def _amain(args: argparse.Namespace) -> int:
             dataset_path_hint=str(args.dataset_path) if args.dataset_path else None,
             skip_offset=args.skip,
             fresh_agent=args.fresh_agent,
+            chat_provider=args.provider,
+            chat_model=args.model,
         )
     elif args.backend == "mem0":
         rows = await _run_mem0_backend(
