@@ -17,16 +17,25 @@ from ..types import ChatMessage, SessionResponse
 # Polling tunables for the async session-end path. The server-side status
 # is now backed by CockroachDB with 30-day retention (was Redis 1h-TTL),
 # so the overall timeout no longer needs to align with TTL eviction.
-# Bumped 900s → 1800s (30m) on 2026-04-26 because longmemeval haystacks
-# with 100+ sessions can saturate worker concurrency briefly and tail
-# latencies on individual session-ends were exceeding 15m even though
-# the worker was making forward progress. The pipeline is durable; a
-# truly wedged job will still surface as state='failed' from the worker
-# rather than via this client-side cap.
+#
+# 2026-04-26: bumped 900s → 1800s because longmemeval haystacks with
+# 100+ sessions saturate worker concurrency and tail latencies were
+# exceeding 15m on the staging tier (medium VM, cap=12).
+#
+# 2026-05-04: lowered 1800s → 600s. The bench's outer asyncio.wait_for
+# is 1800s — leaving the SDK at 1800s meant the two timers raced on
+# every wedged session-end, and the bench reported the asyncio outer
+# instead of the SDK's structured SonzaiError. The poll-timeout now
+# fires FIRST (at 10 min) so we get a typed error with last_state we
+# can attribute. A legitimate session-end on prod (xlarge cap=96)
+# completes in 5-30s — 600s gives 20× headroom for tail latencies
+# while still surfacing wedged jobs faster than the bench's outer
+# timeout. Pipeline is still durable: the worker keeps making forward
+# progress regardless of whether the client polled until the end.
 _SESSION_END_POLL_INITIAL_INTERVAL = 0.5  # seconds
 _SESSION_END_POLL_MAX_INTERVAL = 5.0  # seconds
 _SESSION_END_POLL_BACKOFF = 1.5
-_SESSION_END_OVERALL_TIMEOUT = 1800.0
+_SESSION_END_OVERALL_TIMEOUT = 600.0
 
 
 def _next_poll_interval(previous: float) -> float:
