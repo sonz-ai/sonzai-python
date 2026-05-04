@@ -210,16 +210,32 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--provider",
         default=None,
         help="Sonzai only: override the LLM provider for this run "
-        "(e.g. 'openai', 'gemini', 'xai'). Applied per chat call AND set on "
-        "the shared bench agent's post-processing model so background fact "
-        "extraction / judges run on the same provider. Requires --model.",
+        "(e.g. 'openai', 'gemini', 'xai'). Applied per chat call. "
+        "Requires --model.",
     )
     p.add_argument(
         "--model",
         default=None,
-        help="Sonzai only: override the LLM model for this run "
+        help="Sonzai only: override the chat-answer LLM model for this run "
         "(e.g. 'gpt-5.4-mini', 'gemini-3.1-flash-lite-preview'). "
         "See --provider.",
+    )
+    p.add_argument(
+        "--pp-provider",
+        default=None,
+        help="Sonzai only: override the agent's post-processing provider "
+        "(fact extraction, judges, dedup, consolidation). Defaults to "
+        "--provider when --pp-model is set without --pp-provider. Leave unset "
+        "to let the server's cascade resolver pick the system default.",
+    )
+    p.add_argument(
+        "--pp-model",
+        default=None,
+        help="Sonzai only: override the agent's post-processing model. "
+        "When --provider=openai and this is unset, defaults to 'gpt-5-nano' "
+        "(smallest GPT-5; paired with reasoning_effort=minimal server-side "
+        "for high-throughput background work). Otherwise unset = server "
+        "cascade resolver picks the system default.",
     )
     p.add_argument(
         "-v",
@@ -250,6 +266,8 @@ async def _run_sonzai_backend(
     fresh_agent: bool = False,
     chat_provider: str | None = None,
     chat_model: str | None = None,
+    pp_provider: str | None = None,
+    pp_model: str | None = None,
 ) -> list[dict]:
     # advance_time runs the full CE worker stack per simulated day and can take
     # minutes per call. sessions/end with wait=true also serializes fact
@@ -389,24 +407,40 @@ async def _run_sonzai_backend(
         "bench: shared agent %s ready (existed=%s, concise-recall speech_patterns applied)",
         resolved_agent_id, agent_existed,
     )
-    # Apply --provider/--model overrides to the shared agent's
-    # post-processing config so background fact extraction, episode
-    # finalization, and judge calls all route through the requested
-    # provider. Chat answers get the same override per-call below.
-    if chat_provider and chat_model:
+    # PP override resolution. The bench treats chat-answer model and
+    # post-processing model as separate concerns — running chat on
+    # gpt-5.4-mini does NOT mean we want the same model doing thousands
+    # of high-volume fact-extractions per question (5.4-mini is too slow
+    # at default reasoning_effort=medium).
+    #
+    # Resolution order:
+    #   1. Explicit --pp-provider + --pp-model: use as-is
+    #   2. --pp-model alone: pair with --pp-provider OR fall back to --provider
+    #   3. Both unset + --provider=openai: default to openai/gpt-5-nano
+    #      (smallest 5.0; AIServiceAdapter pins reasoning_effort=minimal
+    #      for OpenAI PP, so this is the fastest possible config)
+    #   4. Both unset + non-openai chat provider: leave PP alone (server
+    #      cascade resolver picks the system default)
+    effective_pp_provider = pp_provider or chat_provider
+    effective_pp_model = pp_model
+    if not effective_pp_model and chat_provider == "openai":
+        effective_pp_model = "gpt-5-nano"
+    if effective_pp_provider and effective_pp_model:
         try:
             await client.agents.update_post_processing_model(
-                resolved_agent_id, provider=chat_provider, model=chat_model,
+                resolved_agent_id,
+                provider=effective_pp_provider,
+                model=effective_pp_model,
             )
             logger.info(
                 "bench: post-processing model set to %s/%s on agent %s",
-                chat_provider, chat_model, resolved_agent_id,
+                effective_pp_provider, effective_pp_model, resolved_agent_id,
             )
         except Exception as exc:
             logger.warning(
                 "bench: failed to set post-processing model %s/%s on agent %s "
                 "(continuing — chat overrides still apply): %s",
-                chat_provider, chat_model, resolved_agent_id, exc,
+                effective_pp_provider, effective_pp_model, resolved_agent_id, exc,
             )
     if shared_agent_id and shared_agent_id != resolved_agent_id:
         logger.info(
@@ -1507,6 +1541,8 @@ async def _amain(args: argparse.Namespace) -> int:
             fresh_agent=args.fresh_agent,
             chat_provider=args.provider,
             chat_model=args.model,
+            pp_provider=args.pp_provider,
+            pp_model=args.pp_model,
         )
     elif args.backend == "mem0":
         rows = await _run_mem0_backend(
