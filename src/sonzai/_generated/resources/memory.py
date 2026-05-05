@@ -354,7 +354,11 @@ class Memory(_MemoryBase):
         instance_id: str | None = None,
         limit: str | None = None,
         has_metadata: str | None = None,
+        metadata_kind: str | None = None,
         metadata_item_type: str | None = None,
+        metadata_subject_relation: str | None = None,
+        metadata_temporal_relevance: str | None = None,
+        metadata_sentiment: str | None = None,
     ) -> ListAllFactsResponse:
         """List all active facts for a specific user"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/facts"
@@ -365,8 +369,16 @@ class Memory(_MemoryBase):
             params["limit"] = limit
         if has_metadata is not None:
             params["has_metadata"] = has_metadata
+        if metadata_kind is not None:
+            params["metadata.kind"] = metadata_kind
         if metadata_item_type is not None:
             params["metadata.item_type"] = metadata_item_type
+        if metadata_subject_relation is not None:
+            params["metadata.subject_relation"] = metadata_subject_relation
+        if metadata_temporal_relevance is not None:
+            params["metadata.temporal_relevance"] = metadata_temporal_relevance
+        if metadata_sentiment is not None:
+            params["metadata.sentiment"] = metadata_sentiment
         data = self._http.get(path, params=params)
         return ListAllFactsResponse.model_validate(data)
 
@@ -692,7 +704,11 @@ class AsyncMemory(_MemoryBase):
         instance_id: str | None = None,
         limit: str | None = None,
         has_metadata: str | None = None,
+        metadata_kind: str | None = None,
         metadata_item_type: str | None = None,
+        metadata_subject_relation: str | None = None,
+        metadata_temporal_relevance: str | None = None,
+        metadata_sentiment: str | None = None,
     ) -> ListAllFactsResponse:
         """List all active facts for a specific user"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/facts"
@@ -703,7 +719,15 @@ class AsyncMemory(_MemoryBase):
             params["limit"] = limit
         if has_metadata is not None:
             params["has_metadata"] = has_metadata
+        if metadata_kind is not None:
+            params["metadata.kind"] = metadata_kind
         if metadata_item_type is not None:
             params["metadata.item_type"] = metadata_item_type
+        if metadata_subject_relation is not None:
+            params["metadata.subject_relation"] = metadata_subject_relation
+        if metadata_temporal_relevance is not None:
+            params["metadata.temporal_relevance"] = metadata_temporal_relevance
+        if metadata_sentiment is not None:
+            params["metadata.sentiment"] = metadata_sentiment
         data = await self._http.get(path, params=params)
         return ListAllFactsResponse.model_validate(data)

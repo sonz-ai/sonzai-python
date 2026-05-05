@@ -6,6 +6,10 @@ from __future__ import annotations
 
 from typing import Any
 from urllib.parse import quote
+from sonzai._generated.models import (
+    AsyncChatResultOutputBody,
+    AsyncChatStartOutputBody,
+)
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
 
@@ -25,6 +29,29 @@ class Chat(_ChatBase):
         params = None
         data = self._http.post(path, params=params)
         return data
+
+    def async_chat(
+        self,
+        agent_id: str,
+    ) -> AsyncChatStartOutputBody:
+        """Queue an asynchronous chat request"""
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/chat/async"
+        params = None
+        data = self._http.post(path, params=params)
+        return AsyncChatStartOutputBody.model_validate(data)
+
+    def async_chat_result(
+        self,
+        agent_id: str,
+        processing_id: str,
+    ) -> AsyncChatResultOutputBody:
+        """Poll an async chat result"""
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/chat/result/{quote(processing_id, safe='')}"
+        )
+        params = None
+        data = self._http.get(path, params=params)
+        return AsyncChatResultOutputBody.model_validate(data)
 
     def playground_chat(
         self,
@@ -47,6 +74,29 @@ class AsyncChat(_ChatBase):
         params = None
         data = await self._http.post(path, params=params)
         return data
+
+    async def async_chat(
+        self,
+        agent_id: str,
+    ) -> AsyncChatStartOutputBody:
+        """Queue an asynchronous chat request"""
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/chat/async"
+        params = None
+        data = await self._http.post(path, params=params)
+        return AsyncChatStartOutputBody.model_validate(data)
+
+    async def async_chat_result(
+        self,
+        agent_id: str,
+        processing_id: str,
+    ) -> AsyncChatResultOutputBody:
+        """Poll an async chat result"""
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/chat/result/{quote(processing_id, safe='')}"
+        )
+        params = None
+        data = await self._http.get(path, params=params)
+        return AsyncChatResultOutputBody.model_validate(data)
 
     async def playground_chat(
         self,

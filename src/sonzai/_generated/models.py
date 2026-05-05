@@ -178,6 +178,40 @@ class AdvanceTimeWakeup(BaseModel):
     wakeup_id: str
 
 
+class AgentCreateRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/AgentCreateRequest.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    confidence: float | None = None
+    label: str
+    node_type: str
+    properties: dict[str, Any]
+
+
+class AgentDeleteRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/AgentDeleteRequest.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    expected_label: str
+    reason: str | None = None
+
+
 class AgentDialogueOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -305,6 +339,78 @@ class AnalyticsOverview(BaseModel):
     total_sessions: Annotated[int, Field(alias='totalSessions')]
 
 
+class AsyncChatResultOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/AsyncChatResultOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    created_at: AwareDatetime
+    """
+    When the task was queued
+    """
+    error: str | None = None
+    """
+    Error message on status=failed
+    """
+    phase: str | None = None
+    """
+    Latest progressive-elaboration phase (planning|tool_call|composing|verifying|complete)
+    """
+    response: str | None = None
+    """
+    Accumulated assistant message (partial while running, final on complete)
+    """
+    side_effects: Any | None = None
+    """
+    Side effects payload (terminal chunk only)
+    """
+    status: str
+    """
+    queued | running | complete | failed
+    """
+    tool: str | None = None
+    """
+    Latest tool name on phase=tool_call frames
+    """
+    updated_at: AwareDatetime
+    """
+    When the state last changed
+    """
+
+
+class AsyncChatStartOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/AsyncChatStartOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    processing_id: str
+    """
+    Opaque ID to poll via /chat/result/{processing_id}
+    """
+    status: str
+    """
+    Initial status — always 'queued' on success
+    """
+
+
 class AtomicFact(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -319,6 +425,7 @@ class AtomicFact(BaseModel):
     """
     agent_framing: str | None = None
     agent_id: str
+    assertion: bool | None = None
     atomic_text: str
     character_salience: float | None = None
     chunk_id: str | None = None
@@ -335,6 +442,8 @@ class AtomicFact(BaseModel):
     hit_count: int | None = None
     importance: float | None = None
     inferred_entities: list[str] | None = None
+    item_type: str | None = None
+    kind: str | None = None
     last_confirmed: AwareDatetime
     last_retrieved_at: AwareDatetime
     mention_count: int
@@ -342,18 +451,24 @@ class AtomicFact(BaseModel):
     miss_count: int | None = None
     node_id: str
     polarity_group_id: str | None = None
+    priority: str | None = None
+    quantity: float | None = None
     relationship_relevance: float | None = None
     retention_strength: float
+    scope_hint: str | None = None
     sentiment: str | None = None
     session_id: str | None = None
     source_id: str | None = None
     source_type: str | None = None
+    subject_relation: str | None = None
     supersedes_id: str | None = None
     temporal_relevance: str | None = None
     time_sensitive_at: AwareDatetime | None = None
     topic_tags: list[str] | None = None
     updated_at: AwareDatetime
     user_id: str | None = None
+    valid_from: AwareDatetime | None = None
+    valid_until: AwareDatetime | None = None
 
 
 class AttributedFact(BaseModel):
@@ -704,6 +819,15 @@ class BulkUpdateEntry(BaseModel):
     properties: dict[str, Any]
 
 
+class CASPair(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    current: Any
+    new: Any
+
+
 class CachedModelsPayload(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -739,6 +863,32 @@ class ChatSSEDelta(BaseModel):
     content: str | None = None
     """
     Incremental content token
+    """
+
+
+class CheckpointEvalRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CheckpointEvalRequest.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    instance_id: Annotated[str, Field(alias='instanceId')]
+    """
+    Workbench instance ID
+    """
+    judge_model: Annotated[str, Field(alias='judgeModel')]
+    """
+    Judge model name
+    """
+    session_index: Annotated[int, Field(alias='sessionIndex')]
+    """
+    Session index for checkpoint
     """
 
 
@@ -3343,6 +3493,27 @@ class KBTrendRanking(BaseModel):
     window: str
 
 
+class KbAgentDeleteNodeOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/KbAgentDeleteNodeOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    ok: bool
+    """
+    True on successful soft-delete
+    """
+
+
 class KbBulkUpdateInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5170,6 +5341,7 @@ class PropertySource(BaseModel):
     )
     doc_id: str
     eff_date: AwareDatetime
+    source: str | None = None
 
 
 class RecentShiftsResponse(BaseModel):
@@ -6867,6 +7039,12 @@ class UpdateCapabilitiesInputBody(BaseModel):
     """
     Enable/disable knowledge base search
     """
+    knowledge_base_write: Annotated[bool | None, Field(alias='knowledgeBaseWrite')] = (
+        None
+    )
+    """
+    Enable/disable knowledge base write tools (knowledge_create/_update/_delete). Requires knowledgeBase to be enabled.
+    """
     mcp_enabled: Annotated[list[str] | None, Field(alias='mcpEnabled')] = None
     """
     IDs of project MCP catalog entries this agent uses
@@ -7188,6 +7366,22 @@ class UpdateMetadataRequest(BaseModel):
     email: str | None = None
     phone: str | None = None
     title: str | None = None
+
+
+class UpdatePayload(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/UpdatePayload.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    label: CASPair | None = None
+    properties: dict[str, CASPair]
 
 
 class UpdatePersonalityBody(BaseModel):
@@ -8135,6 +8329,9 @@ class AgentCapabilities(BaseModel):
     knowledge_base_scope_mode: Annotated[
         str | None, Field(alias='knowledgeBaseScopeMode')
     ] = None
+    knowledge_base_write: Annotated[bool | None, Field(alias='knowledgeBaseWrite')] = (
+        None
+    )
     mcp_enabled: list[str] | None = None
     memory_mode: Annotated[str | None, Field(alias='memoryMode')] = None
     music_generation: Annotated[bool, Field(alias='musicGeneration')]
@@ -9004,6 +9201,48 @@ class KBSearchResponse(BaseModel):
     query: str
     results: list[KBSearchResult] | None
     total: int
+
+
+class KbAgentCreateNodeOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/KbAgentCreateNodeOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    node: KBNode
+    """
+    The created node
+    """
+
+
+class KbAgentUpdateNodeOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/KbAgentUpdateNodeOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    node: KBNode
+    """
+    The updated node
+    """
 
 
 class KbGetNodeOutputBody(BaseModel):

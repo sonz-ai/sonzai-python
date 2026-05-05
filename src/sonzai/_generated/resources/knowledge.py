@@ -7,6 +7,11 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import quote
 from sonzai._generated.models import (
+    AgentCreateRequest,
+    AgentDeleteRequest,
+    KbAgentCreateNodeOutputBody,
+    KbAgentDeleteNodeOutputBody,
+    KbAgentUpdateNodeOutputBody,
     KBAnalyticsRule,
     KbBulkUpdateInputBody,
     KbBulkUpdateOutputBody,
@@ -39,6 +44,7 @@ from sonzai._generated.models import (
     KbUpdateAnalyticsRuleInputBody,
     KbUpdateSchemaInputBody,
     KbUploadDocumentOutputBody,
+    UpdatePayload,
 )
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
@@ -291,10 +297,14 @@ class Knowledge(_KnowledgeBase):
     def kb_upload_document(
         self,
         project_id: str,
+        *,
+        force_replace: bool | None = False,
     ) -> KbUploadDocumentOutputBody:
         """Upload a document for knowledge extraction"""
         path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/documents"
-        params = None
+        params: dict[str, Any] = {}
+        if force_replace is not None:
+            params["force_replace"] = force_replace
         data = self._http.post(path, params=params)
         return KbUploadDocumentOutputBody.model_validate(data)
 
@@ -369,6 +379,31 @@ class Knowledge(_KnowledgeBase):
             total_key="total",
         )
 
+    def kb_agent_create_node(
+        self,
+        project_id: str,
+        *,
+        confidence: float | None = None,
+        label: str,
+        node_type: str,
+        properties: dict[str, Any],
+    ) -> KbAgentCreateNodeOutputBody:
+        """Agent: create a knowledge base node"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/nodes"
+        params = None
+        _raw: dict[str, Any] = {}
+        if confidence is not None:
+            _raw["confidence"] = confidence
+        if label is not None:
+            _raw["label"] = label
+        if node_type is not None:
+            _raw["node_type"] = node_type
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(AgentCreateRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return KbAgentCreateNodeOutputBody.model_validate(data)
+
     def kb_delete_node(
         self,
         project_id: str,
@@ -394,6 +429,46 @@ class Knowledge(_KnowledgeBase):
             params["history"] = history
         data = self._http.get(path, params=params)
         return KbGetNodeOutputBody.model_validate(data)
+
+    def kb_agent_update_node(
+        self,
+        project_id: str,
+        node_id: str,
+        *,
+        label: str | None = None,
+        properties: dict[str, Any],
+    ) -> KbAgentUpdateNodeOutputBody:
+        """Agent: update a knowledge base node with per-property CAS"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/nodes/{quote(node_id, safe='')}"
+        params = None
+        _raw: dict[str, Any] = {}
+        if label is not None:
+            _raw["label"] = label
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(UpdatePayload, _raw)
+        data = self._http.patch(path, params=params, json_data=body)
+        return KbAgentUpdateNodeOutputBody.model_validate(data)
+
+    def kb_agent_delete_node(
+        self,
+        project_id: str,
+        node_id: str,
+        *,
+        expected_label: str,
+        reason: str | None = None,
+    ) -> KbAgentDeleteNodeOutputBody:
+        """Agent: soft-delete a knowledge base node with label CAS"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/nodes/{quote(node_id, safe='')}/agent-delete"
+        params = None
+        _raw: dict[str, Any] = {}
+        if expected_label is not None:
+            _raw["expected_label"] = expected_label
+        if reason is not None:
+            _raw["reason"] = reason
+        body = encode_body(AgentDeleteRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return KbAgentDeleteNodeOutputBody.model_validate(data)
 
     def kb_get_node_history(
         self,
@@ -829,10 +904,14 @@ class AsyncKnowledge(_KnowledgeBase):
     async def kb_upload_document(
         self,
         project_id: str,
+        *,
+        force_replace: bool | None = False,
     ) -> KbUploadDocumentOutputBody:
         """Upload a document for knowledge extraction"""
         path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/documents"
-        params = None
+        params: dict[str, Any] = {}
+        if force_replace is not None:
+            params["force_replace"] = force_replace
         data = await self._http.post(path, params=params)
         return KbUploadDocumentOutputBody.model_validate(data)
 
@@ -911,6 +990,31 @@ class AsyncKnowledge(_KnowledgeBase):
             total_key="total",
         )
 
+    async def kb_agent_create_node(
+        self,
+        project_id: str,
+        *,
+        confidence: float | None = None,
+        label: str,
+        node_type: str,
+        properties: dict[str, Any],
+    ) -> KbAgentCreateNodeOutputBody:
+        """Agent: create a knowledge base node"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/nodes"
+        params = None
+        _raw: dict[str, Any] = {}
+        if confidence is not None:
+            _raw["confidence"] = confidence
+        if label is not None:
+            _raw["label"] = label
+        if node_type is not None:
+            _raw["node_type"] = node_type
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(AgentCreateRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return KbAgentCreateNodeOutputBody.model_validate(data)
+
     async def kb_delete_node(
         self,
         project_id: str,
@@ -936,6 +1040,46 @@ class AsyncKnowledge(_KnowledgeBase):
             params["history"] = history
         data = await self._http.get(path, params=params)
         return KbGetNodeOutputBody.model_validate(data)
+
+    async def kb_agent_update_node(
+        self,
+        project_id: str,
+        node_id: str,
+        *,
+        label: str | None = None,
+        properties: dict[str, Any],
+    ) -> KbAgentUpdateNodeOutputBody:
+        """Agent: update a knowledge base node with per-property CAS"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/nodes/{quote(node_id, safe='')}"
+        params = None
+        _raw: dict[str, Any] = {}
+        if label is not None:
+            _raw["label"] = label
+        if properties is not None:
+            _raw["properties"] = properties
+        body = encode_body(UpdatePayload, _raw)
+        data = await self._http.patch(path, params=params, json_data=body)
+        return KbAgentUpdateNodeOutputBody.model_validate(data)
+
+    async def kb_agent_delete_node(
+        self,
+        project_id: str,
+        node_id: str,
+        *,
+        expected_label: str,
+        reason: str | None = None,
+    ) -> KbAgentDeleteNodeOutputBody:
+        """Agent: soft-delete a knowledge base node with label CAS"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/nodes/{quote(node_id, safe='')}/agent-delete"
+        params = None
+        _raw: dict[str, Any] = {}
+        if expected_label is not None:
+            _raw["expected_label"] = expected_label
+        if reason is not None:
+            _raw["reason"] = reason
+        body = encode_body(AgentDeleteRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return KbAgentDeleteNodeOutputBody.model_validate(data)
 
     async def kb_get_node_history(
         self,

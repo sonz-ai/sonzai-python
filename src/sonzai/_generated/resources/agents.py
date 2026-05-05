@@ -193,6 +193,43 @@ class Agents(_AgentsBase):
         data = self._http.get(path, params=params)
         return AgentCapabilities.model_validate(data)
 
+    def patch_capabilities(
+        self,
+        agent_id: str,
+        *,
+        image_generation: bool | None = None,
+        inventory: bool | None = None,
+        knowledge_base: bool | None = None,
+        knowledge_base_write: bool | None = None,
+        mcp_enabled: list[Any] | None = None,
+        memory_mode: str | None = None,
+        remember_name: bool | None = None,
+        web_search: bool | None = None,
+    ) -> AgentCapabilities:
+        """Patch agent capabilities"""
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/capabilities"
+        params = None
+        _raw: dict[str, Any] = {}
+        if image_generation is not None:
+            _raw["imageGeneration"] = image_generation
+        if inventory is not None:
+            _raw["inventory"] = inventory
+        if knowledge_base is not None:
+            _raw["knowledgeBase"] = knowledge_base
+        if knowledge_base_write is not None:
+            _raw["knowledgeBaseWrite"] = knowledge_base_write
+        if mcp_enabled is not None:
+            _raw["mcpEnabled"] = mcp_enabled
+        if memory_mode is not None:
+            _raw["memoryMode"] = memory_mode
+        if remember_name is not None:
+            _raw["rememberName"] = remember_name
+        if web_search is not None:
+            _raw["webSearch"] = web_search
+        body = encode_body(UpdateCapabilitiesInputBody, _raw)
+        data = self._http.patch(path, params=params, json_data=body)
+        return AgentCapabilities.model_validate(data)
+
     def update_capabilities(
         self,
         agent_id: str,
@@ -200,6 +237,7 @@ class Agents(_AgentsBase):
         image_generation: bool | None = None,
         inventory: bool | None = None,
         knowledge_base: bool | None = None,
+        knowledge_base_write: bool | None = None,
         mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
         remember_name: bool | None = None,
@@ -215,6 +253,8 @@ class Agents(_AgentsBase):
             _raw["inventory"] = inventory
         if knowledge_base is not None:
             _raw["knowledgeBase"] = knowledge_base
+        if knowledge_base_write is not None:
+            _raw["knowledgeBaseWrite"] = knowledge_base_write
         if mcp_enabled is not None:
             _raw["mcpEnabled"] = mcp_enabled
         if memory_mode is not None:
@@ -570,6 +610,43 @@ class AsyncAgents(_AgentsBase):
         data = await self._http.get(path, params=params)
         return AgentCapabilities.model_validate(data)
 
+    async def patch_capabilities(
+        self,
+        agent_id: str,
+        *,
+        image_generation: bool | None = None,
+        inventory: bool | None = None,
+        knowledge_base: bool | None = None,
+        knowledge_base_write: bool | None = None,
+        mcp_enabled: list[Any] | None = None,
+        memory_mode: str | None = None,
+        remember_name: bool | None = None,
+        web_search: bool | None = None,
+    ) -> AgentCapabilities:
+        """Patch agent capabilities"""
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/capabilities"
+        params = None
+        _raw: dict[str, Any] = {}
+        if image_generation is not None:
+            _raw["imageGeneration"] = image_generation
+        if inventory is not None:
+            _raw["inventory"] = inventory
+        if knowledge_base is not None:
+            _raw["knowledgeBase"] = knowledge_base
+        if knowledge_base_write is not None:
+            _raw["knowledgeBaseWrite"] = knowledge_base_write
+        if mcp_enabled is not None:
+            _raw["mcpEnabled"] = mcp_enabled
+        if memory_mode is not None:
+            _raw["memoryMode"] = memory_mode
+        if remember_name is not None:
+            _raw["rememberName"] = remember_name
+        if web_search is not None:
+            _raw["webSearch"] = web_search
+        body = encode_body(UpdateCapabilitiesInputBody, _raw)
+        data = await self._http.patch(path, params=params, json_data=body)
+        return AgentCapabilities.model_validate(data)
+
     async def update_capabilities(
         self,
         agent_id: str,
@@ -577,6 +654,7 @@ class AsyncAgents(_AgentsBase):
         image_generation: bool | None = None,
         inventory: bool | None = None,
         knowledge_base: bool | None = None,
+        knowledge_base_write: bool | None = None,
         mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
         remember_name: bool | None = None,
@@ -592,6 +670,8 @@ class AsyncAgents(_AgentsBase):
             _raw["inventory"] = inventory
         if knowledge_base is not None:
             _raw["knowledgeBase"] = knowledge_base
+        if knowledge_base_write is not None:
+            _raw["knowledgeBaseWrite"] = knowledge_base_write
         if mcp_enabled is not None:
             _raw["mcpEnabled"] = mcp_enabled
         if memory_mode is not None:

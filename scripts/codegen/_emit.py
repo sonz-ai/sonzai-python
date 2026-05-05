@@ -20,6 +20,11 @@ def emit_module(tag: str, operations: list[Operation]) -> str:
         lstrip_blocks=True,
         keep_trailing_newline=True,
     )
+    # Python-aware literal filter — `tojson` emits JSON-style ``false``/``true``/
+    # ``null`` which the Python parser then chokes on (`name 'false' is not
+    # defined`). ``pyrepr`` uses Python's repr() so booleans/None/strings render
+    # as Python literals.
+    env.filters["pyrepr"] = repr
 
     for op in operations:
         if op.is_paginated:

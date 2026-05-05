@@ -6,7 +6,7 @@
         *,
 {% for qp in op.query_params %}
 {% if qp.name not in ("limit", "offset", "cursor") %}
-        {{ qp.python_name }}: {{ qp.type_hint }}{% if qp.default is not none %} = {{ qp.default | tojson }}{% elif not qp.required %} = None{% endif %},
+        {{ qp.python_name }}: {{ qp.type_hint }}{% if qp.default is not none %} = {{ qp.default | pyrepr }}{% elif not qp.required %} = None{% endif %},
 {% endif %}
 {% endfor %}
         limit: int = 100,

@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import quote
 from sonzai._generated.models import (
+    CheckpointEvalRequest,
     CreateEvalTemplateInputBody,
     DeleteEvalRunOutputBody,
     DeleteEvalTemplateOutputBody,
@@ -168,6 +169,27 @@ class Evals(_EvalsBase):
         body = encode_body(SimulateRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return SimulateRunningBody.model_validate(data)
+
+    def checkpoint_evaluate(
+        self,
+        *,
+        instance_id: str,
+        judge_model: str,
+        session_index: int,
+    ) -> Any:
+        """Run checkpoint evaluation"""
+        path = f"/api/v1/workbench/checkpoint-evaluate"
+        params = None
+        _raw: dict[str, Any] = {}
+        if instance_id is not None:
+            _raw["instanceId"] = instance_id
+        if judge_model is not None:
+            _raw["judgeModel"] = judge_model
+        if session_index is not None:
+            _raw["sessionIndex"] = session_index
+        body = encode_body(CheckpointEvalRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return data
 
     def list_eval_runs(
         self,
@@ -466,6 +488,27 @@ class AsyncEvals(_EvalsBase):
         body = encode_body(SimulateRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return SimulateRunningBody.model_validate(data)
+
+    async def checkpoint_evaluate(
+        self,
+        *,
+        instance_id: str,
+        judge_model: str,
+        session_index: int,
+    ) -> Any:
+        """Run checkpoint evaluation"""
+        path = f"/api/v1/workbench/checkpoint-evaluate"
+        params = None
+        _raw: dict[str, Any] = {}
+        if instance_id is not None:
+            _raw["instanceId"] = instance_id
+        if judge_model is not None:
+            _raw["judgeModel"] = judge_model
+        if session_index is not None:
+            _raw["sessionIndex"] = session_index
+        body = encode_body(CheckpointEvalRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return data
 
     async def list_eval_runs(
         self,
