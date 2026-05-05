@@ -390,6 +390,130 @@ class Agents(_GenAgents):
         for event in self._http.stream_sse("POST", path, json_data=body):
             yield _classify_chat_frame(event)
 
+    # -- Chat (async / processing_id polling) --
+
+    def chat_async(
+        self,
+        agent_id: str,
+        *,
+        messages: list[ChatMessage | dict[str, str]],
+        user_id: str | None = None,
+        user_display_name: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        continuation_token: str | None = None,
+        request_type: str | None = None,
+        language: str | None = None,
+        compiled_system_prompt: str | None = None,
+        interaction_role: str | None = None,
+        timezone: str | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        """Queue a chat request for background processing (iter-140u-2).
+
+        Returns ``{"processing_id": "...", "status": "queued"}`` immediately.
+        Poll the result via ``poll_chat_result(agent_id, processing_id)``,
+        or use ``chat_async_blocking(...)`` for a convenience helper that
+        polls until terminal.
+
+        Use this when the chat may run longer than your network can keep
+        an SSE stream open (Cloudflare/LB ~100s).
+        """
+        msgs = [m.model_dump() if isinstance(m, ChatMessage) else m for m in messages]
+        body: dict[str, Any] = {"messages": msgs}
+        for key, value in {
+            "user_id": user_id,
+            "user_display_name": user_display_name,
+            "session_id": session_id,
+            "instance_id": instance_id,
+            "provider": provider,
+            "model": model,
+            "continuation_token": continuation_token,
+            "request_type": request_type,
+            "language": language,
+            "compiled_system_prompt": compiled_system_prompt,
+            "interaction_role": interaction_role,
+            "timezone": timezone,
+            "tool_capabilities": tool_capabilities,
+            "tool_definitions": tool_definitions,
+        }.items():
+            if value is not None:
+                body[key] = value
+
+        data = self._http.post(f"/api/v1/agents/{agent_id}/chat/async", json_data=body)
+        if not isinstance(data, dict):
+            raise TypeError(f"chat_async expected dict response, got {type(data).__name__}")
+        return data
+
+    def poll_chat_result(self, agent_id: str, processing_id: str) -> dict[str, Any]:
+        """Fetch the current state of an async chat task.
+
+        Returned dict carries: ``status`` (queued|running|complete|failed),
+        ``response`` (accumulated assistant text — partial while running,
+        final on complete), ``phase`` and ``tool`` (latest progressive-
+        elaboration event from iter-140u-1), ``side_effects`` on the
+        terminal frame, ``error`` on failure, plus ``created_at`` /
+        ``updated_at`` timestamps.
+
+        Caller should poll with backoff (1s → 2s → 4s → 5s cap) until
+        ``status`` reaches ``complete`` or ``failed``.
+        """
+        data = self._http.get(f"/api/v1/agents/{agent_id}/chat/result/{processing_id}")
+        if not isinstance(data, dict):
+            raise TypeError(f"poll_chat_result expected dict response, got {type(data).__name__}")
+        return data
+
+    def chat_async_blocking(
+        self,
+        agent_id: str,
+        *,
+        messages: list[ChatMessage | dict[str, str]],
+        poll_interval_seconds: float = 1.0,
+        max_poll_interval_seconds: float = 5.0,
+        timeout_seconds: float = 600.0,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Convenience: queue async chat and poll until terminal.
+
+        Backoff: poll_interval_seconds, doubled each iteration up to
+        max_poll_interval_seconds. Total wait is bounded by
+        timeout_seconds (default 10 min — matches the server-side
+        CE_AGENT_CHAT_DEADLINE_MS so we time out at the same point
+        the server gives up).
+
+        Cancelling locally (KeyboardInterrupt, etc.) does NOT cancel
+        the server-side task — that's the async pattern's invariant.
+        Callers can re-poll the same processing_id later if needed.
+        """
+        import time as _time
+
+        queued = self.chat_async(
+            agent_id,
+            messages=messages,
+            **kwargs,
+        )
+        processing_id = queued.get("processing_id")
+        if not processing_id:
+            raise RuntimeError(f"chat_async did not return processing_id: {queued}")
+
+        deadline = _time.monotonic() + timeout_seconds
+        delay = poll_interval_seconds
+        while _time.monotonic() < deadline:
+            _time.sleep(delay)
+            result = self.poll_chat_result(agent_id, processing_id)
+            status = result.get("status")
+            if status in {"complete", "failed"}:
+                return result
+            if delay < max_poll_interval_seconds:
+                delay = min(delay * 2, max_poll_interval_seconds)
+        raise TimeoutError(
+            f"chat_async_blocking exceeded timeout ({timeout_seconds}s); "
+            f"processing_id={processing_id} can still be polled directly."
+        )
+
     # -- Dialogue --
 
     def dialogue(
@@ -1772,6 +1896,104 @@ class AsyncAgents(_GenAsyncAgents):
     async def _stream_chat(self, path: str, body: dict[str, Any]) -> AsyncIterator[ChatStreamEvent]:
         async for event in self._http.stream_sse("POST", path, json_data=body):
             yield _classify_chat_frame(event)
+
+    # -- Chat (async / processing_id polling) --
+
+    async def chat_async(
+        self,
+        agent_id: str,
+        *,
+        messages: list[ChatMessage | dict[str, str]],
+        user_id: str | None = None,
+        user_display_name: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        continuation_token: str | None = None,
+        request_type: str | None = None,
+        language: str | None = None,
+        compiled_system_prompt: str | None = None,
+        interaction_role: str | None = None,
+        timezone: str | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        """Async equivalent of Sonzai.agents.chat_async (iter-140u-2)."""
+        msgs = [m.model_dump() if isinstance(m, ChatMessage) else m for m in messages]
+        body: dict[str, Any] = {"messages": msgs}
+        for key, value in {
+            "user_id": user_id,
+            "user_display_name": user_display_name,
+            "session_id": session_id,
+            "instance_id": instance_id,
+            "provider": provider,
+            "model": model,
+            "continuation_token": continuation_token,
+            "request_type": request_type,
+            "language": language,
+            "compiled_system_prompt": compiled_system_prompt,
+            "interaction_role": interaction_role,
+            "timezone": timezone,
+            "tool_capabilities": tool_capabilities,
+            "tool_definitions": tool_definitions,
+        }.items():
+            if value is not None:
+                body[key] = value
+
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/chat/async", json_data=body)
+        if not isinstance(data, dict):
+            raise TypeError(f"chat_async expected dict response, got {type(data).__name__}")
+        return data
+
+    async def poll_chat_result(self, agent_id: str, processing_id: str) -> dict[str, Any]:
+        """Async equivalent of Sonzai.agents.poll_chat_result (iter-140u-2)."""
+        data = await self._http.get(f"/api/v1/agents/{agent_id}/chat/result/{processing_id}")
+        if not isinstance(data, dict):
+            raise TypeError(f"poll_chat_result expected dict response, got {type(data).__name__}")
+        return data
+
+    async def chat_async_blocking(
+        self,
+        agent_id: str,
+        *,
+        messages: list[ChatMessage | dict[str, str]],
+        poll_interval_seconds: float = 1.0,
+        max_poll_interval_seconds: float = 5.0,
+        timeout_seconds: float = 600.0,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Async equivalent of Sonzai.agents.chat_async_blocking (iter-140u-2).
+
+        Uses asyncio.sleep so multiple concurrent polls don't block the
+        event loop. Cancelling the task does NOT cancel the server-side
+        chat — that's the async pattern's invariant.
+        """
+        import asyncio
+        import time as _time
+
+        queued = await self.chat_async(
+            agent_id,
+            messages=messages,
+            **kwargs,
+        )
+        processing_id = queued.get("processing_id")
+        if not processing_id:
+            raise RuntimeError(f"chat_async did not return processing_id: {queued}")
+
+        deadline = _time.monotonic() + timeout_seconds
+        delay = poll_interval_seconds
+        while _time.monotonic() < deadline:
+            await asyncio.sleep(delay)
+            result = await self.poll_chat_result(agent_id, processing_id)
+            if result.get("status") in {"complete", "failed"}:
+                return result
+            if delay < max_poll_interval_seconds:
+                delay = min(delay * 2, max_poll_interval_seconds)
+        raise TimeoutError(
+            f"chat_async_blocking exceeded timeout ({timeout_seconds}s); "
+            f"processing_id={processing_id} can still be polled directly."
+        )
 
     # -- Dialogue --
 
