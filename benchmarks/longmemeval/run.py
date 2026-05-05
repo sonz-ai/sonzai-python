@@ -232,10 +232,11 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--pp-model",
         default=None,
         help="Sonzai only: override the agent's post-processing model. "
-        "When --provider=openai and this is unset, defaults to 'gpt-5-nano' "
-        "(smallest GPT-5; paired with reasoning_effort=minimal server-side "
-        "for high-throughput background work). Otherwise unset = server "
-        "cascade resolver picks the system default.",
+        "When --provider=openai and this is unset, defaults to 'gpt-5.4-mini' "
+        "(paired with reasoning_effort=low server-side — preserves extraction "
+        "quality while skipping the medium-effort reasoning tax). For maximum "
+        "speed at lower extraction quality, pass --pp-model gpt-5-nano. "
+        "Otherwise unset = server cascade resolver picks the system default.",
     )
     p.add_argument(
         "-v",
@@ -424,7 +425,7 @@ async def _run_sonzai_backend(
     effective_pp_provider = pp_provider or chat_provider
     effective_pp_model = pp_model
     if not effective_pp_model and chat_provider == "openai":
-        effective_pp_model = "gpt-5-nano"
+        effective_pp_model = "gpt-5.4-mini"
     if effective_pp_provider and effective_pp_model:
         try:
             await client.agents.update_post_processing_model(
