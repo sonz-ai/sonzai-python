@@ -228,6 +228,15 @@ async def _retrieve(
     return ranked_sessions, ranked_facts, ranked_items
 
 
+# Wall-clock cap on a single chat call. Server-side
+# CE_AGENT_CHAT_DEADLINE_MS is 600000 (10 min); we give an extra 2 min for
+# the abort to propagate through the agentic loop and SSE close. Past this
+# the call is considered hung and we return whatever partial output we
+# accumulated. Set well below the bench's 1800s outer wrap so a stuck chat
+# can't gate the asyncio.gather.
+_CHAT_WALL_CLOCK_TIMEOUT_S = 720.0
+
+
 async def _ask_question(
     client: AsyncSonzai,
     *,
@@ -282,7 +291,7 @@ async def _ask_question(
         chat_body["provider"] = chat_provider
     if chat_model:
         chat_body["model"] = chat_model
-    try:
+    async def _consume_stream() -> None:
         async for event in client._http.stream_sse(  # type: ignore[attr-defined]
             "POST",
             f"/api/v1/agents/{agent_id}/chat",
@@ -323,6 +332,20 @@ async def _ask_question(
                     parsed = None
                 if parsed and parsed.content:
                     content_parts.append(str(parsed.content))
+
+    try:
+        await asyncio.wait_for(_consume_stream(), timeout=_CHAT_WALL_CLOCK_TIMEOUT_S)
+    except asyncio.TimeoutError:
+        # Hard wall-clock fired (server's 10-min CE_AGENT_CHAT_DEADLINE_MS
+        # plus 2-min propagation grace). Return whatever we accumulated
+        # rather than blowing the bench's outer 1800s wrap. The diag flag
+        # surfaces the cause in per-question result rows.
+        logger.warning(
+            "_ask_question wall-clock timeout (%.0fs) on agent=%s user=%s",
+            _CHAT_WALL_CLOCK_TIMEOUT_S, agent_id, user_id,
+        )
+        diag["chat_wall_clock_timeout"] = True
+        return "".join(content_parts), diag
     except Exception as e:
         logger.debug("_ask_question stream failed, falling back to non-stream: %s", e)
         # Fallback — never let instrumentation break the bench.

@@ -49,6 +49,17 @@ def async_memory(client: AsyncSonzai) -> AsyncMemory:
 # ---------------------------------------------------------------------------
 
 
+# Wall-clock cap on a single reset call. The server's reset handler does a
+# row-by-row delete across ~10 denormalized memory_contents_* lookup tables
+# per fact, plus tree nodes; on a partition that's accumulated thousands of
+# tombstones from prior reset+ingest cycles each list/delete query can stall
+# for many seconds. 120s is a generous ceiling that still surfaces wedged
+# resets long before the bench's 1800s outer wrap. After the migration that
+# lowers gc_grace_seconds on memory_* tables to 3600s, healthy resets
+# complete in well under 10s.
+_RESET_WALL_CLOCK_TIMEOUT_S = 120.0
+
+
 async def clear_agent_memory_async(
     client: AsyncSonzai, *, agent_id: str, user_id: str, instance_id: str | None = None
 ) -> None:
@@ -61,9 +72,19 @@ async def clear_agent_memory_async(
     cleared) since the post-condition — "this agent has no memory" — is
     satisfied either way.
     """
+    import asyncio
     mem = async_memory(client)
     try:
-        await mem.reset(agent_id, user_id=user_id, instance_id=instance_id)
+        await asyncio.wait_for(
+            mem.reset(agent_id, user_id=user_id, instance_id=instance_id),
+            timeout=_RESET_WALL_CLOCK_TIMEOUT_S,
+        )
+    except asyncio.TimeoutError:
+        # Reset is hung — almost certainly tombstone-saturated partitions on
+        # the server. Don't propagate (the bench's per-question wrapper will
+        # still fire on real corruption); the next call's GetFactsByUser
+        # will list the residual and the next reset cycle will retry.
+        pass
     except Exception:
         # Best-effort: if the agent never had memory or was already reset,
         # the post-condition holds. Surface other errors only if the caller
@@ -74,7 +95,14 @@ async def clear_agent_memory_async(
 def clear_agent_memory(
     client: Sonzai, *, agent_id: str, user_id: str, instance_id: str | None = None
 ) -> None:
-    """Sync counterpart of ``clear_agent_memory_async``."""
+    """Sync counterpart of ``clear_agent_memory_async``.
+
+    Wall-clock cap is enforced by the underlying httpx client's per-request
+    timeout (set on the SDK's HTTPClient at construction). The async
+    counterpart adds an asyncio.wait_for layer on top because httpx's
+    timeout doesn't always fire promptly on a stalled streaming response;
+    the sync path relies on the simpler per-request timeout exclusively.
+    """
     mem = memory(client)
     try:
         mem.reset(agent_id, user_id=user_id, instance_id=instance_id)

@@ -166,12 +166,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Sonzai only: create a brand-new agent for this run by appending a "
         "timestamp suffix to BENCHMARK_AGENT_NAME. Skips shared_agent.json "
         "load/save so the agent has zero orphan-posting history in BM25 / "
-        "vector indexes from prior bench runs. Required for clean attribution "
-        "of retrieval-pipeline fixes — without it, every bench run pins to "
-        "the SAME server-side agent (idempotent get-or-create on name) and "
-        "BM25/vector indexes accumulate orphans across iterations forever. "
-        "Cost: pays the ~19min full-ingest tax per question. Use only when "
-        "validating a behaviour change in retrieval / dedup / consolidation.",
+        "vector indexes from prior bench runs. **Strongly recommended for any "
+        "publishable run** — the shared-agent path accumulates Scylla "
+        "tombstones across reset+ingest cycles on the same (agent, user_id) "
+        "partitions, and queries on tombstone-saturated partitions can stall "
+        "long enough to blow the per-question timeout. Cost: pays the "
+        "~19min full-ingest tax per question. Skip only for fast-iteration "
+        "smoke runs on a stable slice where the same questions are replayed "
+        "immediately and tombstone build-up has not had time to accumulate.",
     )
     p.add_argument(
         "--max-sessions-per-question",
