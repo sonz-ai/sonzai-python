@@ -227,6 +227,7 @@ from ._customizations.chat import (
     ChatDeltaEvent,
     ChatErrorEvent,
     ChatMessageBoundaryEvent,
+    ChatPhaseEvent,
     ChatSideEffectsEvent,
 )
 
@@ -272,6 +273,7 @@ __all__ = [
     "ChatErrorEvent",
     "ChatMessage",
     "ChatMessageBoundaryEvent",
+    "ChatPhaseEvent",
     "ChatResponse",
     "ChatSideEffectsEvent",
     "ChatStreamEvent",

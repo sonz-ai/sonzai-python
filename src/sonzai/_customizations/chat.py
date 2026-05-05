@@ -50,6 +50,14 @@ class _ChatStreamEventBase(_GenChatSSEChunk):
     is_token_error: bool = False
     usage: "ChatUsage | None" = None
 
+    # iter-140u-1: progressive elaboration. Populated on type=phase
+    # frames (ChatPhaseEvent below). `phase` is one of planning,
+    # tool_call, composing, verifying, complete. `tool` is the
+    # in-progress tool name on phase=tool_call frames. Both default
+    # to empty so non-phase frames serialize cleanly.
+    phase: str = ""
+    tool: str = ""
+
     @property
     def content(self) -> str:
         if not self.choices:
@@ -90,6 +98,28 @@ class ChatMessageBoundaryEvent(_ChatStreamEventBase):
     """Fired at the start of a new agentic turn (follow-up messages)."""
 
 
+class ChatPhaseEvent(_ChatStreamEventBase):
+    """iter-140u-1: progressive-elaboration phase event.
+
+    Fired at the agentic loop's transition points so the client can
+    show progress when the model is silent (LLM warmup, tool calls,
+    post-stream verification). Read `event.phase`:
+
+      - planning: emitted before the first LLM call. Show "thinking…".
+      - tool_call: agent is calling a tool. `event.tool` carries the
+        name (e.g. "sonzai_inventory"). Show "looking up X…".
+      - composing: first content delta is about to arrive. Switch UI
+        from "thinking" to "writing answer".
+      - verifying: post-stream verifier is checking numeric claims.
+      - complete: stream is wrapping up; reset UI.
+
+    Backward-compat: clients that don't care about phase events can
+    skip them via `if isinstance(event, ChatPhaseEvent): continue`.
+    Phase frames carry no `choices` / `content`, so naive consumers
+    that read only `event.content` get an empty string and move on.
+    """
+
+
 class ChatCompleteEvent(_ChatStreamEventBase):
     """Terminal frame. `finish_reason` is set; aggregated fields populated."""
 
@@ -106,6 +136,7 @@ _ChatStreamEventUnion = Union[
     ChatContextReadyEvent,
     ChatSideEffectsEvent,
     ChatMessageBoundaryEvent,
+    ChatPhaseEvent,
     ChatCompleteEvent,
     ChatErrorEvent,
 ]

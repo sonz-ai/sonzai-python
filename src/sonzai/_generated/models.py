@@ -8306,13 +8306,21 @@ class ChatSSEChunk(BaseModel):
     """
     0-based agentic turn index (message_boundary frames only)
     """
+    phase: str | None = None
+    """
+    Lifecycle stage on type=phase frames (planning|tool_call|composing|verifying|complete)
+    """
     side_effects: Any | None = None
     """
     Side effects produced during this turn (terminal chunks only)
     """
+    tool: str | None = None
+    """
+    Tool name on type=phase frames where phase=tool_call
+    """
     type: str | None = None
     """
-    Event type discriminator (context_ready | side_effects | message_boundary). Absent on delta and complete frames.
+    Event type discriminator (context_ready | side_effects | message_boundary | phase). Absent on delta and complete frames.
     """
     used_fast_path: bool | None = None
     """

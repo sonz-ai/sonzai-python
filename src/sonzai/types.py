@@ -2800,6 +2800,7 @@ from sonzai._customizations.chat import (  # noqa: E402
     ChatDeltaEvent as _ChatDeltaEvent,
     ChatErrorEvent as _ChatErrorEvent,
     ChatMessageBoundaryEvent as _ChatMessageBoundaryEvent,
+    ChatPhaseEvent as _ChatPhaseEvent,
     ChatSideEffectsEvent as _ChatSideEffectsEvent,
 )
 
@@ -2808,5 +2809,6 @@ _ChatDeltaEvent.model_rebuild(_types_namespace=_ns)
 _ChatContextReadyEvent.model_rebuild(_types_namespace=_ns)
 _ChatSideEffectsEvent.model_rebuild(_types_namespace=_ns)
 _ChatMessageBoundaryEvent.model_rebuild(_types_namespace=_ns)
+_ChatPhaseEvent.model_rebuild(_types_namespace=_ns)
 _ChatCompleteEvent.model_rebuild(_types_namespace=_ns)
 _ChatErrorEvent.model_rebuild(_types_namespace=_ns)

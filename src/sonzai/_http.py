@@ -33,6 +33,7 @@ from ._customizations.chat import (
     ChatDeltaEvent,
     ChatErrorEvent,
     ChatMessageBoundaryEvent,
+    ChatPhaseEvent,
     ChatSideEffectsEvent,
 )
 from ._retry import RetryPolicy
@@ -97,6 +98,11 @@ def _classify_chat_frame(frame: dict[str, Any]) -> Any:
         return ChatSideEffectsEvent.model_validate(frame)
     if frame_type == "message_boundary":
         return ChatMessageBoundaryEvent.model_validate(frame)
+    if frame_type == "phase":
+        # iter-140u-1: progressive elaboration. Surfaces the agentic
+        # loop's lifecycle stage. Naive consumers can drop these via
+        # `if isinstance(event, ChatPhaseEvent): continue`.
+        return ChatPhaseEvent.model_validate(frame)
     if frame.get("finish_reason") or frame.get("full_content"):
         return ChatCompleteEvent.model_validate(frame)
     choices = frame.get("choices") or []
