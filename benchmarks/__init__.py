@@ -1,11 +1,15 @@
 """Sonzai open-source benchmark suite.
 
-Three benchmarks ship here:
+Four benchmarks ship here:
 
 - ``longmemeval`` — head-to-head recall/QA against MemPalace on the 500-question
   LongMemEval dataset.
 - ``sotopia`` — longitudinal social-intelligence benchmark that runs the same
   Sonzai agent across N sessions per scenario to showcase self-learning lift.
+- ``lifelong_sotopia`` — Goel & Zhu 2025: multi-episode social intelligence
+  over varied scenarios; tests whether the memory layer prevents decline.
+- ``locomo`` — head-to-head LLM-judge accuracy against mem0 on the 1540-QA
+  LoCoMo conversational-memory dataset.
 
 Each benchmark is invoked as ``python -m benchmarks.<name>``.
 """

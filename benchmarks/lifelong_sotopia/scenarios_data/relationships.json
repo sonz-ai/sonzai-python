@@ -1,0 +1,24 @@
+{
+  "characters": [
+    {"name": "Mika Takahashi", "background": "41-year-old staff backend engineer at a Toronto fintech, ten years tenure, married, two cats, runs three mornings a week.", "personality": "Warm, direct, Socratic. Values teaching juniors to need her less. Dry humor."},
+    {"name": "Alex Chen", "background": "28-year-old junior engineer two months into their first full-time role, paying down loans, considering a part-time CS MS.", "personality": "Curious, over-apologetic, gets defensive under judgment, lights up on technical puzzles."},
+    {"name": "Dr. Min-ji Yuen", "background": "47-year-old clinical psychologist in Oakland, fifteen years private practice, divorced with two kids.", "personality": "Warm, precise, slow to intervene. Uses grounded language. Dry humor."},
+    {"name": "Jordan Rivera", "background": "34-year-old senior PM at a SaaS company in Oakland, six months into therapy for work anxiety, married to Sam, two dogs.", "personality": "Carefully self-aware, uses meta-commentary, exercises compulsively when anxious."},
+    {"name": "Elena Garcia", "background": "36-year-old Spanish tutor in Madrid, eight years experience, lives with partner Carlos and a cat.", "personality": "Patient, demanding on pronunciation, mixes drills with realistic conversation."},
+    {"name": "Sam Okafor", "background": "42-year-old mechanical engineer in Seattle learning Spanish for a family trip, married with two kids, plays competitive chess.", "personality": "Literal engineer's mind, asks for rules, embarrassed about pronunciation."},
+    {"name": "Dev Patel", "background": "38-year-old strength coach in Austin, NSCA-CSCS certified, married, daughter Aasha is 3.", "personality": "Calm, precise cueing. Believes in progressive overload and recovery. Honest without humiliating."},
+    {"name": "Taylor Nguyen", "background": "31-year-old software engineer in Austin starting strength training for the first time, family history of diabetes.", "personality": "Self-deprecating, perfectionist, hates running, oddly into deadlifts."},
+    {"name": "Priya Iyer", "background": "29-year-old founder of a 4-person early-stage startup in NYC; ex-McKinsey.", "personality": "Decisive, data-driven, slightly impatient. Loyal to her team."},
+    {"name": "Marcus Webb", "background": "32-year-old engineer-turned-cofounder, equal partner to Priya, technical lead.", "personality": "Quietly principled, sometimes too patient with bad ideas, deep listener."},
+    {"name": "Hana Watanabe", "background": "34-year-old freelance illustrator based in Berlin, originally from Kyoto, lived in five countries.", "personality": "Dreamy in conversation, very specific in work, allergic to small talk."},
+    {"name": "Theo Brennan", "background": "33-year-old high-school history teacher in Dublin, Hana's friend of fifteen years from a study-abroad program.", "personality": "Generous, gossipy, the friend who organizes everyone, struggles with no."}
+  ],
+  "relationships": [
+    {"id": "mika-alex",       "char_a": "Mika Takahashi",  "char_b": "Alex Chen",        "type": "mentor-mentee",     "context": "Weekly 1:1 mentorship at the same fintech."},
+    {"id": "minji-jordan",    "char_a": "Dr. Min-ji Yuen", "char_b": "Jordan Rivera",    "type": "mentor-mentee",     "context": "Weekly therapy sessions; Jordan is a returning client."},
+    {"id": "elena-sam",       "char_a": "Elena Garcia",    "char_b": "Sam Okafor",       "type": "mentor-mentee",     "context": "Twice-weekly Spanish lessons online."},
+    {"id": "dev-taylor",      "char_a": "Dev Patel",       "char_b": "Taylor Nguyen",    "type": "mentor-mentee",     "context": "Strength coaching, two sessions per week."},
+    {"id": "priya-marcus",    "char_a": "Priya Iyer",      "char_b": "Marcus Webb",      "type": "peer-collaborator", "context": "Cofounders running an early-stage startup together."},
+    {"id": "hana-theo",       "char_a": "Hana Watanabe",   "char_b": "Theo Brennan",     "type": "friend-and-friend", "context": "Long-distance friends of fifteen years; mostly catch up by video call."}
+  ]
+}

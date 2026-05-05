@@ -1,0 +1,19 @@
+{
+  "characters": [
+    {"name": "Alice Chen", "background": "Software engineer in Toronto.", "personality": "Curious, direct."},
+    {"name": "Bob Lin",   "background": "Product manager in Vancouver.",  "personality": "Patient, organized."}
+  ],
+  "relationships": [
+    {"id": "r1", "char_a": "Alice Chen", "char_b": "Bob Lin", "type": "peer-collaborator", "context": "Work on the same product team."}
+  ],
+  "scenarios": {
+    "peer-collaborator": [
+      {"scenario_id": "pc-001", "codename": "design review", "setting": "Alice presents a design to Bob.", "agent_goal": "Get sign-off on design.", "partner_goal": "Push back on the boldest part.", "agent_secret": "", "partner_secret": "", "max_turns": 6},
+      {"scenario_id": "pc-002", "codename": "incident retro", "setting": "Joint retro on a deploy that went wrong.", "agent_goal": "Avoid blame, find root cause.", "partner_goal": "Establish ownership for next time.", "agent_secret": "", "partner_secret": "", "max_turns": 6},
+      {"scenario_id": "pc-003", "codename": "lunch venting", "setting": "Casual lunch venting about a third coworker.", "agent_goal": "Empathize without gossiping.", "partner_goal": "Get advice on whether to escalate.", "agent_secret": "", "partner_secret": "", "max_turns": 6}
+    ]
+  },
+  "memory_required": [
+    {"scenario_id": "mr-001", "codename": "follow up on apology", "setting": "In an earlier episode the agent had to apologize for missing a deadline. This episode picks up two weeks later.", "agent_goal": "Reaffirm reliability without re-litigating.", "partner_goal": "Confirm trust is restored.", "agent_secret": "", "partner_secret": "", "max_turns": 6, "applies_to_relationships": ["peer-collaborator"]}
+  ]
+}

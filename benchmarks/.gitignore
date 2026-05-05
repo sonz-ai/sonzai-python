@@ -3,6 +3,7 @@
 # stay tracked (needed for per-file allow-listing below).
 longmemeval/results/*
 sotopia/results/*
+lifelong_sotopia/results/*
 convomem/results/*
 *.jsonl
 *.png
@@ -22,5 +23,12 @@ __pycache__/
 !sotopia/results/sotopia_20260423-222834_trajectory.png
 !sotopia/results/sotopia_mempalace_20260423-203813.jsonl
 !sotopia/results/sotopia_mempalace_20260423-203813_trajectory.png
+# LIFELONG-SOTOPIA receipts — 3-way head-to-head cited in README.
+!lifelong_sotopia/results/lifelong_sotopia_sonzai_20260505-180956.jsonl
+!lifelong_sotopia/results/lifelong_sotopia_sonzai_20260505-180956_trajectory.png
+!lifelong_sotopia/results/lifelong_sotopia_baseline-summary_20260505-175722.jsonl
+!lifelong_sotopia/results/lifelong_sotopia_baseline-summary_20260505-175722_trajectory.png
+!lifelong_sotopia/results/lifelong_sotopia_baseline-none_20260505-175555.jsonl
+!lifelong_sotopia/results/lifelong_sotopia_baseline-none_20260505-175555_trajectory.png
 # ConvoMem receipts — add one line per published JSONL as they land.
 !convomem/results/.gitkeep

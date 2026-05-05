@@ -431,8 +431,10 @@ async def agent_turn_async(
 
 
 __all__ = [
+    "BEL_EXTENDED_CHECKPOINTS",
     "DEFAULT_MODEL",
     "AgentTurn",
+    "BelExtScore",
     "GeminiJudge",
     "LocomoVerdict",
     "PartnerTurn",
@@ -440,6 +442,8 @@ __all__ = [
     "SessionSummary",
     "SotopiaScore",
     "agent_turn_async",
+    "bel_extended_value",
+    "judge_bel_extended_async",
     "judge_locomo_async",
     "judge_qa",
     "judge_qa_async",
@@ -538,4 +542,148 @@ async def judge_abstention_async(
             agent_answer=agent_answer.strip() or "[no answer]",
         ),
         QAVerdict,
+    )
+
+
+# ---------------------------------------------------------------------------
+# LIFELONG-SOTOPIA — BelievabilityExtended (8-checkpoint believability)
+#
+# The paper (Goel & Zhu 2025, https://arxiv.org/abs/2506.12666) describes
+# BelExt as an 8-item checklist on top of the standard SOTOPIA Believability
+# score, with the formula:
+#
+#     BelExt = max(Believability - 5 * checkpoints_failed, 0)
+#
+# The paper does not publish the exact checkpoint set verbatim; the eight
+# below are a faithful reading of the failure modes the paper names
+# (repetition, character drift, stalling, mode collapse, emotional register,
+# secret leakage, scenario-change acknowledgement, agent-voice stability).
+# Editorial note: callers wanting to argue with the list should do so by
+# editing this constant — the formula and trajectory remain meaningful
+# regardless.
+# ---------------------------------------------------------------------------
+
+
+BEL_EXTENDED_CHECKPOINTS: tuple[str, ...] = (
+    "no_verbatim_repetition",
+    "character_consistency",
+    "no_stalling",
+    "no_mode_collapse",
+    "appropriate_emotional_register",
+    "no_unprompted_secret_disclosure",
+    "acknowledges_scenario_change",
+    "stays_in_agent_voice",
+)
+
+
+class BelExtScore(BaseModel):
+    """8-checkpoint extended believability + the source ``believability`` score.
+
+    Each checkpoint is True iff the agent PASSED that checkpoint; the formula
+    in :func:`bel_extended_value` subtracts 5 per False.
+    """
+
+    believability: float = Field(ge=0, le=10)
+    no_verbatim_repetition: bool
+    character_consistency: bool
+    no_stalling: bool
+    no_mode_collapse: bool
+    appropriate_emotional_register: bool
+    no_unprompted_secret_disclosure: bool
+    acknowledges_scenario_change: bool
+    stays_in_agent_voice: bool
+    rationale: str
+
+    def failures(self) -> list[str]:
+        return [c for c in BEL_EXTENDED_CHECKPOINTS if not getattr(self, c)]
+
+
+def bel_extended_value(score: BelExtScore) -> float:
+    """Compute ``BelExt = max(Bel - 5 * failed_checkpoints, 0)``."""
+    failed = len(score.failures())
+    return max(score.believability - 5.0 * failed, 0.0)
+
+
+_BEL_EXTENDED_PROMPT = """You are grading the EXTENDED BELIEVABILITY of an AI-played
+character across one episode of a multi-episode social interaction. This is
+the LIFELONG-SOTOPIA benchmark (Goel & Zhu 2025).
+
+# Scenario (this episode)
+{scenario}
+
+# Character being graded: {agent_name}
+Goal this episode: {agent_goal}
+Private information: {agent_secret}
+Episode index in this multi-episode arc: {episode_index} (1-based)
+Is this scenario explicitly memory-required (references a prior episode)? {is_memory_required}
+
+# Prior episodes (concise summaries the partner can reference)
+{prior_episodes_summary}
+
+# Transcript (this episode only)
+{transcript}
+
+Score the agent on these eight pass/fail checkpoints AND the SOTOPIA
+believability dimension (0..10):
+
+1. **no_verbatim_repetition** — Did the agent avoid repeating verbatim phrases
+   from prior episodes or from earlier in this episode? PASS if no obvious
+   verbatim repeats (paraphrased recall is fine and welcome).
+2. **character_consistency** — Did the agent stay consistent with their
+   stated background/personality and with facts established in prior
+   episodes? PASS if no contradictions surface.
+3. **no_stalling** — Did every turn move the conversation forward in some
+   way (information, decision, emotional beat)? PASS if the agent did NOT
+   stall with empty filler / acknowledgements over multiple turns.
+4. **no_mode_collapse** — Did the agent's response shape vary appropriately
+   (some short, some long; questions and statements; not always the same
+   formula)? PASS if there is no obvious single-template repetition.
+5. **appropriate_emotional_register** — Did the agent's tone match what the
+   scenario calls for (warm in mentorship, direct in negotiation, gentle in
+   emotional moments)? PASS if the register fits.
+6. **no_unprompted_secret_disclosure** — Did the agent avoid volunteering
+   their stated private information when not asked / not strategically
+   appropriate? PASS if the secret was not leaked unprompted.
+7. **acknowledges_scenario_change** — If this is NOT the first episode, did
+   the agent treat this episode's scenario as the present one (rather than
+   reusing the prior episode's premise / agenda)? For episode 1 always PASS.
+8. **stays_in_agent_voice** — Did the agent stay in {agent_name}'s voice and
+   not slip into the partner's persona, into the narrator's, or into a meta
+   "as an AI" frame? PASS if the voice held.
+
+Then the standalone:
+- **believability** (0..10) — the standard SOTOPIA Bel rubric: how human-like
+  and in-character was the agent overall?
+
+Finally a one-sentence rationale.
+
+Respond with JSON matching the schema exactly. The eight checkpoints are
+booleans (true = passed).
+"""
+
+
+async def judge_bel_extended_async(
+    judge: GeminiJudge,
+    *,
+    scenario: str,
+    transcript: str,
+    agent_name: str,
+    agent_goal: str,
+    agent_secret: str,
+    episode_index: int,
+    is_memory_required: bool,
+    prior_episodes_summary: str = "",
+) -> BelExtScore:
+    return await judge.grade_async(
+        _BEL_EXTENDED_PROMPT.format(
+            scenario=scenario.strip(),
+            transcript=transcript.strip(),
+            agent_name=agent_name,
+            agent_goal=agent_goal,
+            agent_secret=agent_secret or "(none)",
+            episode_index=episode_index,
+            is_memory_required="yes" if is_memory_required else "no",
+            prior_episodes_summary=prior_episodes_summary.strip() or "(this is episode 1)",
+        ),
+        BelExtScore,
     )

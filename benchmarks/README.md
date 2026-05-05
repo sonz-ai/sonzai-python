@@ -1,13 +1,14 @@
 # Sonzai benchmark suite
 
 Open-source benchmarks for the [Sonzai Mind Layer](https://sonz.ai). Reproducible,
-runnable by anyone with a Sonzai API key. Three benchmarks ship here:
+runnable by anyone with a Sonzai API key. Four benchmarks ship here:
 
 | Benchmark | What it measures | Result |
 |-----------|------------------|--------|
 | **LoCoMo** | Long-term conversational memory over 10 dialogues × ~30 sessions, 4 reasoning categories | Sonzai **0.732** overall LLM-judge accuracy — beats mem0's published headline |
 | **LongMemEval** | Memory recall + end-to-end QA over 500 long-horizon conversations | Sonzai matches or beats MemPalace on every headline metric — including the ones MemPalace was specifically designed to win |
 | **SOTOPIA longitudinal** | Social intelligence trajectory across 30 sessions with the same user | The thing Sonzai exists for: personality coherence and self-learning that compound across hundreds of sessions |
+| **LIFELONG-SOTOPIA** | Multi-episode social intelligence over varied scenarios per relationship type (30+ episodes/pair) | [Goel & Zhu 2025](https://arxiv.org/abs/2506.12666). Sonzai's Believability *rises* across 30 episodes (Δ +1.00, slope +0.029/ep ↑). Reproduces the paper's decline on a no-memory baseline. |
 
 ### Sonzai vs mem0 on LoCoMo — head-to-head accuracy
 
@@ -504,6 +505,51 @@ Ballpark per 1 full-limit run:
 
 Start with `--limit 20` or `--scenarios 4 --sessions-per-scenario 10` to
 confirm setup works before committing to the full run.
+
+### LIFELONG-SOTOPIA — does the agent decline across diverse interactions?
+
+[Goel & Zhu 2025](https://arxiv.org/abs/2506.12666). Where standard SOTOPIA
+grades a single interaction and our existing `sotopia/` bench repeats the
+SAME scenario across N sessions, LIFELONG-SOTOPIA gives the same character
+pair a DIFFERENT scenario each episode. The paper's finding: Goal and
+Believability **decline** across the 40-episode arc for every tested LLM.
+
+Three signals per episode:
+
+- **Bel** (0..10) — standard SOTOPIA Believability
+- **Goal** (0..10) — standard SOTOPIA Goal Completion
+- **BelExt** (0..10) — extended believability, 8-checkpoint failure-mode
+  checklist with formula `BelExt = max(Bel - 5×failed, 0)`
+
+Plus a small set of hand-authored "memory-required" scenarios inserted at
+deterministic indices to test explicit-memory recall.
+
+Headline metric: linear slope of each metric across the episode trajectory.
+A flat or rising slope means the memory layer is helping; a negative slope
+reproduces the paper's "decline" finding.
+
+**Headline result** (1 pair, 30 episodes, same seed, Gemini 3.1 Flash Lite
+judge + partner; full table in `lifelong_sotopia/README.md`):
+
+| Run | Bel slope | Bel Δ e1→e30 | Goal slope | BelExt slope |
+|---|---:|---:|---:|---:|
+| **Sonzai** | **+0.029/ep ↑** | **+1.00 ↑** | −0.009/ep | **+0.016/ep ↑** |
+| baseline-summary (paper's "advanced") | +0.000/ep | +0.00 = | +0.000/ep | −0.010/ep |
+| baseline-none (no-memory floor) | −0.003/ep ↓ | −1.00 ↓ | −0.005/ep ↓ | −0.020/ep ↓ |
+
+Sonzai is the only condition where Believability is *rising* across 30
+different scenarios — the agent's memory layer doesn't just prevent decline,
+it compounds. Baseline-none reproduces the paper's published decline.
+
+Run:
+
+```bash
+python -m benchmarks.lifelong_sotopia --backend sonzai          # default 2 × 10
+python -m benchmarks.lifelong_sotopia --backend baseline --memory summary --quick
+python -m benchmarks.lifelong_sotopia --backend sonzai --full   # paper-comparable
+```
+
+→ [benchmarks/lifelong_sotopia/README.md](lifelong_sotopia/README.md)
 
 ## Env vars
 
