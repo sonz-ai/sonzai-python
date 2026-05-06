@@ -1672,6 +1672,8 @@ class ChatOptions(BaseModel):
     tool_definitions: list[dict[str, Any]] = Field(default_factory=list)
     max_turns: int | None = None
     skip_context_build: bool | None = None
+    skip_server_history_cache: bool | None = None
+    retrieval_sync: bool | None = None
     game_context: GameContext | None = None
 
     model_config = {"extra": "allow"}

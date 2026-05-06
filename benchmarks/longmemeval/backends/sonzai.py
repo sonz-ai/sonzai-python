@@ -286,6 +286,15 @@ async def _ask_question(
     chat_body: dict = {
         "messages": [{"role": "user", "content": question}],
         "user_id": user_id,
+        # iter-141b: route bench retrieval through the FULL agentic
+        # pipeline (multi-query expansion + reranker + sufficiency loop)
+        # synchronously. The chat hot path defaults to a single-shot
+        # planner for fast TTFC; bench prefers correctness over latency.
+        # Without this flag, iter-140y bench saw R@G ~0.26 because
+        # round-1 retrieval misses (Q5/Q6/Q7) had no second pass to
+        # recover. With it, the agentic loop's missing_queries +
+        # reranker get to run end-to-end before the answer is synthesised.
+        "retrieval_sync": True,
     }
     if chat_provider:
         chat_body["provider"] = chat_provider
