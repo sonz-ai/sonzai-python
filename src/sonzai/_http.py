@@ -518,7 +518,11 @@ class AsyncHTTPClient:
     async def stream_sse(
         self, method: str, path: str, *, json_data: dict[str, Any] | None = None
     ) -> AsyncIterator[dict[str, Any]]:
-        """Send a request and yield parsed SSE events asynchronously."""
+        """Send a request and yield parsed SSE events asynchronously.
+
+        Supports the ``__chunk`` envelope protocol — see
+        :func:`_parse_sse_stream` for the full description.
+        """
         async with self._client.stream(
             method,
             path,
@@ -530,6 +534,9 @@ class AsyncHTTPClient:
             # per-line size limit, so large SSE events such as context_ready (which
             # embeds the full enriched context JSON in a single data: line and can
             # exceed 64 KB) are handled correctly.
+            chunk_buffer: list[str] = []
+            chunk_total: int = 0
+
             async for line in response.aiter_lines():
                 line = line.strip()
                 if not line:
@@ -539,17 +546,59 @@ class AsyncHTTPClient:
                 if line.startswith("data: "):
                     data = line[6:]
                     try:
-                        yield json.loads(data)
+                        parsed = json.loads(data)
                     except json.JSONDecodeError as e:
                         logger.warning("Malformed SSE event: %s", e)
                         continue
+
+                    if isinstance(parsed, dict) and "__chunk" in parsed:
+                        chunk_meta = parsed["__chunk"]
+                        idx = chunk_meta["index"]
+                        total = chunk_meta["total"]
+                        piece = parsed["data"]
+
+                        if idx == 0:
+                            chunk_buffer = [""] * total
+                            chunk_total = total
+
+                        if idx < len(chunk_buffer):
+                            chunk_buffer[idx] = piece
+
+                        if (
+                            len([p for p in chunk_buffer if p]) == chunk_total
+                            and chunk_total > 0
+                        ):
+                            assembled = "".join(chunk_buffer)
+                            chunk_buffer = []
+                            chunk_total = 0
+                            try:
+                                yield json.loads(assembled)
+                            except json.JSONDecodeError as e:
+                                logger.warning(
+                                    "Malformed reassembled chunk payload: %s", e
+                                )
+                        continue
+
+                    yield parsed
 
     async def close(self) -> None:
         await self._client.aclose()
 
 
 def _parse_sse_stream(lines: Iterator[str]) -> Generator[dict[str, Any], None, None]:
-    """Parse SSE lines into JSON dicts."""
+    """Parse SSE lines into JSON dicts.
+
+    Supports the ``__chunk`` envelope protocol: when a payload is too large for
+    a single SSE frame the producer splits it across multiple ``data:`` lines,
+    each carrying a ``{"__chunk": {"index": N, "total": M}, "data": "..."}``
+    wrapper.  This function buffers the fragments and yields the reassembled
+    JSON object once all pieces have arrived.
+
+    Non-chunked events pass through unchanged (backward compatible).
+    """
+    chunk_buffer: list[str] = []
+    chunk_total: int = 0
+
     for line in lines:
         line = line.strip()
         if not line:
@@ -559,7 +608,32 @@ def _parse_sse_stream(lines: Iterator[str]) -> Generator[dict[str, Any], None, N
         if line.startswith("data: "):
             data = line[6:]
             try:
-                yield json.loads(data)
+                parsed = json.loads(data)
             except json.JSONDecodeError as e:
                 logger.warning("Malformed SSE event: %s", e)
                 continue
+
+            if isinstance(parsed, dict) and "__chunk" in parsed:
+                chunk_meta = parsed["__chunk"]
+                idx = chunk_meta["index"]
+                total = chunk_meta["total"]
+                piece = parsed["data"]
+
+                if idx == 0:
+                    chunk_buffer = [""] * total
+                    chunk_total = total
+
+                if idx < len(chunk_buffer):
+                    chunk_buffer[idx] = piece
+
+                if len([p for p in chunk_buffer if p]) == chunk_total and chunk_total > 0:
+                    assembled = "".join(chunk_buffer)
+                    chunk_buffer = []
+                    chunk_total = 0
+                    try:
+                        yield json.loads(assembled)
+                    except json.JSONDecodeError as e:
+                        logger.warning("Malformed reassembled chunk payload: %s", e)
+                continue
+
+            yield parsed
