@@ -1037,6 +1037,7 @@ class CostBreakdownEntry(BaseModel):
         extra='forbid',
         populate_by_name=True,
     )
+    cache_tokens: Annotated[int, Field(alias='cacheTokens')]
     cost_usd: Annotated[float, Field(alias='costUsd')]
     input_tokens: Annotated[int, Field(alias='inputTokens')]
     key: str
@@ -1071,6 +1072,7 @@ class CostByProject(BaseModel):
         populate_by_name=True,
     )
     agent_count: Annotated[int, Field(alias='agentCount')]
+    cache_tokens: Annotated[int, Field(alias='cacheTokens')]
     cost_usd: Annotated[float, Field(alias='costUsd')]
     input_tokens: Annotated[int, Field(alias='inputTokens')]
     output_tokens: Annotated[int, Field(alias='outputTokens')]
@@ -1106,6 +1108,7 @@ class CostDailyEntry(BaseModel):
         extra='forbid',
         populate_by_name=True,
     )
+    cache_tokens: Annotated[int, Field(alias='cacheTokens')]
     cost_usd: Annotated[float, Field(alias='costUsd')]
     date: str
     input_tokens: Annotated[int, Field(alias='inputTokens')]
@@ -1136,6 +1139,7 @@ class CostSummary(BaseModel):
     service_cost_usd: Annotated[float, Field(alias='serviceCostUsd')]
     token_cost_usd: Annotated[float, Field(alias='tokenCostUsd')]
     token_price_per1_k_usd: Annotated[float, Field(alias='tokenPricePer1KUsd')]
+    total_cache_tokens: Annotated[int, Field(alias='totalCacheTokens')]
     total_cost_usd: Annotated[float, Field(alias='totalCostUsd')]
     total_input_tokens: Annotated[int, Field(alias='totalInputTokens')]
     total_output_tokens: Annotated[int, Field(alias='totalOutputTokens')]
@@ -5201,15 +5205,6 @@ class ProactiveNotificationsResponse(BaseModel):
     notifications: list[ProactiveNotificationEntry] | None
 
 
-class ProcessMessage(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    content: str
-    role: str
-
-
 class ProcessSideEffectsSummary(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5219,6 +5214,15 @@ class ProcessSideEffectsSummary(BaseModel):
     interests_detected: int
     mood_updated: bool
     personality_updated: bool
+
+
+class ProcessToolCallFunction(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    arguments: str
+    name: str
 
 
 class Project(BaseModel):
@@ -5896,18 +5900,18 @@ class SessionEndStatusOutputBody(BaseModel):
     """
 
 
-class SessionMessage(BaseModel):
+class SessionToolCallFunction(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
         populate_by_name=True,
     )
-    content: str
+    arguments: str
     """
-    Message content
+    JSON-encoded function arguments
     """
-    role: str
+    name: str
     """
-    Message role (user or assistant)
+    Function name
     """
 
 
@@ -6200,6 +6204,14 @@ class StartSessionInputBody(BaseModel):
     instance_id: str | None = None
     """
     Optional agent instance identifier
+    """
+    model: str | None = None
+    """
+    Optional session-level default model paired with provider.
+    """
+    provider: str | None = None
+    """
+    Optional session-level default provider for caller-overridable post-processing tasks (fact extraction, mood analysis, etc.). Per-call /sessions/end requests can override this; both provider and model must be set together to take effect.
     """
     session_id: str
     """
@@ -6849,6 +6861,125 @@ class Turn(BaseModel):
         populate_by_name=True,
     )
     user_message: str
+
+
+class TurnFetchNextContext(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    language: str | None = None
+    """
+    Optional language code (e.g. en, ja).
+    """
+    query: str | None = None
+    """
+    Optional supplementary memory-search query used by the context builder.
+    """
+    timezone: str | None = None
+    """
+    Optional IANA timezone.
+    """
+
+
+class TurnMood(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    affiliation: float
+    """
+    Proposed affiliation delta from this turn
+    """
+    arousal: float
+    """
+    Proposed arousal delta from this turn
+    """
+    reason: str | None = None
+    """
+    Free-text rationale from the analyzer
+    """
+    tension: float
+    """
+    Proposed tension delta from this turn
+    """
+    trigger_type: str | None = None
+    """
+    Mood trigger type (e.g. emotional_response)
+    """
+    valence: float
+    """
+    Proposed valence delta from this turn
+    """
+
+
+class TurnResponseBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/TurnResponseBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    extraction_id: str
+    """
+    Idempotency key for the deferred pipeline. Use it to poll GET /agents/{agentId}/turns/{extractionId}/status.
+    """
+    extraction_status: str
+    """
+    State of the deferred work item at response time. "queued" right after submit; the worker transitions through running → done|failed.
+    """
+    mood: TurnMood | None = None
+    """
+    Sync mood-only extraction. nil when the analyzer didn't produce a mood update or wasn't wired.
+    """
+    next_context: Any | None = None
+    """
+    Enriched agent context. Only present when fetchNextContext was supplied on the request.
+    """
+    success: bool
+    """
+    Always true on a 200; failures surface as non-200 error responses.
+    """
+
+
+class TurnStatusOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/TurnStatusOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    error: str | None = None
+    """
+    Populated on state=failed.
+    """
+    extraction_id: str
+    """
+    Echo of the extraction_id.
+    """
+    state: str
+    """
+    queued | running | done | failed
+    """
+
+
+class TurnToolCallFunction(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    arguments: str
+    name: str
 
 
 class UpcomingScheduleOutputBody(BaseModel):
@@ -8594,6 +8725,7 @@ class CostBreakdownResponse(BaseModel):
     by_model: Annotated[list[CostBreakdownEntry] | None, Field(alias='byModel')]
     by_operation: Annotated[list[CostBreakdownEntry] | None, Field(alias='byOperation')]
     period: CostBreakdownResponsePeriodStruct
+    total_cache_tokens: Annotated[int, Field(alias='totalCacheTokens')]
     total_cost_usd: Annotated[float, Field(alias='totalCostUsd')]
     total_input_tokens: Annotated[int, Field(alias='totalInputTokens')]
     total_output_tokens: Annotated[int, Field(alias='totalOutputTokens')]
@@ -8788,56 +8920,6 @@ class CreateEvalTemplateInputBody(BaseModel):
     template_type: str | None = None
     """
     Template type (quality or adaptation)
-    """
-
-
-class EndSessionInputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EndSessionInputBody.json']),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    duration_seconds: int
-    """
-    Session duration in seconds
-    """
-    instance_id: str | None = None
-    """
-    Optional agent instance identifier
-    """
-    messages: list[SessionMessage] | None = None
-    """
-    Full conversation for memory extraction
-    """
-    session_id: str
-    """
-    Session identifier to end
-    """
-    total_messages: int
-    """
-    Total number of messages in the session
-    """
-    user_display_name: str | None = None
-    """
-    Optional display name for the user; when supplied, skips the CE UserPrimingMetadata lookup
-    """
-    user_id: str
-    """
-    ID of the user ending the session
-    """
-    user_timezone: str | None = None
-    """
-    Optional IANA timezone for the user (e.g., Asia/Singapore); when supplied, skips the CE UserPrimingMetadata lookup
-    """
-    wait: bool | None = None
-    """
-    When true, run CE pipeline synchronously before responding. Defaults to async for throughput; benchmarks and test harnesses that query memory immediately after should set wait=true.
     """
 
 
@@ -9647,44 +9729,6 @@ class PrimeUserRequest(BaseModel):
     structured_import: StructuredImportSpec | None = None
 
 
-class ProcessInputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ProcessInputBody.json']),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    instance_id: Annotated[str | None, Field(alias='instanceId')] = None
-    """
-    Agent instance scope
-    """
-    messages: list[ProcessMessage] | None
-    """
-    Conversation transcript (minimum 2 messages)
-    """
-    model: str | None = None
-    """
-    LLM model (informational only)
-    """
-    provider: str | None = None
-    """
-    LLM provider (informational only)
-    """
-    session_id: Annotated[str | None, Field(alias='sessionId')] = None
-    """
-    Session identifier (auto-generated if empty)
-    """
-    user_id: Annotated[str, Field(alias='userId')]
-    """
-    ID of the user whose conversation is being processed
-    """
-
-
 class ProcessResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -9698,8 +9742,19 @@ class ProcessResponse(BaseModel):
     A URL to the JSON Schema for this object.
     """
     facts_extracted: int
+    session_id: str
     side_effects: ProcessSideEffectsSummary
     success: bool
+
+
+class ProcessToolCall(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    function: ProcessToolCallFunction
+    id: str
+    type: str
 
 
 class SearchResponse(BaseModel):
@@ -9725,6 +9780,22 @@ class SessionConfig(BaseModel):
     name: str
     time_gap_hours: int
     turns: list[Turn] | None
+
+
+class SessionToolCall(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    function: SessionToolCallFunction
+    id: str
+    """
+    Tool call identifier; matches tool_call_id on the corresponding tool result message
+    """
+    type: str
+    """
+    Tool call type, e.g. "function"
+    """
 
 
 class SimulateRequest(BaseModel):
@@ -9861,6 +9932,16 @@ class TimelineResponse(BaseModel):
     """
     sessions: list[TimelineSession] | None
     total_facts: int
+
+
+class TurnToolCall(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    function: TurnToolCallFunction
+    id: str
+    type: str
 
 
 class UpdateUserMetadataHumaOutputBody(BaseModel):
@@ -10139,6 +10220,17 @@ class ListMCPCatalogOutputBody(BaseModel):
     """
 
 
+class ProcessMessage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    content: str | None = None
+    role: str
+    tool_call_id: str | None = None
+    tool_calls: list[ProcessToolCall] | None = None
+
+
 class RunEvalRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10185,6 +10277,100 @@ class RunEvalRequest(BaseModel):
     """
 
 
+class SessionMessage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    content: str | None = None
+    """
+    Message content; null for assistant messages that only call tools
+    """
+    role: str
+    """
+    Message role (user, assistant, tool, system)
+    """
+    tool_call_id: str | None = None
+    """
+    Set when role=tool to link the result to its assistant tool_calls entry
+    """
+    tool_calls: list[SessionToolCall] | None = None
+    """
+    Set when an assistant message invokes tools
+    """
+
+
+class TurnMessage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    content: str | None = None
+    """
+    Message content; null for assistant messages that only call tools
+    """
+    role: str
+    """
+    Message role (user, assistant, tool, system)
+    """
+    tool_call_id: str | None = None
+    """
+    Set when role=tool to link the result to its assistant tool_calls entry
+    """
+    tool_calls: list[TurnToolCall] | None = None
+    """
+    Set when an assistant message invokes tools
+    """
+
+
+class TurnRequestBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/TurnRequestBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    fetch_next_context: Annotated[
+        TurnFetchNextContext | None, Field(alias='fetchNextContext')
+    ] = None
+    """
+    When set, /turn fetches an enriched context (same shape as GET /context) and includes it in the response under next_context.
+    """
+    instance_id: Annotated[str | None, Field(alias='instanceId')] = None
+    """
+    Optional agent instance scope
+    """
+    messages: list[TurnMessage] | None
+    """
+    New-turn messages (just the latest exchange — not the full history). Tool messages allowed.
+    """
+    model: str | None = None
+    """
+    Per-call caller-supplied LLM model paired with provider.
+    """
+    provider: str | None = None
+    """
+    Per-call caller-supplied LLM provider (e.g. anthropic). Both provider and model must be set together to take effect.
+    """
+    user_display_name: Annotated[str | None, Field(alias='userDisplayName')] = None
+    """
+    Optional user display name; threaded through to per-turn extraction
+    """
+    user_id: Annotated[str, Field(alias='userId')]
+    """
+    ID of the user submitting the turn
+    """
+    user_timezone: Annotated[str | None, Field(alias='userTimezone')] = None
+    """
+    Optional IANA timezone (e.g. America/Los_Angeles); threaded through to per-turn extraction
+    """
+
+
 class UserOverlayDetailResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10223,3 +10409,99 @@ class WorkbenchGenerateCharacterBody(BaseModel):
     existing: bool | None = None
     generated: WorkbenchGenerateCharacterGenerated | None = None
     usage: WorkbenchGenerateCharacterUsage | None = None
+
+
+class EndSessionInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/EndSessionInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    duration_seconds: int
+    """
+    Session duration in seconds
+    """
+    instance_id: str | None = None
+    """
+    Optional agent instance identifier
+    """
+    messages: list[SessionMessage] | None = None
+    """
+    Full conversation for memory extraction
+    """
+    model: str | None = None
+    """
+    Optional per-call model override (e.g., "claude-haiku-4-5"). Ignored unless paired with provider.
+    """
+    provider: str | None = None
+    """
+    Optional per-call provider override (e.g., "anthropic"). When both provider and model are set, this takes precedence over the session-level default registered at /sessions/start.
+    """
+    session_id: str
+    """
+    Session identifier to end
+    """
+    total_messages: int
+    """
+    Total number of messages in the session
+    """
+    user_display_name: str | None = None
+    """
+    Optional display name for the user; when supplied, skips the CE UserPrimingMetadata lookup
+    """
+    user_id: str
+    """
+    ID of the user ending the session
+    """
+    user_timezone: str | None = None
+    """
+    Optional IANA timezone for the user (e.g., Asia/Singapore); when supplied, skips the CE UserPrimingMetadata lookup
+    """
+    wait: bool | None = None
+    """
+    When true, run CE pipeline synchronously before responding. Defaults to async for throughput; benchmarks and test harnesses that query memory immediately after should set wait=true.
+    """
+
+
+class ProcessInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ProcessInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    instance_id: Annotated[str | None, Field(alias='instanceId')] = None
+    """
+    Agent instance scope
+    """
+    messages: list[ProcessMessage] | None
+    """
+    Conversation transcript (minimum 2 messages)
+    """
+    model: str | None = None
+    """
+    LLM model (informational only)
+    """
+    provider: str | None = None
+    """
+    LLM provider (informational only)
+    """
+    session_id: Annotated[str | None, Field(alias='sessionId')] = None
+    """
+    Session identifier (auto-generated if empty)
+    """
+    user_id: Annotated[str, Field(alias='userId')]
+    """
+    ID of the user whose conversation is being processed
+    """

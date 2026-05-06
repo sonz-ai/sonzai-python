@@ -22,10 +22,13 @@ from .agents import AgentCapabilities
 from .chat import ChatStreamEvent
 from .evaluation import EvalRun
 from .memory import StoredFact
+from .session import AsyncSession, Session
 
 __all__ = [
     "AgentCapabilities",
+    "AsyncSession",
     "ChatStreamEvent",
     "EvalRun",
+    "Session",
     "StoredFact",
 ]

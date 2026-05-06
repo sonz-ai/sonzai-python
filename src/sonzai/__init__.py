@@ -221,7 +221,13 @@ from .types import (
     DiaryEntry,
     WakeupExecution,
 )
-from ._customizations import AgentCapabilities, ChatStreamEvent, StoredFact
+from ._customizations import (
+    AgentCapabilities,
+    AsyncSession,
+    ChatStreamEvent,
+    Session,
+    StoredFact,
+)
 from ._customizations.chat import (
     ChatCompleteEvent,
     ChatContextReadyEvent,
@@ -347,6 +353,8 @@ __all__ = [
     "Notification",
     "NotificationListResponse",
     # Types - Sessions
+    "AsyncSession",
+    "Session",
     "SessionResponse",
     # Types - Voice
     "Voice",

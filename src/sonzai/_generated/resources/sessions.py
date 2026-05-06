@@ -32,6 +32,8 @@ class Sessions(_SessionsBase):
         duration_seconds: int,
         instance_id: str | None = None,
         messages: list[Any] | None = None,
+        model: str | None = None,
+        provider: str | None = None,
         session_id: str,
         total_messages: int,
         user_display_name: str | None = None,
@@ -51,6 +53,10 @@ class Sessions(_SessionsBase):
             _raw["instance_id"] = instance_id
         if messages is not None:
             _raw["messages"] = messages
+        if model is not None:
+            _raw["model"] = model
+        if provider is not None:
+            _raw["provider"] = provider
         if session_id is not None:
             _raw["session_id"] = session_id
         if total_messages is not None:
@@ -72,6 +78,8 @@ class Sessions(_SessionsBase):
         agent_id: str,
         *,
         instance_id: str | None = None,
+        model: str | None = None,
+        provider: str | None = None,
         session_id: str,
         tool_definitions: str | None = None,
         user_display_name: str | None = None,
@@ -83,6 +91,10 @@ class Sessions(_SessionsBase):
         _raw: dict[str, Any] = {}
         if instance_id is not None:
             _raw["instance_id"] = instance_id
+        if model is not None:
+            _raw["model"] = model
+        if provider is not None:
+            _raw["provider"] = provider
         if session_id is not None:
             _raw["session_id"] = session_id
         if tool_definitions is not None:
@@ -128,6 +140,8 @@ class AsyncSessions(_SessionsBase):
         duration_seconds: int,
         instance_id: str | None = None,
         messages: list[Any] | None = None,
+        model: str | None = None,
+        provider: str | None = None,
         session_id: str,
         total_messages: int,
         user_display_name: str | None = None,
@@ -147,6 +161,10 @@ class AsyncSessions(_SessionsBase):
             _raw["instance_id"] = instance_id
         if messages is not None:
             _raw["messages"] = messages
+        if model is not None:
+            _raw["model"] = model
+        if provider is not None:
+            _raw["provider"] = provider
         if session_id is not None:
             _raw["session_id"] = session_id
         if total_messages is not None:
@@ -168,6 +186,8 @@ class AsyncSessions(_SessionsBase):
         agent_id: str,
         *,
         instance_id: str | None = None,
+        model: str | None = None,
+        provider: str | None = None,
         session_id: str,
         tool_definitions: str | None = None,
         user_display_name: str | None = None,
@@ -179,6 +199,10 @@ class AsyncSessions(_SessionsBase):
         _raw: dict[str, Any] = {}
         if instance_id is not None:
             _raw["instance_id"] = instance_id
+        if model is not None:
+            _raw["model"] = model
+        if provider is not None:
+            _raw["provider"] = provider
         if session_id is not None:
             _raw["session_id"] = session_id
         if tool_definitions is not None:

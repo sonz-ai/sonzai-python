@@ -6,6 +6,7 @@ import asyncio
 import time
 from typing import Any
 
+from .._customizations.session import AsyncSession, Session
 from .._generated.models import EndSessionInputBody, StartSessionInputBody
 from .._generated.resources.sessions import AsyncSessions as _GenAsyncSessions
 from .._generated.resources.sessions import Sessions as _GenSessions
@@ -64,9 +65,22 @@ class Sessions(_GenSessions):
         session_id: str,
         instance_id: str | None = None,
         user_display_name: str | None = None,
+        user_timezone: str | None = None,
         tool_definitions: list[dict[str, Any]] | None = None,
-    ) -> SessionResponse:
-        """Start a chat session."""
+        provider: str | None = None,
+        model: str | None = None,
+    ) -> Session:
+        """Start a chat session and return a :class:`Session` handle.
+
+        The handle bundles ``(agent_id, user_id, session_id, instance_id)``
+        plus ``provider``/``model`` defaults, so callers can drive the
+        real-time loop with ``session.context()``, ``session.turn(...)``,
+        ``session.end()`` instead of repeating identity arguments on
+        every method.
+
+        Backward compat: the returned ``Session`` exposes ``success``
+        as a property mirroring the legacy ``StartSessionOutputBody``.
+        """
         raw: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
@@ -77,12 +91,26 @@ class Sessions(_GenSessions):
             raw["user_display_name"] = user_display_name
         if tool_definitions:
             raw["tool_definitions"] = tool_definitions
+        if provider is not None:
+            raw["provider"] = provider
+        if model is not None:
+            raw["model"] = model
         body = encode_body(StartSessionInputBody, raw)
 
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/sessions/start", json_data=body
+        data = self._http.post(f"/api/v1/agents/{agent_id}/sessions/start", json_data=body)
+        start_resp = SessionResponse.model_validate(data)
+        return Session(
+            self,
+            agent_id=agent_id,
+            user_id=user_id,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+            user_display_name=user_display_name,
+            user_timezone=user_timezone,
+            start_response=start_resp,
         )
-        return SessionResponse.model_validate(data)
 
     def end(
         self,
@@ -97,6 +125,8 @@ class Sessions(_GenSessions):
         wait: bool = False,
         user_display_name: str | None = None,
         user_timezone: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
         poll_timeout: float = _SESSION_END_OVERALL_TIMEOUT,
     ) -> SessionResponse:
         """End a chat session.
@@ -108,6 +138,10 @@ class Sessions(_GenSessions):
         ``processing_id`` instead; this method polls ``/status/{pid}``
         until completion so the caller-visible behaviour stays
         "call returns when the pipeline is done".
+
+        ``provider``/``model`` override the session-level defaults
+        registered at ``/sessions/start`` for the extraction pipeline
+        that runs on session end.
         """
         raw: dict[str, Any] = {
             "user_id": user_id,
@@ -127,15 +161,15 @@ class Sessions(_GenSessions):
             raw["user_display_name"] = user_display_name
         if user_timezone is not None:
             raw["user_timezone"] = user_timezone
+        if provider is not None:
+            raw["provider"] = provider
+        if model is not None:
+            raw["model"] = model
         body = encode_body(EndSessionInputBody, raw)
 
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/sessions/end", json_data=body
-        )
+        data = self._http.post(f"/api/v1/agents/{agent_id}/sessions/end", json_data=body)
         if isinstance(data, dict) and data.get("processing_id"):
-            data = self._poll_processing_status(
-                data["processing_id"], overall_timeout=poll_timeout
-            )
+            data = self._poll_processing_status(data["processing_id"], overall_timeout=poll_timeout)
         return SessionResponse.model_validate(data)
 
     def _poll_processing_status(
@@ -151,22 +185,16 @@ class Sessions(_GenSessions):
         interval = _SESSION_END_POLL_INITIAL_INTERVAL
         last_state: str | None = None
         while True:
-            status = self._http.get(
-                f"/api/v1/sessions/end/status/{processing_id}"
-            )
+            status = self._http.get(f"/api/v1/sessions/end/status/{processing_id}")
             if not isinstance(status, dict):
-                raise SonzaiError(
-                    f"unexpected status payload shape: {type(status)!r}"
-                )
+                raise SonzaiError(f"unexpected status payload shape: {type(status)!r}")
             state = status.get("state")
             last_state = state
             if state == "done":
                 # Promote to the SessionResponse shape the caller expects.
                 return {"success": True, "async": True, **status}
             if state == "failed":
-                raise SonzaiError(
-                    f"session end failed: {status.get('error', 'unknown')}"
-                )
+                raise SonzaiError(f"session end failed: {status.get('error', 'unknown')}")
             if time.monotonic() >= deadline:
                 raise SonzaiError(
                     f"session end poll timed out after {overall_timeout:.0f}s "
@@ -201,8 +229,15 @@ class AsyncSessions(_GenAsyncSessions):
         session_id: str,
         instance_id: str | None = None,
         user_display_name: str | None = None,
+        user_timezone: str | None = None,
         tool_definitions: list[dict[str, Any]] | None = None,
-    ) -> SessionResponse:
+        provider: str | None = None,
+        model: str | None = None,
+    ) -> AsyncSession:
+        """Start a chat session and return an :class:`AsyncSession` handle.
+
+        See :meth:`Sessions.start` for the contract.
+        """
         raw: dict[str, Any] = {
             "user_id": user_id,
             "session_id": session_id,
@@ -213,12 +248,26 @@ class AsyncSessions(_GenAsyncSessions):
             raw["user_display_name"] = user_display_name
         if tool_definitions:
             raw["tool_definitions"] = tool_definitions
+        if provider is not None:
+            raw["provider"] = provider
+        if model is not None:
+            raw["model"] = model
         body = encode_body(StartSessionInputBody, raw)
 
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/sessions/start", json_data=body
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/sessions/start", json_data=body)
+        start_resp = SessionResponse.model_validate(data)
+        return AsyncSession(
+            self,
+            agent_id=agent_id,
+            user_id=user_id,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+            user_display_name=user_display_name,
+            user_timezone=user_timezone,
+            start_response=start_resp,
         )
-        return SessionResponse.model_validate(data)
 
     async def end(
         self,
@@ -233,6 +282,8 @@ class AsyncSessions(_GenAsyncSessions):
         wait: bool = False,
         user_display_name: str | None = None,
         user_timezone: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
         poll_timeout: float = _SESSION_END_OVERALL_TIMEOUT,
     ) -> SessionResponse:
         """End a session and optionally wait for the CE pipeline.
@@ -266,11 +317,13 @@ class AsyncSessions(_GenAsyncSessions):
             raw["user_display_name"] = user_display_name
         if user_timezone is not None:
             raw["user_timezone"] = user_timezone
+        if provider is not None:
+            raw["provider"] = provider
+        if model is not None:
+            raw["model"] = model
         body = encode_body(EndSessionInputBody, raw)
 
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/sessions/end", json_data=body
-        )
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/sessions/end", json_data=body)
         if isinstance(data, dict) and data.get("processing_id"):
             data = await self._poll_processing_status(
                 data["processing_id"], overall_timeout=poll_timeout
@@ -286,21 +339,15 @@ class AsyncSessions(_GenAsyncSessions):
         interval = _SESSION_END_POLL_INITIAL_INTERVAL
         last_state: str | None = None
         while True:
-            status = await self._http.get(
-                f"/api/v1/sessions/end/status/{processing_id}"
-            )
+            status = await self._http.get(f"/api/v1/sessions/end/status/{processing_id}")
             if not isinstance(status, dict):
-                raise SonzaiError(
-                    f"unexpected status payload shape: {type(status)!r}"
-                )
+                raise SonzaiError(f"unexpected status payload shape: {type(status)!r}")
             state = status.get("state")
             last_state = state
             if state == "done":
                 return {"success": True, "async": True, **status}
             if state == "failed":
-                raise SonzaiError(
-                    f"session end failed: {status.get('error', 'unknown')}"
-                )
+                raise SonzaiError(f"session end failed: {status.get('error', 'unknown')}")
             if loop.time() >= deadline:
                 raise SonzaiError(
                     f"session end poll timed out after {overall_timeout:.0f}s "
