@@ -47,11 +47,27 @@ class Projects(_GenProjects):
             mode="cursor",
         )
 
-    def create(self, *, name: str, environment: str | None = None) -> Project:
-        """Create a new project."""
+    def create(
+        self,
+        *,
+        name: str,
+        environment: str | None = None,
+        default_agent_kb_write: bool | None = None,
+    ) -> Project:
+        """Create a new project.
+
+        ``default_agent_kb_write`` is the project-level default for whether
+        agents in this project may autonomously edit the knowledge base
+        (knowledge_create / _update / _delete tools). The platform OR-resolves
+        this with each agent's own ``knowledgeBaseWrite`` capability — agent
+        flag true wins; only when off does this default apply. Pass ``None``
+        (the default) to leave the setting unconfigured.
+        """
         raw: dict[str, Any] = {"name": name}
         if environment is not None:
             raw["environment"] = environment
+        if default_agent_kb_write is not None:
+            raw["default_agent_kb_write"] = default_agent_kb_write
         body = encode_body(CreateProjectInputBody, raw)
         data = self._http.post("/api/v1/projects", json_data=body)
         return Project.model_validate(data)
@@ -66,17 +82,28 @@ class Projects(_GenProjects):
         project_id: str,
         *,
         name: str | None = None,
+        business_name: str | None = None,
         game_name: str | None = None,
         environment: str | None = None,
+        default_agent_kb_write: bool | None = None,
     ) -> Project:
-        """Update a project."""
+        """Update a project.
+
+        ``business_name`` is the canonical display name on the wire;
+        ``game_name`` is retained as the legacy alias. Pass either; if both
+        are set the platform prefers ``business_name``.
+        """
         raw: dict[str, Any] = {}
         if name is not None:
             raw["name"] = name
+        if business_name is not None:
+            raw["business_name"] = business_name
         if game_name is not None:
             raw["game_name"] = game_name
         if environment is not None:
             raw["environment"] = environment
+        if default_agent_kb_write is not None:
+            raw["default_agent_kb_write"] = default_agent_kb_write
         body = encode_body(UpdateProjectInputBody, raw)
         data = self._http.put(f"/api/v1/projects/{project_id}", json_data=body)
         return Project.model_validate(data)
@@ -145,11 +172,22 @@ class AsyncProjects(_GenAsyncProjects):
             mode="cursor",
         )
 
-    async def create(self, *, name: str, environment: str | None = None) -> Project:
-        """Create a new project."""
+    async def create(
+        self,
+        *,
+        name: str,
+        environment: str | None = None,
+        default_agent_kb_write: bool | None = None,
+    ) -> Project:
+        """Create a new project. Async.
+
+        See the sync counterpart for ``default_agent_kb_write`` semantics.
+        """
         raw: dict[str, Any] = {"name": name}
         if environment is not None:
             raw["environment"] = environment
+        if default_agent_kb_write is not None:
+            raw["default_agent_kb_write"] = default_agent_kb_write
         body = encode_body(CreateProjectInputBody, raw)
         data = await self._http.post("/api/v1/projects", json_data=body)
         return Project.model_validate(data)
@@ -164,17 +202,27 @@ class AsyncProjects(_GenAsyncProjects):
         project_id: str,
         *,
         name: str | None = None,
+        business_name: str | None = None,
         game_name: str | None = None,
         environment: str | None = None,
+        default_agent_kb_write: bool | None = None,
     ) -> Project:
-        """Update a project."""
+        """Update a project. Async.
+
+        ``business_name`` is the canonical display name; ``game_name`` is
+        retained as the legacy alias.
+        """
         raw: dict[str, Any] = {}
         if name is not None:
             raw["name"] = name
+        if business_name is not None:
+            raw["business_name"] = business_name
         if game_name is not None:
             raw["game_name"] = game_name
         if environment is not None:
             raw["environment"] = environment
+        if default_agent_kb_write is not None:
+            raw["default_agent_kb_write"] = default_agent_kb_write
         body = encode_body(UpdateProjectInputBody, raw)
         data = await self._http.put(f"/api/v1/projects/{project_id}", json_data=body)
         return Project.model_validate(data)
