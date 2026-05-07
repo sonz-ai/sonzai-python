@@ -3,6 +3,22 @@
 All notable changes to `sonzai` are documented here. The project follows
 [Semantic Versioning](https://semver.org/). Dates are `YYYY-MM-DD`.
 
+## 1.5.2 — 2026-05-07
+
+### Added
+
+- New `byok` resource (`client.byok`) exposing project-scoped bring-your-own-key
+  management: `list`, `set`, `delete`, `set_active`, and `test`.
+- `set(project_id, provider, *, api_key)` and `set_active(project_id, provider, *,
+  is_active)` use keyword-only arguments (`api_key`, `is_active`) for call-site
+  clarity and to prevent positional mixups.
+- `BYOKProvider` literal type: `"openai" | "gemini" | "xai" | "openrouter"`.
+- Async counterpart `AsyncBYOK` mirrors the sync surface on `AsyncSonzai.byok`.
+- Keys are validated against the provider's `/v1/models` endpoint before storage;
+  upstream LLM billing for the project routes through the customer's key.
+- REST surface: `GET/PUT/PATCH/DELETE /api/v1/projects/{project_id}/byok-keys[/{provider}]`
+  and `POST /api/v1/projects/{project_id}/byok-keys/{provider}/test`.
+
 ## [Unreleased]
 
 This unreleased range bundles the "spec-driven SDK" migration: the entire

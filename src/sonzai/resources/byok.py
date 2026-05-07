@@ -21,7 +21,7 @@ BYOKProvider = Literal["openai", "gemini", "xai", "openrouter"]
 class BYOK(_GenByok):
     """Sync BYOK key management for a project."""
 
-    def __init__(self, http: HTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
+    def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
     def list(self, project_id: str) -> list[BYOKKeyResponse]:
@@ -75,7 +75,7 @@ class BYOK(_GenByok):
 class AsyncBYOK(_GenAsyncByok):
     """Async BYOK key management for a project."""
 
-    def __init__(self, http: AsyncHTTPClient) -> None:  # TODO(B.3-followup): typed HTTP client
+    def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 
     async def list(self, project_id: str) -> list[BYOKKeyResponse]:
