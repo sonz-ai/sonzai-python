@@ -1,0 +1,2 @@
+openai-agents>=0.0.13
+sonzai>=1.4
