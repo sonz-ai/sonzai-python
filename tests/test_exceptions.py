@@ -123,7 +123,7 @@ class TestRaiseForStatus:
             )
             client = Sonzai(api_key="test-key")
             with pytest.raises(RateLimitError) as exc_info:
-                client.projects.list()
+                client.projects.list().to_list()
             exc = exc_info.value
             assert exc.retry_after == 30
             assert exc.limit == 60
@@ -150,7 +150,7 @@ class TestRaiseForStatus:
             )
             client = Sonzai(api_key="test-key")
             with pytest.raises(ValidationError) as exc_info:
-                client.projects.list()
+                client.projects.list().to_list()
             exc = exc_info.value
             assert len(exc.errors) == 2
             assert exc.errors[0].field == "email"
@@ -167,7 +167,7 @@ class TestRaiseForStatus:
             )
             client = Sonzai(api_key="test-key")
             with pytest.raises(PermissionDeniedError) as exc_info:
-                client.projects.list()
+                client.projects.list().to_list()
             exc = exc_info.value
             assert exc.required_scope == "admin"
 
@@ -178,7 +178,7 @@ class TestRaiseForStatus:
             )
             client = Sonzai(api_key="test-key")
             with pytest.raises(InternalServerError) as exc_info:
-                client.projects.list()
+                client.projects.list().to_list()
             exc = exc_info.value
             assert exc.body is None
             assert exc.status_code == 500
@@ -193,7 +193,7 @@ class TestRaiseForStatus:
             )
             client = Sonzai(api_key="test-key")
             with pytest.raises(ConflictError) as exc_info:
-                client.projects.list()
+                client.projects.list().to_list()
             exc = exc_info.value
             assert exc.resource == "project:foo"
 

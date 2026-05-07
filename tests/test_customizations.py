@@ -2554,16 +2554,16 @@ class TestUsersResponseMigration:
             "users": [
                 {"user_id": "u-1", "role": "user"},
             ],
-            "total": 1,
+            "has_more": False,
         }
         obj = UsersResponse.model_validate(payload)
-        assert obj.total == 1
+        assert obj.has_more is False
         assert len(obj.users) == 1
         assert obj.users[0].user_id == "u-1"
 
     def test_spec_fields_present(self) -> None:
         from sonzai import UsersResponse
-        for field in ("users", "total"):
+        for field in ("users", "has_more"):
             assert field in UsersResponse.model_fields
 
 
@@ -2757,16 +2757,14 @@ class TestTicketListResponseMigration:
         from sonzai import TicketListResponse
         payload = {
             "tickets": [],
-            "total": 0,
             "has_more": False,
         }
         obj = TicketListResponse.model_validate(payload)
-        assert obj.total == 0
         assert obj.has_more is False
 
     def test_spec_fields_present(self) -> None:
         from sonzai import TicketListResponse
-        for field in ("tickets", "total", "has_more"):
+        for field in ("tickets", "has_more"):
             assert field in TicketListResponse.model_fields
 
 

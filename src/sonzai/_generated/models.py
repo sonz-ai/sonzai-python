@@ -4321,30 +4321,6 @@ class ListEnabledSkillsOutputBody(BaseModel):
     skills: list[str] | None
 
 
-class ListEvalRunsOutputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ListEvalRunsOutputBody.json']
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    runs: list[EvalRun] | None
-    """
-    List of eval runs
-    """
-    total_count: int
-    """
-    Total number of matching runs
-    """
-
-
 class ListEvalTemplatesOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -4979,6 +4955,25 @@ class PaginatedAgentsResponse(BaseModel):
     items: list[AgentIndex] | None
     next_cursor: str | None = None
     total_count: int
+
+
+class PaginatedEvalRunsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/PaginatedEvalRunsResponse.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    has_more: bool
+    next_cursor: str | None = None
+    runs: list[EvalRun] | None
 
 
 class PatchScheduleInputBody(BaseModel):
@@ -9369,13 +9364,13 @@ class KbListNodesOutputBody(BaseModel):
     """
     A URL to the JSON Schema for this object.
     """
+    has_more: bool
+    """
+    True when the underlying scan was truncated by limit
+    """
     nodes: list[KBNode] | None
     """
-    List of active nodes
-    """
-    total: int
-    """
-    Total active count (before pagination)
+    List of active nodes (single page; raise limit to widen the window)
     """
 
 
@@ -9451,27 +9446,6 @@ class ListAllFactsResponse(BaseModel):
     """
     facts: list[StoredFact] | None
     total: int
-
-
-class ListDeliveryAttemptsOutputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListDeliveryAttemptsOutputBody.json'],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    attempts: list[WebhookDeliveryAttempt] | None
-    """
-    List of delivery attempts
-    """
 
 
 class ListFactsResponse(BaseModel):
@@ -9652,6 +9626,45 @@ class MoodResponse(BaseModel):
     A URL to the JSON Schema for this object.
     """
     mood: MoodState
+
+
+class PaginatedDeliveryAttemptsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/PaginatedDeliveryAttemptsResponse.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    attempts: list[WebhookDeliveryAttempt] | None
+    has_more: bool
+    next_cursor: str | None = None
+
+
+class PaginatedProjectsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/PaginatedProjectsResponse.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    has_more: bool
+    items: list[Project] | None
+    next_cursor: str | None = None
 
 
 class PersonalityProfile(BaseModel):
@@ -9895,8 +9908,8 @@ class TicketListResponse(BaseModel):
     A URL to the JSON Schema for this object.
     """
     has_more: bool
+    next_cursor: str | None = None
     tickets: list[TicketSummary] | None
-    total: int
 
 
 class TimeMachineResponse(BaseModel):
@@ -10050,7 +10063,8 @@ class UsersResponse(BaseModel):
     """
     A URL to the JSON Schema for this object.
     """
-    total: int
+    has_more: bool
+    next_cursor: str | None = None
     users: list[UserEntry] | None
 
 
@@ -10226,7 +10240,7 @@ class ProcessMessage(BaseModel):
         populate_by_name=True,
     )
     content: str | None = None
-    role: str
+    role: Literal['user', 'assistant', 'tool', 'system']
     tool_call_id: str | None = None
     tool_calls: list[ProcessToolCall] | None = None
 
@@ -10286,9 +10300,9 @@ class SessionMessage(BaseModel):
     """
     Message content; null for assistant messages that only call tools
     """
-    role: str
+    role: Literal['user', 'assistant', 'tool', 'system']
     """
-    Message role (user, assistant, tool, system)
+    Message role
     """
     tool_call_id: str | None = None
     """
@@ -10309,9 +10323,9 @@ class TurnMessage(BaseModel):
     """
     Message content; null for assistant messages that only call tools
     """
-    role: str
+    role: Literal['user', 'assistant', 'tool', 'system']
     """
-    Message role (user, assistant, tool, system)
+    Message role
     """
     tool_call_id: str | None = None
     """

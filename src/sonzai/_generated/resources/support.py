@@ -13,7 +13,6 @@ from sonzai._generated.models import (
     SupportTicketComment,
     TicketDetailResponse,
     TicketListResponse,
-    TicketSummary,
 )
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
@@ -28,25 +27,24 @@ class Support(_SupportBase):
     def list_my_tickets(
         self,
         *,
+        page_size: int | None = None,
+        cursor: str | None = None,
         status: str | None = None,
         type: str | None = None,
-        limit: int = 100,
-    ) -> Page[TicketSummary]:
+    ) -> TicketListResponse:
         """List my support tickets"""
         path = f"/api/v1/support/tickets"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {}
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
         if status is not None:
             params["status"] = status
         if type is not None:
             params["type"] = type
-        return Page(
-            fetcher=lambda p: self._http.get(path, params=p),
-            params=params,
-            item_key="tickets",
-            item_parser=TicketSummary.model_validate,
-            mode="offset",
-            total_key="total",
-        )
+        data = self._http.get(path, params=params)
+        return TicketListResponse.model_validate(data)
 
     def create_support_ticket(
         self,
@@ -116,29 +114,24 @@ class AsyncSupport(_SupportBase):
     async def list_my_tickets(
         self,
         *,
+        page_size: int | None = None,
+        cursor: str | None = None,
         status: str | None = None,
         type: str | None = None,
-        limit: int = 100,
-    ) -> AsyncPage[TicketSummary]:
+    ) -> TicketListResponse:
         """List my support tickets"""
         path = f"/api/v1/support/tickets"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {}
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
         if status is not None:
             params["status"] = status
         if type is not None:
             params["type"] = type
-
-        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
-            return await self._http.get(path, params=p)
-
-        return AsyncPage(
-            fetcher=fetcher,
-            params=params,
-            item_key="tickets",
-            item_parser=TicketSummary.model_validate,
-            mode="offset",
-            total_key="total",
-        )
+        data = await self._http.get(path, params=params)
+        return TicketListResponse.model_validate(data)
 
     async def create_support_ticket(
         self,

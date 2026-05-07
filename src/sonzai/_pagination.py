@@ -4,10 +4,9 @@ Callers write `for x in client.memory.list_all_facts(agent_id=...)` and
 get every item across every page. Iteration is lazy — the next page is
 fetched only when the current page's items are exhausted.
 
-Supports two modes:
-- "offset": params include `limit` and `offset`; offset is incremented by limit.
-- "cursor": params include `limit` and `cursor`; cursor is populated from the
-  response's `next_cursor` field.
+Cursor-only: params include `page_size` and `cursor`; cursor is populated
+from the response's `next_cursor` field. The Sonzai API moved off offset
+pagination — the prior `mode="offset"` path has been removed.
 """
 
 from __future__ import annotations
@@ -31,7 +30,7 @@ class Page(Generic[T], Iterator[T]):
         params: dict[str, Any],
         item_key: str,
         item_parser: Callable[[Any], T],
-        mode: Literal["offset", "cursor"],
+        mode: Literal["cursor"] = "cursor",
         total_key: str | None = None,
         cursor_key: str = "cursor",
         next_cursor_key: str = "next_cursor",
@@ -40,7 +39,10 @@ class Page(Generic[T], Iterator[T]):
         self._params = dict(params)
         self._item_key = item_key
         self._item_parser = item_parser
-        self._mode = mode
+        # `mode` is kept as a keyword for source-compat with older callers but
+        # the only supported value is "cursor"; offset pagination was removed
+        # along with the API surface.
+        del mode
         self._total_key = total_key
         self._cursor_key = cursor_key
         self._next_cursor_key = next_cursor_key
@@ -81,19 +83,10 @@ class Page(Generic[T], Iterator[T]):
             self._total = resp.get(self._total_key)
         self._next_cursor = resp.get(self._next_cursor_key)
 
-        if self._mode == "offset":
-            new_offset = self._params.get("offset", 0) + len(parsed)
-            if len(parsed) < self._params.get("limit", 0):
-                self._exhausted = True
-            elif self._total is not None and new_offset >= self._total:
-                self._exhausted = True
-            else:
-                self._params["offset"] = new_offset
-        elif self._mode == "cursor":
-            if not self._next_cursor:
-                self._exhausted = True
-            else:
-                self._params[self._cursor_key] = self._next_cursor
+        if not self._next_cursor:
+            self._exhausted = True
+        else:
+            self._params[self._cursor_key] = self._next_cursor
 
     def first_page(self) -> list[T]:
         """Return only the first page's items without advancing further."""
@@ -129,7 +122,7 @@ class AsyncPage(Generic[T], AsyncIterator[T]):
         params: dict[str, Any],
         item_key: str,
         item_parser: Callable[[Any], T],
-        mode: Literal["offset", "cursor"],
+        mode: Literal["cursor"] = "cursor",
         total_key: str | None = None,
         cursor_key: str = "cursor",
         next_cursor_key: str = "next_cursor",
@@ -138,7 +131,10 @@ class AsyncPage(Generic[T], AsyncIterator[T]):
         self._params = dict(params)
         self._item_key = item_key
         self._item_parser = item_parser
-        self._mode = mode
+        # `mode` is kept as a keyword for source-compat with older callers but
+        # the only supported value is "cursor"; offset pagination was removed
+        # along with the API surface.
+        del mode
         self._total_key = total_key
         self._cursor_key = cursor_key
         self._next_cursor_key = next_cursor_key
@@ -179,19 +175,10 @@ class AsyncPage(Generic[T], AsyncIterator[T]):
             self._total = resp.get(self._total_key)
         self._next_cursor = resp.get(self._next_cursor_key)
 
-        if self._mode == "offset":
-            new_offset = self._params.get("offset", 0) + len(parsed)
-            if len(parsed) < self._params.get("limit", 0):
-                self._exhausted = True
-            elif self._total is not None and new_offset >= self._total:
-                self._exhausted = True
-            else:
-                self._params["offset"] = new_offset
-        elif self._mode == "cursor":
-            if not self._next_cursor:
-                self._exhausted = True
-            else:
-                self._params[self._cursor_key] = self._next_cursor
+        if not self._next_cursor:
+            self._exhausted = True
+        else:
+            self._params[self._cursor_key] = self._next_cursor
 
     async def first_page(self) -> list[T]:
         if not self._has_fetched_once:

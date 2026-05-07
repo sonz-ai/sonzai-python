@@ -45,20 +45,20 @@ class Support(_GenSupport):
     def list_tickets(
         self,
         *,
-        limit: int = 100,
+        page_size: int = 20,
         status: str | None = None,
         type: str | None = None,
     ) -> Page[TicketSummary]:
-        """List the caller's support tickets within their active tenant.
+        """List the caller's support tickets within their active tenant. Cursor-based.
 
         Args:
-            limit: Items per page (max 100).
+            page_size: Items per page (max 100).
             status: Filter by status (``open``, ``in_progress``, ``resolved``,
                 ``closed``).
             type: Filter by type (``support``, ``bug``, ``feature_request``,
                 ``billing``, ...).
         """
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {"page_size": page_size}
         if status is not None:
             params["status"] = status
         if type is not None:
@@ -68,8 +68,7 @@ class Support(_GenSupport):
             params=params,
             item_key="tickets",
             item_parser=TicketSummary.model_validate,
-            mode="offset",
-            total_key="total",
+            mode="cursor",
         )
 
     def create_ticket(
@@ -147,11 +146,12 @@ class AsyncSupport(_GenAsyncSupport):
     async def list_tickets(
         self,
         *,
-        limit: int = 100,
+        page_size: int = 20,
         status: str | None = None,
         type: str | None = None,
     ) -> AsyncPage[TicketSummary]:
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List the caller's support tickets within their active tenant. Cursor-based."""
+        params: dict[str, Any] = {"page_size": page_size}
         if status is not None:
             params["status"] = status
         if type is not None:
@@ -165,8 +165,7 @@ class AsyncSupport(_GenAsyncSupport):
             params=params,
             item_key="tickets",
             item_parser=TicketSummary.model_validate,
-            mode="offset",
-            total_key="total",
+            mode="cursor",
         )
 
     async def create_ticket(

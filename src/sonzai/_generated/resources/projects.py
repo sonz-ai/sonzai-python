@@ -9,6 +9,7 @@ from urllib.parse import quote
 from sonzai._generated.models import (
     CreateProjectInputBody,
     DeleteProjectOutputBody,
+    PaginatedProjectsResponse,
     Project,
     UpdateProjectInputBody,
 )
@@ -25,18 +26,18 @@ class Projects(_ProjectsBase):
     def list_projects(
         self,
         *,
-        limit: int | None = 50,
-        offset: int | None = 0,
-    ) -> Any:
+        page_size: int | None = None,
+        cursor: str | None = None,
+    ) -> PaginatedProjectsResponse:
         """List projects"""
         path = f"/api/v1/projects"
         params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
         data = self._http.get(path, params=params)
-        return data
+        return PaginatedProjectsResponse.model_validate(data)
 
     def create_project(
         self,
@@ -105,18 +106,18 @@ class AsyncProjects(_ProjectsBase):
     async def list_projects(
         self,
         *,
-        limit: int | None = 50,
-        offset: int | None = 0,
-    ) -> Any:
+        page_size: int | None = None,
+        cursor: str | None = None,
+    ) -> PaginatedProjectsResponse:
         """List projects"""
         path = f"/api/v1/projects"
         params: dict[str, Any] = {}
-        if limit is not None:
-            params["limit"] = limit
-        if offset is not None:
-            params["offset"] = offset
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
         data = await self._http.get(path, params=params)
-        return data
+        return PaginatedProjectsResponse.model_validate(data)
 
     async def create_project(
         self,

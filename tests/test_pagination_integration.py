@@ -105,7 +105,7 @@ _INVENTORY_GROUP_FIXTURE = {
 class TestAgentsListUsersPagination:
     def test_list_users_iterates_across_pages(self) -> None:
         page1_users = [
-            {"user_id": f"u{i}", "role": "user"} for i in range(100)
+            {"user_id": f"u{i:03d}", "role": "user"} for i in range(100)
         ]
         page2_users = [
             {"user_id": "u100", "role": "user"},
@@ -114,17 +114,29 @@ class TestAgentsListUsersPagination:
         with respx.mock() as router:
             route = router.get("https://api.sonz.ai/api/v1/agents/a1/users")
             route.side_effect = [
-                httpx.Response(200, json={"users": page1_users, "total": 102}),
-                httpx.Response(200, json={"users": page2_users, "total": 102}),
+                httpx.Response(
+                    200,
+                    json={
+                        "users": page1_users,
+                        "next_cursor": "cursor-1",
+                        "has_more": True,
+                    },
+                ),
+                httpx.Response(
+                    200,
+                    json={
+                        "users": page2_users,
+                        "has_more": False,
+                    },
+                ),
             ]
             client = Sonzai(api_key="test-key")
             try:
-                page = client.agents.get_users(agent_id="a1", limit=100)
+                page = client.agents.get_users(agent_id="a1", page_size=100)
                 assert isinstance(page, Page)
                 users = page.to_list()
                 assert len(users) == 102
-                assert page.total == 102
-                assert users[0].user_id == "u0"
+                assert users[0].user_id == "u000"
                 assert users[100].user_id == "u100"
             finally:
                 client.close()
@@ -139,17 +151,16 @@ class TestAgentsListUsersPagination:
                             {"user_id": "u1", "role": "user"},
                             {"user_id": "u2", "role": "user"},
                         ],
-                        "total": 2,
+                        "has_more": False,
                     },
                 )
             )
             client = Sonzai(api_key="test-key")
             try:
-                page = client.agents.get_users(agent_id="a1", limit=100)
+                page = client.agents.get_users(agent_id="a1", page_size=100)
                 assert isinstance(page, Page)
                 users = page.to_list()
                 assert len(users) == 2
-                assert page.total == 2
             finally:
                 client.close()
 
@@ -189,7 +200,7 @@ class TestEvalRunsListPagination:
             )
             client = Sonzai(api_key="test-key")
             try:
-                page = client.eval_runs.list(limit=100)
+                page = client.eval_runs.list(page_size=100)
                 assert isinstance(page, Page)
                 runs = page.to_list()
                 assert len(runs) == 1
@@ -207,18 +218,16 @@ class TestSupportListTicketsPagination:
                     200,
                     json={
                         "tickets": [_TICKET_FIXTURE],
-                        "total": 1,
                         "has_more": False,
                     },
                 )
             )
             client = Sonzai(api_key="test-key")
             try:
-                page = client.support.list_tickets(limit=100)
+                page = client.support.list_tickets(page_size=100)
                 assert isinstance(page, Page)
                 tickets = page.to_list()
                 assert len(tickets) == 1
-                assert page.total == 1
                 assert tickets[0].ticket_id == "t1"
             finally:
                 client.close()
@@ -238,7 +247,7 @@ class TestWebhooksListDeliveryAttemptsPagination:
             client = Sonzai(api_key="test-key")
             try:
                 page = client.webhooks.list_delivery_attempts(
-                    "agent.message", limit=100
+                    "agent.message", page_size=100
                 )
                 assert isinstance(page, Page)
                 attempts = page.to_list()
@@ -260,7 +269,7 @@ class TestWebhooksListDeliveryAttemptsPagination:
             client = Sonzai(api_key="test-key")
             try:
                 page = client.webhooks.list_delivery_attempts_for_project(
-                    "p1", "agent.message", limit=100
+                    "p1", "agent.message", page_size=100
                 )
                 assert isinstance(page, Page)
                 attempts = page.to_list()
@@ -291,7 +300,6 @@ class TestKnowledgeListNodesPagination:
                 assert isinstance(page, Page)
                 nodes = page.to_list()
                 assert len(nodes) == 1
-                assert page.total == 1
                 assert nodes[0].node_id == "n1"
             finally:
                 client.close()
@@ -317,7 +325,7 @@ class TestInventoryQueryPagination:
             client = Sonzai(api_key="test-key")
             try:
                 page = client.agents.inventory.query(
-                    "ag1", "u1", limit=100
+                    "ag1", "u1", page_size=100
                 )
                 assert isinstance(page, Page)
                 groups = page.to_list()
@@ -336,7 +344,7 @@ class TestAsyncPagination:
     @pytest.mark.asyncio
     async def test_async_list_users_iterates_across_pages(self) -> None:
         page1_users = [
-            {"user_id": f"u{i}", "role": "user"} for i in range(100)
+            {"user_id": f"u{i:03d}", "role": "user"} for i in range(100)
         ]
         page2_users = [
             {"user_id": "u100", "role": "user"},
@@ -345,16 +353,25 @@ class TestAsyncPagination:
         with respx.mock() as router:
             route = router.get("https://api.sonz.ai/api/v1/agents/a1/users")
             route.side_effect = [
-                httpx.Response(200, json={"users": page1_users, "total": 102}),
-                httpx.Response(200, json={"users": page2_users, "total": 102}),
+                httpx.Response(
+                    200,
+                    json={
+                        "users": page1_users,
+                        "next_cursor": "cursor-1",
+                        "has_more": True,
+                    },
+                ),
+                httpx.Response(
+                    200,
+                    json={"users": page2_users, "has_more": False},
+                ),
             ]
             client = AsyncSonzai(api_key="test-key")
             try:
-                page = await client.agents.get_users(agent_id="a1", limit=100)
+                page = await client.agents.get_users(agent_id="a1", page_size=100)
                 assert isinstance(page, AsyncPage)
                 users = await page.to_list()
                 assert len(users) == 102
-                assert page.total == 102
             finally:
                 await client.close()
 
@@ -369,7 +386,7 @@ class TestAsyncPagination:
             )
             client = AsyncSonzai(api_key="test-key")
             try:
-                page = await client.eval_runs.list(limit=100)
+                page = await client.eval_runs.list(page_size=100)
                 assert isinstance(page, AsyncPage)
                 runs = await page.to_list()
                 assert len(runs) == 1

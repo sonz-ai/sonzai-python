@@ -12,6 +12,7 @@ from .._generated.models import (
 from .._generated.resources.projects import AsyncProjects as _GenAsyncProjects
 from .._generated.resources.projects import Projects as _GenProjects
 from .._http import AsyncHTTPClient, HTTPClient
+from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
 from ..types import (
     CreateAPIKeyResponse,
@@ -19,7 +20,6 @@ from ..types import (
     Project,
     ProjectAPIKey,
     ProjectAPIKeyList,
-    ProjectList,
     RevokeAPIKeyResponse,
 )
 
@@ -37,14 +37,15 @@ class Projects(_GenProjects):
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
 
-    def list(self, *, limit: int = 50, offset: int = 0) -> ProjectList:
-        """List all projects for the current tenant."""
-        data = self._http.get("/api/v1/projects", params={"limit": limit, "offset": offset})
-        if isinstance(data, list):
-            from pydantic import TypeAdapter
-            projects = TypeAdapter(list[Project]).validate_python(data)
-            return ProjectList(projects=projects)
-        return ProjectList.model_validate(data if isinstance(data, dict) else {"projects": data or []})
+    def list(self, *, page_size: int = 50) -> Page[Project]:
+        """List all projects for the current tenant. Cursor-based."""
+        return Page(
+            fetcher=lambda p: self._http.get("/api/v1/projects", params=p),
+            params={"page_size": page_size},
+            item_key="items",
+            item_parser=Project.model_validate,
+            mode="cursor",
+        )
 
     def create(self, *, name: str, environment: str | None = None) -> Project:
         """Create a new project."""
@@ -130,14 +131,19 @@ class AsyncProjects(_GenAsyncProjects):
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
 
-    async def list(self, *, limit: int = 50, offset: int = 0) -> ProjectList:
-        """List all projects for the current tenant."""
-        data = await self._http.get("/api/v1/projects", params={"limit": limit, "offset": offset})
-        if isinstance(data, list):
-            from pydantic import TypeAdapter
-            projects = TypeAdapter(list[Project]).validate_python(data)
-            return ProjectList(projects=projects)
-        return ProjectList.model_validate(data if isinstance(data, dict) else {"projects": data or []})
+    async def list(self, *, page_size: int = 50) -> AsyncPage[Project]:
+        """List all projects for the current tenant. Cursor-based."""
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get("/api/v1/projects", params=p)
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params={"page_size": page_size},
+            item_key="items",
+            item_parser=Project.model_validate,
+            mode="cursor",
+        )
 
     async def create(self, *, name: str, environment: str | None = None) -> Project:
         """Create a new project."""

@@ -16,8 +16,8 @@ from sonzai._generated.models import (
     EvalTemplate,
     EvaluateAcceptedBody,
     EvaluateRequest,
-    ListEvalRunsOutputBody,
     ListEvalTemplatesOutputBody,
+    PaginatedEvalRunsResponse,
     RunEvalRequest,
     RunningBody,
     SimulateRequest,
@@ -195,20 +195,20 @@ class Evals(_EvalsBase):
         self,
         *,
         agent_id: str | None = None,
-        limit: int = 100,
-    ) -> Page[EvalRun]:
+        page_size: int | None = None,
+        cursor: str | None = None,
+    ) -> PaginatedEvalRunsResponse:
         """List eval runs"""
         path = f"/api/v1/eval-runs"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {}
         if agent_id is not None:
             params["agent_id"] = agent_id
-        return Page(
-            fetcher=lambda p: self._http.get(path, params=p),
-            params=params,
-            item_key="runs",
-            item_parser=EvalRun.model_validate,
-            mode="offset",
-        )
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
+        data = self._http.get(path, params=params)
+        return PaginatedEvalRunsResponse.model_validate(data)
 
     def delete_eval_run(
         self,
@@ -514,24 +514,20 @@ class AsyncEvals(_EvalsBase):
         self,
         *,
         agent_id: str | None = None,
-        limit: int = 100,
-    ) -> AsyncPage[EvalRun]:
+        page_size: int | None = None,
+        cursor: str | None = None,
+    ) -> PaginatedEvalRunsResponse:
         """List eval runs"""
         path = f"/api/v1/eval-runs"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {}
         if agent_id is not None:
             params["agent_id"] = agent_id
-
-        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
-            return await self._http.get(path, params=p)
-
-        return AsyncPage(
-            fetcher=fetcher,
-            params=params,
-            item_key="runs",
-            item_parser=EvalRun.model_validate,
-            mode="offset",
-        )
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
+        data = await self._http.get(path, params=params)
+        return PaginatedEvalRunsResponse.model_validate(data)
 
     async def delete_eval_run(
         self,

@@ -230,7 +230,7 @@ def main() -> int:
         print("\nBackend delivery attempts (most recent first):")
         try:
             attempts_page = client.webhooks.list_delivery_attempts_for_project(
-                project_id, args.event_type, limit=5
+                project_id, args.event_type, page_size=5
             )
             attempts = attempts_page.first_page()
             for a in attempts[:5]:

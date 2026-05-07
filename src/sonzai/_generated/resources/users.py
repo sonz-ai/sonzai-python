@@ -8,7 +8,6 @@ from typing import Any
 from urllib.parse import quote
 from sonzai._generated.models import (
     MeResponse,
-    UserEntry,
     UsersResponse,
 )
 from sonzai._pagination import AsyncPage, Page
@@ -25,25 +24,18 @@ class Users(_UsersBase):
         self,
         agent_id: str,
         *,
-        sort_by: str | None = None,
-        sort_order: str | None = None,
-        limit: int = 100,
-    ) -> Page[UserEntry]:
+        page_size: int | None = None,
+        cursor: str | None = None,
+    ) -> UsersResponse:
         """List users for an agent"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/users"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
-        if sort_by is not None:
-            params["sort_by"] = sort_by
-        if sort_order is not None:
-            params["sort_order"] = sort_order
-        return Page(
-            fetcher=lambda p: self._http.get(path, params=p),
-            params=params,
-            item_key="users",
-            item_parser=UserEntry.model_validate,
-            mode="offset",
-            total_key="total",
-        )
+        params: dict[str, Any] = {}
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
+        data = self._http.get(path, params=params)
+        return UsersResponse.model_validate(data)
 
     def get_my_org(
         self,
@@ -60,29 +52,18 @@ class AsyncUsers(_UsersBase):
         self,
         agent_id: str,
         *,
-        sort_by: str | None = None,
-        sort_order: str | None = None,
-        limit: int = 100,
-    ) -> AsyncPage[UserEntry]:
+        page_size: int | None = None,
+        cursor: str | None = None,
+    ) -> UsersResponse:
         """List users for an agent"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/users"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
-        if sort_by is not None:
-            params["sort_by"] = sort_by
-        if sort_order is not None:
-            params["sort_order"] = sort_order
-
-        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
-            return await self._http.get(path, params=p)
-
-        return AsyncPage(
-            fetcher=fetcher,
-            params=params,
-            item_key="users",
-            item_parser=UserEntry.model_validate,
-            mode="offset",
-            total_key="total",
-        )
+        params: dict[str, Any] = {}
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
+        data = await self._http.get(path, params=params)
+        return UsersResponse.model_validate(data)
 
     async def get_my_org(
         self,

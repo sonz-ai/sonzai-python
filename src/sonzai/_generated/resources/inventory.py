@@ -48,7 +48,7 @@ class Inventory(_InventoryBase):
         path = (
             f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/inventory"
         )
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {"limit": limit, "cursor": None}
         if instance_id is not None:
             params["instance_id"] = instance_id
         if mode is not None:
@@ -74,7 +74,7 @@ class Inventory(_InventoryBase):
             params=params,
             item_key="groups",
             item_parser=GroupResult.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     def update_inventory(
@@ -237,7 +237,7 @@ class AsyncInventory(_InventoryBase):
         path = (
             f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/inventory"
         )
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {"limit": limit, "cursor": None}
         if instance_id is not None:
             params["instance_id"] = instance_id
         if mode is not None:
@@ -267,7 +267,7 @@ class AsyncInventory(_InventoryBase):
             params=params,
             item_key="groups",
             item_parser=GroupResult.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     async def update_inventory(

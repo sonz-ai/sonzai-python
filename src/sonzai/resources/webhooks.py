@@ -55,10 +55,10 @@ class Webhooks(_GenWebhooks):
         return DeleteResponse(success=True)
 
     def list_delivery_attempts(
-        self, event_type: str, *, limit: int = 100
+        self, event_type: str, *, page_size: int = 50
     ) -> Page[WebhookDeliveryAttempt]:
-        """List recent delivery attempts for a specific event type."""
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List recent delivery attempts for a specific event type. Cursor-based."""
+        params: dict[str, Any] = {"page_size": page_size}
         return Page(
             fetcher=lambda p: self._http.get(
                 f"/api/v1/webhooks/{event_type}/attempts", params=p
@@ -66,7 +66,7 @@ class Webhooks(_GenWebhooks):
             params=params,
             item_key="attempts",
             item_parser=WebhookDeliveryAttempt.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     def rotate_secret(self, event_type: str) -> WebhookRegisterResponse:
@@ -114,10 +114,10 @@ class Webhooks(_GenWebhooks):
         return DeleteResponse(success=True)
 
     def list_delivery_attempts_for_project(
-        self, project_id: str, event_type: str, *, limit: int = 100
+        self, project_id: str, event_type: str, *, page_size: int = 50
     ) -> Page[WebhookDeliveryAttempt]:
-        """List delivery attempts for a project webhook event type."""
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List delivery attempts for a project webhook event type. Cursor-based."""
+        params: dict[str, Any] = {"page_size": page_size}
         return Page(
             fetcher=lambda p: self._http.get(
                 f"/api/v1/projects/{project_id}/webhooks/{event_type}/attempts",
@@ -126,7 +126,7 @@ class Webhooks(_GenWebhooks):
             params=params,
             item_key="attempts",
             item_parser=WebhookDeliveryAttempt.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     def rotate_secret_for_project(
@@ -176,10 +176,10 @@ class AsyncWebhooks(_GenAsyncWebhooks):
         return DeleteResponse(success=True)
 
     async def list_delivery_attempts(
-        self, event_type: str, *, limit: int = 100
+        self, event_type: str, *, page_size: int = 50
     ) -> AsyncPage[WebhookDeliveryAttempt]:
-        """List recent delivery attempts for a specific event type."""
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List recent delivery attempts for a specific event type. Cursor-based."""
+        params: dict[str, Any] = {"page_size": page_size}
 
         async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
             return await self._http.get(
@@ -191,7 +191,7 @@ class AsyncWebhooks(_GenAsyncWebhooks):
             params=params,
             item_key="attempts",
             item_parser=WebhookDeliveryAttempt.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     async def rotate_secret(
@@ -245,10 +245,10 @@ class AsyncWebhooks(_GenAsyncWebhooks):
         return DeleteResponse(success=True)
 
     async def list_delivery_attempts_for_project(
-        self, project_id: str, event_type: str, *, limit: int = 100
+        self, project_id: str, event_type: str, *, page_size: int = 50
     ) -> AsyncPage[WebhookDeliveryAttempt]:
-        """List delivery attempts for a project webhook event type."""
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List delivery attempts for a project webhook event type. Cursor-based."""
+        params: dict[str, Any] = {"page_size": page_size}
 
         async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
             return await self._http.get(
@@ -261,7 +261,7 @@ class AsyncWebhooks(_GenAsyncWebhooks):
             params=params,
             item_key="attempts",
             item_parser=WebhookDeliveryAttempt.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     async def rotate_secret_for_project(

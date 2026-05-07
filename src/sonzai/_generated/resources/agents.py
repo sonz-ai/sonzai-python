@@ -9,7 +9,6 @@ from urllib.parse import quote
 from sonzai._generated.models import (
     AgentCapabilities,
     AgentDetailResponse,
-    AgentIndex,
     CreateAgentBody,
     CreateCustomToolInputBody,
     CustomToolDefinition,
@@ -46,30 +45,27 @@ class Agents(_AgentsBase):
     def list_agents(
         self,
         *,
-        page_size: int | None = 30,
+        page_size: int | None = None,
+        cursor: str | None = None,
         search: str | None = None,
         project_id: str | None = None,
         include_count: str | None = None,
-        limit: int = 100,
-    ) -> Page[AgentIndex]:
+    ) -> PaginatedAgentsResponse:
         """List agents"""
         path = f"/api/v1/agents"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {}
         if page_size is not None:
             params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
         if search is not None:
             params["search"] = search
         if project_id is not None:
             params["project_id"] = project_id
         if include_count is not None:
             params["include_count"] = include_count
-        return Page(
-            fetcher=lambda p: self._http.get(path, params=p),
-            params=params,
-            item_key="items",
-            item_parser=AgentIndex.model_validate,
-            mode="offset",
-        )
+        data = self._http.get(path, params=params)
+        return PaginatedAgentsResponse.model_validate(data)
 
     def create_agent(
         self,
@@ -459,34 +455,27 @@ class AsyncAgents(_AgentsBase):
     async def list_agents(
         self,
         *,
-        page_size: int | None = 30,
+        page_size: int | None = None,
+        cursor: str | None = None,
         search: str | None = None,
         project_id: str | None = None,
         include_count: str | None = None,
-        limit: int = 100,
-    ) -> AsyncPage[AgentIndex]:
+    ) -> PaginatedAgentsResponse:
         """List agents"""
         path = f"/api/v1/agents"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {}
         if page_size is not None:
             params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
         if search is not None:
             params["search"] = search
         if project_id is not None:
             params["project_id"] = project_id
         if include_count is not None:
             params["include_count"] = include_count
-
-        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
-            return await self._http.get(path, params=p)
-
-        return AsyncPage(
-            fetcher=fetcher,
-            params=params,
-            item_key="items",
-            item_parser=AgentIndex.model_validate,
-            mode="offset",
-        )
+        data = await self._http.get(path, params=params)
+        return PaginatedAgentsResponse.model_validate(data)
 
     async def create_agent(
         self,

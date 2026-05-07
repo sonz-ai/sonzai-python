@@ -22,10 +22,10 @@ class EvalRuns(_GenEvals):
         self,
         *,
         agent_id: str | None = None,
-        limit: int = 100,
+        page_size: int = 30,
     ) -> Page[EvalRun]:
-        """List eval runs."""
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List eval runs. Cursor-based."""
+        params: dict[str, Any] = {"page_size": page_size}
         if agent_id:
             params["agent_id"] = agent_id
 
@@ -34,7 +34,7 @@ class EvalRuns(_GenEvals):
             params=params,
             item_key="runs",
             item_parser=EvalRun.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     def get(self, run_id: str) -> EvalRun:
@@ -71,9 +71,10 @@ class AsyncEvalRuns(_GenAsyncEvals):
         self,
         *,
         agent_id: str | None = None,
-        limit: int = 100,
+        page_size: int = 30,
     ) -> AsyncPage[EvalRun]:
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List eval runs. Cursor-based."""
+        params: dict[str, Any] = {"page_size": page_size}
         if agent_id:
             params["agent_id"] = agent_id
 
@@ -85,7 +86,7 @@ class AsyncEvalRuns(_GenAsyncEvals):
             params=params,
             item_key="runs",
             item_parser=EvalRun.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     async def get(self, run_id: str) -> EvalRun:

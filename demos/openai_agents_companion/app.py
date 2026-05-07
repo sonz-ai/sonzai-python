@@ -510,7 +510,7 @@ def fetch_delivery_attempts(
         return []
     try:
         page = client.webhooks.list_delivery_attempts_for_project(
-            project_id, event_type, limit=limit
+            project_id, event_type, page_size=limit
         )
         attempts = page.to_list()
     except Exception as err:  # noqa: BLE001

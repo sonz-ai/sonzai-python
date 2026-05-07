@@ -71,7 +71,7 @@ class TestHTTPRetry:
                 httpx.Response(200, json={"projects": [], "total": 0}),
             ]
             client = Sonzai(api_key="test-key", retry=RetryPolicy(max_attempts=3, backoff_factor=0.001, backoff_jitter=0.0))
-            client.projects.list()
+            client.projects.list().to_list()
             assert route.call_count == 2
 
     def test_exhausts_retries_and_raises(self) -> None:
@@ -81,7 +81,7 @@ class TestHTTPRetry:
             )
             client = Sonzai(api_key="test-key", retry=RetryPolicy(max_attempts=2, backoff_factor=0.001, backoff_jitter=0.0))
             with pytest.raises(Exception) as exc_info:
-                client.projects.list()
+                client.projects.list().to_list()
             assert exc_info.value.status_code == 503   # type: ignore[attr-defined]
 
     def test_network_error_retry(self) -> None:
@@ -92,7 +92,7 @@ class TestHTTPRetry:
                 httpx.Response(200, json={"projects": [], "total": 0}),
             ]
             client = Sonzai(api_key="test-key", retry=RetryPolicy(max_attempts=3, backoff_factor=0.001, backoff_jitter=0.0))
-            client.projects.list()
+            client.projects.list().to_list()
             assert route.call_count == 2
 
     def test_none_policy_raises_on_first_failure(self) -> None:
@@ -102,7 +102,7 @@ class TestHTTPRetry:
             )
             client = Sonzai(api_key="test-key", retry=RetryPolicy.none())
             with pytest.raises(Exception):
-                client.projects.list()
+                client.projects.list().to_list()
 
 
 class TestIdempotencyKey:
@@ -146,5 +146,5 @@ class TestIdempotencyKey:
         with respx.mock() as router:
             router.get("https://api.sonz.ai/api/v1/projects").mock(side_effect=capture)
             client = Sonzai(api_key="test-key")
-            client.projects.list()
+            client.projects.list().to_list()
             assert "Idempotency-Key" not in captured[0].headers

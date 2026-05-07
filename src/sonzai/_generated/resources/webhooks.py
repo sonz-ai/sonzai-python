@@ -7,13 +7,12 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import quote
 from sonzai._generated.models import (
-    ListDeliveryAttemptsOutputBody,
     ListWebhooksOutputBody,
+    PaginatedDeliveryAttemptsResponse,
     RotateSigningSecretOutputBody,
     UpsertWebhookForTenantInputBody,
     UpsertWebhookInputBody,
     UpsertWebhookOutputBody,
-    WebhookDeliveryAttempt,
 )
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
@@ -75,18 +74,18 @@ class Webhooks(_WebhooksBase):
         project_id: str,
         event_type: str,
         *,
-        limit: int = 100,
-    ) -> Page[WebhookDeliveryAttempt]:
+        page_size: int | None = None,
+        cursor: str | None = None,
+    ) -> PaginatedDeliveryAttemptsResponse:
         """List webhook delivery attempts"""
         path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks/{quote(event_type, safe='')}/attempts"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
-        return Page(
-            fetcher=lambda p: self._http.get(path, params=p),
-            params=params,
-            item_key="attempts",
-            item_parser=WebhookDeliveryAttempt.model_validate,
-            mode="offset",
-        )
+        params: dict[str, Any] = {}
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
+        data = self._http.get(path, params=params)
+        return PaginatedDeliveryAttemptsResponse.model_validate(data)
 
     def rotate_webhook_signing_secret(
         self,
@@ -141,18 +140,18 @@ class Webhooks(_WebhooksBase):
         self,
         event_type: str,
         *,
-        limit: int = 100,
-    ) -> Page[WebhookDeliveryAttempt]:
+        page_size: int | None = None,
+        cursor: str | None = None,
+    ) -> PaginatedDeliveryAttemptsResponse:
         """List webhook delivery attempts (tenant-scoped)"""
         path = f"/api/v1/webhooks/{quote(event_type, safe='')}/attempts"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
-        return Page(
-            fetcher=lambda p: self._http.get(path, params=p),
-            params=params,
-            item_key="attempts",
-            item_parser=WebhookDeliveryAttempt.model_validate,
-            mode="offset",
-        )
+        params: dict[str, Any] = {}
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
+        data = self._http.get(path, params=params)
+        return PaginatedDeliveryAttemptsResponse.model_validate(data)
 
     def rotate_webhook_signing_secret_for_tenant(
         self,
@@ -216,22 +215,18 @@ class AsyncWebhooks(_WebhooksBase):
         project_id: str,
         event_type: str,
         *,
-        limit: int = 100,
-    ) -> AsyncPage[WebhookDeliveryAttempt]:
+        page_size: int | None = None,
+        cursor: str | None = None,
+    ) -> PaginatedDeliveryAttemptsResponse:
         """List webhook delivery attempts"""
         path = f"/api/v1/projects/{quote(project_id, safe='')}/webhooks/{quote(event_type, safe='')}/attempts"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
-
-        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
-            return await self._http.get(path, params=p)
-
-        return AsyncPage(
-            fetcher=fetcher,
-            params=params,
-            item_key="attempts",
-            item_parser=WebhookDeliveryAttempt.model_validate,
-            mode="offset",
-        )
+        params: dict[str, Any] = {}
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
+        data = await self._http.get(path, params=params)
+        return PaginatedDeliveryAttemptsResponse.model_validate(data)
 
     async def rotate_webhook_signing_secret(
         self,
@@ -286,22 +281,18 @@ class AsyncWebhooks(_WebhooksBase):
         self,
         event_type: str,
         *,
-        limit: int = 100,
-    ) -> AsyncPage[WebhookDeliveryAttempt]:
+        page_size: int | None = None,
+        cursor: str | None = None,
+    ) -> PaginatedDeliveryAttemptsResponse:
         """List webhook delivery attempts (tenant-scoped)"""
         path = f"/api/v1/webhooks/{quote(event_type, safe='')}/attempts"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
-
-        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
-            return await self._http.get(path, params=p)
-
-        return AsyncPage(
-            fetcher=fetcher,
-            params=params,
-            item_key="attempts",
-            item_parser=WebhookDeliveryAttempt.model_validate,
-            mode="offset",
-        )
+        params: dict[str, Any] = {}
+        if page_size is not None:
+            params["page_size"] = page_size
+        if cursor is not None:
+            params["cursor"] = cursor
+        data = await self._http.get(path, params=params)
+        return PaginatedDeliveryAttemptsResponse.model_validate(data)
 
     async def rotate_webhook_signing_secret_for_tenant(
         self,

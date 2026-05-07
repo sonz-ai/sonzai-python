@@ -124,8 +124,15 @@ class Knowledge(_GenKnowledge):
         sort_order: str | None = None,
         properties: dict[str, str] | None = None,
     ) -> Page[KBNode]:
-        """List knowledge graph nodes with filtering, pagination, and sorting."""
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List knowledge graph nodes with filtering and sorting.
+
+        Returns a single page (no auto-pagination): property filters and
+        arbitrary ``sort_by`` require a full in-memory scan server-side, so
+        cursor pagination is not exposed for this endpoint. Raise ``limit``
+        (max 10000) to widen the window. ``has_more`` on the response signals
+        the underlying scan was truncated.
+        """
+        params: dict[str, Any] = {"limit": limit}
         if node_type is not None:
             params["type"] = node_type
         if sort_by is not None:
@@ -142,8 +149,7 @@ class Knowledge(_GenKnowledge):
             params=params,
             item_key="nodes",
             item_parser=KBNode.model_validate,
-            mode="offset",
-            total_key="total",
+            mode="cursor",
         )
 
     def get_node(
@@ -510,7 +516,8 @@ class AsyncKnowledge(_GenAsyncKnowledge):
         sort_order: str | None = None,
         properties: dict[str, str] | None = None,
     ) -> AsyncPage[KBNode]:
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List knowledge graph nodes (single page; no auto-pagination)."""
+        params: dict[str, Any] = {"limit": limit}
         if node_type is not None:
             params["type"] = node_type
         if sort_by is not None:
@@ -531,8 +538,7 @@ class AsyncKnowledge(_GenAsyncKnowledge):
             params=params,
             item_key="nodes",
             item_parser=KBNode.model_validate,
-            mode="offset",
-            total_key="total",
+            mode="cursor",
         )
 
     async def get_node(

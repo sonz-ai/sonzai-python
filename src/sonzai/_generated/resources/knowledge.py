@@ -357,27 +357,23 @@ class Knowledge(_KnowledgeBase):
         project_id: str,
         *,
         type: str | None = None,
+        limit: int | None = 100,
         sort_by: str | None = None,
         sort_order: str | None = None,
-        limit: int = 100,
-    ) -> Page[KBNode]:
+    ) -> KbListNodesOutputBody:
         """List knowledge base nodes"""
         path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/nodes"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {}
         if type is not None:
             params["type"] = type
+        if limit is not None:
+            params["limit"] = limit
         if sort_by is not None:
             params["sort_by"] = sort_by
         if sort_order is not None:
             params["sort_order"] = sort_order
-        return Page(
-            fetcher=lambda p: self._http.get(path, params=p),
-            params=params,
-            item_key="nodes",
-            item_parser=KBNode.model_validate,
-            mode="offset",
-            total_key="total",
-        )
+        data = self._http.get(path, params=params)
+        return KbListNodesOutputBody.model_validate(data)
 
     def kb_agent_create_node(
         self,
@@ -964,31 +960,23 @@ class AsyncKnowledge(_KnowledgeBase):
         project_id: str,
         *,
         type: str | None = None,
+        limit: int | None = 100,
         sort_by: str | None = None,
         sort_order: str | None = None,
-        limit: int = 100,
-    ) -> AsyncPage[KBNode]:
+    ) -> KbListNodesOutputBody:
         """List knowledge base nodes"""
         path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/nodes"
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {}
         if type is not None:
             params["type"] = type
+        if limit is not None:
+            params["limit"] = limit
         if sort_by is not None:
             params["sort_by"] = sort_by
         if sort_order is not None:
             params["sort_order"] = sort_order
-
-        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
-            return await self._http.get(path, params=p)
-
-        return AsyncPage(
-            fetcher=fetcher,
-            params=params,
-            item_key="nodes",
-            item_parser=KBNode.model_validate,
-            mode="offset",
-            total_key="total",
-        )
+        data = await self._http.get(path, params=params)
+        return KbListNodesOutputBody.model_validate(data)
 
     async def kb_agent_create_node(
         self,

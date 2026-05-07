@@ -1066,22 +1066,16 @@ class Agents(_GenAgents):
         self,
         agent_id: str,
         *,
-        limit: int = 100,
-        sort_by: str | None = None,
-        sort_order: str | None = None,
+        page_size: int = 100,
     ) -> Page[UserEntry]:
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
-        if sort_by is not None:
-            params["sort_by"] = sort_by
-        if sort_order is not None:
-            params["sort_order"] = sort_order
+        """List users for an agent. Cursor-based, ordered by user_id ASC."""
+        params: dict[str, Any] = {"page_size": page_size}
         return Page(
             fetcher=lambda p: self._http.get(f"/api/v1/agents/{agent_id}/users", params=p),
             params=params,
             item_key="users",
             item_parser=UserEntry.model_validate,
-            mode="offset",
-            total_key="total",
+            mode="cursor",
         )
 
     def get_constellation(
@@ -2552,15 +2546,10 @@ class AsyncAgents(_GenAsyncAgents):
         self,
         agent_id: str,
         *,
-        limit: int = 100,
-        sort_by: str | None = None,
-        sort_order: str | None = None,
+        page_size: int = 100,
     ) -> AsyncPage[UserEntry]:
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
-        if sort_by is not None:
-            params["sort_by"] = sort_by
-        if sort_order is not None:
-            params["sort_order"] = sort_order
+        """List users for an agent. Cursor-based, ordered by user_id ASC."""
+        params: dict[str, Any] = {"page_size": page_size}
 
         async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
             return await self._http.get(f"/api/v1/agents/{agent_id}/users", params=p)
@@ -2570,8 +2559,7 @@ class AsyncAgents(_GenAsyncAgents):
             params=params,
             item_key="users",
             item_parser=UserEntry.model_validate,
-            mode="offset",
-            total_key="total",
+            mode="cursor",
         )
 
     async def get_constellation(

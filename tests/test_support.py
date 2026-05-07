@@ -59,7 +59,6 @@ class TestSupportSync:
                             "updated_at": "2026-04-21T10:00:00Z",
                         }
                     ],
-                    "total": 1,
                     "has_more": False,
                 },
             )
@@ -68,7 +67,6 @@ class TestSupportSync:
         page = client.support.list_tickets()
         tickets = page.to_list()
         assert route.called
-        assert page.total == 1
         assert len(tickets) == 1
         assert tickets[0].ticket_id == "t1"
         assert tickets[0].title == "Cannot log in"
@@ -78,17 +76,16 @@ class TestSupportSync:
         route = respx.get(f"{base_url}/api/v1/support/tickets").mock(
             return_value=httpx.Response(
                 200,
-                json={"tickets": [], "total": 0, "has_more": False},
+                json={"tickets": [], "has_more": False},
             )
         )
 
-        page = client.support.list_tickets(limit=50, status="open", type="bug")
+        page = client.support.list_tickets(page_size=50, status="open", type="bug")
         page.to_list()
         assert route.called
         params = dict(route.calls[0].request.url.params)
         assert params == {
-            "limit": "50",
-            "offset": "0",
+            "page_size": "50",
             "status": "open",
             "type": "bug",
         }

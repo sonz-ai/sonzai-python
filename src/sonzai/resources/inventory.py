@@ -129,10 +129,10 @@ class Inventory(_GenInventory):
         sort_order: str | None = None,
         aggregations: str | None = None,
         group_by: str | None = None,
-        limit: int = 100,
+        page_size: int = 100,
         instance_id: str | None = None,
     ) -> Page[InventoryGroupResult]:
-        """Query a user's inventory with optional valuations and aggregation.
+        """Query a user's inventory with optional valuations and aggregation. Cursor-based.
 
         Args:
             filters: Structured metadata filtering, e.g. "grade:eq:mint,market_price:gte:100".
@@ -140,7 +140,7 @@ class Inventory(_GenInventory):
             sort_by: Metadata field to sort by.
             sort_order: "asc" or "desc".
         """
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {"limit": page_size}
         if mode is not None:
             params["mode"] = mode
         if item_type is not None:
@@ -167,7 +167,7 @@ class Inventory(_GenInventory):
             params=params,
             item_key="groups",
             item_parser=InventoryGroupResult.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     def batch_import(
@@ -363,10 +363,10 @@ class AsyncInventory(_GenAsyncInventory):
         sort_order: str | None = None,
         aggregations: str | None = None,
         group_by: str | None = None,
-        limit: int = 100,
+        page_size: int = 100,
         instance_id: str | None = None,
     ) -> AsyncPage[InventoryGroupResult]:
-        """Query a user's inventory with optional valuations and aggregation.
+        """Query a user's inventory with optional valuations and aggregation. Cursor-based.
 
         Args:
             filters: Structured metadata filtering, e.g. "grade:eq:mint,market_price:gte:100".
@@ -374,7 +374,7 @@ class AsyncInventory(_GenAsyncInventory):
             sort_by: Metadata field to sort by.
             sort_order: "asc" or "desc".
         """
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        params: dict[str, Any] = {"limit": page_size}
         if mode is not None:
             params["mode"] = mode
         if item_type is not None:
@@ -405,7 +405,7 @@ class AsyncInventory(_GenAsyncInventory):
             params=params,
             item_key="groups",
             item_parser=InventoryGroupResult.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     async def batch_import(
