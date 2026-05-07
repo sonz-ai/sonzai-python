@@ -1,2 +1,4 @@
-openai-agents>=0.0.13
+openai-agents>=0.16
 sonzai>=1.4
+streamlit>=1.37
+pyvis>=0.3
