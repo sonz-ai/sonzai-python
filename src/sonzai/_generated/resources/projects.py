@@ -42,6 +42,7 @@ class Projects(_ProjectsBase):
     def create_project(
         self,
         *,
+        default_agent_kb_write: bool | None = None,
         environment: str | None = None,
         name: str,
     ) -> Project:
@@ -49,6 +50,8 @@ class Projects(_ProjectsBase):
         path = f"/api/v1/projects"
         params = None
         _raw: dict[str, Any] = {}
+        if default_agent_kb_write is not None:
+            _raw["default_agent_kb_write"] = default_agent_kb_write
         if environment is not None:
             _raw["environment"] = environment
         if name is not None:
@@ -83,6 +86,8 @@ class Projects(_ProjectsBase):
         self,
         project_id: str,
         *,
+        business_name: str | None = None,
+        default_agent_kb_write: bool | None = None,
         environment: str | None = None,
         game_name: str | None = None,
         name: str | None = None,
@@ -91,6 +96,10 @@ class Projects(_ProjectsBase):
         path = f"/api/v1/projects/{quote(project_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
+        if business_name is not None:
+            _raw["business_name"] = business_name
+        if default_agent_kb_write is not None:
+            _raw["default_agent_kb_write"] = default_agent_kb_write
         if environment is not None:
             _raw["environment"] = environment
         if game_name is not None:
@@ -122,6 +131,7 @@ class AsyncProjects(_ProjectsBase):
     async def create_project(
         self,
         *,
+        default_agent_kb_write: bool | None = None,
         environment: str | None = None,
         name: str,
     ) -> Project:
@@ -129,6 +139,8 @@ class AsyncProjects(_ProjectsBase):
         path = f"/api/v1/projects"
         params = None
         _raw: dict[str, Any] = {}
+        if default_agent_kb_write is not None:
+            _raw["default_agent_kb_write"] = default_agent_kb_write
         if environment is not None:
             _raw["environment"] = environment
         if name is not None:
@@ -163,6 +175,8 @@ class AsyncProjects(_ProjectsBase):
         self,
         project_id: str,
         *,
+        business_name: str | None = None,
+        default_agent_kb_write: bool | None = None,
         environment: str | None = None,
         game_name: str | None = None,
         name: str | None = None,
@@ -171,6 +185,10 @@ class AsyncProjects(_ProjectsBase):
         path = f"/api/v1/projects/{quote(project_id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
+        if business_name is not None:
+            _raw["business_name"] = business_name
+        if default_agent_kb_write is not None:
+            _raw["default_agent_kb_write"] = default_agent_kb_write
         if environment is not None:
             _raw["environment"] = environment
         if game_name is not None:

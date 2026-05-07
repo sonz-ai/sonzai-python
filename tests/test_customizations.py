@@ -2366,20 +2366,21 @@ class TestProjectMigration:
         payload = {
             "project_id": "proj-1",
             "tenant_id": "tnt-1",
-            "name": "My Game",
-            "game_name": "FantasyRPG",
+            "name": "My Project",
+            "business_name": "Acme",
+            "game_name": "Acme",
             "environment": "production",
             "created_at": "2024-01-01T00:00:00Z",
             "is_active": True,
         }
         obj = Project.model_validate(payload)
         assert obj.project_id == "proj-1"
-        assert obj.name == "My Game"
+        assert obj.name == "My Project"
         assert obj.is_active is True
 
     def test_spec_fields_present(self) -> None:
         from sonzai import Project
-        for field in ("project_id", "tenant_id", "name", "game_name", "environment", "created_at", "is_active"):
+        for field in ("project_id", "tenant_id", "name", "business_name", "game_name", "environment", "created_at", "is_active"):
             assert field in Project.model_fields
 
 

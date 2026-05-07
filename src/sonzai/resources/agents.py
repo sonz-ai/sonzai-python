@@ -1239,13 +1239,34 @@ class Agents(_GenAgents):
         image_generation: bool | None = None,
         inventory: bool | None = None,
         knowledge_base: bool | None = None,
+        knowledge_base_write: bool | None = None,
+        knowledge_base_scope_mode: Literal[
+            "project_only", "org_only", "cascade", "union"
+        ] | None = None,
+        composio: bool | None = None,
+        wisdom: bool | None = None,
+        shared_memory: bool | None = None,
+        skills: bool | None = None,
+        auto_learn_skills: bool | None = None,
         memory_mode: Literal["sync", "async"] | None = None,
+        mcp_enabled: list[str] | None = None,
     ) -> AgentCapabilities:
         """Update an agent's capabilities.
 
         ``memory_mode`` controls supplementary memory recall timing:
         ``"sync"`` (default) blocks context build until recall returns;
         ``"async"`` lets recall race a deadline for lower first-token latency.
+
+        Capability gates:
+        - ``shared_memory`` requires ``wisdom`` (server force-clears it otherwise).
+        - ``auto_learn_skills`` requires ``skills``.
+        - ``knowledge_base_write`` requires ``knowledge_base``.
+
+        ``knowledge_base_scope_mode`` selects how the agent reads across the
+        agent's project KB and the organization-global KB. ``project_only``
+        (default) is project-only; ``cascade`` and ``union`` read both, with
+        project winning collisions in cascade; ``org_only`` skips the project
+        scope entirely.
         """
         body: dict[str, Any] = {}
         if web_search is not None:
@@ -1258,8 +1279,24 @@ class Agents(_GenAgents):
             body["inventory"] = inventory
         if knowledge_base is not None:
             body["knowledgeBase"] = knowledge_base
+        if knowledge_base_write is not None:
+            body["knowledgeBaseWrite"] = knowledge_base_write
+        if knowledge_base_scope_mode is not None:
+            body["knowledgeBaseScopeMode"] = knowledge_base_scope_mode
+        if composio is not None:
+            body["composio"] = composio
+        if wisdom is not None:
+            body["wisdom"] = wisdom
+        if shared_memory is not None:
+            body["sharedMemory"] = shared_memory
+        if skills is not None:
+            body["skills"] = skills
+        if auto_learn_skills is not None:
+            body["autoLearnSkills"] = auto_learn_skills
         if memory_mode is not None:
             body["memoryMode"] = memory_mode
+        if mcp_enabled is not None:
+            body["mcpEnabled"] = mcp_enabled
         return AgentCapabilities.model_validate(
             self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=encode_body(UpdateCapabilitiesInputBody, body))
         )
@@ -2729,13 +2766,24 @@ class AsyncAgents(_GenAsyncAgents):
         image_generation: bool | None = None,
         inventory: bool | None = None,
         knowledge_base: bool | None = None,
+        knowledge_base_write: bool | None = None,
+        knowledge_base_scope_mode: Literal[
+            "project_only", "org_only", "cascade", "union"
+        ] | None = None,
+        composio: bool | None = None,
+        wisdom: bool | None = None,
+        shared_memory: bool | None = None,
+        skills: bool | None = None,
+        auto_learn_skills: bool | None = None,
         memory_mode: Literal["sync", "async"] | None = None,
+        mcp_enabled: list[str] | None = None,
     ) -> AgentCapabilities:
-        """Update an agent's capabilities.
+        """Update an agent's capabilities. Async.
 
-        ``memory_mode`` controls supplementary memory recall timing:
-        ``"sync"`` (default) blocks context build until recall returns;
-        ``"async"`` lets recall race a deadline for lower first-token latency.
+        ``shared_memory`` requires ``wisdom``; ``auto_learn_skills`` requires
+        ``skills``; ``knowledge_base_write`` requires ``knowledge_base``.
+        ``knowledge_base_scope_mode`` is one of ``project_only`` (default),
+        ``cascade``, ``union``, ``org_only``.
         """
         body: dict[str, Any] = {}
         if web_search is not None:
@@ -2748,8 +2796,24 @@ class AsyncAgents(_GenAsyncAgents):
             body["inventory"] = inventory
         if knowledge_base is not None:
             body["knowledgeBase"] = knowledge_base
+        if knowledge_base_write is not None:
+            body["knowledgeBaseWrite"] = knowledge_base_write
+        if knowledge_base_scope_mode is not None:
+            body["knowledgeBaseScopeMode"] = knowledge_base_scope_mode
+        if composio is not None:
+            body["composio"] = composio
+        if wisdom is not None:
+            body["wisdom"] = wisdom
+        if shared_memory is not None:
+            body["sharedMemory"] = shared_memory
+        if skills is not None:
+            body["skills"] = skills
+        if auto_learn_skills is not None:
+            body["autoLearnSkills"] = auto_learn_skills
         if memory_mode is not None:
             body["memoryMode"] = memory_mode
+        if mcp_enabled is not None:
+            body["mcpEnabled"] = mcp_enabled
         return AgentCapabilities.model_validate(
             await self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=encode_body(UpdateCapabilitiesInputBody, body))
         )

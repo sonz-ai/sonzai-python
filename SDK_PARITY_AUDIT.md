@@ -267,11 +267,11 @@ _None — full parity._
 | `PUT` | `/projects/{param}/webhooks/{param}` | Webhooks.upsert_webhook; AsyncWebhooks.upsert_webhook; Webhooks.register_for_project; AsyncWebhooks.register_for_project |
 | `GET` | `/projects/{param}/webhooks/{param}/attempts` | Webhooks.list_delivery_attempts; AsyncWebhooks.list_delivery_attempts; Webhooks.list_delivery_attempts_for_project; AsyncWebhooks.list_delivery_attempts_for_project |
 | `POST` | `/projects/{param}/webhooks/{param}/rotate-secret` | Webhooks.rotate_webhook_signing_secret; AsyncWebhooks.rotate_webhook_signing_secret; Webhooks.rotate_secret_for_project; AsyncWebhooks.rotate_secret_for_project |
-| `GET` | `/projects/{param}/byok-keys` | Byok.list_byok_keys; AsyncByok.list_byok_keys |
-| `DELETE` | `/projects/{param}/byok-keys/{param}` | Byok.delete_byok_key; AsyncByok.delete_byok_key |
-| `PATCH` | `/projects/{param}/byok-keys/{param}` | Byok.set_byok_active; AsyncByok.set_byok_active |
-| `PUT` | `/projects/{param}/byok-keys/{param}` | Byok.put_byok_key; AsyncByok.put_byok_key |
-| `POST` | `/projects/{param}/byok-keys/{param}/test` | Byok.test_byok_key; AsyncByok.test_byok_key |
+| `GET` | `/projects/{param}/byok-keys` | Byok.list_byok_keys; AsyncByok.list_byok_keys; BYOK.list; AsyncBYOK.list |
+| `DELETE` | `/projects/{param}/byok-keys/{param}` | Byok.delete_byok_key; AsyncByok.delete_byok_key; BYOK.delete; AsyncBYOK.delete |
+| `PATCH` | `/projects/{param}/byok-keys/{param}` | Byok.set_byok_active; AsyncByok.set_byok_active; BYOK.set_active; AsyncBYOK.set_active |
+| `PUT` | `/projects/{param}/byok-keys/{param}` | Byok.put_byok_key; AsyncByok.put_byok_key; BYOK.set; AsyncBYOK.set |
+| `POST` | `/projects/{param}/byok-keys/{param}/test` | Byok.test_byok_key; AsyncByok.test_byok_key; BYOK.test; AsyncBYOK.test |
 | `GET` | `/sessions/end/status/{param}` | Sessions.get_session_end_status; AsyncSessions.get_session_end_status; Sessions._poll_processing_status; AsyncSessions._poll_processing_status |
 | `GET` | `/storefront` | Storefront.get_storefront; AsyncStorefront.get_storefront; Storefront.get; AsyncStorefront.get |
 | `PUT` | `/storefront` | Storefront.update_storefront; AsyncStorefront.update_storefront; Storefront.update; AsyncStorefront.update |

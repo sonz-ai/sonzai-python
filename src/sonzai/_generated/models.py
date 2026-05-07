@@ -10,16 +10,14 @@ from pydantic import AnyUrl, AwareDatetime, BaseModel, ConfigDict, Field
 
 class AcknowledgeAllProjectNotificationsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=[
-                '/api/v1/schemas/AcknowledgeAllProjectNotificationsOutputBody.json'
-            ],
+            alias="$schema",
+            examples=["/api/v1/schemas/AcknowledgeAllProjectNotificationsOutputBody.json"],
         ),
     ] = None
     """
@@ -33,14 +31,14 @@ class AcknowledgeAllProjectNotificationsOutputBody(BaseModel):
 
 class AcknowledgeProjectNotificationsInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/AcknowledgeProjectNotificationsInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/AcknowledgeProjectNotificationsInputBody.json"],
         ),
     ] = None
     """
@@ -54,14 +52,14 @@ class AcknowledgeProjectNotificationsInputBody(BaseModel):
 
 class AcknowledgeProjectNotificationsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/AcknowledgeProjectNotificationsOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/AcknowledgeProjectNotificationsOutputBody.json"],
         ),
     ] = None
     """
@@ -75,7 +73,7 @@ class AcknowledgeProjectNotificationsOutputBody(BaseModel):
 
 class ActionLogEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     action_name: str
@@ -94,33 +92,31 @@ class ActionLogEntry(BaseModel):
 
 class ActiveCharacterSummary(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ActiveCharacterSummary.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ActiveCharacterSummary.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    billed_at: Annotated[AwareDatetime | None, Field(alias='billedAt')] = None
-    char_charge_usd: Annotated[float, Field(alias='charChargeUsd')]
-    high_water_mark: Annotated[int, Field(alias='highWaterMark')]
+    billed_at: Annotated[AwareDatetime | None, Field(alias="billedAt")] = None
+    char_charge_usd: Annotated[float, Field(alias="charChargeUsd")]
+    high_water_mark: Annotated[int, Field(alias="highWaterMark")]
     month: str
-    price_per_char_usd: Annotated[float, Field(alias='pricePerCharUsd')]
+    price_per_char_usd: Annotated[float, Field(alias="pricePerCharUsd")]
 
 
 class AddCommentRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AddCommentRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/AddCommentRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -131,14 +127,14 @@ class AddCommentRequest(BaseModel):
 
 class AddUserContentHumaOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/AddUserContentHumaOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/AddUserContentHumaOutputBody.json"],
         ),
     ] = None
     """
@@ -156,7 +152,7 @@ class AddUserContentHumaOutputBody(BaseModel):
 
 class AdvanceTimeDiaryEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -167,7 +163,7 @@ class AdvanceTimeDiaryEntry(BaseModel):
 
 class AdvanceTimeWakeup(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_id: str
@@ -180,12 +176,12 @@ class AdvanceTimeWakeup(BaseModel):
 
 class AgentCreateRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AgentCreateRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/AgentCreateRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -198,12 +194,12 @@ class AgentCreateRequest(BaseModel):
 
 class AgentDeleteRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AgentDeleteRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/AgentDeleteRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -214,14 +210,12 @@ class AgentDeleteRequest(BaseModel):
 
 class AgentDialogueOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/AgentDialogueOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/AgentDialogueOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -238,7 +232,7 @@ class AgentDialogueOutputBody(BaseModel):
 
 class AgentIndex(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_id: str
@@ -257,12 +251,12 @@ class AgentIndex(BaseModel):
 
 class AgentInstance(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AgentInstance.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/AgentInstance.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -279,14 +273,12 @@ class AgentInstance(BaseModel):
 
 class AgentKBSearchInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/AgentKBSearchInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/AgentKBSearchInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -303,7 +295,7 @@ class AgentKBSearchInputBody(BaseModel):
 
 class AgentModelsModelEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     default_model: str
@@ -322,33 +314,31 @@ class AgentModelsModelEntry(BaseModel):
 
 class AnalyticsOverview(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AnalyticsOverview.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/AnalyticsOverview.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    active_agents: Annotated[int, Field(alias='activeAgents')]
-    active_sessions: Annotated[int, Field(alias='activeSessions')]
-    total_agents: Annotated[int, Field(alias='totalAgents')]
-    total_messages: Annotated[int, Field(alias='totalMessages')]
-    total_sessions: Annotated[int, Field(alias='totalSessions')]
+    active_agents: Annotated[int, Field(alias="activeAgents")]
+    active_sessions: Annotated[int, Field(alias="activeSessions")]
+    total_agents: Annotated[int, Field(alias="totalAgents")]
+    total_messages: Annotated[int, Field(alias="totalMessages")]
+    total_sessions: Annotated[int, Field(alias="totalSessions")]
 
 
 class AsyncChatResultOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/AsyncChatResultOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/AsyncChatResultOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -389,14 +379,12 @@ class AsyncChatResultOutputBody(BaseModel):
 
 class AsyncChatStartOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/AsyncChatStartOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/AsyncChatStartOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -413,12 +401,12 @@ class AsyncChatStartOutputBody(BaseModel):
 
 class AtomicFact(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AtomicFact.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/AtomicFact.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -473,7 +461,7 @@ class AtomicFact(BaseModel):
 
 class AttributedFact(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     category: str
@@ -490,7 +478,7 @@ class AttributedFact(BaseModel):
 
 class AttributedRelation(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     edge_type: str
@@ -507,7 +495,7 @@ class AttributedRelation(BaseModel):
 
 class AvailableAction(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     description: str
@@ -517,7 +505,7 @@ class AvailableAction(BaseModel):
 
 class AvailableActionsApp(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     actions: list[AvailableAction] | None
@@ -527,12 +515,12 @@ class AvailableActionsApp(BaseModel):
 
 class BYOKKeyResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/BYOKKeyResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/BYOKKeyResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -549,14 +537,14 @@ class BYOKKeyResponse(BaseModel):
 
 class BatchGetPersonalitiesInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/BatchGetPersonalitiesInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/BatchGetPersonalitiesInputBody.json"],
         ),
     ] = None
     """
@@ -570,14 +558,14 @@ class BatchGetPersonalitiesInputBody(BaseModel):
 
 class BatchImportUsersHumaOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/BatchImportUsersHumaOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/BatchImportUsersHumaOutputBody.json"],
         ),
     ] = None
     """
@@ -603,7 +591,7 @@ class BatchImportUsersHumaOutputBody(BaseModel):
 
 class BatchInventoryItem(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     description: str | None = None
@@ -615,12 +603,12 @@ class BatchInventoryItem(BaseModel):
 
 class BatchInventoryRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/BatchInventoryRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/BatchInventoryRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -631,14 +619,12 @@ class BatchInventoryRequest(BaseModel):
 
 class BatchInventoryResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/BatchInventoryResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/BatchInventoryResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -652,7 +638,7 @@ class BatchInventoryResponse(BaseModel):
 
 class BehavioralTraits(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     conflict_approach: str
@@ -663,7 +649,7 @@ class BehavioralTraits(BaseModel):
 
 class Behaviors(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     conflict_approach: str | None = None
@@ -674,7 +660,7 @@ class Behaviors(BaseModel):
 
 class Big5(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agreeableness: float
@@ -686,7 +672,7 @@ class Big5(BaseModel):
 
 class Big5ScoresInput(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agreeableness: float
@@ -698,7 +684,7 @@ class Big5ScoresInput(BaseModel):
 
 class Big5Trait(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     confidence: float
@@ -709,7 +695,7 @@ class Big5Trait(BaseModel):
 
 class Breakthrough(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     achieved_goals: list[str] | None
@@ -729,12 +715,12 @@ class Breakthrough(BaseModel):
 
 class BreakthroughsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/BreakthroughsResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/BreakthroughsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -744,7 +730,7 @@ class BreakthroughsResponse(BaseModel):
 
 class BulkCreateFactItem(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     confidence: float | None = None
@@ -783,21 +769,17 @@ class BulkCreateFactItem(BaseModel):
 
 class BulkCreateFactsInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/BulkCreateFactsInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/BulkCreateFactsInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    facts: Annotated[
-        list[BulkCreateFactItem] | None, Field(max_length=1000, min_length=1)
-    ]
+    facts: Annotated[list[BulkCreateFactItem] | None, Field(max_length=1000, min_length=1)]
     """
     Facts to create in a single request (1-1000)
     """
@@ -809,14 +791,12 @@ class BulkCreateFactsInputBody(BaseModel):
 
 class BulkCreateFactsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/BulkCreateFactsOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/BulkCreateFactsOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -833,7 +813,7 @@ class BulkCreateFactsOutputBody(BaseModel):
 
 class BulkUpdateEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     entity_type: str
@@ -843,7 +823,7 @@ class BulkUpdateEntry(BaseModel):
 
 class CASPair(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     current: Any
@@ -852,12 +832,12 @@ class CASPair(BaseModel):
 
 class CachedModelsPayload(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CachedModelsPayload.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CachedModelsPayload.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -868,7 +848,7 @@ class CachedModelsPayload(BaseModel):
 
 class ChatSSEChunkError(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     message: str
@@ -879,7 +859,7 @@ class ChatSSEChunkError(BaseModel):
 
 class ChatSSEDelta(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str | None = None
@@ -890,25 +870,25 @@ class ChatSSEDelta(BaseModel):
 
 class CheckpointEvalRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CheckpointEvalRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CheckpointEvalRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    instance_id: Annotated[str, Field(alias='instanceId')]
+    instance_id: Annotated[str, Field(alias="instanceId")]
     """
     Workbench instance ID
     """
-    judge_model: Annotated[str, Field(alias='judgeModel')]
+    judge_model: Annotated[str, Field(alias="judgeModel")]
     """
     Judge model name
     """
-    session_index: Annotated[int, Field(alias='sessionIndex')]
+    session_index: Annotated[int, Field(alias="sessionIndex")]
     """
     Session index for checkpoint
     """
@@ -916,7 +896,7 @@ class CheckpointEvalRequest(BaseModel):
 
 class ColumnMappingSpec(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     is_label: bool | None = None
@@ -926,7 +906,7 @@ class ColumnMappingSpec(BaseModel):
 
 class ComposioAppUsage(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     app: str
@@ -936,14 +916,14 @@ class ComposioAppUsage(BaseModel):
 
 class ComposioConnectCallbackInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ComposioConnectCallbackInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ComposioConnectCallbackInputBody.json"],
         ),
     ] = None
     """
@@ -957,7 +937,7 @@ class ComposioConnectCallbackInputBody(BaseModel):
 
 class ComposioUsageResponsePeriodStruct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     end: str
@@ -966,7 +946,7 @@ class ComposioUsageResponsePeriodStruct(BaseModel):
 
 class ComposioUsageResponseSummaryStruct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     total_calls: int
@@ -975,7 +955,7 @@ class ComposioUsageResponseSummaryStruct(BaseModel):
 
 class Connection(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     account_label: str
@@ -990,14 +970,14 @@ class Connection(BaseModel):
 
 class ConsumeNotificationOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ConsumeNotificationOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ConsumeNotificationOutputBody.json"],
         ),
     ] = None
     """
@@ -1011,66 +991,64 @@ class ConsumeNotificationOutputBody(BaseModel):
 
 class ContextEngineEventByType(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    charge_usd: Annotated[float, Field(alias='chargeUsd')]
+    charge_usd: Annotated[float, Field(alias="chargeUsd")]
     count: int
-    event_type: Annotated[str, Field(alias='eventType')]
-    unit_price_usd: Annotated[float, Field(alias='unitPriceUsd')]
+    event_type: Annotated[str, Field(alias="eventType")]
+    unit_price_usd: Annotated[float, Field(alias="unitPriceUsd")]
 
 
 class ContextEngineEventSummary(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ContextEngineEventSummary.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ContextEngineEventSummary.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    by_type: Annotated[list[ContextEngineEventByType] | None, Field(alias='byType')]
+    by_type: Annotated[list[ContextEngineEventByType] | None, Field(alias="byType")]
     month: str
-    total_charge_usd: Annotated[float, Field(alias='totalChargeUsd')]
-    total_events: Annotated[int, Field(alias='totalEvents')]
+    total_charge_usd: Annotated[float, Field(alias="totalChargeUsd")]
+    total_events: Annotated[int, Field(alias="totalEvents")]
 
 
 class ContractPayment(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    amount_usd: Annotated[float, Field(alias='amountUsd')]
-    credit_usd: Annotated[float, Field(alias='creditUsd')]
-    due_date: Annotated[AwareDatetime, Field(alias='dueDate')]
-    is_one_time: Annotated[bool | None, Field(alias='isOneTime')] = None
+    amount_usd: Annotated[float, Field(alias="amountUsd")]
+    credit_usd: Annotated[float, Field(alias="creditUsd")]
+    due_date: Annotated[AwareDatetime, Field(alias="dueDate")]
+    is_one_time: Annotated[bool | None, Field(alias="isOneTime")] = None
     paid: bool
     period: str
-    service_usd: Annotated[float, Field(alias='serviceUsd')]
+    service_usd: Annotated[float, Field(alias="serviceUsd")]
 
 
 class CostBreakdownEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    cache_tokens: Annotated[int, Field(alias='cacheTokens')]
-    cost_usd: Annotated[float, Field(alias='costUsd')]
-    input_tokens: Annotated[int, Field(alias='inputTokens')]
+    cache_tokens: Annotated[int, Field(alias="cacheTokens")]
+    cost_usd: Annotated[float, Field(alias="costUsd")]
+    input_tokens: Annotated[int, Field(alias="inputTokens")]
     key: str
     label: str
-    output_tokens: Annotated[int, Field(alias='outputTokens')]
+    output_tokens: Annotated[int, Field(alias="outputTokens")]
     turns: int
 
 
 class CostBreakdownResponsePeriodStruct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     end: str
@@ -1079,96 +1057,96 @@ class CostBreakdownResponsePeriodStruct(BaseModel):
 
 class CostByBillingMode(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    billing_mode: Annotated[str, Field(alias='billingMode')]
-    byok_provider: Annotated[str | None, Field(alias='byokProvider')] = None
-    cost_usd: Annotated[float, Field(alias='costUsd')]
-    entry_count: Annotated[int, Field(alias='entryCount')]
+    billing_mode: Annotated[str, Field(alias="billingMode")]
+    byok_provider: Annotated[str | None, Field(alias="byokProvider")] = None
+    cost_usd: Annotated[float, Field(alias="costUsd")]
+    entry_count: Annotated[int, Field(alias="entryCount")]
     tokens: int
 
 
 class CostByCharacter(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    agent_id: Annotated[str, Field(alias='agentId')]
-    agent_name: Annotated[str, Field(alias='agentName')]
-    project_id: Annotated[str, Field(alias='projectId')]
-    project_name: Annotated[str, Field(alias='projectName')]
+    agent_id: Annotated[str, Field(alias="agentId")]
+    agent_name: Annotated[str, Field(alias="agentName")]
+    project_id: Annotated[str, Field(alias="projectId")]
+    project_name: Annotated[str, Field(alias="projectName")]
 
 
 class CostByProject(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    agent_count: Annotated[int, Field(alias='agentCount')]
-    cache_tokens: Annotated[int, Field(alias='cacheTokens')]
-    cost_usd: Annotated[float, Field(alias='costUsd')]
-    input_tokens: Annotated[int, Field(alias='inputTokens')]
-    output_tokens: Annotated[int, Field(alias='outputTokens')]
-    project_id: Annotated[str, Field(alias='projectId')]
-    project_name: Annotated[str, Field(alias='projectName')]
-    service_cost_usd: Annotated[float, Field(alias='serviceCostUsd')]
-    total_tokens: Annotated[int, Field(alias='totalTokens')]
+    agent_count: Annotated[int, Field(alias="agentCount")]
+    cache_tokens: Annotated[int, Field(alias="cacheTokens")]
+    cost_usd: Annotated[float, Field(alias="costUsd")]
+    input_tokens: Annotated[int, Field(alias="inputTokens")]
+    output_tokens: Annotated[int, Field(alias="outputTokens")]
+    project_id: Annotated[str, Field(alias="projectId")]
+    project_name: Annotated[str, Field(alias="projectName")]
+    service_cost_usd: Annotated[float, Field(alias="serviceCostUsd")]
+    total_tokens: Annotated[int, Field(alias="totalTokens")]
 
 
 class CostByService(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    cost_usd: Annotated[float, Field(alias='costUsd')]
+    cost_usd: Annotated[float, Field(alias="costUsd")]
     count: int
     service: str
 
 
 class CostByTrafficSource(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    cost_usd: Annotated[float, Field(alias='costUsd')]
-    entry_count: Annotated[int, Field(alias='entryCount')]
+    cost_usd: Annotated[float, Field(alias="costUsd")]
+    entry_count: Annotated[int, Field(alias="entryCount")]
     tokens: int
-    traffic_source: Annotated[str, Field(alias='trafficSource')]
+    traffic_source: Annotated[str, Field(alias="trafficSource")]
 
 
 class CostDailyByMode(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    billing_mode: Annotated[str, Field(alias='billingMode')]
-    byok_provider: Annotated[str | None, Field(alias='byokProvider')] = None
-    cost_usd: Annotated[float, Field(alias='costUsd')]
+    billing_mode: Annotated[str, Field(alias="billingMode")]
+    byok_provider: Annotated[str | None, Field(alias="byokProvider")] = None
+    cost_usd: Annotated[float, Field(alias="costUsd")]
     date: str
-    input_tokens: Annotated[int, Field(alias='inputTokens')]
-    output_tokens: Annotated[int, Field(alias='outputTokens')]
-    total_tokens: Annotated[int, Field(alias='totalTokens')]
+    input_tokens: Annotated[int, Field(alias="inputTokens")]
+    output_tokens: Annotated[int, Field(alias="outputTokens")]
+    total_tokens: Annotated[int, Field(alias="totalTokens")]
 
 
 class CostDailyEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    cache_tokens: Annotated[int, Field(alias='cacheTokens')]
-    cost_usd: Annotated[float, Field(alias='costUsd')]
+    cache_tokens: Annotated[int, Field(alias="cacheTokens")]
+    cost_usd: Annotated[float, Field(alias="costUsd")]
     date: str
-    input_tokens: Annotated[int, Field(alias='inputTokens')]
-    output_tokens: Annotated[int, Field(alias='outputTokens')]
-    service_cost_usd: Annotated[float, Field(alias='serviceCostUsd')]
-    total_cost_usd: Annotated[float, Field(alias='totalCostUsd')]
-    total_tokens: Annotated[int, Field(alias='totalTokens')]
+    input_tokens: Annotated[int, Field(alias="inputTokens")]
+    output_tokens: Annotated[int, Field(alias="outputTokens")]
+    service_cost_usd: Annotated[float, Field(alias="serviceCostUsd")]
+    total_cost_usd: Annotated[float, Field(alias="totalCostUsd")]
+    total_tokens: Annotated[int, Field(alias="totalTokens")]
 
 
 class CostResponsePeriodStruct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     end: str
@@ -1177,31 +1155,31 @@ class CostResponsePeriodStruct(BaseModel):
 
 class CostSummary(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    billing_mode: Annotated[str, Field(alias='billingMode')]
-    credit_balance_usd: Annotated[float, Field(alias='creditBalanceUsd')]
-    input_cost_usd: Annotated[float, Field(alias='inputCostUsd')]
-    output_cost_usd: Annotated[float, Field(alias='outputCostUsd')]
-    service_cost_usd: Annotated[float, Field(alias='serviceCostUsd')]
-    token_cost_usd: Annotated[float, Field(alias='tokenCostUsd')]
-    token_price_per1_k_usd: Annotated[float, Field(alias='tokenPricePer1KUsd')]
-    total_cache_tokens: Annotated[int, Field(alias='totalCacheTokens')]
-    total_cost_usd: Annotated[float, Field(alias='totalCostUsd')]
-    total_input_tokens: Annotated[int, Field(alias='totalInputTokens')]
-    total_output_tokens: Annotated[int, Field(alias='totalOutputTokens')]
-    total_tokens: Annotated[int, Field(alias='totalTokens')]
+    billing_mode: Annotated[str, Field(alias="billingMode")]
+    credit_balance_usd: Annotated[float, Field(alias="creditBalanceUsd")]
+    input_cost_usd: Annotated[float, Field(alias="inputCostUsd")]
+    output_cost_usd: Annotated[float, Field(alias="outputCostUsd")]
+    service_cost_usd: Annotated[float, Field(alias="serviceCostUsd")]
+    token_cost_usd: Annotated[float, Field(alias="tokenCostUsd")]
+    token_price_per1_k_usd: Annotated[float, Field(alias="tokenPricePer1KUsd")]
+    total_cache_tokens: Annotated[int, Field(alias="totalCacheTokens")]
+    total_cost_usd: Annotated[float, Field(alias="totalCostUsd")]
+    total_input_tokens: Annotated[int, Field(alias="totalInputTokens")]
+    total_output_tokens: Annotated[int, Field(alias="totalOutputTokens")]
+    total_tokens: Annotated[int, Field(alias="totalTokens")]
 
 
 class CreateAPIKeyInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateAPIKeyInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateAPIKeyInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1222,14 +1200,12 @@ class CreateAPIKeyInputBody(BaseModel):
 
 class CreateAPIKeyOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateAPIKeyOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateAPIKeyOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1252,7 +1228,7 @@ class CreateAPIKeyOutputBody(BaseModel):
 
 class CreateAgentBodyBehaviorsStruct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     conflict_approach: str
@@ -1263,7 +1239,7 @@ class CreateAgentBodyBehaviorsStruct(BaseModel):
 
 class CreateAgentBodyBig5Struct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agreeableness: float
@@ -1275,7 +1251,7 @@ class CreateAgentBodyBig5Struct(BaseModel):
 
 class CreateAgentBodyCapabilitiesStruct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     image_generation: bool
@@ -1287,7 +1263,7 @@ class CreateAgentBodyCapabilitiesStruct(BaseModel):
 
 class CreateAgentBodyDimensionsStruct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     aesthetic: float
@@ -1304,7 +1280,7 @@ class CreateAgentBodyDimensionsStruct(BaseModel):
 
 class CreateAgentBodyPreferencesStruct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     conversation_pace: str
@@ -1315,9 +1291,17 @@ class CreateAgentBodyPreferencesStruct(BaseModel):
 
 class CreateAgentBodyToolCapabilitiesStruct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
+    auto_learn_skills: bool | None = None
+    """
+    Enable agent-authored skills (sonzai_create_skill / sonzai_update_skill). Requires skills.
+    """
+    composio: bool | None = None
+    """
+    Enable per-agent Composio SaaS integrations.
+    """
     image_generation: bool
     inventory: bool | None = None
     """
@@ -1327,21 +1311,41 @@ class CreateAgentBodyToolCapabilitiesStruct(BaseModel):
     """
     Enable the knowledge_search tool (reads from the agent's project-scoped KB).
     """
+    knowledge_base_scope_mode: Literal["project_only", "org_only", "cascade", "union"] | None = None
+    """
+    How the agent reads across project and organization-global KB scopes.
+    """
+    knowledge_base_write: bool | None = None
+    """
+    Enable knowledge_create / knowledge_update / knowledge_delete tools. Requires knowledge_base.
+    """
     mcp_enabled: list[str] | None = None
     """
     IDs of project MCP catalog entries this agent uses
     """
-    memory_mode: Literal['sync', 'async'] | None = None
+    memory_mode: Literal["sync", "async"] | None = None
     """
     Supplementary memory recall timing. 'sync' (default) blocks context build until recall returns so facts land in the current turn. 'async' lets the recall race a deadline — slow hits spill to the next turn for lower first-response latency.
     """
     remember_name: bool
+    shared_memory: bool | None = None
+    """
+    Enable person/entity-attributed memory shared across users of this agent (teams, parties, business context). Off by default. Requires wisdom.
+    """
+    skills: bool | None = None
+    """
+    Enable project-library skill loading (sonzai_load_skill). Required precondition for auto_learn_skills.
+    """
     web_search: bool
+    wisdom: bool | None = None
+    """
+    Enable the base wisdom (de-attributed cross-user generalization) pipeline. Default ON for new agents — pass false to opt out. Required precondition for shared_memory.
+    """
 
 
 class CreateAgentGoal(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     description: str
@@ -1353,7 +1357,7 @@ class CreateAgentGoal(BaseModel):
 
 class CreateAgentLoreContext(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     entity_terminology: dict[str, str] | None = None
@@ -1363,7 +1367,7 @@ class CreateAgentLoreContext(BaseModel):
 
 class CreateAgentSeedMemory(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -1374,14 +1378,14 @@ class CreateAgentSeedMemory(BaseModel):
 
 class CreateConstellationNodeInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/CreateConstellationNodeInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/CreateConstellationNodeInputBody.json"],
         ),
     ] = None
     """
@@ -1411,14 +1415,14 @@ class CreateConstellationNodeInputBody(BaseModel):
 
 class CreateCustomStateInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/CreateCustomStateInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/CreateCustomStateInputBody.json"],
         ),
     ] = None
     """
@@ -1452,14 +1456,12 @@ class CreateCustomStateInputBody(BaseModel):
 
 class CreateCustomToolInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateCustomToolInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateCustomToolInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1480,12 +1482,12 @@ class CreateCustomToolInputBody(BaseModel):
 
 class CreateFactInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateFactInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateFactInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1526,12 +1528,12 @@ class CreateFactInputBody(BaseModel):
 
 class CreateGoalInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateGoalInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateGoalInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1564,12 +1566,12 @@ class CreateGoalInputBody(BaseModel):
 
 class CreateHabitInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateHabitInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateHabitInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1602,14 +1604,12 @@ class CreateHabitInputBody(BaseModel):
 
 class CreateInstanceInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateInstanceInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateInstanceInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1626,14 +1626,14 @@ class CreateInstanceInputBody(BaseModel):
 
 class CreateInventoryItemHumaInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/CreateInventoryItemHumaInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/CreateInventoryItemHumaInputBody.json"],
         ),
     ] = None
     """
@@ -1667,17 +1667,19 @@ class CreateInventoryItemHumaInputBody(BaseModel):
 
 class CreateProjectInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateProjectInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateProjectInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
+    """
+    default_agent_kb_write: bool | None = None
+    """
+    When true, agents in this project default to autonomous KB editing (create/update/delete) unless their own knowledgeBaseWrite capability is set explicitly. null = not configured.
     """
     environment: str | None = None
     """
@@ -1691,14 +1693,12 @@ class CreateProjectInputBody(BaseModel):
 
 class CreateScheduleInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateScheduleInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateScheduleInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1727,14 +1727,12 @@ class CreateScheduleInputBody(BaseModel):
 
 class CreateScheduleOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateScheduleOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateScheduleOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1747,12 +1745,12 @@ class CreateScheduleOutputBody(BaseModel):
 
 class CreateTicketRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateTicketRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateTicketRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1765,14 +1763,14 @@ class CreateTicketRequest(BaseModel):
 
 class CreateUserPersonaInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/CreateUserPersonaInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/CreateUserPersonaInputBody.json"],
         ),
     ] = None
     """
@@ -1794,14 +1792,14 @@ class CreateUserPersonaInputBody(BaseModel):
 
 class CreateWisdomAttributedBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/CreateWisdomAttributedBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/CreateWisdomAttributedBody.json"],
         ),
     ] = None
     """
@@ -1820,14 +1818,14 @@ class CreateWisdomAttributedBody(BaseModel):
 
 class CreateWisdomAttributedOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/CreateWisdomAttributedOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/CreateWisdomAttributedOutputBody.json"],
         ),
     ] = None
     """
@@ -1838,14 +1836,12 @@ class CreateWisdomAttributedOutputBody(BaseModel):
 
 class CreateWisdomRelationBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/CreateWisdomRelationBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateWisdomRelationBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1862,14 +1858,14 @@ class CreateWisdomRelationBody(BaseModel):
 
 class CreateWisdomRelationOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/CreateWisdomRelationOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/CreateWisdomRelationOutputBody.json"],
         ),
     ] = None
     """
@@ -1880,14 +1876,12 @@ class CreateWisdomRelationOutputBody(BaseModel):
 
 class CustomLLMConfigResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/CustomLLMConfigResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/CustomLLMConfigResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1902,12 +1896,12 @@ class CustomLLMConfigResponse(BaseModel):
 
 class CustomState(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CustomState.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CustomState.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1926,12 +1920,12 @@ class CustomState(BaseModel):
 
 class CustomToolDefinition(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CustomToolDefinition.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CustomToolDefinition.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1943,7 +1937,7 @@ class CustomToolDefinition(BaseModel):
 
 class DailyStatsEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     date: str
@@ -1953,12 +1947,12 @@ class DailyStatsEntry(BaseModel):
 
 class DeleteAgentOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/DeleteAgentOutputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/DeleteAgentOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -1983,14 +1977,14 @@ class DeleteAgentOutputBody(BaseModel):
 
 class DeleteCustomToolOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/DeleteCustomToolOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/DeleteCustomToolOutputBody.json"],
         ),
     ] = None
     """
@@ -2001,14 +1995,12 @@ class DeleteCustomToolOutputBody(BaseModel):
 
 class DeleteEvalRunOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/DeleteEvalRunOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/DeleteEvalRunOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2018,14 +2010,14 @@ class DeleteEvalRunOutputBody(BaseModel):
 
 class DeleteEvalTemplateOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/DeleteEvalTemplateOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/DeleteEvalTemplateOutputBody.json"],
         ),
     ] = None
     """
@@ -2036,14 +2028,12 @@ class DeleteEvalTemplateOutputBody(BaseModel):
 
 class DeleteInstanceOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/DeleteInstanceOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/DeleteInstanceOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2056,14 +2046,12 @@ class DeleteInstanceOutputBody(BaseModel):
 
 class DeleteProjectOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/DeleteProjectOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/DeleteProjectOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2076,14 +2064,14 @@ class DeleteProjectOutputBody(BaseModel):
 
 class DeleteUserPersonaOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/DeleteUserPersonaOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/DeleteUserPersonaOutputBody.json"],
         ),
     ] = None
     """
@@ -2094,12 +2082,12 @@ class DeleteUserPersonaOutputBody(BaseModel):
 
 class DeleteWisdomResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/DeleteWisdomResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/DeleteWisdomResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2110,7 +2098,7 @@ class DeleteWisdomResponse(BaseModel):
 
 class DialogueMsgHuma(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -2129,7 +2117,7 @@ class DialogueMsgHuma(BaseModel):
 
 class DiaryEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_id: str
@@ -2148,14 +2136,12 @@ class DiaryEntry(BaseModel):
 
 class DiaryPolymorphicResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/DiaryPolymorphicResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/DiaryPolymorphicResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2166,7 +2152,7 @@ class DiaryPolymorphicResponse(BaseModel):
 
 class Dimensions(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     aesthetic: float
@@ -2183,7 +2169,7 @@ class Dimensions(BaseModel):
 
 class DimensionsInput(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     aesthetic: float
@@ -2200,12 +2186,12 @@ class DimensionsInput(BaseModel):
 
 class DirectUpdateRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/DirectUpdateRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/DirectUpdateRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2215,12 +2201,12 @@ class DirectUpdateRequest(BaseModel):
 
 class DirectUpdateResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/DirectUpdateResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/DirectUpdateResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2233,7 +2219,7 @@ class DirectUpdateResponse(BaseModel):
 
 class DisclosureEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_id: str
@@ -2250,30 +2236,30 @@ class DisclosureEntry(BaseModel):
 
 class Edge(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    agent_id: Annotated[str, Field(alias='AgentID')]
-    co_occurrence_count: Annotated[int, Field(alias='CoOccurrenceCount')]
-    created_at: Annotated[AwareDatetime, Field(alias='CreatedAt')]
-    edge_id: Annotated[str, Field(alias='EdgeID')]
-    edge_type: Annotated[str, Field(alias='EdgeType')]
-    from_node_id: Annotated[str, Field(alias='FromNodeID')]
-    strength: Annotated[float, Field(alias='Strength')]
-    to_node_id: Annotated[str, Field(alias='ToNodeID')]
-    updated_at: Annotated[AwareDatetime, Field(alias='UpdatedAt')]
+    agent_id: Annotated[str, Field(alias="AgentID")]
+    co_occurrence_count: Annotated[int, Field(alias="CoOccurrenceCount")]
+    created_at: Annotated[AwareDatetime, Field(alias="CreatedAt")]
+    edge_id: Annotated[str, Field(alias="EdgeID")]
+    edge_type: Annotated[str, Field(alias="EdgeType")]
+    from_node_id: Annotated[str, Field(alias="FromNodeID")]
+    strength: Annotated[float, Field(alias="Strength")]
+    to_node_id: Annotated[str, Field(alias="ToNodeID")]
+    updated_at: Annotated[AwareDatetime, Field(alias="UpdatedAt")]
 
 
 class EffectivePostProcessingModelOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/EffectivePostProcessingModelOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/EffectivePostProcessingModelOutputBody.json"],
         ),
     ] = None
     """
@@ -2287,12 +2273,12 @@ class EffectivePostProcessingModelOutputBody(BaseModel):
 
 class EndSessionOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EndSessionOutputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/EndSessionOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2301,7 +2287,7 @@ class EndSessionOutputBody(BaseModel):
     """
     Echo of the resolved agent_id.
     """
-    async_: Annotated[bool, Field(alias='async')]
+    async_: Annotated[bool, Field(alias="async")]
     """
     Whether processing continues asynchronously
     """
@@ -2329,55 +2315,49 @@ class EndSessionOutputBody(BaseModel):
 
 class EnterpriseContract(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EnterpriseContract.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/EnterpriseContract.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    auto_renew: Annotated[bool, Field(alias='autoRenew')]
-    bonus_credits_paid: Annotated[bool, Field(alias='bonusCreditsPaid')]
-    bonus_credits_usd: Annotated[float, Field(alias='bonusCreditsUsd')]
-    contract_id: Annotated[str, Field(alias='contractId')]
-    created_at: Annotated[AwareDatetime, Field(alias='createdAt')]
-    created_by: Annotated[str | None, Field(alias='createdBy')] = None
-    credit_period_limit: Annotated[int | None, Field(alias='creditPeriodLimit')] = None
-    credit_portion_usd: Annotated[float, Field(alias='creditPortionUsd')]
-    end_date: Annotated[AwareDatetime, Field(alias='endDate')]
+    auto_renew: Annotated[bool, Field(alias="autoRenew")]
+    bonus_credits_paid: Annotated[bool, Field(alias="bonusCreditsPaid")]
+    bonus_credits_usd: Annotated[float, Field(alias="bonusCreditsUsd")]
+    contract_id: Annotated[str, Field(alias="contractId")]
+    created_at: Annotated[AwareDatetime, Field(alias="createdAt")]
+    created_by: Annotated[str | None, Field(alias="createdBy")] = None
+    credit_period_limit: Annotated[int | None, Field(alias="creditPeriodLimit")] = None
+    credit_portion_usd: Annotated[float, Field(alias="creditPortionUsd")]
+    end_date: Annotated[AwareDatetime, Field(alias="endDate")]
     notes: str | None = None
-    onetime_amount_usd: Annotated[float, Field(alias='onetimeAmountUsd')]
-    onetime_credit_usd: Annotated[float, Field(alias='onetimeCreditUsd')]
-    onetime_service_usd: Annotated[float, Field(alias='onetimeServiceUsd')]
-    payment_amount_usd: Annotated[float, Field(alias='paymentAmountUsd')]
-    payment_credit_usd: Annotated[float, Field(alias='paymentCreditUsd')]
-    payment_frequency: Annotated[str, Field(alias='paymentFrequency')]
-    payment_link_url: Annotated[str | None, Field(alias='paymentLinkUrl')] = None
-    payment_schedule: Annotated[
-        list[ContractPayment] | None, Field(alias='paymentSchedule')
-    ]
-    payment_service_usd: Annotated[float, Field(alias='paymentServiceUsd')]
-    service_period_limit: Annotated[int | None, Field(alias='servicePeriodLimit')] = (
-        None
-    )
-    service_portion_usd: Annotated[float, Field(alias='servicePortionUsd')]
-    start_date: Annotated[AwareDatetime, Field(alias='startDate')]
+    onetime_amount_usd: Annotated[float, Field(alias="onetimeAmountUsd")]
+    onetime_credit_usd: Annotated[float, Field(alias="onetimeCreditUsd")]
+    onetime_service_usd: Annotated[float, Field(alias="onetimeServiceUsd")]
+    payment_amount_usd: Annotated[float, Field(alias="paymentAmountUsd")]
+    payment_credit_usd: Annotated[float, Field(alias="paymentCreditUsd")]
+    payment_frequency: Annotated[str, Field(alias="paymentFrequency")]
+    payment_link_url: Annotated[str | None, Field(alias="paymentLinkUrl")] = None
+    payment_schedule: Annotated[list[ContractPayment] | None, Field(alias="paymentSchedule")]
+    payment_service_usd: Annotated[float, Field(alias="paymentServiceUsd")]
+    service_period_limit: Annotated[int | None, Field(alias="servicePeriodLimit")] = None
+    service_portion_usd: Annotated[float, Field(alias="servicePortionUsd")]
+    start_date: Annotated[AwareDatetime, Field(alias="startDate")]
     status: str
-    stripe_price_id: Annotated[str | None, Field(alias='stripePriceId')] = None
-    stripe_subscription_id: Annotated[
-        str | None, Field(alias='stripeSubscriptionId')
-    ] = None
-    tenant_id: Annotated[str, Field(alias='tenantId')]
-    total_value_usd: Annotated[float, Field(alias='totalValueUsd')]
-    updated_at: Annotated[AwareDatetime, Field(alias='updatedAt')]
+    stripe_price_id: Annotated[str | None, Field(alias="stripePriceId")] = None
+    stripe_subscription_id: Annotated[str | None, Field(alias="stripeSubscriptionId")] = None
+    tenant_id: Annotated[str, Field(alias="tenantId")]
+    total_value_usd: Annotated[float, Field(alias="totalValueUsd")]
+    updated_at: Annotated[AwareDatetime, Field(alias="updatedAt")]
 
 
 class ErrorDetail(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     location: str | None = None
@@ -2396,19 +2376,19 @@ class ErrorDetail(BaseModel):
 
 class ErrorModel(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ErrorModel.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ErrorModel.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    detail: Annotated[
-        str | None, Field(examples=['Property foo is required but is missing.'])
-    ] = None
+    detail: Annotated[str | None, Field(examples=["Property foo is required but is missing."])] = (
+        None
+    )
     """
     A human-readable explanation specific to this occurrence of the problem.
     """
@@ -2416,9 +2396,9 @@ class ErrorModel(BaseModel):
     """
     Optional list of individual error details
     """
-    instance: Annotated[
-        AnyUrl | None, Field(examples=['https://example.com/error-log/abc123'])
-    ] = None
+    instance: Annotated[AnyUrl | None, Field(examples=["https://example.com/error-log/abc123"])] = (
+        None
+    )
     """
     A URI reference that identifies the specific occurrence of the problem.
     """
@@ -2426,13 +2406,13 @@ class ErrorModel(BaseModel):
     """
     HTTP status code
     """
-    title: Annotated[str | None, Field(examples=['Bad Request'])] = None
+    title: Annotated[str | None, Field(examples=["Bad Request"])] = None
     """
     A short, human-readable summary of the problem type. This value should not change between occurrences of the error.
     """
-    type: Annotated[
-        AnyUrl | None, Field(examples=['https://example.com/errors/example'])
-    ] = 'about:blank'
+    type: Annotated[AnyUrl | None, Field(examples=["https://example.com/errors/example"])] = (
+        "about:blank"
+    )
     """
     A URI reference to human-readable documentation for the error.
     """
@@ -2440,7 +2420,7 @@ class ErrorModel(BaseModel):
 
 class EvalCategory(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     key: str
@@ -2450,12 +2430,12 @@ class EvalCategory(BaseModel):
 
 class EvalOnlyRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EvalOnlyRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/EvalOnlyRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2480,11 +2460,11 @@ class EvalOnlyRequest(BaseModel):
 
 class EvalRun(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/EvalRun.json'])
+        AnyUrl | None, Field(alias="$schema", examples=["/api/v1/schemas/EvalRun.json"])
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2521,12 +2501,12 @@ class EvalRun(BaseModel):
 
 class EvalRunEvent(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EvalRunEvent.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/EvalRunEvent.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2555,12 +2535,12 @@ class EvalRunEvent(BaseModel):
 
 class EvalTemplate(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EvalTemplate.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/EvalTemplate.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2582,12 +2562,12 @@ class EvalTemplate(BaseModel):
 
 class EvaluateAcceptedBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EvaluateAcceptedBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/EvaluateAcceptedBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2604,7 +2584,7 @@ class EvaluateAcceptedBody(BaseModel):
 
 class EvaluateTranscriptMsg(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -2623,12 +2603,12 @@ class EvaluateTranscriptMsg(BaseModel):
 
 class FactHistoryResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/FactHistoryResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/FactHistoryResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2639,12 +2619,12 @@ class FactHistoryResponse(BaseModel):
 
 class ForkAgentInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ForkAgentInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ForkAgentInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2657,12 +2637,12 @@ class ForkAgentInputBody(BaseModel):
 
 class ForkResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ForkResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ForkResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2675,12 +2655,12 @@ class ForkResponse(BaseModel):
 
 class ForkStatusResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ForkStatusResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ForkStatusResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2696,14 +2676,14 @@ class ForkStatusResponse(BaseModel):
 
 class GenerateAndCreateInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/GenerateAndCreateInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/GenerateAndCreateInputBody.json"],
         ),
     ] = None
     """
@@ -2749,12 +2729,12 @@ class GenerateAndCreateInputBody(BaseModel):
 
 class GenerateBioInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/GenerateBioInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/GenerateBioInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2795,12 +2775,12 @@ class GenerateBioInputBody(BaseModel):
 
 class GenerateBioOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/GenerateBioOutputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/GenerateBioOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2821,14 +2801,14 @@ class GenerateBioOutputBody(BaseModel):
 
 class GenerateCharacterInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/GenerateCharacterInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/GenerateCharacterInputBody.json"],
         ),
     ] = None
     """
@@ -2870,14 +2850,12 @@ class GenerateCharacterInputBody(BaseModel):
 
 class GenerateImageInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/GenerateImageInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/GenerateImageInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2906,14 +2884,12 @@ class GenerateImageInputBody(BaseModel):
 
 class GenerateImageOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/GenerateImageOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/GenerateImageOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2946,14 +2922,12 @@ class GenerateImageOutputBody(BaseModel):
 
 class GetAgentModelsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/GetAgentModelsOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/GetAgentModelsOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -2974,14 +2948,14 @@ class GetAgentModelsOutputBody(BaseModel):
 
 class GetSkillLoadCountOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/GetSkillLoadCountOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/GetSkillLoadCountOutputBody.json"],
         ),
     ] = None
     """
@@ -2993,11 +2967,11 @@ class GetSkillLoadCountOutputBody(BaseModel):
 
 class Goal(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Goal.json'])
+        AnyUrl | None, Field(alias="$schema", examples=["/api/v1/schemas/Goal.json"])
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3018,12 +2992,12 @@ class Goal(BaseModel):
 
 class GoalsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/GoalsResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/GoalsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3033,7 +3007,7 @@ class GoalsResponse(BaseModel):
 
 class GroupResult(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     group: str
@@ -3042,11 +3016,11 @@ class GroupResult(BaseModel):
 
 class Habit(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Habit.json'])
+        AnyUrl | None, Field(alias="$schema", examples=["/api/v1/schemas/Habit.json"])
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3070,12 +3044,12 @@ class Habit(BaseModel):
 
 class HabitsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/HabitsResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/HabitsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3085,12 +3059,12 @@ class HabitsResponse(BaseModel):
 
 class ImportJob(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ImportJob.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ImportJob.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3121,14 +3095,14 @@ class ImportJob(BaseModel):
 
 class InitiateComposioConnectInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/InitiateComposioConnectInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/InitiateComposioConnectInputBody.json"],
         ),
     ] = None
     """
@@ -3142,14 +3116,14 @@ class InitiateComposioConnectInputBody(BaseModel):
 
 class InitiateComposioConnectOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/InitiateComposioConnectOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/InitiateComposioConnectOutputBody.json"],
         ),
     ] = None
     """
@@ -3161,7 +3135,7 @@ class InitiateComposioConnectOutputBody(BaseModel):
 
 class InsertEdgeDetail(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     edge_id: str
@@ -3172,7 +3146,7 @@ class InsertEdgeDetail(BaseModel):
 
 class InsertFactDetail(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     action: str
@@ -3184,7 +3158,7 @@ class InsertFactDetail(BaseModel):
 
 class InsertFactEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     entity_type: str
@@ -3194,7 +3168,7 @@ class InsertFactEntry(BaseModel):
 
 class InsertRelEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     edge_type: str
@@ -3204,25 +3178,25 @@ class InsertRelEntry(BaseModel):
 
 class Insight(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    agent_id: Annotated[str, Field(alias='AgentID')]
-    confidence: Annotated[float, Field(alias='Confidence')]
-    content: Annotated[str, Field(alias='Content')]
-    created_at: Annotated[AwareDatetime, Field(alias='CreatedAt')]
-    insight_id: Annotated[str, Field(alias='InsightID')]
-    insight_type: Annotated[str, Field(alias='InsightType')]
-    priority: Annotated[int, Field(alias='Priority')]
-    related_nodes: Annotated[list[str] | None, Field(alias='RelatedNodes')]
-    surfaced: Annotated[bool, Field(alias='Surfaced')]
-    updated_at: Annotated[AwareDatetime, Field(alias='UpdatedAt')]
-    user_id: Annotated[str, Field(alias='UserID')]
+    agent_id: Annotated[str, Field(alias="AgentID")]
+    confidence: Annotated[float, Field(alias="Confidence")]
+    content: Annotated[str, Field(alias="Content")]
+    created_at: Annotated[AwareDatetime, Field(alias="CreatedAt")]
+    insight_id: Annotated[str, Field(alias="InsightID")]
+    insight_type: Annotated[str, Field(alias="InsightType")]
+    priority: Annotated[int, Field(alias="Priority")]
+    related_nodes: Annotated[list[str] | None, Field(alias="RelatedNodes")]
+    surfaced: Annotated[bool, Field(alias="Surfaced")]
+    updated_at: Annotated[AwareDatetime, Field(alias="UpdatedAt")]
+    user_id: Annotated[str, Field(alias="UserID")]
 
 
 class InteractionPreferences(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     conversation_pace: str
@@ -3233,7 +3207,7 @@ class InteractionPreferences(BaseModel):
 
 class Interest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_id: str
@@ -3252,12 +3226,12 @@ class Interest(BaseModel):
 
 class InterestsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/InterestsResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/InterestsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3267,7 +3241,7 @@ class InterestsResponse(BaseModel):
 
 class InventoryItem(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     fact_id: str
@@ -3281,12 +3255,12 @@ class InventoryItem(BaseModel):
 
 class InventoryReadResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/InventoryReadResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/InventoryReadResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3300,12 +3274,12 @@ class InventoryReadResponse(BaseModel):
 
 class InventoryWriteRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/InventoryWriteRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/InventoryWriteRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3321,7 +3295,7 @@ class InventoryWriteRequest(BaseModel):
 
 class JobUser(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     completed_at: AwareDatetime | None = None
@@ -3338,12 +3312,12 @@ class JobUser(BaseModel):
 
 class KBAnalyticsRule(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KBAnalyticsRule.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KBAnalyticsRule.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3364,7 +3338,7 @@ class KBAnalyticsRule(BaseModel):
 
 class KBConversionStats(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     avg_days_to_convert: float
@@ -3382,12 +3356,12 @@ class KBConversionStats(BaseModel):
 
 class KBDocument(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KBDocument.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KBDocument.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3412,7 +3386,7 @@ class KBDocument(BaseModel):
 
 class KBEdge(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     confidence: float
@@ -3432,7 +3406,7 @@ class KBEdge(BaseModel):
 
 class KBNodeHistory(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     change_type: str
@@ -3446,7 +3420,7 @@ class KBNodeHistory(BaseModel):
 
 class KBRecommendationScore(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     computed_at: AwareDatetime
@@ -3462,7 +3436,7 @@ class KBRecommendationScore(BaseModel):
 
 class KBRelatedNode(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     edge: str
@@ -3474,7 +3448,7 @@ class KBRelatedNode(BaseModel):
 
 class KBSchemaField(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     description: str | None = None
@@ -3487,7 +3461,7 @@ class KBSchemaField(BaseModel):
 
 class KBSearchResult(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     history: list[KBNodeHistory] | None = None
@@ -3504,7 +3478,7 @@ class KBSearchResult(BaseModel):
 
 class KBSimilarityConfig(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     enabled: bool
@@ -3515,7 +3489,7 @@ class KBSimilarityConfig(BaseModel):
 
 class KBTrendAggregation(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     computed_at: AwareDatetime
@@ -3531,7 +3505,7 @@ class KBTrendAggregation(BaseModel):
 
 class KBTrendRanking(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     computed_at: AwareDatetime
@@ -3547,14 +3521,14 @@ class KBTrendRanking(BaseModel):
 
 class KbAgentDeleteNodeOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbAgentDeleteNodeOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbAgentDeleteNodeOutputBody.json"],
         ),
     ] = None
     """
@@ -3568,12 +3542,12 @@ class KbAgentDeleteNodeOutputBody(BaseModel):
 
 class KbBulkUpdateInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbBulkUpdateInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbBulkUpdateInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3594,14 +3568,12 @@ class KbBulkUpdateInputBody(BaseModel):
 
 class KbBulkUpdateOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbBulkUpdateOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbBulkUpdateOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3634,7 +3606,7 @@ class KbBulkUpdateOutputBody(BaseModel):
 
 class KbCandidate(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     kb_node_id: str
@@ -3644,14 +3616,14 @@ class KbCandidate(BaseModel):
 
 class KbCreateAnalyticsRuleInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbCreateAnalyticsRuleInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbCreateAnalyticsRuleInputBody.json"],
         ),
     ] = None
     """
@@ -3681,14 +3653,12 @@ class KbCreateAnalyticsRuleInputBody(BaseModel):
 
 class KbCreateOrgNodeInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbCreateOrgNodeInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbCreateOrgNodeInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3713,14 +3683,12 @@ class KbCreateOrgNodeInputBody(BaseModel):
 
 class KbCreateSchemaInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbCreateSchemaInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbCreateSchemaInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3749,14 +3717,14 @@ class KbCreateSchemaInputBody(BaseModel):
 
 class KbGetConversionStatsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbGetConversionStatsOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbGetConversionStatsOutputBody.json"],
         ),
     ] = None
     """
@@ -3774,14 +3742,14 @@ class KbGetConversionStatsOutputBody(BaseModel):
 
 class KbGetNodeHistoryOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbGetNodeHistoryOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbGetNodeHistoryOutputBody.json"],
         ),
     ] = None
     """
@@ -3799,14 +3767,14 @@ class KbGetNodeHistoryOutputBody(BaseModel):
 
 class KbGetRecommendationsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbGetRecommendationsOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbGetRecommendationsOutputBody.json"],
         ),
     ] = None
     """
@@ -3824,12 +3792,12 @@ class KbGetRecommendationsOutputBody(BaseModel):
 
 class KbGetStatsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbGetStatsOutputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbGetStatsOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3854,14 +3822,14 @@ class KbGetStatsOutputBody(BaseModel):
 
 class KbGetTrendRankingsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbGetTrendRankingsOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbGetTrendRankingsOutputBody.json"],
         ),
     ] = None
     """
@@ -3879,12 +3847,12 @@ class KbGetTrendRankingsOutputBody(BaseModel):
 
 class KbGetTrendsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbGetTrendsOutputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbGetTrendsOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3901,14 +3869,12 @@ class KbGetTrendsOutputBody(BaseModel):
 
 class KbInsertFactsInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbInsertFactsInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbInsertFactsInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3929,14 +3895,12 @@ class KbInsertFactsInputBody(BaseModel):
 
 class KbInsertFactsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbInsertFactsOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbInsertFactsOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -3965,14 +3929,14 @@ class KbInsertFactsOutputBody(BaseModel):
 
 class KbListAnalyticsRulesOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbListAnalyticsRulesOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbListAnalyticsRulesOutputBody.json"],
         ),
     ] = None
     """
@@ -3990,14 +3954,12 @@ class KbListAnalyticsRulesOutputBody(BaseModel):
 
 class KbListDocumentsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbListDocumentsOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbListDocumentsOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4014,14 +3976,12 @@ class KbListDocumentsOutputBody(BaseModel):
 
 class KbPromoteNodeInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbPromoteNodeInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbPromoteNodeInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4034,14 +3994,12 @@ class KbPromoteNodeInputBody(BaseModel):
 
 class KbRecordFeedbackInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbRecordFeedbackInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbRecordFeedbackInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4074,14 +4032,14 @@ class KbRecordFeedbackInputBody(BaseModel):
 
 class KbRecordFeedbackOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbRecordFeedbackOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbRecordFeedbackOutputBody.json"],
         ),
     ] = None
     """
@@ -4095,7 +4053,7 @@ class KbRecordFeedbackOutputBody(BaseModel):
 
 class KbResolutionInfo(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     kb_label: str | None = None
@@ -4106,14 +4064,14 @@ class KbResolutionInfo(BaseModel):
 
 class KbRunAnalyticsRuleOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbRunAnalyticsRuleOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbRunAnalyticsRuleOutputBody.json"],
         ),
     ] = None
     """
@@ -4135,7 +4093,7 @@ class KbRunAnalyticsRuleOutputBody(BaseModel):
 
 class KbSearchResultItem(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -4148,14 +4106,14 @@ class KbSearchResultItem(BaseModel):
 
 class KbUpdateAnalyticsRuleInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbUpdateAnalyticsRuleInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbUpdateAnalyticsRuleInputBody.json"],
         ),
     ] = None
     """
@@ -4181,14 +4139,12 @@ class KbUpdateAnalyticsRuleInputBody(BaseModel):
 
 class KbUpdateSchemaInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbUpdateSchemaInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbUpdateSchemaInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4217,14 +4173,14 @@ class KbUpdateSchemaInputBody(BaseModel):
 
 class KbUploadDocumentOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbUploadDocumentOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbUploadDocumentOutputBody.json"],
         ),
     ] = None
     """
@@ -4258,14 +4214,12 @@ class KbUploadDocumentOutputBody(BaseModel):
 
 class ListBYOKKeysOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ListBYOKKeysOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListBYOKKeysOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4275,14 +4229,14 @@ class ListBYOKKeysOutputBody(BaseModel):
 
 class ListComposioAuditOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListComposioAuditOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListComposioAuditOutputBody.json"],
         ),
     ] = None
     """
@@ -4293,14 +4247,14 @@ class ListComposioAuditOutputBody(BaseModel):
 
 class ListComposioAvailableActionsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListComposioAvailableActionsOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListComposioAvailableActionsOutputBody.json"],
         ),
     ] = None
     """
@@ -4311,14 +4265,14 @@ class ListComposioAvailableActionsOutputBody(BaseModel):
 
 class ListComposioConnectionsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListComposioConnectionsOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListComposioConnectionsOutputBody.json"],
         ),
     ] = None
     """
@@ -4329,14 +4283,14 @@ class ListComposioConnectionsOutputBody(BaseModel):
 
 class ListCustomStatesOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListCustomStatesOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListCustomStatesOutputBody.json"],
         ),
     ] = None
     """
@@ -4350,14 +4304,12 @@ class ListCustomStatesOutputBody(BaseModel):
 
 class ListCustomToolsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ListCustomToolsOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListCustomToolsOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4370,14 +4322,14 @@ class ListCustomToolsOutputBody(BaseModel):
 
 class ListEnabledSkillsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListEnabledSkillsOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListEnabledSkillsOutputBody.json"],
         ),
     ] = None
     """
@@ -4388,14 +4340,14 @@ class ListEnabledSkillsOutputBody(BaseModel):
 
 class ListEvalTemplatesOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListEvalTemplatesOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListEvalTemplatesOutputBody.json"],
         ),
     ] = None
     """
@@ -4409,14 +4361,14 @@ class ListEvalTemplatesOutputBody(BaseModel):
 
 class ListImportJobUsersOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListImportJobUsersOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListImportJobUsersOutputBody.json"],
         ),
     ] = None
     """
@@ -4434,14 +4386,12 @@ class ListImportJobUsersOutputBody(BaseModel):
 
 class ListImportJobsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ListImportJobsOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListImportJobsOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4458,14 +4408,12 @@ class ListImportJobsOutputBody(BaseModel):
 
 class ListInstancesOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ListInstancesOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListInstancesOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4478,14 +4426,14 @@ class ListInstancesOutputBody(BaseModel):
 
 class ListWisdomAttributedOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListWisdomAttributedOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListWisdomAttributedOutputBody.json"],
         ),
     ] = None
     """
@@ -4496,14 +4444,12 @@ class ListWisdomAttributedOutputBody(BaseModel):
 
 class ListWisdomAuditOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ListWisdomAuditOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListWisdomAuditOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4513,14 +4459,14 @@ class ListWisdomAuditOutputBody(BaseModel):
 
 class ListWisdomRelationsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListWisdomRelationsOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListWisdomRelationsOutputBody.json"],
         ),
     ] = None
     """
@@ -4531,7 +4477,7 @@ class ListWisdomRelationsOutputBody(BaseModel):
 
 class LoadSkillInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     session_id: str
@@ -4546,7 +4492,7 @@ class LoadSkillInputBody(BaseModel):
 
 class LoadSkillOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -4556,7 +4502,7 @@ class LoadSkillOutputBody(BaseModel):
 
 class MCPCatalogAuth(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     bearer_secret_ref: str | None = None
@@ -4579,7 +4525,7 @@ class MCPCatalogAuth(BaseModel):
     """
     Header value (write only)
     """
-    kind: Literal['none', 'bearer', 'header', 'oauth']
+    kind: Literal["none", "bearer", "header", "oauth"]
     """
     Auth discriminator
     """
@@ -4587,12 +4533,12 @@ class MCPCatalogAuth(BaseModel):
 
 class MCPCatalogCreateBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MCPCatalogCreateBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/MCPCatalogCreateBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4600,7 +4546,7 @@ class MCPCatalogCreateBody(BaseModel):
     auth: MCPCatalogAuth
     description: str | None = None
     name: Annotated[str, Field(max_length=128, min_length=1)]
-    transport: Literal['streamable-http', 'sse']
+    transport: Literal["streamable-http", "sse"]
     url: AnyUrl
     """
     Must be HTTPS
@@ -4609,12 +4555,12 @@ class MCPCatalogCreateBody(BaseModel):
 
 class MCPCatalogUpdateBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MCPCatalogUpdateBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/MCPCatalogUpdateBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4628,14 +4574,12 @@ class MCPCatalogUpdateBody(BaseModel):
 
 class MCPCatalogUsagesResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/MCPCatalogUsagesResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/MCPCatalogUsagesResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4645,7 +4589,7 @@ class MCPCatalogUsagesResponse(BaseModel):
 
 class MCPHealthDTO(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     failures_1h: int
@@ -4658,12 +4602,12 @@ class MCPHealthDTO(BaseModel):
 
 class MCPProbeResponseBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MCPProbeResponseBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/MCPProbeResponseBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4676,7 +4620,7 @@ class MCPProbeResponseBody(BaseModel):
 
 class MCPToolDTO(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     description: str | None = None
@@ -4686,7 +4630,7 @@ class MCPToolDTO(BaseModel):
 
 class MemoryNode(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     access_count: int | None = None
@@ -4715,12 +4659,12 @@ class MemoryNode(BaseModel):
 
 class MemoryResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MemoryResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/MemoryResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4731,7 +4675,7 @@ class MemoryResponse(BaseModel):
 
 class MemorySummary(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_id: str
@@ -4748,12 +4692,12 @@ class MemorySummary(BaseModel):
 
 class MoodAggregateResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MoodAggregateResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/MoodAggregateResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4769,7 +4713,7 @@ class MoodAggregateResponse(BaseModel):
 
 class MoodHistoryEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     affiliation: float
@@ -4788,12 +4732,12 @@ class MoodHistoryEntry(BaseModel):
 
 class MoodHistoryResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MoodHistoryResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/MoodHistoryResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4803,7 +4747,7 @@ class MoodHistoryResponse(BaseModel):
 
 class MoodState(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     affiliation: float
@@ -4825,33 +4769,33 @@ class MoodState(BaseModel):
 
 class Node(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Node.json'])
+        AnyUrl | None, Field(alias="$schema", examples=["/api/v1/schemas/Node.json"])
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    agent_id: Annotated[str, Field(alias='AgentID')]
-    brightness: Annotated[float, Field(alias='Brightness')]
-    created_at: Annotated[AwareDatetime, Field(alias='CreatedAt')]
-    description: Annotated[str, Field(alias='Description')]
-    first_mentioned_at: Annotated[AwareDatetime, Field(alias='FirstMentionedAt')]
-    label: Annotated[str, Field(alias='Label')]
-    last_mentioned_at: Annotated[AwareDatetime, Field(alias='LastMentionedAt')]
-    mention_count: Annotated[int, Field(alias='MentionCount')]
-    node_id: Annotated[str, Field(alias='NodeID')]
-    node_type: Annotated[str, Field(alias='NodeType')]
-    significance: Annotated[float, Field(alias='Significance')]
-    updated_at: Annotated[AwareDatetime, Field(alias='UpdatedAt')]
-    user_id: Annotated[str, Field(alias='UserID')]
+    agent_id: Annotated[str, Field(alias="AgentID")]
+    brightness: Annotated[float, Field(alias="Brightness")]
+    created_at: Annotated[AwareDatetime, Field(alias="CreatedAt")]
+    description: Annotated[str, Field(alias="Description")]
+    first_mentioned_at: Annotated[AwareDatetime, Field(alias="FirstMentionedAt")]
+    label: Annotated[str, Field(alias="Label")]
+    last_mentioned_at: Annotated[AwareDatetime, Field(alias="LastMentionedAt")]
+    mention_count: Annotated[int, Field(alias="MentionCount")]
+    node_id: Annotated[str, Field(alias="NodeID")]
+    node_type: Annotated[str, Field(alias="NodeType")]
+    significance: Annotated[float, Field(alias="Significance")]
+    updated_at: Annotated[AwareDatetime, Field(alias="UpdatedAt")]
+    user_id: Annotated[str, Field(alias="UserID")]
 
 
 class Notification(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     acknowledged_at: AwareDatetime | None = None
@@ -4868,14 +4812,14 @@ class Notification(BaseModel):
 
 class OrgBillingCheckoutInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/OrgBillingCheckoutInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/OrgBillingCheckoutInputBody.json"],
         ),
     ] = None
     """
@@ -4893,20 +4837,20 @@ class OrgBillingCheckoutInputBody(BaseModel):
 
 class OrgBillingSubscribeInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/OrgBillingSubscribeInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/OrgBillingSubscribeInputBody.json"],
         ),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    contract_id: Annotated[str, Field(alias='contractId')]
+    contract_id: Annotated[str, Field(alias="contractId")]
     """
     Enterprise contract UUID to subscribe to
     """
@@ -4914,12 +4858,12 @@ class OrgBillingSubscribeInputBody(BaseModel):
 
 class OrgBillingURLBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/OrgBillingURLBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/OrgBillingURLBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -4929,14 +4873,14 @@ class OrgBillingURLBody(BaseModel):
 
 class OrgBillingVoucherInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/OrgBillingVoucherInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/OrgBillingVoucherInputBody.json"],
         ),
     ] = None
     """
@@ -4950,17 +4894,17 @@ class OrgBillingVoucherInputBody(BaseModel):
 
 class OrgModelPriceItem(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    input_price_per1_k: Annotated[float, Field(alias='inputPricePer1K')]
+    input_price_per1_k: Annotated[float, Field(alias="inputPricePer1K")]
     model: str
-    output_price_per1_k: Annotated[float, Field(alias='outputPricePer1K')]
+    output_price_per1_k: Annotated[float, Field(alias="outputPricePer1K")]
 
 
 class OrgResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     created_at: str
@@ -4973,45 +4917,39 @@ class OrgResponse(BaseModel):
 
 class OrgUsageSummaryBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/OrgUsageSummaryBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/OrgUsageSummaryBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    char_price_per_month_usd: Annotated[float, Field(alias='charPricePerMonthUsd')]
-    credit_balance_usd: Annotated[float, Field(alias='creditBalanceUsd')]
-    estimated_cost_usd: Annotated[float, Field(alias='estimatedCostUsd')]
-    input_token_price_per1_k_usd: Annotated[
-        float, Field(alias='inputTokenPricePer1KUsd')
-    ]
-    output_token_price_per1_k_usd: Annotated[
-        float, Field(alias='outputTokenPricePer1KUsd')
-    ]
-    token_price_per1_k_usd: Annotated[float, Field(alias='tokenPricePer1KUsd')]
-    total_characters: Annotated[int, Field(alias='totalCharacters')]
-    total_input_tokens: Annotated[int, Field(alias='totalInputTokens')]
-    total_messages: Annotated[int, Field(alias='totalMessages')]
-    total_output_tokens: Annotated[int, Field(alias='totalOutputTokens')]
-    total_projects: Annotated[int, Field(alias='totalProjects')]
-    total_sessions: Annotated[int, Field(alias='totalSessions')]
-    total_tokens: Annotated[int, Field(alias='totalTokens')]
+    char_price_per_month_usd: Annotated[float, Field(alias="charPricePerMonthUsd")]
+    credit_balance_usd: Annotated[float, Field(alias="creditBalanceUsd")]
+    estimated_cost_usd: Annotated[float, Field(alias="estimatedCostUsd")]
+    input_token_price_per1_k_usd: Annotated[float, Field(alias="inputTokenPricePer1KUsd")]
+    output_token_price_per1_k_usd: Annotated[float, Field(alias="outputTokenPricePer1KUsd")]
+    token_price_per1_k_usd: Annotated[float, Field(alias="tokenPricePer1KUsd")]
+    total_characters: Annotated[int, Field(alias="totalCharacters")]
+    total_input_tokens: Annotated[int, Field(alias="totalInputTokens")]
+    total_messages: Annotated[int, Field(alias="totalMessages")]
+    total_output_tokens: Annotated[int, Field(alias="totalOutputTokens")]
+    total_projects: Annotated[int, Field(alias="totalProjects")]
+    total_sessions: Annotated[int, Field(alias="totalSessions")]
+    total_tokens: Annotated[int, Field(alias="totalTokens")]
 
 
 class PaginatedAgentsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/PaginatedAgentsResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/PaginatedAgentsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5024,14 +4962,12 @@ class PaginatedAgentsResponse(BaseModel):
 
 class PaginatedEvalRunsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/PaginatedEvalRunsResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/PaginatedEvalRunsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5043,14 +4979,12 @@ class PaginatedEvalRunsResponse(BaseModel):
 
 class PatchScheduleInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/PatchScheduleInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/PatchScheduleInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5067,7 +5001,7 @@ class PatchScheduleInputBody(BaseModel):
 
 class PendingCapability(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     capability: str
@@ -5076,7 +5010,7 @@ class PendingCapability(BaseModel):
 
 class PersonalityDelta(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     applied_delta: float | None = None
@@ -5100,7 +5034,7 @@ class PersonalityDelta(BaseModel):
 
 class PersonalityDimensions(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     aesthetic: float
@@ -5117,7 +5051,7 @@ class PersonalityDimensions(BaseModel):
 
 class PersonalityShift(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     direction: str
@@ -5131,7 +5065,7 @@ class PersonalityShift(BaseModel):
 
 class Preferences(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     conversation_pace: str | None = None
@@ -5142,7 +5076,7 @@ class Preferences(BaseModel):
 
 class PrimeContentBlock(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     body: str
@@ -5151,7 +5085,7 @@ class PrimeContentBlock(BaseModel):
 
 class PrimeFact(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     atomic_text: str
@@ -5204,7 +5138,7 @@ class PrimeFact(BaseModel):
 
 class PrimeMessage(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -5220,7 +5154,7 @@ class PrimeMessage(BaseModel):
 
 class PrimeUserMetadata(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     company: str | None = None
@@ -5232,7 +5166,7 @@ class PrimeUserMetadata(BaseModel):
 
 class ProactiveNotificationEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_id: str
@@ -5249,14 +5183,14 @@ class ProactiveNotificationEntry(BaseModel):
 
 class ProactiveNotificationsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ProactiveNotificationsResponse.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ProactiveNotificationsResponse.json"],
         ),
     ] = None
     """
@@ -5267,7 +5201,7 @@ class ProactiveNotificationsResponse(BaseModel):
 
 class ProcessSideEffectsSummary(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     habits_observed: int
@@ -5278,7 +5212,7 @@ class ProcessSideEffectsSummary(BaseModel):
 
 class ProcessToolCallFunction(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     arguments: str
@@ -5287,16 +5221,18 @@ class ProcessToolCallFunction(BaseModel):
 
 class Project(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Project.json'])
+        AnyUrl | None, Field(alias="$schema", examples=["/api/v1/schemas/Project.json"])
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
+    business_name: str
     created_at: AwareDatetime
+    default_agent_kb_write: bool | None = None
     environment: str
     game_name: str
     is_active: bool
@@ -5307,7 +5243,7 @@ class Project(BaseModel):
 
 class ProjectAPIKey(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     created_at: AwareDatetime
@@ -5326,14 +5262,14 @@ class ProjectAPIKey(BaseModel):
 
 class ProjectNotificationsListOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ProjectNotificationsListOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ProjectNotificationsListOutputBody.json"],
         ),
     ] = None
     """
@@ -5351,31 +5287,31 @@ class ProjectNotificationsListOutputBody(BaseModel):
 
 class ProjectServiceCharge(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     active: bool
-    amount_usd: Annotated[float, Field(alias='amountUsd')]
-    billed_at: Annotated[AwareDatetime | None, Field(alias='billedAt')] = None
-    charge_id: Annotated[str, Field(alias='chargeId')]
-    charge_type: Annotated[str, Field(alias='chargeType')]
-    created_at: Annotated[AwareDatetime, Field(alias='createdAt')]
-    created_by: Annotated[str | None, Field(alias='createdBy')] = None
+    amount_usd: Annotated[float, Field(alias="amountUsd")]
+    billed_at: Annotated[AwareDatetime | None, Field(alias="billedAt")] = None
+    charge_id: Annotated[str, Field(alias="chargeId")]
+    charge_type: Annotated[str, Field(alias="chargeType")]
+    created_at: Annotated[AwareDatetime, Field(alias="createdAt")]
+    created_by: Annotated[str | None, Field(alias="createdBy")] = None
     description: str
-    project_id: Annotated[str | None, Field(alias='projectId')] = None
-    project_name: Annotated[str | None, Field(alias='projectName')] = None
-    tenant_id: Annotated[str, Field(alias='tenantId')]
-    updated_at: Annotated[AwareDatetime, Field(alias='updatedAt')]
+    project_id: Annotated[str | None, Field(alias="projectId")] = None
+    project_name: Annotated[str | None, Field(alias="projectName")] = None
+    tenant_id: Annotated[str, Field(alias="tenantId")]
+    updated_at: Annotated[AwareDatetime, Field(alias="updatedAt")]
 
 
 class ProjectSkillBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ProjectSkillBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ProjectSkillBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5400,7 +5336,7 @@ class ProjectSkillBody(BaseModel):
 
 class PropertySource(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     doc_id: str
@@ -5410,12 +5346,12 @@ class PropertySource(BaseModel):
 
 class PutBYOKKeyInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/PutBYOKKeyInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/PutBYOKKeyInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5428,12 +5364,12 @@ class PutBYOKKeyInputBody(BaseModel):
 
 class RecentShiftsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/RecentShiftsResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/RecentShiftsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5443,7 +5379,7 @@ class RecentShiftsResponse(BaseModel):
 
 class RecentTurn(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -5462,32 +5398,30 @@ class RecentTurn(BaseModel):
 
 class RedeemVoucherResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/RedeemVoucherResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/RedeemVoucherResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    credit_amount_usd: Annotated[float, Field(alias='creditAmountUsd')]
+    credit_amount_usd: Annotated[float, Field(alias="creditAmountUsd")]
     message: str
-    new_balance: Annotated[float, Field(alias='newBalance')]
-    voucher_code: Annotated[str, Field(alias='voucherCode')]
+    new_balance: Annotated[float, Field(alias="newBalance")]
+    voucher_code: Annotated[str, Field(alias="voucherCode")]
 
 
 class RegenerateAvatarInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/RegenerateAvatarInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/RegenerateAvatarInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5500,14 +5434,14 @@ class RegenerateAvatarInputBody(BaseModel):
 
 class RegenerateAvatarOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/RegenerateAvatarOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/RegenerateAvatarOutputBody.json"],
         ),
     ] = None
     """
@@ -5533,7 +5467,7 @@ class RegenerateAvatarOutputBody(BaseModel):
 
 class RelationshipEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     chemistry_score: int | None = None
@@ -5545,12 +5479,12 @@ class RelationshipEntry(BaseModel):
 
 class RelationshipsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/RelationshipsResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/RelationshipsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5560,14 +5494,14 @@ class RelationshipsResponse(BaseModel):
 
 class ReplaceWisdomAttributedInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ReplaceWisdomAttributedInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ReplaceWisdomAttributedInputBody.json"],
         ),
     ] = None
     """
@@ -5583,14 +5517,14 @@ class ReplaceWisdomAttributedInputBody(BaseModel):
 
 class ReplaceWisdomAttributedOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ReplaceWisdomAttributedOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ReplaceWisdomAttributedOutputBody.json"],
         ),
     ] = None
     """
@@ -5601,14 +5535,12 @@ class ReplaceWisdomAttributedOutputBody(BaseModel):
 
 class ResetInstanceOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ResetInstanceOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ResetInstanceOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5629,12 +5561,12 @@ class ResetInstanceOutputBody(BaseModel):
 
 class ResetMemoryResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ResetMemoryResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ResetMemoryResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5651,14 +5583,12 @@ class ResetMemoryResponse(BaseModel):
 
 class RevokeAPIKeyOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/RevokeAPIKeyOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/RevokeAPIKeyOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5668,14 +5598,14 @@ class RevokeAPIKeyOutputBody(BaseModel):
 
 class RotateSigningSecretOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/RotateSigningSecretOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/RotateSigningSecretOutputBody.json"],
         ),
     ] = None
     """
@@ -5693,12 +5623,12 @@ class RotateSigningSecretOutputBody(BaseModel):
 
 class RunningBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/RunningBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/RunningBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5715,12 +5645,12 @@ class RunningBody(BaseModel):
 
 class ScheduleDTO(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ScheduleDTO.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ScheduleDTO.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5744,14 +5674,12 @@ class ScheduleDTO(BaseModel):
 
 class ScheduleWakeupInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ScheduleWakeupInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ScheduleWakeupInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5792,14 +5720,12 @@ class ScheduleWakeupInputBody(BaseModel):
 
 class ScheduleWakeupOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ScheduleWakeupOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ScheduleWakeupOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -5816,7 +5742,7 @@ class ScheduleWakeupOutputBody(BaseModel):
 
 class SearchResult(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -5828,7 +5754,7 @@ class SearchResult(BaseModel):
 
 class SeedGeneratedMemory(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -5839,7 +5765,7 @@ class SeedGeneratedMemory(BaseModel):
     """
     Related entities
     """
-    fact_type: Annotated[str, Field(alias='factType')]
+    fact_type: Annotated[str, Field(alias="factType")]
     """
     Type of fact
     """
@@ -5851,35 +5777,33 @@ class SeedGeneratedMemory(BaseModel):
 
 class SeedIdentityMemoryTemplate(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     entities: list[str] | None = None
-    fact_type: Annotated[str, Field(alias='factType')]
+    fact_type: Annotated[str, Field(alias="factType")]
     importance: float
     template: str
 
 
 class SeedLoreGenerationContext(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    creator_onboarding_context: Annotated[
-        str | None, Field(alias='creatorOnboardingContext')
-    ] = None
-    entity_terminology: Annotated[
-        dict[str, str] | None, Field(alias='entityTerminology')
-    ] = None
-    origin_prompt_instructions: Annotated[
-        str | None, Field(alias='originPromptInstructions')
-    ] = None
-    world_description: Annotated[str, Field(alias='worldDescription')]
+    creator_onboarding_context: Annotated[str | None, Field(alias="creatorOnboardingContext")] = (
+        None
+    )
+    entity_terminology: Annotated[dict[str, str] | None, Field(alias="entityTerminology")] = None
+    origin_prompt_instructions: Annotated[str | None, Field(alias="originPromptInstructions")] = (
+        None
+    )
+    world_description: Annotated[str, Field(alias="worldDescription")]
 
 
 class SeedMemoryBig5(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agreeableness: float
@@ -5891,54 +5815,54 @@ class SeedMemoryBig5(BaseModel):
 
 class SeedStaticLoreMemory(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
     entities: list[str] | None = None
-    fact_type: Annotated[str, Field(alias='factType')]
+    fact_type: Annotated[str, Field(alias="factType")]
     importance: float
 
 
 class ServiceUsageByOp(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    charge_usd: Annotated[float, Field(alias='chargeUsd')]
+    charge_usd: Annotated[float, Field(alias="chargeUsd")]
     count: int
     operation: str
-    unit_price_usd: Annotated[float, Field(alias='unitPriceUsd')]
+    unit_price_usd: Annotated[float, Field(alias="unitPriceUsd")]
 
 
 class ServiceUsageSummary(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ServiceUsageSummary.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ServiceUsageSummary.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    by_operation: Annotated[list[ServiceUsageByOp] | None, Field(alias='byOperation')]
+    by_operation: Annotated[list[ServiceUsageByOp] | None, Field(alias="byOperation")]
     month: str
-    total_charge_usd: Annotated[float, Field(alias='totalChargeUsd')]
-    total_events: Annotated[int, Field(alias='totalEvents')]
+    total_charge_usd: Annotated[float, Field(alias="totalChargeUsd")]
+    total_events: Annotated[int, Field(alias="totalEvents")]
 
 
 class SessionEndStatusOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/SessionEndStatusOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/SessionEndStatusOutputBody.json"],
         ),
     ] = None
     """
@@ -5980,7 +5904,7 @@ class SessionEndStatusOutputBody(BaseModel):
 
 class SessionToolCallFunction(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     arguments: str
@@ -5995,7 +5919,7 @@ class SessionToolCallFunction(BaseModel):
 
 class SessionToolDef(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     description: str | None = None
@@ -6014,14 +5938,14 @@ class SessionToolDef(BaseModel):
 
 class SetAccountConfigOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/SetAccountConfigOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/SetAccountConfigOutputBody.json"],
         ),
     ] = None
     """
@@ -6032,14 +5956,12 @@ class SetAccountConfigOutputBody(BaseModel):
 
 class SetAgentStatusInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/SetAgentStatusInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/SetAgentStatusInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6052,14 +5974,12 @@ class SetAgentStatusInputBody(BaseModel):
 
 class SetAgentStatusOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/SetAgentStatusOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/SetAgentStatusOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6071,14 +5991,12 @@ class SetAgentStatusOutputBody(BaseModel):
 
 class SetBYOKActiveInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/SetBYOKActiveInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/SetBYOKActiveInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6088,14 +6006,14 @@ class SetBYOKActiveInputBody(BaseModel):
 
 class SetCustomLLMConfigInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/SetCustomLLMConfigInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/SetCustomLLMConfigInputBody.json"],
         ),
     ] = None
     """
@@ -6125,14 +6043,14 @@ class SetCustomLLMConfigInputBody(BaseModel):
 
 class SetProjectConfigOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/SetProjectConfigOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/SetProjectConfigOutputBody.json"],
         ),
     ] = None
     """
@@ -6143,14 +6061,12 @@ class SetProjectConfigOutputBody(BaseModel):
 
 class SetSessionToolsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/SetSessionToolsOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/SetSessionToolsOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6163,7 +6079,7 @@ class SetSessionToolsOutputBody(BaseModel):
 
 class SignificantMoment(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     created_at: str
@@ -6178,14 +6094,14 @@ class SignificantMoment(BaseModel):
 
 class SignificantMomentsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/SignificantMomentsResponse.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/SignificantMomentsResponse.json"],
         ),
     ] = None
     """
@@ -6196,7 +6112,7 @@ class SignificantMomentsResponse(BaseModel):
 
 class SimConfig(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     disable_ce_enrichment: bool | None = None
@@ -6213,12 +6129,12 @@ class SimConfig(BaseModel):
 
 class SimulateRunningBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SimulateRunningBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/SimulateRunningBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6235,11 +6151,11 @@ class SimulateRunningBody(BaseModel):
 
 class Skill(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Skill.json'])
+        AnyUrl | None, Field(alias="$schema", examples=["/api/v1/schemas/Skill.json"])
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6260,12 +6176,12 @@ class Skill(BaseModel):
 
 class SpeechToTextInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SpeechToTextInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/SpeechToTextInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6274,7 +6190,7 @@ class SpeechToTextInputBody(BaseModel):
     """
     Base64-encoded audio data
     """
-    audio_format: Annotated[str, Field(alias='audioFormat')]
+    audio_format: Annotated[str, Field(alias="audioFormat")]
     """
     Audio format (e.g. wav, mp3)
     """
@@ -6286,12 +6202,12 @@ class SpeechToTextInputBody(BaseModel):
 
 class StartSessionInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/StartSessionInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/StartSessionInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6328,14 +6244,12 @@ class StartSessionInputBody(BaseModel):
 
 class StartSessionOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/StartSessionOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/StartSessionOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6348,7 +6262,7 @@ class StartSessionOutputBody(BaseModel):
 
 class StoredFact(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     confidence: float
@@ -6368,12 +6282,12 @@ class StoredFact(BaseModel):
 
 class Storefront(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/Storefront.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/Storefront.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6401,12 +6315,12 @@ class Storefront(BaseModel):
 
 class StorefrontAgent(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/StorefrontAgent.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/StorefrontAgent.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6430,14 +6344,12 @@ class StorefrontAgent(BaseModel):
 
 class StorefrontGetOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/StorefrontGetOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/StorefrontGetOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6448,14 +6360,14 @@ class StorefrontGetOutputBody(BaseModel):
 
 class StorefrontListAgentsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/StorefrontListAgentsOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/StorefrontListAgentsOutputBody.json"],
         ),
     ] = None
     """
@@ -6466,14 +6378,12 @@ class StorefrontListAgentsOutputBody(BaseModel):
 
 class StorefrontUpdateInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/StorefrontUpdateInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/StorefrontUpdateInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6518,14 +6428,14 @@ class StorefrontUpdateInputBody(BaseModel):
 
 class StorefrontUpsertAgentInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/StorefrontUpsertAgentInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/StorefrontUpsertAgentInputBody.json"],
         ),
     ] = None
     """
@@ -6559,7 +6469,7 @@ class StorefrontUpsertAgentInputBody(BaseModel):
 
 class StructuredImportSpec(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     column_mapping: dict[str, ColumnMappingSpec]
@@ -6570,12 +6480,12 @@ class StructuredImportSpec(BaseModel):
 
 class SummariesResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SummariesResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/SummariesResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6585,12 +6495,12 @@ class SummariesResponse(BaseModel):
 
 class SupportTicketComment(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SupportTicketComment.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/SupportTicketComment.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6607,7 +6517,7 @@ class SupportTicketComment(BaseModel):
 
 class SupportTicketHistory(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     changed_by: str
@@ -6622,11 +6532,11 @@ class SupportTicketHistory(BaseModel):
 
 class Tenant(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Tenant.json'])
+        AnyUrl | None, Field(alias="$schema", examples=["/api/v1/schemas/Tenant.json"])
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6642,62 +6552,58 @@ class Tenant(BaseModel):
 
 class TenantBillingLedgerEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    amount_credits: Annotated[float, Field(alias='amountCredits')]
-    amount_usd: Annotated[float, Field(alias='amountUsd')]
-    created_at: Annotated[AwareDatetime, Field(alias='createdAt')]
-    created_by: Annotated[str | None, Field(alias='createdBy')] = None
+    amount_credits: Annotated[float, Field(alias="amountCredits")]
+    amount_usd: Annotated[float, Field(alias="amountUsd")]
+    created_at: Annotated[AwareDatetime, Field(alias="createdAt")]
+    created_by: Annotated[str | None, Field(alias="createdBy")] = None
     description: str
-    entry_id: Annotated[str, Field(alias='entryId')]
-    entry_type: Annotated[str, Field(alias='entryType')]
-    tenant_id: Annotated[str, Field(alias='tenantId')]
+    entry_id: Annotated[str, Field(alias="entryId")]
+    entry_type: Annotated[str, Field(alias="entryType")]
+    tenant_id: Annotated[str, Field(alias="tenantId")]
     tokens: int
-    traffic_source: Annotated[str | None, Field(alias='trafficSource')] = None
+    traffic_source: Annotated[str | None, Field(alias="trafficSource")] = None
 
 
 class TenantBillingProfile(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TenantBillingProfile.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/TenantBillingProfile.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    billing_mode: Annotated[str, Field(alias='billingMode')]
-    char_price_per_month_usd: Annotated[float, Field(alias='charPricePerMonthUsd')]
-    credit_balance: Annotated[float, Field(alias='creditBalance')]
+    billing_mode: Annotated[str, Field(alias="billingMode")]
+    char_price_per_month_usd: Annotated[float, Field(alias="charPricePerMonthUsd")]
+    credit_balance: Annotated[float, Field(alias="creditBalance")]
     currency: str
-    event_prices: Annotated[dict[str, float], Field(alias='eventPrices')]
-    free_credit_granted: Annotated[bool, Field(alias='freeCreditGranted')]
-    input_token_price_per1_k_usd: Annotated[
-        float, Field(alias='inputTokenPricePer1KUsd')
-    ]
-    output_token_price_per1_k_usd: Annotated[
-        float, Field(alias='outputTokenPricePer1KUsd')
-    ]
-    outstanding_usd: Annotated[float, Field(alias='outstandingUsd')]
-    postpaid_limit_usd: Annotated[float, Field(alias='postpaidLimitUsd')]
-    service_prices: Annotated[dict[str, float], Field(alias='servicePrices')]
-    stripe_customer_id: Annotated[str | None, Field(alias='stripeCustomerId')] = None
-    tenant_id: Annotated[str, Field(alias='tenantId')]
-    token_price_per1_k_usd: Annotated[float, Field(alias='tokenPricePer1KUsd')]
-    updated_at: Annotated[AwareDatetime, Field(alias='updatedAt')]
+    event_prices: Annotated[dict[str, float], Field(alias="eventPrices")]
+    free_credit_granted: Annotated[bool, Field(alias="freeCreditGranted")]
+    input_token_price_per1_k_usd: Annotated[float, Field(alias="inputTokenPricePer1KUsd")]
+    output_token_price_per1_k_usd: Annotated[float, Field(alias="outputTokenPricePer1KUsd")]
+    outstanding_usd: Annotated[float, Field(alias="outstandingUsd")]
+    postpaid_limit_usd: Annotated[float, Field(alias="postpaidLimitUsd")]
+    service_prices: Annotated[dict[str, float], Field(alias="servicePrices")]
+    stripe_customer_id: Annotated[str | None, Field(alias="stripeCustomerId")] = None
+    tenant_id: Annotated[str, Field(alias="tenantId")]
+    token_price_per1_k_usd: Annotated[float, Field(alias="tokenPricePer1KUsd")]
+    updated_at: Annotated[AwareDatetime, Field(alias="updatedAt")]
 
 
 class TextToSpeechInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TextToSpeechInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/TextToSpeechInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6706,7 +6612,7 @@ class TextToSpeechInputBody(BaseModel):
     """
     Language code (e.g. en-US)
     """
-    output_format: Annotated[str | None, Field(alias='outputFormat')] = None
+    output_format: Annotated[str | None, Field(alias="outputFormat")] = None
     """
     Audio output format
     """
@@ -6714,7 +6620,7 @@ class TextToSpeechInputBody(BaseModel):
     """
     Text to convert to speech
     """
-    voice_name: Annotated[str | None, Field(alias='voiceName')] = None
+    voice_name: Annotated[str | None, Field(alias="voiceName")] = None
     """
     Voice name to use
     """
@@ -6722,7 +6628,7 @@ class TextToSpeechInputBody(BaseModel):
 
 class TicketSummary(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     assigned_to_email: str | None = None
@@ -6739,7 +6645,7 @@ class TicketSummary(BaseModel):
 
 class TimeMachineMoodSnapshot(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     affiliation: float
@@ -6751,7 +6657,7 @@ class TimeMachineMoodSnapshot(BaseModel):
 
 class TimelineSession(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     fact_count: int
@@ -6763,14 +6669,14 @@ class TimelineSession(BaseModel):
 
 class ToggleEnabledSkillInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ToggleEnabledSkillInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ToggleEnabledSkillInputBody.json"],
         ),
     ] = None
     """
@@ -6788,14 +6694,14 @@ class ToggleEnabledSkillInputBody(BaseModel):
 
 class ToggleEnabledSkillOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ToggleEnabledSkillOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ToggleEnabledSkillOutputBody.json"],
         ),
     ] = None
     """
@@ -6807,7 +6713,7 @@ class ToggleEnabledSkillOutputBody(BaseModel):
 
 class ToolSchemaEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     description: str
@@ -6830,7 +6736,7 @@ class ToolSchemaEntry(BaseModel):
 
 class TraitPrecision(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     last_updated_at: AwareDatetime
@@ -6840,20 +6746,20 @@ class TraitPrecision(BaseModel):
 
 class TriggerConsolidationInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/TriggerConsolidationInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/TriggerConsolidationInputBody.json"],
         ),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    period: Literal['daily', 'weekly']
+    period: Literal["daily", "weekly"]
     """
     Consolidation period: 'daily' or 'weekly'
     """
@@ -6865,14 +6771,14 @@ class TriggerConsolidationInputBody(BaseModel):
 
 class TriggerConsolidationOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/TriggerConsolidationOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/TriggerConsolidationOutputBody.json"],
         ),
     ] = None
     """
@@ -6886,12 +6792,12 @@ class TriggerConsolidationOutputBody(BaseModel):
 
 class TriggerEventInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TriggerEventInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/TriggerEventInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6928,14 +6834,12 @@ class TriggerEventInputBody(BaseModel):
 
 class TriggerEventOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/TriggerEventOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/TriggerEventOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -6952,7 +6856,7 @@ class TriggerEventOutputBody(BaseModel):
 
 class Turn(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     user_message: str
@@ -6960,7 +6864,7 @@ class Turn(BaseModel):
 
 class TurnFetchNextContext(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     language: str | None = None
@@ -6979,7 +6883,7 @@ class TurnFetchNextContext(BaseModel):
 
 class TurnMood(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     affiliation: float
@@ -7010,12 +6914,12 @@ class TurnMood(BaseModel):
 
 class TurnResponseBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TurnResponseBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/TurnResponseBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7044,12 +6948,12 @@ class TurnResponseBody(BaseModel):
 
 class TurnStatusOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TurnStatusOutputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/TurnStatusOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7070,7 +6974,7 @@ class TurnStatusOutputBody(BaseModel):
 
 class TurnToolCallFunction(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     arguments: str
@@ -7079,14 +6983,14 @@ class TurnToolCallFunction(BaseModel):
 
 class UpcomingScheduleOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpcomingScheduleOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpcomingScheduleOutputBody.json"],
         ),
     ] = None
     """
@@ -7097,14 +7001,14 @@ class UpcomingScheduleOutputBody(BaseModel):
 
 class UpdateAgentPostProcessingModelInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentPostProcessingModelInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateAgentPostProcessingModelInputBody.json"],
         ),
     ] = None
     """
@@ -7122,14 +7026,14 @@ class UpdateAgentPostProcessingModelInputBody(BaseModel):
 
 class UpdateAgentPostProcessingModelOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentPostProcessingModelOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateAgentPostProcessingModelOutputBody.json"],
         ),
     ] = None
     """
@@ -7142,14 +7046,14 @@ class UpdateAgentPostProcessingModelOutputBody(BaseModel):
 
 class UpdateAgentProfileInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentProfileInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateAgentProfileInputBody.json"],
         ),
     ] = None
     """
@@ -7183,14 +7087,14 @@ class UpdateAgentProfileInputBody(BaseModel):
 
 class UpdateAgentProfileOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentProfileOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateAgentProfileOutputBody.json"],
         ),
     ] = None
     """
@@ -7201,14 +7105,14 @@ class UpdateAgentProfileOutputBody(BaseModel):
 
 class UpdateAgentProjectInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentProjectInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateAgentProjectInputBody.json"],
         ),
     ] = None
     """
@@ -7222,14 +7126,14 @@ class UpdateAgentProjectInputBody(BaseModel):
 
 class UpdateAgentProjectOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateAgentProjectOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateAgentProjectOutputBody.json"],
         ),
     ] = None
     """
@@ -7240,20 +7144,28 @@ class UpdateAgentProjectOutputBody(BaseModel):
 
 class UpdateCapabilitiesInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateCapabilitiesInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateCapabilitiesInputBody.json"],
         ),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    image_generation: Annotated[bool | None, Field(alias='imageGeneration')] = None
+    auto_learn_skills: Annotated[bool | None, Field(alias="autoLearnSkills")] = None
+    """
+    Enable/disable agent-authored skills (sonzai_create_skill / sonzai_update_skill tools). Requires skills to also be enabled — otherwise force-cleared to false.
+    """
+    composio: bool | None = None
+    """
+    Enable/disable per-agent Composio SaaS integrations (Gmail, Calendar, Slack, GitHub, Linear, etc.). Tools are declared dynamically based on which apps the admin has connected for the agent.
+    """
+    image_generation: Annotated[bool | None, Field(alias="imageGeneration")] = None
     """
     Enable/disable image generation
     """
@@ -7261,46 +7173,61 @@ class UpdateCapabilitiesInputBody(BaseModel):
     """
     Enable/disable inventory tracking
     """
-    knowledge_base: Annotated[bool | None, Field(alias='knowledgeBase')] = None
+    knowledge_base: Annotated[bool | None, Field(alias="knowledgeBase")] = None
     """
     Enable/disable knowledge base search
     """
-    knowledge_base_write: Annotated[bool | None, Field(alias='knowledgeBaseWrite')] = (
-        None
-    )
+    knowledge_base_scope_mode: Annotated[
+        Literal["project_only", "org_only", "cascade", "union"] | None,
+        Field(alias="knowledgeBaseScopeMode"),
+    ] = None
+    """
+    How the agent reads across project and organization-global KB scopes. project_only (default) reads only the agent's own project. cascade and union read both, with project winning collisions in cascade. org_only reads org-global only.
+    """
+    knowledge_base_write: Annotated[bool | None, Field(alias="knowledgeBaseWrite")] = None
     """
     Enable/disable knowledge base write tools (knowledge_create/_update/_delete). Requires knowledgeBase to be enabled.
     """
-    mcp_enabled: Annotated[list[str] | None, Field(alias='mcpEnabled')] = None
+    mcp_enabled: Annotated[list[str] | None, Field(alias="mcpEnabled")] = None
     """
     IDs of project MCP catalog entries this agent uses
     """
-    memory_mode: Annotated[
-        Literal['sync', 'async'] | None, Field(alias='memoryMode')
-    ] = None
+    memory_mode: Annotated[Literal["sync", "async"] | None, Field(alias="memoryMode")] = None
     """
     Supplementary memory recall timing. 'sync' (default) blocks context build until recall returns so facts land in the current turn. 'async' lets the recall race a deadline — slow hits spill to the next turn for lower first-response latency.
     """
-    remember_name: Annotated[bool | None, Field(alias='rememberName')] = None
+    remember_name: Annotated[bool | None, Field(alias="rememberName")] = None
     """
     Enable/disable remember name tool
     """
-    web_search: Annotated[bool | None, Field(alias='webSearch')] = None
+    shared_memory: Annotated[bool | None, Field(alias="sharedMemory")] = None
+    """
+    Enable/disable person/entity-attributed memory shared across users of this agent (teams, parties, business context). Off by default. Requires wisdom.
+    """
+    skills: bool | None = None
+    """
+    Enable/disable project-library skill loading. When on, the agent's prompt auto-includes the skills index and the sonzai_load_skill tool is registered. Required precondition for autoLearnSkills.
+    """
+    web_search: Annotated[bool | None, Field(alias="webSearch")] = None
     """
     Enable/disable web search tool
+    """
+    wisdom: bool | None = None
+    """
+    Enable/disable the base wisdom (de-attributed cross-user generalization) pipeline. Default ON; pass false to disable. Required precondition for sharedMemory.
     """
 
 
 class UpdateConstellationNodeInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateConstellationNodeInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateConstellationNodeInputBody.json"],
         ),
     ] = None
     """
@@ -7326,14 +7253,14 @@ class UpdateConstellationNodeInputBody(BaseModel):
 
 class UpdateCustomStateInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateCustomStateInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateCustomStateInputBody.json"],
         ),
     ] = None
     """
@@ -7351,14 +7278,12 @@ class UpdateCustomStateInputBody(BaseModel):
 
 class UpdateCustomToolInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/UpdateCustomToolInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpdateCustomToolInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7375,14 +7300,14 @@ class UpdateCustomToolInputBody(BaseModel):
 
 class UpdateCustomToolOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateCustomToolOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateCustomToolOutputBody.json"],
         ),
     ] = None
     """
@@ -7393,14 +7318,14 @@ class UpdateCustomToolOutputBody(BaseModel):
 
 class UpdateEvalTemplateInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateEvalTemplateInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateEvalTemplateInputBody.json"],
         ),
     ] = None
     """
@@ -7438,12 +7363,12 @@ class UpdateEvalTemplateInputBody(BaseModel):
 
 class UpdateFactInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdateFactInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpdateFactInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7476,12 +7401,12 @@ class UpdateFactInputBody(BaseModel):
 
 class UpdateGoalInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdateGoalInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpdateGoalInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7514,12 +7439,12 @@ class UpdateGoalInputBody(BaseModel):
 
 class UpdateHabitInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdateHabitInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpdateHabitInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7548,14 +7473,12 @@ class UpdateHabitInputBody(BaseModel):
 
 class UpdateInstanceInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/UpdateInstanceInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpdateInstanceInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7576,12 +7499,12 @@ class UpdateInstanceInputBody(BaseModel):
 
 class UpdateMetadataRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdateMetadataRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpdateMetadataRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7596,12 +7519,12 @@ class UpdateMetadataRequest(BaseModel):
 
 class UpdatePayload(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdatePayload.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpdatePayload.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7612,12 +7535,12 @@ class UpdatePayload(BaseModel):
 
 class UpdatePersonalityBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UpdatePersonalityBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpdatePersonalityBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7634,14 +7557,14 @@ class UpdatePersonalityBody(BaseModel):
 
 class UpdatePersonalityOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdatePersonalityOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdatePersonalityOutputBody.json"],
         ),
     ] = None
     """
@@ -7655,17 +7578,23 @@ class UpdatePersonalityOutputBody(BaseModel):
 
 class UpdateProjectInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/UpdateProjectInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpdateProjectInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
+    """
+    business_name: str | None = None
+    """
+    Public-facing display name for this business / project. Replaces the legacy game_name field; either is accepted, business_name wins when both are set.
+    """
+    default_agent_kb_write: bool | None = None
+    """
+    Project-level default for autonomous KB editing by agents. true = agents default to on; false = explicitly disabled; null/omitted = leave unchanged.
     """
     environment: str | None = None
     """
@@ -7673,7 +7602,7 @@ class UpdateProjectInputBody(BaseModel):
     """
     game_name: str | None = None
     """
-    Display name shown in the game
+    Deprecated alias for business_name. Use business_name for new code.
     """
     name: str | None = None
     """
@@ -7683,14 +7612,14 @@ class UpdateProjectInputBody(BaseModel):
 
 class UpdateProjectSkillInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateProjectSkillInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateProjectSkillInputBody.json"],
         ),
     ] = None
     """
@@ -7712,14 +7641,14 @@ class UpdateProjectSkillInputBody(BaseModel):
 
 class UpdateUserPersonaInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateUserPersonaInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateUserPersonaInputBody.json"],
         ),
     ] = None
     """
@@ -7741,14 +7670,14 @@ class UpdateUserPersonaInputBody(BaseModel):
 
 class UpsertCustomStateByKeyInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpsertCustomStateByKeyInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpsertCustomStateByKeyInputBody.json"],
         ),
     ] = None
     """
@@ -7782,14 +7711,14 @@ class UpsertCustomStateByKeyInputBody(BaseModel):
 
 class UpsertWebhookForTenantInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpsertWebhookForTenantInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpsertWebhookForTenantInputBody.json"],
         ),
     ] = None
     """
@@ -7807,14 +7736,12 @@ class UpsertWebhookForTenantInputBody(BaseModel):
 
 class UpsertWebhookInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/UpsertWebhookInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpsertWebhookInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7831,14 +7758,12 @@ class UpsertWebhookInputBody(BaseModel):
 
 class UpsertWebhookOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/UpsertWebhookOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/UpsertWebhookOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7855,34 +7780,34 @@ class UpsertWebhookOutputBody(BaseModel):
 
 class UsageByProject(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    cache_tokens: Annotated[int, Field(alias='cacheTokens')]
-    cost_usd: Annotated[float, Field(alias='costUsd')]
-    input_tokens: Annotated[int, Field(alias='inputTokens')]
-    output_tokens: Annotated[int, Field(alias='outputTokens')]
-    project_id: Annotated[str, Field(alias='projectId')]
-    project_name: Annotated[str, Field(alias='projectName')]
+    cache_tokens: Annotated[int, Field(alias="cacheTokens")]
+    cost_usd: Annotated[float, Field(alias="costUsd")]
+    input_tokens: Annotated[int, Field(alias="inputTokens")]
+    output_tokens: Annotated[int, Field(alias="outputTokens")]
+    project_id: Annotated[str, Field(alias="projectId")]
+    project_name: Annotated[str, Field(alias="projectName")]
     turns: int
 
 
 class UsageDailyEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    cache_tokens: Annotated[int, Field(alias='cacheTokens')]
-    cost_usd: Annotated[float, Field(alias='costUsd')]
+    cache_tokens: Annotated[int, Field(alias="cacheTokens")]
+    cost_usd: Annotated[float, Field(alias="costUsd")]
     date: str
-    input_tokens: Annotated[int, Field(alias='inputTokens')]
-    output_tokens: Annotated[int, Field(alias='outputTokens')]
+    input_tokens: Annotated[int, Field(alias="inputTokens")]
+    output_tokens: Annotated[int, Field(alias="outputTokens")]
     turns: int
 
 
 class UsageResponsePeriodStruct(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     end: str
@@ -7891,7 +7816,7 @@ class UsageResponsePeriodStruct(BaseModel):
 
 class UserMetadata(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     custom: dict[str, str] | None = None
@@ -7901,7 +7826,7 @@ class UserMetadata(BaseModel):
 
 class UserPersona(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     description: str
@@ -7911,12 +7836,12 @@ class UserPersona(BaseModel):
 
 class UserPersonaRecord(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UserPersonaRecord.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/UserPersonaRecord.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -7933,39 +7858,39 @@ class UserPersonaRecord(BaseModel):
 
 class UserPrimingMetadata(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UserPrimingMetadata.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/UserPrimingMetadata.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    agent_id: Annotated[str, Field(alias='AgentID')]
-    company: Annotated[str, Field(alias='Company')]
-    created_at: Annotated[AwareDatetime, Field(alias='CreatedAt')]
-    custom_fields: Annotated[dict[str, str], Field(alias='CustomFields')]
-    display_name: Annotated[str, Field(alias='DisplayName')]
-    email: Annotated[str, Field(alias='Email')]
-    facts_count: Annotated[int, Field(alias='FactsCount')]
-    first_met_at: Annotated[AwareDatetime | None, Field(alias='FirstMetAt')]
-    linkedin_url: Annotated[str, Field(alias='LinkedinURL')]
-    phone: Annotated[str, Field(alias='Phone')]
-    primed_at: Annotated[AwareDatetime, Field(alias='PrimedAt')]
-    source_id: Annotated[str, Field(alias='SourceID')]
-    source_type: Annotated[str, Field(alias='SourceType')]
-    timezone: Annotated[str, Field(alias='Timezone')]
-    title: Annotated[str, Field(alias='Title')]
-    updated_at: Annotated[AwareDatetime, Field(alias='UpdatedAt')]
-    user_id: Annotated[str, Field(alias='UserID')]
-    warmth_score: Annotated[int, Field(alias='WarmthScore')]
+    agent_id: Annotated[str, Field(alias="AgentID")]
+    company: Annotated[str, Field(alias="Company")]
+    created_at: Annotated[AwareDatetime, Field(alias="CreatedAt")]
+    custom_fields: Annotated[dict[str, str], Field(alias="CustomFields")]
+    display_name: Annotated[str, Field(alias="DisplayName")]
+    email: Annotated[str, Field(alias="Email")]
+    facts_count: Annotated[int, Field(alias="FactsCount")]
+    first_met_at: Annotated[AwareDatetime | None, Field(alias="FirstMetAt")]
+    linkedin_url: Annotated[str, Field(alias="LinkedinURL")]
+    phone: Annotated[str, Field(alias="Phone")]
+    primed_at: Annotated[AwareDatetime, Field(alias="PrimedAt")]
+    source_id: Annotated[str, Field(alias="SourceID")]
+    source_type: Annotated[str, Field(alias="SourceType")]
+    timezone: Annotated[str, Field(alias="Timezone")]
+    title: Annotated[str, Field(alias="Title")]
+    updated_at: Annotated[AwareDatetime, Field(alias="UpdatedAt")]
+    user_id: Annotated[str, Field(alias="UserID")]
+    warmth_score: Annotated[int, Field(alias="WarmthScore")]
 
 
 class VoiceConfig(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     language: str | None = None
@@ -7974,7 +7899,7 @@ class VoiceConfig(BaseModel):
 
 class VoiceInfo(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     gender: str
@@ -7983,21 +7908,17 @@ class VoiceInfo(BaseModel):
 
 class VoiceLiveWSTokenInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/VoiceLiveWSTokenInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/VoiceLiveWSTokenInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    compiled_system_prompt: Annotated[
-        str | None, Field(alias='compiledSystemPrompt')
-    ] = None
+    compiled_system_prompt: Annotated[str | None, Field(alias="compiledSystemPrompt")] = None
     """
     Pre-compiled system prompt for the voice session
     """
@@ -8005,11 +7926,11 @@ class VoiceLiveWSTokenInputBody(BaseModel):
     """
     Language code (default: en-US)
     """
-    user_id: Annotated[str | None, Field(alias='userId')] = None
+    user_id: Annotated[str | None, Field(alias="userId")] = None
     """
     User ID (auto-detected from auth if omitted)
     """
-    voice_name: Annotated[str | None, Field(alias='voiceName')] = None
+    voice_name: Annotated[str | None, Field(alias="voiceName")] = None
     """
     Gemini voice name (default: Kore)
     """
@@ -8017,24 +7938,24 @@ class VoiceLiveWSTokenInputBody(BaseModel):
 
 class VoiceLiveWSTokenOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/VoiceLiveWSTokenOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/VoiceLiveWSTokenOutputBody.json"],
         ),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    auth_token: Annotated[str, Field(alias='authToken')]
+    auth_token: Annotated[str, Field(alias="authToken")]
     """
     Short-lived authentication token
     """
-    ws_url: Annotated[str, Field(alias='wsUrl')]
+    ws_url: Annotated[str, Field(alias="wsUrl")]
     """
     WebSocket URL for the voice live session
     """
@@ -8042,7 +7963,7 @@ class VoiceLiveWSTokenOutputBody(BaseModel):
 
 class WakeupEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_id: str
@@ -8063,12 +7984,12 @@ class WakeupEntry(BaseModel):
 
 class WakeupsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/WakeupsResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/WakeupsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8078,7 +7999,7 @@ class WakeupsResponse(BaseModel):
 
 class Webhook(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     auth_header: str | None = None
@@ -8092,7 +8013,7 @@ class Webhook(BaseModel):
 
 class WebhookDeliveryAttempt(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     attempt_id: str
@@ -8111,12 +8032,12 @@ class WebhookDeliveryAttempt(BaseModel):
 
 class WisdomAuditResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/WisdomAuditResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/WisdomAuditResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8132,10 +8053,10 @@ class WisdomAuditResponse(BaseModel):
 
 class WisdomDisclosureHookInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    decision: Literal['disclosed', 'redacted'] | None = None
+    decision: Literal["disclosed", "redacted"] | None = None
     """
     Decision type; defaults to "disclosed" when empty
     """
@@ -8159,7 +8080,7 @@ class WisdomDisclosureHookInputBody(BaseModel):
 
 class WisdomDisclosureHookOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     recorded: int
@@ -8167,12 +8088,12 @@ class WisdomDisclosureHookOutputBody(BaseModel):
 
 class WisdomImportInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/WisdomImportInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/WisdomImportInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8185,7 +8106,7 @@ class WisdomImportInputBody(BaseModel):
     """
     When true, validate each row but do not persist; response carries accept/reject counts as normal.
     """
-    format: Literal['json', 'csv']
+    format: Literal["json", "csv"]
     """
     Payload encoding
     """
@@ -8193,7 +8114,7 @@ class WisdomImportInputBody(BaseModel):
 
 class WisdomImportReject(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     reason: str
@@ -8202,12 +8123,12 @@ class WisdomImportReject(BaseModel):
 
 class WisdomImportResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/WisdomImportResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/WisdomImportResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8219,7 +8140,7 @@ class WisdomImportResponse(BaseModel):
 
 class WorkbenchAdvanceTimeResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     consolidation_processed: int
@@ -8233,14 +8154,12 @@ class WorkbenchAdvanceTimeResponse(BaseModel):
 
 class WorkbenchGenerateBioBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/WorkbenchGenerateBioBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/WorkbenchGenerateBioBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8252,7 +8171,7 @@ class WorkbenchGenerateBioBody(BaseModel):
 
 class WorkbenchGenerateCharacterBehaviors(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     conflict_approach: str
@@ -8263,7 +8182,7 @@ class WorkbenchGenerateCharacterBehaviors(BaseModel):
 
 class WorkbenchGenerateCharacterBig5(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agreeableness: float
@@ -8276,7 +8195,7 @@ class WorkbenchGenerateCharacterBig5(BaseModel):
 
 class WorkbenchGenerateCharacterGoal(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     description: str
@@ -8287,7 +8206,7 @@ class WorkbenchGenerateCharacterGoal(BaseModel):
 
 class WorkbenchGenerateCharacterPreferences(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     conversation_pace: str
@@ -8298,23 +8217,23 @@ class WorkbenchGenerateCharacterPreferences(BaseModel):
 
 class WorkbenchGenerateCharacterUsage(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
-    completion_tokens: Annotated[int, Field(alias='completionTokens')]
+    completion_tokens: Annotated[int, Field(alias="completionTokens")]
     model: str | None = None
-    prompt_tokens: Annotated[int, Field(alias='promptTokens')]
-    total_tokens: Annotated[int, Field(alias='totalTokens')]
+    prompt_tokens: Annotated[int, Field(alias="promptTokens")]
+    total_tokens: Annotated[int, Field(alias="totalTokens")]
 
 
 class WorkbenchPrepareBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/WorkbenchPrepareBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/WorkbenchPrepareBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8327,14 +8246,12 @@ class WorkbenchPrepareBody(BaseModel):
 
 class WorkbenchResetAgentBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/WorkbenchResetAgentBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/WorkbenchResetAgentBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8346,25 +8263,23 @@ class WorkbenchResetAgentBody(BaseModel):
 
 class WorkbenchSeedMemoryItem(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
     entities: list[str] | None = None
-    fact_type: Annotated[str, Field(alias='factType')]
+    fact_type: Annotated[str, Field(alias="factType")]
     importance: float
 
 
 class WorkbenchSessionEndBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/WorkbenchSessionEndBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/WorkbenchSessionEndBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8374,14 +8289,12 @@ class WorkbenchSessionEndBody(BaseModel):
 
 class WorkbenchSimulateUserBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/WorkbenchSimulateUserBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/WorkbenchSimulateUserBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8392,7 +8305,7 @@ class WorkbenchSimulateUserBody(BaseModel):
 
 class WorkbenchStateBig5(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agreeableness: float
@@ -8404,7 +8317,7 @@ class WorkbenchStateBig5(BaseModel):
 
 class WorkbenchStateDiaryEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str
@@ -8415,7 +8328,7 @@ class WorkbenchStateDiaryEntry(BaseModel):
 
 class WorkbenchStateDimensions(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     aesthetic: float
@@ -8432,7 +8345,7 @@ class WorkbenchStateDimensions(BaseModel):
 
 class WorkbenchStateFact(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     entities: list[str] | None = None
@@ -8445,7 +8358,7 @@ class WorkbenchStateFact(BaseModel):
 
 class WorkbenchStateHabit(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     category: str
@@ -8456,7 +8369,7 @@ class WorkbenchStateHabit(BaseModel):
 
 class WorkbenchStateInterest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     category: str
@@ -8466,7 +8379,7 @@ class WorkbenchStateInterest(BaseModel):
 
 class WorkbenchStateMood(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     affiliation: float
@@ -8478,7 +8391,7 @@ class WorkbenchStateMood(BaseModel):
 
 class WorkbenchStateRelation(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_to_user: int
@@ -8487,14 +8400,12 @@ class WorkbenchStateRelation(BaseModel):
 
 class WorkbenchStateResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/WorkbenchStateResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/WorkbenchStateResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8512,12 +8423,12 @@ class WorkbenchStateResponse(BaseModel):
 
 class AddContentRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AddContentRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/AddContentRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8528,74 +8439,54 @@ class AddContentRequest(BaseModel):
 
 class AgentCapabilities(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AgentCapabilities.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/AgentCapabilities.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    auto_learn_skills: Annotated[bool | None, Field(alias='autoLearnSkills')] = None
+    auto_learn_skills: Annotated[bool | None, Field(alias="autoLearnSkills")] = None
     composio: bool | None = None
-    custom_tools: Annotated[
-        list[CustomToolDefinition] | None, Field(alias='customTools')
-    ] = None
-    image_generation: Annotated[bool, Field(alias='imageGeneration')]
-    image_unlocked_at: Annotated[
-        AwareDatetime | None, Field(alias='imageUnlockedAt')
-    ] = None
+    custom_tools: Annotated[list[CustomToolDefinition] | None, Field(alias="customTools")] = None
+    image_generation: Annotated[bool, Field(alias="imageGeneration")]
+    image_unlocked_at: Annotated[AwareDatetime | None, Field(alias="imageUnlockedAt")] = None
     inventory: bool | None = None
-    knowledge_base: Annotated[bool | None, Field(alias='knowledgeBase')] = None
-    knowledge_base_project_id: Annotated[
-        str | None, Field(alias='knowledgeBaseProjectId')
-    ] = None
-    knowledge_base_scope_mode: Annotated[
-        str | None, Field(alias='knowledgeBaseScopeMode')
-    ] = None
-    knowledge_base_write: Annotated[bool | None, Field(alias='knowledgeBaseWrite')] = (
-        None
-    )
+    knowledge_base: Annotated[bool | None, Field(alias="knowledgeBase")] = None
+    knowledge_base_project_id: Annotated[str | None, Field(alias="knowledgeBaseProjectId")] = None
+    knowledge_base_scope_mode: Annotated[str | None, Field(alias="knowledgeBaseScopeMode")] = None
+    knowledge_base_write: Annotated[bool | None, Field(alias="knowledgeBaseWrite")] = None
     mcp_enabled: list[str] | None = None
-    memory_mode: Annotated[str | None, Field(alias='memoryMode')] = None
-    music_generation: Annotated[bool, Field(alias='musicGeneration')]
-    music_unlocked_at: Annotated[
-        AwareDatetime | None, Field(alias='musicUnlockedAt')
-    ] = None
+    memory_mode: Annotated[str | None, Field(alias="memoryMode")] = None
+    music_generation: Annotated[bool, Field(alias="musicGeneration")]
+    music_unlocked_at: Annotated[AwareDatetime | None, Field(alias="musicUnlockedAt")] = None
     pending_capabilities: Annotated[
-        list[PendingCapability] | None, Field(alias='pendingCapabilities')
+        list[PendingCapability] | None, Field(alias="pendingCapabilities")
     ] = None
-    remember_name: Annotated[bool | None, Field(alias='rememberName')] = None
+    remember_name: Annotated[bool | None, Field(alias="rememberName")] = None
+    shared_memory: Annotated[bool | None, Field(alias="sharedMemory")] = None
     skills: bool | None = None
-    video_generation: Annotated[bool, Field(alias='videoGeneration')]
-    video_unlocked_at: Annotated[
-        AwareDatetime | None, Field(alias='videoUnlockedAt')
-    ] = None
-    voice_generation: Annotated[bool, Field(alias='voiceGeneration')]
-    voice_id: Annotated[str | None, Field(alias='voiceId')] = None
-    voice_tier: Annotated[int | None, Field(alias='voiceTier')] = None
-    voice_unlocked_at: Annotated[
-        AwareDatetime | None, Field(alias='voiceUnlockedAt')
-    ] = None
-    web_search: Annotated[bool | None, Field(alias='webSearch')] = None
+    video_generation: Annotated[bool, Field(alias="videoGeneration")]
+    video_unlocked_at: Annotated[AwareDatetime | None, Field(alias="videoUnlockedAt")] = None
+    voice_generation: Annotated[bool, Field(alias="voiceGeneration")]
+    voice_id: Annotated[str | None, Field(alias="voiceId")] = None
+    voice_tier: Annotated[int | None, Field(alias="voiceTier")] = None
+    voice_unlocked_at: Annotated[AwareDatetime | None, Field(alias="voiceUnlockedAt")] = None
+    web_search: Annotated[bool | None, Field(alias="webSearch")] = None
     wisdom: bool | None = None
-    wisdom_public_sharing: Annotated[
-        bool | None, Field(alias='wisdomPublicSharing')
-    ] = None
 
 
 class AgentDialogueInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/AgentDialogueInputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/AgentDialogueInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8632,14 +8523,12 @@ class AgentDialogueInputBody(BaseModel):
 
 class AnalyticsRealtimeResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/AnalyticsRealtimeResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/AnalyticsRealtimeResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8650,7 +8539,7 @@ class AnalyticsRealtimeResponse(BaseModel):
 
 class BatchImportUser(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: list[PrimeContentBlock] | None = None
@@ -8664,7 +8553,7 @@ class BatchImportUser(BaseModel):
 
 class Big5Assessment(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agreeableness: Big5Trait
@@ -8676,7 +8565,7 @@ class Big5Assessment(BaseModel):
 
 class ChatSSEChoice(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     delta: ChatSSEDelta
@@ -8695,12 +8584,12 @@ class ChatSSEChoice(BaseModel):
 
 class ChatSSEChunk(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ChatSSEChunk.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ChatSSEChunk.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8753,14 +8642,14 @@ class ChatSSEChunk(BaseModel):
 
 class ComposioConnectCallbackOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ComposioConnectCallbackOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ComposioConnectCallbackOutputBody.json"],
         ),
     ] = None
     """
@@ -8772,12 +8661,12 @@ class ComposioConnectCallbackOutputBody(BaseModel):
 
 class ComposioUsageResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ComposioUsageResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ComposioUsageResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8789,12 +8678,12 @@ class ComposioUsageResponse(BaseModel):
 
 class ConstellationResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ConstellationResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ConstellationResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8806,65 +8695,59 @@ class ConstellationResponse(BaseModel):
 
 class CostBreakdownResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CostBreakdownResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CostBreakdownResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    by_agent: Annotated[list[CostBreakdownEntry] | None, Field(alias='byAgent')]
-    by_model: Annotated[list[CostBreakdownEntry] | None, Field(alias='byModel')]
-    by_operation: Annotated[list[CostBreakdownEntry] | None, Field(alias='byOperation')]
+    by_agent: Annotated[list[CostBreakdownEntry] | None, Field(alias="byAgent")]
+    by_model: Annotated[list[CostBreakdownEntry] | None, Field(alias="byModel")]
+    by_operation: Annotated[list[CostBreakdownEntry] | None, Field(alias="byOperation")]
     period: CostBreakdownResponsePeriodStruct
-    total_cache_tokens: Annotated[int, Field(alias='totalCacheTokens')]
-    total_cost_usd: Annotated[float, Field(alias='totalCostUsd')]
-    total_input_tokens: Annotated[int, Field(alias='totalInputTokens')]
-    total_output_tokens: Annotated[int, Field(alias='totalOutputTokens')]
+    total_cache_tokens: Annotated[int, Field(alias="totalCacheTokens")]
+    total_cost_usd: Annotated[float, Field(alias="totalCostUsd")]
+    total_input_tokens: Annotated[int, Field(alias="totalInputTokens")]
+    total_output_tokens: Annotated[int, Field(alias="totalOutputTokens")]
 
 
 class CostResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CostResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CostResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    by_billing_mode: Annotated[
-        list[CostByBillingMode] | None, Field(alias='byBillingMode')
-    ] = None
-    by_character: Annotated[
-        list[CostByCharacter] | None, Field(alias='byCharacter')
-    ] = None
-    by_project: Annotated[list[CostByProject] | None, Field(alias='byProject')] = None
-    by_service: Annotated[list[CostByService] | None, Field(alias='byService')] = None
+    by_billing_mode: Annotated[list[CostByBillingMode] | None, Field(alias="byBillingMode")] = None
+    by_character: Annotated[list[CostByCharacter] | None, Field(alias="byCharacter")] = None
+    by_project: Annotated[list[CostByProject] | None, Field(alias="byProject")] = None
+    by_service: Annotated[list[CostByService] | None, Field(alias="byService")] = None
     by_traffic_source: Annotated[
-        list[CostByTrafficSource] | None, Field(alias='byTrafficSource')
+        list[CostByTrafficSource] | None, Field(alias="byTrafficSource")
     ] = None
     daily: list[CostDailyEntry] | None
-    daily_by_mode: Annotated[
-        list[CostDailyByMode] | None, Field(alias='dailyByMode')
-    ] = None
+    daily_by_mode: Annotated[list[CostDailyByMode] | None, Field(alias="dailyByMode")] = None
     period: CostResponsePeriodStruct
     summary: CostSummary
 
 
 class CreateAgentBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/CreateAgentBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/CreateAgentBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -8977,14 +8860,14 @@ class CreateAgentBody(BaseModel):
 
 class CreateEvalTemplateInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/CreateEvalTemplateInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/CreateEvalTemplateInputBody.json"],
         ),
     ] = None
     """
@@ -9026,7 +8909,7 @@ class CreateEvalTemplateInputBody(BaseModel):
 
 class EvalAgentConfigOverride(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     behaviors: Behaviors | None = None
@@ -9089,12 +8972,12 @@ class EvalAgentConfigOverride(BaseModel):
 
 class EvaluateRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EvaluateRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/EvaluateRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9143,20 +9026,20 @@ class EvaluateRequest(BaseModel):
 
 class GenerateSeedMemoriesInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/GenerateSeedMemoriesInputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/GenerateSeedMemoriesInputBody.json"],
         ),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    agent_name: Annotated[str, Field(alias='agentName')]
+    agent_name: Annotated[str, Field(alias="agentName")]
     """
     Agent display name
     """
@@ -9164,59 +9047,55 @@ class GenerateSeedMemoriesInputBody(BaseModel):
     """
     Big Five personality scores
     """
-    creator_display_name: Annotated[str | None, Field(alias='creatorDisplayName')] = (
-        None
-    )
+    creator_display_name: Annotated[str | None, Field(alias="creatorDisplayName")] = None
     """
     Creator's display name
     """
-    generate_origin_story: Annotated[
-        bool | None, Field(alias='generateOriginStory')
-    ] = None
+    generate_origin_story: Annotated[bool | None, Field(alias="generateOriginStory")] = None
     """
     Whether to generate origin story
     """
     generate_personalized_memories: Annotated[
-        bool | None, Field(alias='generatePersonalizedMemories')
+        bool | None, Field(alias="generatePersonalizedMemories")
     ] = None
     """
     Whether to generate personalized memories
     """
     identity_memory_templates: Annotated[
-        list[SeedIdentityMemoryTemplate] | None, Field(alias='identityMemoryTemplates')
+        list[SeedIdentityMemoryTemplate] | None, Field(alias="identityMemoryTemplates")
     ] = None
     """
     Identity memory templates
     """
     lore_generation_context: Annotated[
-        SeedLoreGenerationContext | None, Field(alias='loreGenerationContext')
+        SeedLoreGenerationContext | None, Field(alias="loreGenerationContext")
     ] = None
     """
     Lore generation context
     """
-    personality_prompt: Annotated[str, Field(alias='personalityPrompt')]
+    personality_prompt: Annotated[str, Field(alias="personalityPrompt")]
     """
     Personality prompt text
     """
-    primary_traits: Annotated[list[str] | None, Field(alias='primaryTraits')] = None
+    primary_traits: Annotated[list[str] | None, Field(alias="primaryTraits")] = None
     """
     Primary personality traits
     """
-    speech_patterns: Annotated[list[str] | None, Field(alias='speechPatterns')]
+    speech_patterns: Annotated[list[str] | None, Field(alias="speechPatterns")]
     """
     Agent's speech patterns
     """
     static_lore_memories: Annotated[
-        list[SeedStaticLoreMemory] | None, Field(alias='staticLoreMemories')
+        list[SeedStaticLoreMemory] | None, Field(alias="staticLoreMemories")
     ] = None
     """
     Pre-defined lore memories
     """
-    true_dislikes: Annotated[list[str] | None, Field(alias='trueDislikes')] = None
+    true_dislikes: Annotated[list[str] | None, Field(alias="trueDislikes")] = None
     """
     Agent's true dislikes
     """
-    true_interests: Annotated[list[str] | None, Field(alias='trueInterests')]
+    true_interests: Annotated[list[str] | None, Field(alias="trueInterests")]
     """
     Agent's true interests
     """
@@ -9224,14 +9103,14 @@ class GenerateSeedMemoriesInputBody(BaseModel):
 
 class GenerateSeedMemoriesOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/GenerateSeedMemoriesOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/GenerateSeedMemoriesOutputBody.json"],
         ),
     ] = None
     """
@@ -9245,14 +9124,12 @@ class GenerateSeedMemoriesOutputBody(BaseModel):
 
 class GetToolSchemasOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/GetToolSchemasOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/GetToolSchemasOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9265,14 +9142,12 @@ class GetToolSchemasOutputBody(BaseModel):
 
 class InventoryWriteResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/InventoryWriteResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/InventoryWriteResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9287,12 +9162,12 @@ class InventoryWriteResponse(BaseModel):
 
 class KBEntitySchema(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KBEntitySchema.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KBEntitySchema.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9310,11 +9185,11 @@ class KBEntitySchema(BaseModel):
 
 class KBNode(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
-        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/KBNode.json'])
+        AnyUrl | None, Field(alias="$schema", examples=["/api/v1/schemas/KBNode.json"])
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9339,12 +9214,12 @@ class KBNode(BaseModel):
 
 class KBNodeWithScope(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KBNodeWithScope.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KBNodeWithScope.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9371,12 +9246,12 @@ class KBNodeWithScope(BaseModel):
 
 class KBSearchResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KBSearchResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KBSearchResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9388,14 +9263,14 @@ class KBSearchResponse(BaseModel):
 
 class KbAgentCreateNodeOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbAgentCreateNodeOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbAgentCreateNodeOutputBody.json"],
         ),
     ] = None
     """
@@ -9409,14 +9284,14 @@ class KbAgentCreateNodeOutputBody(BaseModel):
 
 class KbAgentUpdateNodeOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/KbAgentUpdateNodeOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/KbAgentUpdateNodeOutputBody.json"],
         ),
     ] = None
     """
@@ -9430,12 +9305,12 @@ class KbAgentUpdateNodeOutputBody(BaseModel):
 
 class KbGetNodeOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbGetNodeOutputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbGetNodeOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9460,12 +9335,12 @@ class KbGetNodeOutputBody(BaseModel):
 
 class KbListNodesOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbListNodesOutputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbListNodesOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9482,14 +9357,12 @@ class KbListNodesOutputBody(BaseModel):
 
 class KbListOrgNodesOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbListOrgNodesOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbListOrgNodesOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9500,14 +9373,12 @@ class KbListOrgNodesOutputBody(BaseModel):
 
 class KbListSchemasOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/KbListSchemasOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbListSchemasOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9524,12 +9395,12 @@ class KbListSchemasOutputBody(BaseModel):
 
 class KbSearchResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/KbSearchResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/KbSearchResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9540,12 +9411,12 @@ class KbSearchResponse(BaseModel):
 
 class ListAllFactsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ListAllFactsResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListAllFactsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9556,12 +9427,12 @@ class ListAllFactsResponse(BaseModel):
 
 class ListFactsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ListFactsResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListFactsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9573,14 +9444,14 @@ class ListFactsResponse(BaseModel):
 
 class ListProjectSkillsOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListProjectSkillsOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListProjectSkillsOutputBody.json"],
         ),
     ] = None
     """
@@ -9591,14 +9462,12 @@ class ListProjectSkillsOutputBody(BaseModel):
 
 class ListSchedulesOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ListSchedulesOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListSchedulesOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9608,14 +9477,14 @@ class ListSchedulesOutputBody(BaseModel):
 
 class ListUserPersonasOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/ListUserPersonasOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/ListUserPersonasOutputBody.json"],
         ),
     ] = None
     """
@@ -9629,12 +9498,12 @@ class ListUserPersonasOutputBody(BaseModel):
 
 class ListVoicesResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ListVoicesResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListVoicesResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9644,14 +9513,12 @@ class ListVoicesResponse(BaseModel):
 
 class ListWebhooksOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ListWebhooksOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListWebhooksOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9664,12 +9531,12 @@ class ListWebhooksOutputBody(BaseModel):
 
 class MCPCatalogEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MCPCatalogEntry.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/MCPCatalogEntry.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9687,14 +9554,12 @@ class MCPCatalogEntry(BaseModel):
 
 class MCPCatalogToolsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/MCPCatalogToolsResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/MCPCatalogToolsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9704,12 +9569,12 @@ class MCPCatalogToolsResponse(BaseModel):
 
 class MeResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MeResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/MeResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9721,12 +9586,12 @@ class MeResponse(BaseModel):
 
 class MoodResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/MoodResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/MoodResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9736,14 +9601,14 @@ class MoodResponse(BaseModel):
 
 class PaginatedDeliveryAttemptsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/PaginatedDeliveryAttemptsResponse.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/PaginatedDeliveryAttemptsResponse.json"],
         ),
     ] = None
     """
@@ -9756,14 +9621,12 @@ class PaginatedDeliveryAttemptsResponse(BaseModel):
 
 class PaginatedProjectsResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/PaginatedProjectsResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/PaginatedProjectsResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9775,7 +9638,7 @@ class PaginatedProjectsResponse(BaseModel):
 
 class PersonalityProfile(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_id: str
@@ -9800,12 +9663,12 @@ class PersonalityProfile(BaseModel):
 
 class PersonalityResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/PersonalityResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/PersonalityResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9816,12 +9679,12 @@ class PersonalityResponse(BaseModel):
 
 class PrimeUserRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/PrimeUserRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/PrimeUserRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9850,12 +9713,12 @@ class PrimeUserRequest(BaseModel):
 
 class ProcessResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ProcessResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ProcessResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9868,7 +9731,7 @@ class ProcessResponse(BaseModel):
 
 class ProcessToolCall(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     function: ProcessToolCallFunction
@@ -9878,12 +9741,12 @@ class ProcessToolCall(BaseModel):
 
 class SearchResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SearchResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/SearchResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9893,7 +9756,7 @@ class SearchResponse(BaseModel):
 
 class SessionConfig(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     name: str
@@ -9903,7 +9766,7 @@ class SessionConfig(BaseModel):
 
 class SessionToolCall(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     function: SessionToolCallFunction
@@ -9919,12 +9782,12 @@ class SessionToolCall(BaseModel):
 
 class SimulateRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SimulateRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/SimulateRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9957,12 +9820,12 @@ class SimulateRequest(BaseModel):
 
 class SupportTicket(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/SupportTicket.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/SupportTicket.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -9987,12 +9850,12 @@ class SupportTicket(BaseModel):
 
 class TicketDetailResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TicketDetailResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/TicketDetailResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10003,12 +9866,12 @@ class TicketDetailResponse(BaseModel):
 
 class TicketListResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TicketListResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/TicketListResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10020,12 +9883,12 @@ class TicketListResponse(BaseModel):
 
 class TimeMachineResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TimeMachineResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/TimeMachineResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10039,12 +9902,12 @@ class TimeMachineResponse(BaseModel):
 
 class TimelineResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TimelineResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/TimelineResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10055,7 +9918,7 @@ class TimelineResponse(BaseModel):
 
 class TurnToolCall(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     function: TurnToolCallFunction
@@ -10065,14 +9928,14 @@ class TurnToolCall(BaseModel):
 
 class UpdateUserMetadataHumaOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/UpdateUserMetadataHumaOutputBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/UpdateUserMetadataHumaOutputBody.json"],
         ),
     ] = None
     """
@@ -10090,29 +9953,29 @@ class UpdateUserMetadataHumaOutputBody(BaseModel):
 
 class UsageResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UsageResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/UsageResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    by_project: Annotated[list[UsageByProject] | None, Field(alias='byProject')]
+    by_project: Annotated[list[UsageByProject] | None, Field(alias="byProject")]
     daily: list[UsageDailyEntry] | None
     period: UsageResponsePeriodStruct
-    total_cache_tokens: Annotated[int, Field(alias='totalCacheTokens')]
-    total_cost_usd: Annotated[float, Field(alias='totalCostUsd')]
-    total_input_tokens: Annotated[int, Field(alias='totalInputTokens')]
-    total_output_tokens: Annotated[int, Field(alias='totalOutputTokens')]
-    total_turns: Annotated[int, Field(alias='totalTurns')]
+    total_cache_tokens: Annotated[int, Field(alias="totalCacheTokens")]
+    total_cost_usd: Annotated[float, Field(alias="totalCostUsd")]
+    total_input_tokens: Annotated[int, Field(alias="totalInputTokens")]
+    total_output_tokens: Annotated[int, Field(alias="totalOutputTokens")]
+    total_turns: Annotated[int, Field(alias="totalTurns")]
 
 
 class UserEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     created_at: str | None = None
@@ -10126,7 +9989,7 @@ class UserEntry(BaseModel):
 
 class UserOverlayResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     agent_id: str
@@ -10142,14 +10005,12 @@ class UserOverlayResponse(BaseModel):
 
 class UserOverlaysListResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/UserOverlaysListResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/UserOverlaysListResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10159,12 +10020,12 @@ class UserOverlaysListResponse(BaseModel):
 
 class UsersResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/UsersResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/UsersResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10176,14 +10037,14 @@ class UsersResponse(BaseModel):
 
 class WorkbenchAdvanceTimeJobBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/WorkbenchAdvanceTimeJobBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/WorkbenchAdvanceTimeJobBody.json"],
         ),
     ] = None
     """
@@ -10204,7 +10065,7 @@ class WorkbenchAdvanceTimeJobBody(BaseModel):
 
 class WorkbenchGenerateCharacterGenerated(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     behaviors: WorkbenchGenerateCharacterBehaviors | None = None
@@ -10224,14 +10085,14 @@ class WorkbenchGenerateCharacterGenerated(BaseModel):
 
 class WorkbenchGenerateSeedMemoriesBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/WorkbenchGenerateSeedMemoriesBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/WorkbenchGenerateSeedMemoriesBody.json"],
         ),
     ] = None
     """
@@ -10242,12 +10103,12 @@ class WorkbenchGenerateSeedMemoriesBody(BaseModel):
 
 class AgentDetailResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/AgentDetailResponse.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/AgentDetailResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10280,12 +10141,12 @@ class AgentDetailResponse(BaseModel):
 
 class BatchImportRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/BatchImportRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/BatchImportRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10296,7 +10157,7 @@ class BatchImportRequest(BaseModel):
 
 class BatchPersonalityEntry(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     evolution_count: int
@@ -10305,14 +10166,12 @@ class BatchPersonalityEntry(BaseModel):
 
 class BatchPersonalityResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/BatchPersonalityResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/BatchPersonalityResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10322,14 +10181,12 @@ class BatchPersonalityResponse(BaseModel):
 
 class ListMCPCatalogOutputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/ListMCPCatalogOutputBody.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/ListMCPCatalogOutputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10342,23 +10199,23 @@ class ListMCPCatalogOutputBody(BaseModel):
 
 class ProcessMessage(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str | None = None
-    role: Literal['user', 'assistant', 'tool', 'system']
+    role: Literal["user", "assistant", "tool", "system"]
     tool_call_id: str | None = None
     tool_calls: list[ProcessToolCall] | None = None
 
 
 class RunEvalRequest(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/RunEvalRequest.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/RunEvalRequest.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10399,14 +10256,14 @@ class RunEvalRequest(BaseModel):
 
 class SessionMessage(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str | None = None
     """
     Message content; null for assistant messages that only call tools
     """
-    role: Literal['user', 'assistant', 'tool', 'system']
+    role: Literal["user", "assistant", "tool", "system"]
     """
     Message role
     """
@@ -10422,14 +10279,14 @@ class SessionMessage(BaseModel):
 
 class TurnMessage(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     content: str | None = None
     """
     Message content; null for assistant messages that only call tools
     """
-    role: Literal['user', 'assistant', 'tool', 'system']
+    role: Literal["user", "assistant", "tool", "system"]
     """
     Message role
     """
@@ -10445,23 +10302,23 @@ class TurnMessage(BaseModel):
 
 class TurnRequestBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/TurnRequestBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/TurnRequestBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    fetch_next_context: Annotated[
-        TurnFetchNextContext | None, Field(alias='fetchNextContext')
-    ] = None
+    fetch_next_context: Annotated[TurnFetchNextContext | None, Field(alias="fetchNextContext")] = (
+        None
+    )
     """
     When set, /turn fetches an enriched context (same shape as GET /context) and includes it in the response under next_context.
     """
-    instance_id: Annotated[str | None, Field(alias='instanceId')] = None
+    instance_id: Annotated[str | None, Field(alias="instanceId")] = None
     """
     Optional agent instance scope
     """
@@ -10477,15 +10334,15 @@ class TurnRequestBody(BaseModel):
     """
     Per-call caller-supplied LLM provider (e.g. anthropic). Both provider and model must be set together to take effect.
     """
-    user_display_name: Annotated[str | None, Field(alias='userDisplayName')] = None
+    user_display_name: Annotated[str | None, Field(alias="userDisplayName")] = None
     """
     Optional user display name; threaded through to per-turn extraction
     """
-    user_id: Annotated[str, Field(alias='userId')]
+    user_id: Annotated[str, Field(alias="userId")]
     """
     ID of the user submitting the turn
     """
-    user_timezone: Annotated[str | None, Field(alias='userTimezone')] = None
+    user_timezone: Annotated[str | None, Field(alias="userTimezone")] = None
     """
     Optional IANA timezone (e.g. America/Los_Angeles); threaded through to per-turn extraction
     """
@@ -10493,14 +10350,12 @@ class TurnRequestBody(BaseModel):
 
 class UserOverlayDetailResponse(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(
-            alias='$schema', examples=['/api/v1/schemas/UserOverlayDetailResponse.json']
-        ),
+        Field(alias="$schema", examples=["/api/v1/schemas/UserOverlayDetailResponse.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10512,14 +10367,14 @@ class UserOverlayDetailResponse(BaseModel):
 
 class WorkbenchGenerateCharacterBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
         Field(
-            alias='$schema',
-            examples=['/api/v1/schemas/WorkbenchGenerateCharacterBody.json'],
+            alias="$schema",
+            examples=["/api/v1/schemas/WorkbenchGenerateCharacterBody.json"],
         ),
     ] = None
     """
@@ -10533,12 +10388,12 @@ class WorkbenchGenerateCharacterBody(BaseModel):
 
 class EndSessionInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/EndSessionInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/EndSessionInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
@@ -10591,17 +10446,17 @@ class EndSessionInputBody(BaseModel):
 
 class ProcessInputBody(BaseModel):
     model_config = ConfigDict(
-        extra='forbid',
+        extra="forbid",
         populate_by_name=True,
     )
     field_schema: Annotated[
         AnyUrl | None,
-        Field(alias='$schema', examples=['/api/v1/schemas/ProcessInputBody.json']),
+        Field(alias="$schema", examples=["/api/v1/schemas/ProcessInputBody.json"]),
     ] = None
     """
     A URL to the JSON Schema for this object.
     """
-    instance_id: Annotated[str | None, Field(alias='instanceId')] = None
+    instance_id: Annotated[str | None, Field(alias="instanceId")] = None
     """
     Agent instance scope
     """
@@ -10617,11 +10472,11 @@ class ProcessInputBody(BaseModel):
     """
     LLM provider (informational only)
     """
-    session_id: Annotated[str | None, Field(alias='sessionId')] = None
+    session_id: Annotated[str | None, Field(alias="sessionId")] = None
     """
     Session identifier (auto-generated if empty)
     """
-    user_id: Annotated[str, Field(alias='userId')]
+    user_id: Annotated[str, Field(alias="userId")]
     """
     ID of the user whose conversation is being processed
     """

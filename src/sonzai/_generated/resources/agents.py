@@ -193,25 +193,37 @@ class Agents(_AgentsBase):
         self,
         agent_id: str,
         *,
+        auto_learn_skills: bool | None = None,
+        composio: bool | None = None,
         image_generation: bool | None = None,
         inventory: bool | None = None,
         knowledge_base: bool | None = None,
+        knowledge_base_scope_mode: str | None = None,
         knowledge_base_write: bool | None = None,
         mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
         remember_name: bool | None = None,
+        shared_memory: bool | None = None,
+        skills: bool | None = None,
         web_search: bool | None = None,
+        wisdom: bool | None = None,
     ) -> AgentCapabilities:
         """Patch agent capabilities"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/capabilities"
         params = None
         _raw: dict[str, Any] = {}
+        if auto_learn_skills is not None:
+            _raw["autoLearnSkills"] = auto_learn_skills
+        if composio is not None:
+            _raw["composio"] = composio
         if image_generation is not None:
             _raw["imageGeneration"] = image_generation
         if inventory is not None:
             _raw["inventory"] = inventory
         if knowledge_base is not None:
             _raw["knowledgeBase"] = knowledge_base
+        if knowledge_base_scope_mode is not None:
+            _raw["knowledgeBaseScopeMode"] = knowledge_base_scope_mode
         if knowledge_base_write is not None:
             _raw["knowledgeBaseWrite"] = knowledge_base_write
         if mcp_enabled is not None:
@@ -220,8 +232,14 @@ class Agents(_AgentsBase):
             _raw["memoryMode"] = memory_mode
         if remember_name is not None:
             _raw["rememberName"] = remember_name
+        if shared_memory is not None:
+            _raw["sharedMemory"] = shared_memory
+        if skills is not None:
+            _raw["skills"] = skills
         if web_search is not None:
             _raw["webSearch"] = web_search
+        if wisdom is not None:
+            _raw["wisdom"] = wisdom
         body = encode_body(UpdateCapabilitiesInputBody, _raw)
         data = self._http.patch(path, params=params, json_data=body)
         return AgentCapabilities.model_validate(data)
@@ -230,25 +248,37 @@ class Agents(_AgentsBase):
         self,
         agent_id: str,
         *,
+        auto_learn_skills: bool | None = None,
+        composio: bool | None = None,
         image_generation: bool | None = None,
         inventory: bool | None = None,
         knowledge_base: bool | None = None,
+        knowledge_base_scope_mode: str | None = None,
         knowledge_base_write: bool | None = None,
         mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
         remember_name: bool | None = None,
+        shared_memory: bool | None = None,
+        skills: bool | None = None,
         web_search: bool | None = None,
+        wisdom: bool | None = None,
     ) -> AgentCapabilities:
         """Update agent capabilities"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/capabilities"
         params = None
         _raw: dict[str, Any] = {}
+        if auto_learn_skills is not None:
+            _raw["autoLearnSkills"] = auto_learn_skills
+        if composio is not None:
+            _raw["composio"] = composio
         if image_generation is not None:
             _raw["imageGeneration"] = image_generation
         if inventory is not None:
             _raw["inventory"] = inventory
         if knowledge_base is not None:
             _raw["knowledgeBase"] = knowledge_base
+        if knowledge_base_scope_mode is not None:
+            _raw["knowledgeBaseScopeMode"] = knowledge_base_scope_mode
         if knowledge_base_write is not None:
             _raw["knowledgeBaseWrite"] = knowledge_base_write
         if mcp_enabled is not None:
@@ -257,8 +287,14 @@ class Agents(_AgentsBase):
             _raw["memoryMode"] = memory_mode
         if remember_name is not None:
             _raw["rememberName"] = remember_name
+        if shared_memory is not None:
+            _raw["sharedMemory"] = shared_memory
+        if skills is not None:
+            _raw["skills"] = skills
         if web_search is not None:
             _raw["webSearch"] = web_search
+        if wisdom is not None:
+            _raw["wisdom"] = wisdom
         body = encode_body(UpdateCapabilitiesInputBody, _raw)
         data = self._http.put(path, params=params, json_data=body)
         return AgentCapabilities.model_validate(data)
@@ -603,25 +639,37 @@ class AsyncAgents(_AgentsBase):
         self,
         agent_id: str,
         *,
+        auto_learn_skills: bool | None = None,
+        composio: bool | None = None,
         image_generation: bool | None = None,
         inventory: bool | None = None,
         knowledge_base: bool | None = None,
+        knowledge_base_scope_mode: str | None = None,
         knowledge_base_write: bool | None = None,
         mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
         remember_name: bool | None = None,
+        shared_memory: bool | None = None,
+        skills: bool | None = None,
         web_search: bool | None = None,
+        wisdom: bool | None = None,
     ) -> AgentCapabilities:
         """Patch agent capabilities"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/capabilities"
         params = None
         _raw: dict[str, Any] = {}
+        if auto_learn_skills is not None:
+            _raw["autoLearnSkills"] = auto_learn_skills
+        if composio is not None:
+            _raw["composio"] = composio
         if image_generation is not None:
             _raw["imageGeneration"] = image_generation
         if inventory is not None:
             _raw["inventory"] = inventory
         if knowledge_base is not None:
             _raw["knowledgeBase"] = knowledge_base
+        if knowledge_base_scope_mode is not None:
+            _raw["knowledgeBaseScopeMode"] = knowledge_base_scope_mode
         if knowledge_base_write is not None:
             _raw["knowledgeBaseWrite"] = knowledge_base_write
         if mcp_enabled is not None:
@@ -630,8 +678,14 @@ class AsyncAgents(_AgentsBase):
             _raw["memoryMode"] = memory_mode
         if remember_name is not None:
             _raw["rememberName"] = remember_name
+        if shared_memory is not None:
+            _raw["sharedMemory"] = shared_memory
+        if skills is not None:
+            _raw["skills"] = skills
         if web_search is not None:
             _raw["webSearch"] = web_search
+        if wisdom is not None:
+            _raw["wisdom"] = wisdom
         body = encode_body(UpdateCapabilitiesInputBody, _raw)
         data = await self._http.patch(path, params=params, json_data=body)
         return AgentCapabilities.model_validate(data)
@@ -640,25 +694,37 @@ class AsyncAgents(_AgentsBase):
         self,
         agent_id: str,
         *,
+        auto_learn_skills: bool | None = None,
+        composio: bool | None = None,
         image_generation: bool | None = None,
         inventory: bool | None = None,
         knowledge_base: bool | None = None,
+        knowledge_base_scope_mode: str | None = None,
         knowledge_base_write: bool | None = None,
         mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
         remember_name: bool | None = None,
+        shared_memory: bool | None = None,
+        skills: bool | None = None,
         web_search: bool | None = None,
+        wisdom: bool | None = None,
     ) -> AgentCapabilities:
         """Update agent capabilities"""
         path = f"/api/v1/agents/{quote(agent_id, safe='')}/capabilities"
         params = None
         _raw: dict[str, Any] = {}
+        if auto_learn_skills is not None:
+            _raw["autoLearnSkills"] = auto_learn_skills
+        if composio is not None:
+            _raw["composio"] = composio
         if image_generation is not None:
             _raw["imageGeneration"] = image_generation
         if inventory is not None:
             _raw["inventory"] = inventory
         if knowledge_base is not None:
             _raw["knowledgeBase"] = knowledge_base
+        if knowledge_base_scope_mode is not None:
+            _raw["knowledgeBaseScopeMode"] = knowledge_base_scope_mode
         if knowledge_base_write is not None:
             _raw["knowledgeBaseWrite"] = knowledge_base_write
         if mcp_enabled is not None:
@@ -667,8 +733,14 @@ class AsyncAgents(_AgentsBase):
             _raw["memoryMode"] = memory_mode
         if remember_name is not None:
             _raw["rememberName"] = remember_name
+        if shared_memory is not None:
+            _raw["sharedMemory"] = shared_memory
+        if skills is not None:
+            _raw["skills"] = skills
         if web_search is not None:
             _raw["webSearch"] = web_search
+        if wisdom is not None:
+            _raw["wisdom"] = wisdom
         body = encode_body(UpdateCapabilitiesInputBody, _raw)
         data = await self._http.put(path, params=params, json_data=body)
         return AgentCapabilities.model_validate(data)
