@@ -13,6 +13,8 @@ from ._generated.models import (  # noqa: F401
     AgentIndex,
     AgentInstance,
     AtomicFact,
+    BYOKKeyResponse,
+    ListBYOKKeysOutputBody,
     BatchImportUser,
     BatchPersonalityEntry,
     Big5,

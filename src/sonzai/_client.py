@@ -11,6 +11,7 @@ from ._retry import RetryPolicy
 from .resources.account_config import AccountConfig, AsyncAccountConfig
 from .resources.agents import Agents, AsyncAgents
 from .resources.analytics import Analytics, AsyncAnalytics
+from .resources.byok import BYOK, AsyncBYOK
 from .resources.composio import AsyncComposio, Composio
 from .types import PlatformModelsResponse
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
@@ -79,6 +80,7 @@ class Sonzai:
     webhooks: Webhooks
     project_config: ProjectConfig
     account_config: AccountConfig
+    byok: BYOK
     custom_llm: CustomLLM
     project_notifications: ProjectNotifications
     schedules: Schedules
@@ -150,6 +152,7 @@ class Sonzai:
         self.webhooks = Webhooks(self._http)
         self.project_config = ProjectConfig(self._http)
         self.account_config = AccountConfig(self._http)
+        self.byok = BYOK(self._http)
         self.custom_llm = CustomLLM(self._http)
         self.project_notifications = ProjectNotifications(self._http)
         self.schedules = Schedules(self._http)
@@ -221,6 +224,7 @@ class AsyncSonzai:
     webhooks: AsyncWebhooks
     project_config: AsyncProjectConfig
     account_config: AsyncAccountConfig
+    byok: AsyncBYOK
     custom_llm: AsyncCustomLLM
     project_notifications: AsyncProjectNotifications
     schedules: AsyncSchedules
@@ -282,6 +286,7 @@ class AsyncSonzai:
         self.webhooks = AsyncWebhooks(self._http)
         self.project_config = AsyncProjectConfig(self._http)
         self.account_config = AsyncAccountConfig(self._http)
+        self.byok = AsyncBYOK(self._http)
         self.custom_llm = AsyncCustomLLM(self._http)
         self.project_notifications = AsyncProjectNotifications(self._http)
         self.schedules = AsyncSchedules(self._http)
