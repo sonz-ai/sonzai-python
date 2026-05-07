@@ -169,7 +169,7 @@ class TestAgentsListPagination:
             )
             client = Sonzai(api_key="test-key")
             try:
-                page = client.agents.list(limit=100)
+                page = client.agents.list(page_size=100)
                 assert isinstance(page, Page)
                 agents = page.to_list()
                 assert len(agents) == 1

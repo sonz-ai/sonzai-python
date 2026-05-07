@@ -306,12 +306,14 @@ import hmac, hashlib, time
 
 def verify_sonzai_signature(raw_body: bytes, signature_header: str,
                             signing_secret: str, *, max_skew_seconds: int = 300) -> bool:
+    # The server HMAC-keys the secret with the "whsec_" prefix stripped.
+    raw_key = signing_secret[len("whsec_"):] if signing_secret.startswith("whsec_") else signing_secret
     parts = dict(p.split("=", 1) for p in signature_header.split(","))
     ts, sig = parts.get("t", ""), parts.get("v1", "")
     if not ts.isdigit() or abs(int(ts) - int(time.time())) > max_skew_seconds:
         return False
     signed = f"{ts}.".encode() + raw_body
-    expected = hmac.new(signing_secret.encode(), signed, hashlib.sha256).hexdigest()
+    expected = hmac.new(raw_key.encode(), signed, hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected, sig)
 ```
 

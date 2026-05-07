@@ -95,25 +95,29 @@ def start_ngrok(port: int) -> tuple[subprocess.Popen[bytes], str]:
 
 
 def verify_signature(secret: str, sig_header: str, raw_body: bytes) -> bool:
+    # The server strips the "whsec_" prefix before HMAC-keying — see
+    # services/platform/api/internal/infrastructure/webhook/signer.go::ExtractRawSecret.
+    # Our key must match. Without this, every signature mismatches.
+    raw_key = secret[len("whsec_"):] if secret.startswith("whsec_") else secret
     parts = dict(p.split("=", 1) for p in sig_header.split(",") if "=" in p)
     ts, v1 = parts.get("t"), parts.get("v1")
     if not ts or not v1:
         return False
     signed = f"{ts}.".encode() + raw_body
-    mac = hmac.new(secret.encode(), signed, hashlib.sha256).hexdigest()
+    mac = hmac.new(raw_key.encode(), signed, hashlib.sha256).hexdigest()
     return hmac.compare_digest(mac, v1)
 
 
 def pick_agent(client: Sonzai, agent_id: str | None) -> tuple[str, str]:
     """Return (agent_id, project_id). Reuses most recent agent if none given."""
     if agent_id:
-        for a in client.agents.list(limit=200).to_list():
+        for a in client.agents.list(page_size=100).first_page():
             if a.agent_id == agent_id:
                 if not a.project_id:
                     raise RuntimeError(f"Agent {agent_id} has no project_id")
                 return a.agent_id, a.project_id
         raise RuntimeError(f"Agent {agent_id} not found in tenant")
-    items = client.agents.list(limit=10).to_list()
+    items = client.agents.list(page_size=10).first_page()
     if not items:
         raise RuntimeError(
             "No agents in tenant — create one first or pass --agent-id"
@@ -131,9 +135,15 @@ def main() -> int:
     parser.add_argument("--public-url", default=None,
                         help="Skip ngrok and use this public URL (must reach this machine).")
     parser.add_argument("--user-id", default=f"e2e-user-{uuid.uuid4().hex[:8]}")
-    parser.add_argument("--delay-hours", type=int, default=1)
-    parser.add_argument("--simulated-hours", type=float, default=2.0)
-    parser.add_argument("--wait-secs", type=int, default=30)
+    parser.add_argument("--delay-hours", type=int, default=0,
+                        help="Wakeup delay. 0 (default) means 'fire on next cron tick' "
+                             "(<=60s in production). Use a positive value to combine with "
+                             "--simulated-hours for the workbench path.")
+    parser.add_argument("--simulated-hours", type=float, default=0.0,
+                        help="If > 0, advance simulated time after scheduling (workbench path). "
+                             "Default 0 = skip advance_time entirely; rely on the production cron.")
+    parser.add_argument("--wait-secs", type=int, default=120,
+                        help="How long to wait for a webhook delivery after scheduling.")
     parser.add_argument("--keep-webhook", action="store_true",
                         help="Don't delete the webhook on exit.")
     args = parser.parse_args()
@@ -142,7 +152,8 @@ def main() -> int:
         print("ERROR: SONZAI_API_KEY not set", file=sys.stderr)
         return 2
 
-    client = Sonzai()
+    # Bump timeout — workbench.advance_time(25h) routinely takes 1–3 min on prod.
+    client = Sonzai(timeout=300.0)
     print("Picking agent...")
     agent_id, project_id = pick_agent(client, args.agent_id)
     print(f"  agent_id={agent_id}\n  project_id={project_id}")
@@ -192,15 +203,18 @@ def main() -> int:
         wakeup_id = getattr(wakeup, "wakeup_id", None) or getattr(wakeup, "id", None)
         print(f"  wakeup_id={wakeup_id}")
 
-        print(f"Advancing time by {args.simulated_hours}h (synchronous)...")
-        t0 = time.time()
-        resp = client.workbench.advance_time(
-            agent_id, args.user_id, simulated_hours=args.simulated_hours
-        )
-        elapsed = time.time() - t0
-        days = getattr(resp, "days_processed", None)
-        wakeups = getattr(resp, "wakeups", None) or []
-        print(f"  advance_time done in {elapsed:.1f}s | days_processed={days} | wakeups returned={len(wakeups)}")
+        if args.simulated_hours > 0:
+            print(f"Advancing time by {args.simulated_hours}h (synchronous)...")
+            t0 = time.time()
+            resp = client.workbench.advance_time(
+                agent_id, args.user_id, simulated_hours=args.simulated_hours
+            )
+            elapsed = time.time() - t0
+            days = getattr(resp, "days_processed", None)
+            wakeups = getattr(resp, "wakeups_executed", None) or []
+            print(f"  advance_time done in {elapsed:.1f}s | days_processed={days} | wakeups returned={len(wakeups)}")
+        else:
+            print("Skipping advance_time. Waiting for the production wakeup cron (every ~60s).")
 
         print(f"Waiting up to {args.wait_secs}s for webhook delivery...")
         deadline = time.time() + args.wait_secs
@@ -218,7 +232,7 @@ def main() -> int:
             attempts_page = client.webhooks.list_delivery_attempts_for_project(
                 project_id, args.event_type, limit=5
             )
-            attempts = attempts_page.to_list()
+            attempts = attempts_page.first_page()
             for a in attempts[:5]:
                 print(f"  [{a.created_at}] status={a.status} http={a.response_code} "
                       f"dur={a.duration_ms}ms attempt={a.attempt_number} "

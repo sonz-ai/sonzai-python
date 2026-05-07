@@ -1188,12 +1188,12 @@ class Agents(_GenAgents):
     def list(
         self,
         *,
-        limit: int = 100,
+        page_size: int = 30,
         search: str | None = None,
         project_id: str | None = None,
     ) -> Page[AgentIndex]:
-        """List agents with optional pagination and filtering."""
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List agents with optional pagination and filtering. Cursor-based."""
+        params: dict[str, Any] = {"page_size": page_size}
         if search is not None:
             params["search"] = search
         if project_id is not None:
@@ -1203,7 +1203,7 @@ class Agents(_GenAgents):
             params=params,
             item_key="items",
             item_parser=AgentIndex.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     # -- Agent Status --
@@ -2680,12 +2680,12 @@ class AsyncAgents(_GenAsyncAgents):
     async def list(
         self,
         *,
-        limit: int = 100,
+        page_size: int = 30,
         search: str | None = None,
         project_id: str | None = None,
     ) -> AsyncPage[AgentIndex]:
-        """List agents with optional pagination and filtering."""
-        params: dict[str, Any] = {"limit": limit, "offset": 0}
+        """List agents with optional pagination and filtering. Cursor-based."""
+        params: dict[str, Any] = {"page_size": page_size}
         if search is not None:
             params["search"] = search
         if project_id is not None:
@@ -2699,7 +2699,7 @@ class AsyncAgents(_GenAsyncAgents):
             params=params,
             item_key="items",
             item_parser=AgentIndex.model_validate,
-            mode="offset",
+            mode="cursor",
         )
 
     # -- Agent Status --
