@@ -525,6 +525,28 @@ class AvailableActionsApp(BaseModel):
     connected_account_label: str | None = None
 
 
+class BYOKKeyResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/BYOKKeyResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    api_key_prefix: str
+    health_status: str
+    is_active: bool
+    last_health_check_at: AwareDatetime | None = None
+    last_health_error: str | None = None
+    last_used_at: AwareDatetime | None = None
+    provider: str
+    updated_at: AwareDatetime
+
+
 class BatchGetPersonalitiesInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1055,6 +1077,18 @@ class CostBreakdownResponsePeriodStruct(BaseModel):
     start: str
 
 
+class CostByBillingMode(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    billing_mode: Annotated[str, Field(alias='billingMode')]
+    byok_provider: Annotated[str | None, Field(alias='byokProvider')] = None
+    cost_usd: Annotated[float, Field(alias='costUsd')]
+    entry_count: Annotated[int, Field(alias='entryCount')]
+    tokens: int
+
+
 class CostByCharacter(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1101,6 +1135,20 @@ class CostByTrafficSource(BaseModel):
     entry_count: Annotated[int, Field(alias='entryCount')]
     tokens: int
     traffic_source: Annotated[str, Field(alias='trafficSource')]
+
+
+class CostDailyByMode(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    billing_mode: Annotated[str, Field(alias='billingMode')]
+    byok_provider: Annotated[str | None, Field(alias='byokProvider')] = None
+    cost_usd: Annotated[float, Field(alias='costUsd')]
+    date: str
+    input_tokens: Annotated[int, Field(alias='inputTokens')]
+    output_tokens: Annotated[int, Field(alias='outputTokens')]
+    total_tokens: Annotated[int, Field(alias='totalTokens')]
 
 
 class CostDailyEntry(BaseModel):
@@ -4208,6 +4256,23 @@ class KbUploadDocumentOutputBody(BaseModel):
     """
 
 
+class ListBYOKKeysOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ListBYOKKeysOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    keys: list[BYOKKeyResponse] | None
+
+
 class ListComposioAuditOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5343,6 +5408,24 @@ class PropertySource(BaseModel):
     source: str | None = None
 
 
+class PutBYOKKeyInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/PutBYOKKeyInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    api_key: str
+    """
+    Plaintext API key from the provider. Stored encrypted; never returned.
+    """
+
+
 class RecentShiftsResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5984,6 +6067,23 @@ class SetAgentStatusOutputBody(BaseModel):
     agent_id: str
     is_active: bool
     success: bool
+
+
+class SetBYOKActiveInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/SetBYOKActiveInputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    is_active: bool
 
 
 class SetCustomLLMConfigInputBody(BaseModel):
@@ -8738,6 +8838,9 @@ class CostResponse(BaseModel):
     """
     A URL to the JSON Schema for this object.
     """
+    by_billing_mode: Annotated[
+        list[CostByBillingMode] | None, Field(alias='byBillingMode')
+    ] = None
     by_character: Annotated[
         list[CostByCharacter] | None, Field(alias='byCharacter')
     ] = None
@@ -8747,6 +8850,9 @@ class CostResponse(BaseModel):
         list[CostByTrafficSource] | None, Field(alias='byTrafficSource')
     ] = None
     daily: list[CostDailyEntry] | None
+    daily_by_mode: Annotated[
+        list[CostDailyByMode] | None, Field(alias='dailyByMode')
+    ] = None
     period: CostResponsePeriodStruct
     summary: CostSummary
 
