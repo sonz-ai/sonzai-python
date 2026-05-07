@@ -175,40 +175,50 @@ def push_banner(kind: str, text: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-def build_instructions(ctx: dict[str, Any], agent_name: str) -> str:
-    """Render Sonzai's enriched context as an OpenAI-Agents system prompt."""
-    parts: list[str] = []
-    profile = ctx.get("profile") or {}
-    name = profile.get("name") or agent_name or "Companion"
-    parts.append(f"You are {name}, a helpful, curious companion.")
+def build_instructions(ctx: dict[str, Any], agent_name: str = "") -> str:
+    """Render Sonzai's enriched context as an OpenAI-Agents system prompt.
 
-    big5 = profile.get("big5")
-    if isinstance(big5, dict):
+    The context dict is FLAT (matches `EnrichedAgentContext` from the platform's
+    `/agents/{agent_id}/context` endpoint): big5, speech_patterns, current_mood,
+    loaded_facts, etc. live at the top level — there is no nested "profile" /
+    "behavioral" / "memory" envelope.
+    """
+    parts: list[str] = []
+    name = agent_name or "Companion"
+    persona = ctx.get("personality_prompt") or ctx.get("bio")
+    if persona:
+        parts.append(f"You are {name}. {persona}")
+    else:
+        parts.append(f"You are {name}, a helpful, curious companion.")
+
+    big5 = ctx.get("big5")
+    if isinstance(big5, dict) and big5:
         traits = ", ".join(
             f"{k} {float(v.get('score', v) if isinstance(v, dict) else v):.2f}"
             for k, v in big5.items()
         )
         parts.append(f"Personality (Big5): {traits}.")
 
-    speech = profile.get("speech_patterns")
+    speech = ctx.get("speech_patterns")
     if isinstance(speech, list) and speech:
         parts.append("Speech patterns: " + "; ".join(str(s) for s in speech[:3]) + ".")
 
-    behavioral = ctx.get("behavioral") or {}
-    mood = behavioral.get("mood") or behavioral
+    mood = ctx.get("current_mood")
     if isinstance(mood, dict) and any(k in mood for k in ("valence", "arousal", "tension")):
         parts.append(
-            f"Current mood: valence={mood.get('valence', 0):+.2f}, "
-            f"arousal={mood.get('arousal', 0):+.2f}, "
-            f"tension={mood.get('tension', 0):+.2f}."
+            f"Current mood: valence={float(mood.get('valence', 0)):+.2f}, "
+            f"arousal={float(mood.get('arousal', 0)):+.2f}, "
+            f"tension={float(mood.get('tension', 0)):+.2f}."
         )
 
-    memory = ctx.get("memory") or {}
-    facts = memory.get("facts") or memory.get("relevant_facts") or []
+    facts = ctx.get("loaded_facts") or []
     if isinstance(facts, list) and facts:
         bullets = []
         for f in facts[:8]:
-            text = f.get("text") if isinstance(f, dict) else str(f)
+            if isinstance(f, dict):
+                text = f.get("atomic_text") or f.get("content") or f.get("text")
+            else:
+                text = str(f)
             if text:
                 bullets.append(f"- {text}")
         if bullets:
