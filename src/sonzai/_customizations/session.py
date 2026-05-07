@@ -35,7 +35,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from urllib.parse import quote
 
-from sonzai._generated.models import TurnRequestBody, TurnResponseBody
+from sonzai._generated.models import TurnRequestBody, TurnResponseBody, TurnStatusOutputBody
 from sonzai._request_helpers import encode_body
 
 if TYPE_CHECKING:
@@ -203,6 +203,20 @@ class Session(_SessionBase):
         data = self._http.post(path, json_data=body)
         return TurnResponseBody.model_validate(data)
 
+    def status(self, extraction_id: str) -> TurnStatusOutputBody:
+        """Poll the deferred-extraction state for a previously-submitted turn.
+
+        Thin wrapper over ``GET /api/v1/agents/{agentId}/turns/{extractionId}/status``,
+        scoped to this session's ``agent_id``. Mirrors TS ``session.status()``
+        and Go ``Session.TurnStatus``.
+        """
+        path = (
+            f"/api/v1/agents/{quote(self.agent_id, safe='')}"
+            f"/turns/{quote(extraction_id, safe='')}/status"
+        )
+        data = self._http.get(path)
+        return TurnStatusOutputBody.model_validate(data)
+
     def end(
         self,
         *,
@@ -339,6 +353,20 @@ class AsyncSession(_SessionBase):
         )
         data = await self._http.post(path, json_data=body)
         return TurnResponseBody.model_validate(data)
+
+    async def status(self, extraction_id: str) -> TurnStatusOutputBody:
+        """Poll the deferred-extraction state for a previously-submitted turn.
+
+        Thin wrapper over ``GET /api/v1/agents/{agentId}/turns/{extractionId}/status``,
+        scoped to this session's ``agent_id``. Mirrors TS ``session.status()``
+        and Go ``Session.TurnStatus``.
+        """
+        path = (
+            f"/api/v1/agents/{quote(self.agent_id, safe='')}"
+            f"/turns/{quote(extraction_id, safe='')}/status"
+        )
+        data = await self._http.get(path)
+        return TurnStatusOutputBody.model_validate(data)
 
     async def end(
         self,

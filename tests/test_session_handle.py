@@ -177,6 +177,29 @@ class TestSessionTurn:
         assert b'"model"' not in body
 
 
+class TestSessionStatus:
+    @respx.mock
+    def test_status_threads_session_agent_id(self, client, base_url):
+        respx.post(f"{base_url}/api/v1/agents/a1/sessions/start").mock(
+            return_value=httpx.Response(200, json={"success": True})
+        )
+        status_route = respx.get(
+            f"{base_url}/api/v1/agents/a1/turns/ext-1/status"
+        ).mock(
+            return_value=httpx.Response(
+                200,
+                json={"extraction_id": "ext-1", "state": "done"},
+            )
+        )
+
+        session = client.agents.sessions.start("a1", user_id="u1", session_id="s1")
+        result = session.status("ext-1")
+
+        assert status_route.called
+        assert result.extraction_id == "ext-1"
+        assert result.state == "done"
+
+
 class TestSessionEnd:
     @respx.mock
     def test_end_threads_identity(self, client, base_url):
@@ -242,3 +265,30 @@ class TestAsyncSessionHandle:
 
             result = await session.turn(messages=[{"role": "user", "content": "hi"}])
             assert result.extraction_id == "ext-async"
+
+    @pytest.mark.asyncio
+    @respx.mock
+    async def test_async_status_threads_session_agent_id(self, base_url):
+        respx.post(f"{base_url}/api/v1/agents/a1/sessions/start").mock(
+            return_value=httpx.Response(200, json={"success": True})
+        )
+        status_route = respx.get(
+            f"{base_url}/api/v1/agents/a1/turns/ext-async/status"
+        ).mock(
+            return_value=httpx.Response(
+                200,
+                json={"extraction_id": "ext-async", "state": "running"},
+            )
+        )
+
+        async with AsyncSonzai(api_key="test-key", base_url=base_url) as client:
+            session = await client.agents.sessions.start(  # type: ignore[attr-defined]
+                "a1",
+                user_id="u1",
+                session_id="s1",
+            )
+            result = await session.status("ext-async")
+
+        assert status_route.called
+        assert result.extraction_id == "ext-async"
+        assert result.state == "running"
