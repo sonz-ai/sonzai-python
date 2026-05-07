@@ -79,7 +79,7 @@ POST_TURN_REFRESH_DELAY_S = 3.0
 
 
 # ---------------------------------------------------------------------------
-# Demo tool — proves tool calls flow through to Sonzai
+# Demo tools — proves tool calls flow through to Sonzai
 # ---------------------------------------------------------------------------
 
 
@@ -87,6 +87,39 @@ POST_TURN_REFRESH_DELAY_S = 3.0
 def get_current_time() -> str:
     """Return the current UTC time as an ISO-8601 string."""
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def make_kb_search_tool(client: Sonzai, agent_id: str):
+    """Build a `kb_search` @function_tool bound to the connected Sonzai agent.
+
+    This wraps Sonzai's project-scoped knowledge-base search
+    (`POST /api/v1/agents/{agent_id}/tools/kb-search`) as an OpenAI Agents SDK
+    tool. The agent's LLM can decide to call it — e.g. when the user asks
+    something the developer-supplied prompt doesn't cover.
+    """
+
+    @function_tool
+    def kb_search(query: str) -> str:
+        """Search the agent's knowledge base for relevant facts.
+
+        Args:
+            query: A natural-language question or topic to search the KB for.
+        """
+        try:
+            resp = client.agents.knowledge_search(agent_id, query=query, limit=5)
+        except Exception as err:  # noqa: BLE001
+            return f"kb_search failed: {err}"
+        results = list(resp.results or [])
+        if not results:
+            return "No relevant knowledge found."
+        lines: list[str] = []
+        for r in results:
+            label = (r.label or r.type or "fact").strip()
+            content = (r.content or "").strip()
+            lines.append(f"- {label}: {content}" if content else f"- {label}")
+        return "\n".join(lines)
+
+    return kb_search
 
 
 # ---------------------------------------------------------------------------
@@ -190,9 +223,29 @@ def build_instructions(ctx: dict[str, Any], agent_name: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def run_result_to_sonzai_messages(user_msg: str, result: Any) -> list[dict[str, Any]]:
-    """Convert a Runner result into Sonzai's tool-aware message format."""
-    msgs: list[dict[str, Any]] = [{"role": "user", "content": user_msg}]
+def run_result_to_sonzai_messages(
+    user_msg: str,
+    result: Any,
+    image_url: str | None = None,
+) -> list[dict[str, Any]]:
+    """Convert a Runner result into Sonzai's tool-aware message format.
+
+    Sonzai's `/turn` schema currently accepts text-only `content` strings, so
+    when the user attached an image we embed a placeholder marker into the
+    user-message text:
+
+        "look at this [User shared image: https://…]"
+
+    This is enough for fact extraction to capture the URL and to record that
+    "the user shared an image" as a retrievable fact. The actual image bytes
+    were already seen by the LLM via Gemini's multimodal input on the run
+    itself — Sonzai just gets the textual bridge.
+    """
+    user_text = user_msg
+    if image_url:
+        user_text = f"{user_msg} [User shared image: {image_url}]".strip()
+
+    msgs: list[dict[str, Any]] = [{"role": "user", "content": user_text}]
 
     for item in getattr(result, "new_items", []) or []:
         kind = type(item).__name__
@@ -723,6 +776,23 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
         with st.chat_message(turn.role):
             st.write(turn.content)
 
+    # Optional image attachment — Gemini is multimodal, so we pass any URL the
+    # user provides through to the Agents SDK as an `input_image` content
+    # block. The text-bridging into Sonzai is documented in
+    # `run_result_to_sonzai_messages`.
+    image_url = st.text_input(
+        "Attach image (URL)",
+        value="",
+        placeholder="https://… (jpg/png) — optional, sent to Gemini multimodally",
+        key="attached_image_url",
+        help=(
+            "Paste a public image URL. Gemini will see the actual image; "
+            "Sonzai gets a text marker `[User shared image: <url>]` so it can "
+            "extract facts about what was shared."
+        ),
+    )
+    image_url = (image_url or "").strip() or None
+
     prompt = st.chat_input(f"Message {ss.agent_name or 'the agent'}…")
     if not prompt:
         return
@@ -731,9 +801,15 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
         # Re-open if it was ended somehow.
         start_chat_session(client, ss)
 
-    ss.messages.append(ChatTurn(role="user", content=prompt))
+    display_msg = prompt if not image_url else f"{prompt}\n\n[image: {image_url}]"
+    ss.messages.append(ChatTurn(role="user", content=display_msg))
     with st.chat_message("user"):
         st.write(prompt)
+        if image_url:
+            try:
+                st.image(image_url, width=240)
+            except Exception:  # noqa: BLE001
+                st.caption(f"(image: {image_url})")
 
     # 1) Pull enriched context for this turn.
     try:
@@ -753,14 +829,31 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
     agent = Agent(
         name="Companion",
         instructions=build_instructions(ctx, ss.agent_name),
-        tools=[get_current_time],
+        tools=[get_current_time, make_kb_search_tool(client, ss.agent_id)],
         model=model,
     )
+
+    # Build the Runner input. For text-only turns a plain string is fine; for
+    # image-attached turns we use the Responses-API list form so Gemini gets
+    # an `input_image` content block alongside the user text.
+    if image_url:
+        run_input: Any = [
+            {
+                "role": "user",
+                "type": "message",
+                "content": [
+                    {"type": "input_text", "text": prompt},
+                    {"type": "input_image", "image_url": image_url, "detail": "auto"},
+                ],
+            }
+        ]
+    else:
+        run_input = prompt
 
     with st.chat_message("assistant"):
         with st.spinner("Thinking…"):
             try:
-                result = Runner.run_sync(agent, prompt)
+                result = Runner.run_sync(agent, run_input)
             except Exception as err:  # noqa: BLE001
                 st.error(
                     f"Agents SDK run failed against Gemini ({ss.gemini_model}): {err}\n"
@@ -772,8 +865,10 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
 
     ss.messages.append(ChatTurn(role="assistant", content=reply))
 
-    # 3) Hand the transcript back to Sonzai.
-    sonzai_messages = run_result_to_sonzai_messages(prompt, result)
+    # 3) Hand the transcript back to Sonzai. When an image was attached, the
+    #    user message text gets a `[User shared image: <url>]` marker so the
+    #    extraction pipeline can record the URL as a fact.
+    sonzai_messages = run_result_to_sonzai_messages(prompt, result, image_url=image_url)
     try:
         t0 = time.time()
         turn = ss.session.turn(messages=sonzai_messages)

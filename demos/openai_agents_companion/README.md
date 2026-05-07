@@ -127,11 +127,96 @@ on the next turn or after you click **Force consolidation**.
    the 8h deferred-consolidation gate so you can see diary entries and
    constellation nodes appear in seconds rather than waiting for real time.
 
+## Calling Sonzai's built-in tools from your harness
+
+Sonzai exposes a small set of agent-bound tool endpoints (knowledge-base
+search, time-machine reads, …) under `/api/v1/agents/{agent_id}/tools/…`.
+When your harness is the OpenAI Agents SDK, the cleanest pattern is to
+wrap each Sonzai endpoint as an `@function_tool` and add it to the agent's
+`tools=[…]` list. The LLM then decides when to call it — same as any
+developer-defined tool.
+
+The demo includes a wrapper around `client.agents.knowledge_search` (which
+posts to `/api/v1/agents/{agent_id}/tools/kb-search`):
+
+```python
+from agents import function_tool
+
+def make_kb_search_tool(client, agent_id):
+    @function_tool
+    def kb_search(query: str) -> str:
+        """Search the agent's knowledge base for relevant facts."""
+        resp = client.agents.knowledge_search(agent_id, query=query, limit=5)
+        if not resp.results:
+            return "No relevant knowledge found."
+        return "\n".join(
+            f"- {r.label}: {r.content}" for r in resp.results
+        )
+    return kb_search
+
+agent = Agent(
+    name="Companion",
+    instructions=...,
+    tools=[get_current_time, make_kb_search_tool(client, agent_id)],
+    model=model,
+)
+```
+
+Two notes:
+
+1. **The wrapper is bound to a specific `agent_id`.** That's why we use a
+   factory function — `@function_tool` only sees the closed-over client +
+   id, so the LLM doesn't need to (and can't) supply them as arguments.
+2. **The same pattern works for any other Sonzai tool.** Examples:
+   `client.agents.timemachine.get(...)` for past-state reads, or
+   `client.agents.inventory.query_inventory(...)` if you want the LLM to
+   self-check inventory before answering. Just wrap, add to `tools=[…]`.
+
+## Handling images / multimodal
+
+Gemini is multimodal end-to-end. Sonzai's `/turn` schema is currently
+text-only — `messages: [{role, content: str}]`. The demo bridges these two
+truths with a simple convention:
+
+1. **Gemini sees the actual image.** When the user provides an image URL,
+   the demo passes the run input as a Responses-API list with an
+   `input_image` content block:
+
+    ```python
+    run_input = [{
+        "role": "user",
+        "type": "message",
+        "content": [
+            {"type": "input_text", "text": prompt},
+            {"type": "input_image", "image_url": image_url, "detail": "auto"},
+        ],
+    }]
+    result = Runner.run_sync(agent, run_input)
+    ```
+
+2. **Sonzai gets a text marker.** When forwarding the transcript to
+   `session.turn(...)`, the demo embeds the URL into the user-message
+   text:
+
+    ```text
+    "look at this   [User shared image: https://example.com/mochi.jpg]"
+    ```
+
+   The fact-extraction pipeline then sees the URL inline and records it
+   as a normal fact ("user shared an image of …"). On the next turn,
+   `session.context(query=…)` will surface that fact in the system prompt
+   if relevant.
+
+This is intentionally minimal — no Sonzai schema extension, no
+vision-describe pre-step. If you want richer image grounding, you can add
+a tiny "describe this image" Gemini call first and put the description
+plus the URL into the bridge text. The demo leaves that as an exercise.
+
 ## File map
 
 | File | What it does |
 |---|---|
-| `app.py` | The whole demo (~500 LOC). Read top-to-bottom. |
+| `app.py` | The whole demo (~600 LOC). Read top-to-bottom. |
 | `requirements.txt` | `streamlit`, `openai-agents`, `sonzai`, `pyvis`. |
 | `README.md` | This file. |
 
