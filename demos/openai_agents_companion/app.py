@@ -689,7 +689,8 @@ def render_sidebar() -> None:
         can_create = bool(ss.sonzai_key and ss.gemini_key and name and description)
         if st.button("Create agent + start session", type="primary", disabled=not can_create):
             try:
-                client = Sonzai(api_key=ss.sonzai_key)
+                # 300s — workbench.advance_time(25h) routinely takes 60-90s on prod.
+                client = Sonzai(api_key=ss.sonzai_key, timeout=300.0)
                 with st.spinner("Generating + creating agent (5-15s)…"):
                     created = client.agents.generation.generate_and_create(
                         name=name,
