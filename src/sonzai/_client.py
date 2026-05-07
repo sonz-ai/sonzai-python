@@ -224,6 +224,9 @@ class AsyncSonzai:
     custom_llm: AsyncCustomLLM
     project_notifications: AsyncProjectNotifications
     schedules: AsyncSchedules
+    composio: AsyncComposio
+    skills: AsyncSkills
+    wisdom: AsyncWisdom
     workbench: AsyncWorkbench
     org: AsyncOrg
     storefront: AsyncStorefront
