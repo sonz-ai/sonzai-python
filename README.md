@@ -170,6 +170,52 @@ response = client.agents.chat(
 )
 ```
 
+### Chat (Async with Polling)
+
+For chats that may run longer than your network can hold an SSE stream
+open (Cloudflare/LB cuts at ~100s), queue the request and poll for the
+result. Cancelling the poll locally does **not** cancel the server-side
+task — re-poll the same `processing_id` later if needed.
+
+```python
+# Fire-and-forget — returns {"processing_id": "...", "status": "queued"}.
+queued = client.agents.chat_async(
+    "agent-id",
+    messages=[{"role": "user", "content": "Plan my week."}],
+    user_id="user-123",
+    session_id="session-456",
+    provider="openai",
+    model="gpt-4o",
+)
+processing_id = queued["processing_id"]
+
+# Poll until terminal. Recommended backoff: 1s → 2s → 4s, capped at 5s.
+import time
+delay = 1.0
+while True:
+    result = client.agents.poll_chat_result("agent-id", processing_id)
+    # status: queued | running | complete | failed
+    # while running, `response` carries partial assistant text and
+    # `phase` / `tool` reflect the latest progressive-elaboration event.
+    if result["status"] in ("complete", "failed"):
+        break
+    time.sleep(delay)
+    delay = min(delay * 2, 5.0)
+
+print(result["response"])
+print(result.get("side_effects"))   # populated on terminal frame
+
+# Convenience: queue + poll until terminal in one call.
+result = client.agents.chat_async_blocking(
+    "agent-id",
+    messages=[{"role": "user", "content": "Plan my week."}],
+    user_id="user-123",
+    poll_interval_seconds=1.0,
+    max_poll_interval_seconds=5.0,
+    timeout_seconds=600.0,    # matches the server's CE_AGENT_CHAT_DEADLINE_MS
+)
+```
+
 ### Memory
 
 ```python
@@ -224,19 +270,61 @@ print(f"Openness: {personality.profile.big5.openness.score}")
 print(f"Warmth: {personality.profile.dimensions.warmth}/10")
 ```
 
-### Sessions
+### Sessions (real-time turn loop)
+
+`sessions.start()` returns a `Session` handle bundling the identity tuple
+`(agent_id, user_id, session_id, instance_id)` plus `provider`/`model`
+defaults. The handle drives the per-turn loop with one fresh enriched
+context fetched per turn — so the LLM you call out to (OpenAI, Anthropic,
+Gemini, your own) sees up-to-date mood, recalled facts, and recent turns
+on every message.
 
 ```python
-# Start a session
-client.agents.sessions.start(
+# Start the session — returns a Session handle (not void).
+session = client.agents.sessions.start(
     "agent-id",
     user_id="user-123",
     session_id="session-456",
+    provider="gemini",                              # session-level default
+    model="gemini-3.1-flash-lite-preview",          # (per-turn override OK)
 )
 
-# ... chat messages ...
+# Per-turn loop: fetch enriched context, hand it to your LLM, submit the turn.
+ctx = session.context(query="what's the user about to say?")
+# ... build your prompt with ctx, call your LLM, get assistant_reply ...
 
-# End a session
+result = session.turn(
+    messages=[
+        {"role": "user", "content": "what did we talk about last week?"},
+        {"role": "assistant", "content": assistant_reply},
+    ],
+    # Prefetch the *next* enriched context in the same round-trip
+    # so the next user message renders without a second fetch.
+    fetch_next_context={"query": "anticipated next user message"},
+)
+print(result.mood)              # sync mood update
+print(result.extraction_id)     # async fact-extraction job id
+print(result.next_context)      # populated when fetch_next_context is set
+
+# Poll deferred extraction (memory write-back) when you need to know it landed.
+status = session.status(result.extraction_id)
+print(status.state)             # queued | running | done | failed
+
+# End the session. wait=True forces the CE pipeline to run synchronously
+# (use in benchmarks/tests that query memory immediately after).
+session.end(total_messages=10, duration_seconds=300, wait=True)
+```
+
+Per-call `provider`/`model` on `session.turn(...)` and `session.end(...)`
+override the session defaults; omit them to fall through to the session
+default (or the server-side resolver).
+
+#### Legacy void-style start/end
+
+`client.agents.sessions.end("agent-id", user_id=..., session_id=...)`
+still works for callers that don't need the handle:
+
+```python
 client.agents.sessions.end(
     "agent-id",
     user_id="user-123",
