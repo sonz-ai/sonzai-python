@@ -322,7 +322,7 @@ The same snippet is one click away inside the right pane (under
 
 ### Inspecting deliveries
 
-`client.webhooks.list_delivery_attempts_for_project(project_id, event_type, limit=10)`
+`client.webhooks.list_delivery_attempts_for_project(project_id, event_type, page_size=10)`
 returns the backend's view of recent POSTs — `status`, `response_code`,
 `duration_ms`, `error_message`, `attempt_number`, `created_at`. The demo
 re-polls these after every chat turn so a 5xx on your end shows up
