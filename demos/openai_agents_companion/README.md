@@ -104,6 +104,8 @@ The app opens at <http://localhost:8501>.
 | Inventory | `client.agents.inventory.query_inventory(...)` | Polled after each turn (real-time once the backend inventory work lands) |
 | Constellation | `client.agents.get_constellation(agent_id, user_id=...)` | Polled after each turn; mostly populated after consolidation |
 | Force consolidation | `client.workbench.advance_time(..., 25.0)` | Synchronous — fires diary, consolidation, constellation extraction |
+| Proactive webhook | `client.webhooks.register_for_project(...)` + `list_delivery_attempts_for_project(...)` | Project-scoped subscription. Backend POSTs `on_wakeup_ready` to your URL with HMAC-signed body |
+| Proactive notifications | `client.agents.notifications.list(agent_id, user_id=...)` | Stored copy of every proactive message — works even without a public webhook URL |
 
 After every turn the right panel waits ~3s, then re-polls so the deferred
 extraction has time to land. Anything that hasn't shown up yet will appear
@@ -211,6 +213,127 @@ This is intentionally minimal — no Sonzai schema extension, no
 vision-describe pre-step. If you want richer image grounding, you can add
 a tiny "describe this image" Gemini call first and put the description
 plus the URL into the bridge text. The demo leaves that as an exercise.
+
+## Proactive-message webhooks
+
+Sonzai can push to **your** URL whenever the agent generates a message on
+its own initiative — daily diaries, mood-shift notices, scheduled
+"wakeups," personality breakthroughs, and so on. The right pane has a
+**Proactive webhook** section that wires the whole flow up against
+whichever URL you give it (use [webhook.site](https://webhook.site) or an
+`ngrok http <port>` tunnel — the URL has to be reachable from Sonzai's
+backend).
+
+### Register
+
+Subscriptions are project-scoped. The demo resolves the agent's
+`project_id` automatically right after `generate_and_create` by paging
+`client.agents.list()` and matching on `agent_id`.
+
+```python
+resp = client.webhooks.register_for_project(
+    project_id,
+    "on_wakeup_ready",                    # event_type
+    webhook_url="https://webhook.site/<your-uuid>",
+    auth_header="Bearer my-shared-token", # optional, sent verbatim as Authorization
+)
+print(resp.signing_secret)  # only returned on the FIRST register — save it.
+```
+
+`signing_secret` is shown once. The demo surfaces it inline (and won't
+show it again) — copy it to `client.webhooks.rotate_secret_for_project(...)`
+later if you ever lose it.
+
+### Event types
+
+The platform fires several proactive event types; the demo's selector
+picks any of:
+
+| Event type | When it fires |
+|---|---|
+| `on_wakeup_ready` | A scheduled wakeup ran and produced a proactive message. Primary "send this to the user now" event. |
+| `on_recurring_event_due` | A recurring event (e.g. daily check-in) hit its trigger time. |
+| `on_diary_generated` | The agent finished a diary entry during consolidation. |
+| `on_personality_updated` | Big5 / speech-pattern drift was applied. |
+| `on_mood_updated` | Mood shifted enough to be worth notifying about. |
+| `on_breakthrough_detected` | An "aha" moment — the agent's relationship-narrative changed materially. |
+
+### Trigger one end-to-end
+
+```python
+client.agents.schedule_wakeup(
+    agent_id,
+    user_id=user_id,
+    check_type="interest_followup",
+    intent="demo_proactive_webhook",
+    delay_hours=1,                        # tiny so advance_time can skip it
+)
+client.workbench.advance_time(agent_id, user_id, 25.0)  # jumps past the delay
+```
+
+`advance_time` runs the wakeup synchronously inside the simulated window —
+no waiting for real time to pass. The dispatcher then POSTs
+`on_wakeup_ready` to your URL.
+
+The demo exposes both calls as buttons under **Proactive webhook**:
+*Schedule a test wakeup*, then *Force consolidation now*.
+
+### Payload + signing
+
+Body fields (JSON):
+
+```json
+{
+  "wakeup": { ... },
+  "memory_context": { ... },
+  "has_energy": true,
+  "generated_message": "happy birthday Mochi! …"
+}
+```
+
+Headers:
+
+| Header | Value |
+|---|---|
+| `Content-Type` | `application/json` |
+| `Authorization` | The `auth_header` you passed at registration (if any) |
+| `Sonzai-Signature` | `t=<unix_ts>,v1=<hex_hmac_sha256>` over `f"{ts}.{raw_body}"` |
+
+Verify with stdlib only — no extra dependency:
+
+```python
+import hmac, hashlib, time
+
+def verify_sonzai_signature(raw_body: bytes, signature_header: str,
+                            signing_secret: str, *, max_skew_seconds: int = 300) -> bool:
+    parts = dict(p.split("=", 1) for p in signature_header.split(","))
+    ts, sig = parts.get("t", ""), parts.get("v1", "")
+    if not ts.isdigit() or abs(int(ts) - int(time.time())) > max_skew_seconds:
+        return False
+    signed = f"{ts}.".encode() + raw_body
+    expected = hmac.new(signing_secret.encode(), signed, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, sig)
+```
+
+The same snippet is one click away inside the right pane (under
+**Verify the `Sonzai-Signature` header**).
+
+### Inspecting deliveries
+
+`client.webhooks.list_delivery_attempts_for_project(project_id, event_type, limit=10)`
+returns the backend's view of recent POSTs — `status`, `response_code`,
+`duration_ms`, `error_message`, `attempt_number`, `created_at`. The demo
+re-polls these after every chat turn so a 5xx on your end shows up
+immediately.
+
+### Polling fallback
+
+Every dispatched proactive message is also persisted to the agent's
+notifications table. If you don't (yet) have a public webhook URL, you
+can poll `client.agents.notifications.list(agent_id, user_id=...)` and
+mark messages consumed via `client.agents.notifications.consume(agent_id, message_id)`.
+The demo shows both lanes side-by-side so you can see they reflect the
+same flow.
 
 ## File map
 

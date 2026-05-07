@@ -77,6 +77,26 @@ FORCE_CONSOLIDATION_HOURS = 25.0
 # Sonzai's deferred extraction usually lands within 5-15s.
 POST_TURN_REFRESH_DELAY_S = 3.0
 
+# Proactive-message event types the backend dispatches to a registered
+# webhook URL. The "primary" one is `on_wakeup_ready` — fired when a
+# scheduled wakeup runs and the agent generates a proactive message.
+# See backend `webhook/dispatcher.go`.
+PROACTIVE_EVENT_TYPES = (
+    "on_wakeup_ready",
+    "on_recurring_event_due",
+    "on_diary_generated",
+    "on_personality_updated",
+    "on_mood_updated",
+    "on_breakthrough_detected",
+)
+DEFAULT_PROACTIVE_EVENT = "on_wakeup_ready"
+
+# Demo defaults for the test wakeup. delay_hours is tiny so a single
+# `advance_time(25h)` click jumps the agent past the wakeup's scheduled_at.
+WAKEUP_DEMO_DELAY_HOURS = 1
+WAKEUP_DEMO_CHECK_TYPE = "interest_followup"
+WAKEUP_DEMO_INTENT = "demo_proactive_webhook"
+
 
 # ---------------------------------------------------------------------------
 # Demo tools — proves tool calls flow through to Sonzai
@@ -143,6 +163,12 @@ class StatePanel:
     last_extraction_id: str | None = None
     last_extraction_status: str | None = None
     last_consolidation: dict[str, Any] | None = None
+    # Proactive webhooks + notifications
+    webhook_endpoints: list[dict[str, Any]] = field(default_factory=list)
+    delivery_attempts: list[dict[str, Any]] = field(default_factory=list)
+    proactive_notifications: list[dict[str, Any]] = field(default_factory=list)
+    last_signing_secret: str | None = None  # only available right after register/rotate
+    last_scheduled_wakeup: dict[str, Any] | None = None
 
 
 def init_state() -> None:
@@ -163,6 +189,11 @@ def init_state() -> None:
     ss.setdefault("panel", StatePanel())
     ss.setdefault("gemini_model", GEMINI_MODEL_PRIMARY)
     ss.setdefault("banners", [])              # transient notices
+
+    ss.setdefault("project_id", "")
+    ss.setdefault("webhook_url", "")
+    ss.setdefault("webhook_event_type", DEFAULT_PROACTIVE_EVENT)
+    ss.setdefault("webhook_auth_header", "")
 
 
 def push_banner(kind: str, text: str) -> None:
@@ -408,6 +439,129 @@ def refresh_right_panel(client: Sonzai, ss: Any, *, wait_for_extraction: bool) -
     panel.facts = fetch_recent_facts(client, ss.agent_id, ss.user_id)
     panel.inventory = fetch_inventory(client, ss.agent_id, ss.user_id)
     panel.constellation = fetch_constellation(client, ss.agent_id, ss.user_id)
+    panel.proactive_notifications = fetch_proactive_notifications(
+        client, ss.agent_id, ss.user_id
+    )
+    if ss.project_id and ss.webhook_event_type:
+        panel.delivery_attempts = fetch_delivery_attempts(
+            client, ss.project_id, ss.webhook_event_type
+        )
+
+
+# ---------------------------------------------------------------------------
+# Proactive webhooks + notifications
+# ---------------------------------------------------------------------------
+
+
+def resolve_project_id(client: Sonzai, agent_id: str) -> str | None:
+    """Find the project an agent belongs to.
+
+    Webhook subscriptions are project-scoped on the platform (the dispatcher
+    falls back to a system project for tenant-level events but proactive
+    events like ``on_wakeup_ready`` always resolve via the agent's project).
+    `client.agents.list()` returns ``AgentIndex`` rows that include
+    ``project_id`` — that's the cheapest way to look it up.
+    """
+    try:
+        page = client.agents.list(limit=100)
+    except Exception as err:  # noqa: BLE001
+        push_banner("warning", f"agents.list failed: {err}")
+        return None
+    for entry in page.to_list():
+        eid = getattr(entry, "agent_id", None)
+        if eid and str(eid) == agent_id:
+            pid = getattr(entry, "project_id", None)
+            return str(pid) if pid else None
+    return None
+
+
+def fetch_webhooks_for_project(client: Sonzai, project_id: str) -> list[dict[str, Any]]:
+    if not project_id:
+        return []
+    try:
+        resp = client.webhooks.list_for_project(project_id)
+    except Exception as err:  # noqa: BLE001
+        push_banner("warning", f"webhooks.list_for_project failed: {err}")
+        return []
+    out: list[dict[str, Any]] = []
+    for w in getattr(resp, "webhooks", None) or []:
+        out.append(
+            {
+                "event_type": getattr(w, "event_type", "") or "",
+                "webhook_url": getattr(w, "webhook_url", "") or "",
+                "is_active": bool(getattr(w, "is_active", True)),
+                "auth_header_set": bool(getattr(w, "auth_header", "") or ""),
+                "created_at": getattr(w, "created_at", "") or "",
+            }
+        )
+    return out
+
+
+def fetch_delivery_attempts(
+    client: Sonzai, project_id: str, event_type: str, limit: int = 10
+) -> list[dict[str, Any]]:
+    """Pull recent webhook delivery attempts for an event type.
+
+    Each row tells us whether the backend's POST landed (response_code,
+    duration, error_message) — useful when the receiving endpoint is silent
+    or rejecting requests.
+    """
+    if not (project_id and event_type):
+        return []
+    try:
+        page = client.webhooks.list_delivery_attempts_for_project(
+            project_id, event_type, limit=limit
+        )
+        attempts = page.to_list()
+    except Exception as err:  # noqa: BLE001
+        push_banner("warning", f"webhooks.list_delivery_attempts failed: {err}")
+        return []
+    out: list[dict[str, Any]] = []
+    for a in attempts[:limit]:
+        out.append(
+            {
+                "attempt_id": getattr(a, "attempt_id", "") or "",
+                "attempt_number": int(getattr(a, "attempt_number", 0) or 0),
+                "status": getattr(a, "status", "") or "",
+                "response_code": int(getattr(a, "response_code", 0) or 0),
+                "duration_ms": int(getattr(a, "duration_ms", 0) or 0),
+                "created_at": str(getattr(a, "created_at", "") or ""),
+                "error_message": getattr(a, "error_message", None),
+            }
+        )
+    return out
+
+
+def fetch_proactive_notifications(
+    client: Sonzai, agent_id: str, user_id: str, limit: int = 10
+) -> list[dict[str, Any]]:
+    """Pull the agent's stored proactive notifications.
+
+    The backend records every dispatched proactive message here in addition
+    to firing the webhook, so this list shows up regardless of whether you
+    have a public webhook URL configured. Useful for verifying the agent
+    actually generated something to send.
+    """
+    try:
+        resp = client.agents.notifications.list(
+            agent_id, user_id=user_id, limit=limit
+        )
+    except Exception as err:  # noqa: BLE001
+        push_banner("warning", f"agents.notifications.list failed: {err}")
+        return []
+    out: list[dict[str, Any]] = []
+    for n in getattr(resp, "notifications", None) or []:
+        out.append(
+            {
+                "message_id": getattr(n, "message_id", "") or "",
+                "check_type": getattr(n, "check_type", "") or "",
+                "intent": getattr(n, "intent", "") or "",
+                "generated_message": getattr(n, "generated_message", "") or "",
+                "status": getattr(n, "status", "") or "",
+                "created_at": getattr(n, "created_at", "") or "",
+            }
+        )
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -510,6 +664,8 @@ def render_sidebar() -> None:
                 for k in (
                     "connected", "client", "agent_id", "agent_name",
                     "session", "session_id", "messages", "panel",
+                    "project_id", "webhook_url", "webhook_event_type",
+                    "webhook_auth_header",
                 ):
                     if k in ss:
                         del ss[k]
@@ -547,10 +703,20 @@ def render_sidebar() -> None:
                 ss.client = client
                 ss.agent_id = agent_id
                 ss.agent_name = name
+                # Resolve the project this agent lives in. Proactive-message
+                # webhooks register against the project, not the agent.
+                ss.project_id = resolve_project_id(client, agent_id) or ""
                 start_chat_session(client, ss)
                 # Initial right-panel snapshot (no extraction wait — nothing
                 # has happened yet).
                 refresh_right_panel(client, ss, wait_for_extraction=False)
+                # Pull existing webhook subscriptions for this project so the
+                # UI shows what's already wired up before the user touches
+                # anything.
+                if ss.project_id:
+                    ss.panel.webhook_endpoints = fetch_webhooks_for_project(
+                        client, ss.project_id
+                    )
                 ss.connected = True
                 push_banner("success", "Connected. Start chatting.")
                 st.rerun()
@@ -739,6 +905,248 @@ def render_force_consolidation(client: Sonzai, ss: Any) -> None:
             st.json(last)
 
 
+# ---------------------------------------------------------------------------
+# Proactive webhooks + notifications panel
+# ---------------------------------------------------------------------------
+
+
+VERIFY_SIGNATURE_SNIPPET = '''\
+# Verify the `Sonzai-Signature` header on an incoming webhook POST.
+# Format: "t=<unix_ts>,v1=<hex_hmac_sha256>"
+# Signed payload: f"{ts}.{raw_body_bytes.decode()}"
+import hmac, hashlib, time
+
+def verify_sonzai_signature(
+    raw_body: bytes,
+    signature_header: str,
+    signing_secret: str,
+    *,
+    max_skew_seconds: int = 300,
+) -> bool:
+    parts = dict(p.split("=", 1) for p in signature_header.split(","))
+    ts, sig = parts.get("t", ""), parts.get("v1", "")
+    if not ts.isdigit() or abs(int(ts) - int(time.time())) > max_skew_seconds:
+        return False
+    signed = f"{ts}.".encode() + raw_body
+    expected = hmac.new(signing_secret.encode(), signed, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, sig)
+'''
+
+
+def render_proactive_panel(client: Sonzai, ss: Any) -> None:
+    """Manage proactive-message webhooks and view delivery activity.
+
+    Two parallel views into the same flow:
+      - Webhook delivery attempts (what the backend POSTed to your URL).
+      - Stored proactive notifications (what the agent generated, kept in
+        the DB even if no webhook was registered or the POST failed).
+
+    Schedule a wakeup + click "Force consolidation" above to make a new
+    proactive message fire end-to-end.
+    """
+    panel: StatePanel = ss.panel
+    st.markdown("**Proactive webhook**")
+    if not ss.project_id:
+        st.warning(
+            "No project_id resolved for this agent — webhook registration "
+            "is project-scoped on the platform. Try recreating the agent."
+        )
+        return
+
+    st.caption(
+        "Sonzai POSTs proactive messages to your webhook URL and signs each "
+        "request with `Sonzai-Signature`. Project-scoped — registered on "
+        f"`project_id={ss.project_id[:12]}…`."
+    )
+
+    # ----- registration form -----
+    with st.expander("Register / update webhook", expanded=not panel.webhook_endpoints):
+        ss.webhook_event_type = st.selectbox(
+            "Event type",
+            options=PROACTIVE_EVENT_TYPES,
+            index=PROACTIVE_EVENT_TYPES.index(ss.webhook_event_type)
+            if ss.webhook_event_type in PROACTIVE_EVENT_TYPES
+            else 0,
+            help=(
+                "`on_wakeup_ready` is the primary proactive-message event. "
+                "Others fire on diary / personality / mood / breakthrough updates."
+            ),
+        )
+        ss.webhook_url = st.text_input(
+            "Webhook URL",
+            value=ss.webhook_url,
+            placeholder="https://webhook.site/<your-uuid>  (or your ngrok URL)",
+            help=(
+                "Must be reachable from Sonzai's backend. For local testing "
+                "use https://webhook.site or `ngrok http <port>`."
+            ),
+        )
+        ss.webhook_auth_header = st.text_input(
+            "Authorization header (optional)",
+            value=ss.webhook_auth_header,
+            placeholder="Bearer my-shared-token",
+            help="Forwarded verbatim as the `Authorization` header on each delivery.",
+        )
+
+        cols = st.columns(3)
+        with cols[0]:
+            if st.button("Register", type="primary", use_container_width=True):
+                if not ss.webhook_url:
+                    push_banner("warning", "Provide a webhook URL first.")
+                else:
+                    try:
+                        resp = client.webhooks.register_for_project(
+                            ss.project_id,
+                            ss.webhook_event_type,
+                            webhook_url=ss.webhook_url,
+                            auth_header=(ss.webhook_auth_header or None),
+                        )
+                        # signing_secret only comes back on the FIRST
+                        # registration for that event_type — subsequent
+                        # updates leave it blank.
+                        if getattr(resp, "signing_secret", ""):
+                            panel.last_signing_secret = resp.signing_secret
+                            push_banner(
+                                "success",
+                                "Webhook registered. Save the signing secret "
+                                "now — it won't be shown again.",
+                            )
+                        else:
+                            push_banner("success", "Webhook updated.")
+                        panel.webhook_endpoints = fetch_webhooks_for_project(
+                            client, ss.project_id
+                        )
+                    except Exception as err:  # noqa: BLE001
+                        push_banner("warning", f"register failed: {err}")
+        with cols[1]:
+            if st.button("Rotate secret", use_container_width=True):
+                try:
+                    resp = client.webhooks.rotate_secret_for_project(
+                        ss.project_id, ss.webhook_event_type
+                    )
+                    panel.last_signing_secret = getattr(resp, "signing_secret", "") or None
+                    push_banner("success", "New signing secret issued.")
+                except Exception as err:  # noqa: BLE001
+                    push_banner("warning", f"rotate_secret failed: {err}")
+        with cols[2]:
+            if st.button("Delete", use_container_width=True):
+                try:
+                    client.webhooks.delete_for_project(
+                        ss.project_id, ss.webhook_event_type
+                    )
+                    panel.last_signing_secret = None
+                    panel.webhook_endpoints = fetch_webhooks_for_project(
+                        client, ss.project_id
+                    )
+                    push_banner("success", "Webhook deleted.")
+                except Exception as err:  # noqa: BLE001
+                    push_banner("warning", f"delete failed: {err}")
+
+    if panel.last_signing_secret:
+        st.success(
+            "Signing secret (one-time view — save it now): "
+            f"`{panel.last_signing_secret}`"
+        )
+
+    if panel.webhook_endpoints:
+        st.markdown("_Registered for this project:_")
+        for w in panel.webhook_endpoints:
+            active = "✓" if w["is_active"] else "✗"
+            auth = " · auth" if w["auth_header_set"] else ""
+            st.markdown(
+                f"- `{w['event_type']}` → {w['webhook_url']} ({active}{auth})"
+            )
+    else:
+        st.caption("_No webhooks registered for this project yet._")
+
+    # ----- trigger -----
+    st.markdown("**Trigger a proactive message**")
+    st.caption(
+        "Schedules a wakeup with a small delay, then click *Force "
+        f"consolidation* above (advances {FORCE_CONSOLIDATION_HOURS:.0f}h) to "
+        "make it fire. The backend will POST `on_wakeup_ready` to your URL."
+    )
+    if st.button("Schedule a test wakeup", use_container_width=True):
+        try:
+            wakeup = client.agents.schedule_wakeup(
+                ss.agent_id,
+                user_id=ss.user_id,
+                check_type=WAKEUP_DEMO_CHECK_TYPE,
+                intent=WAKEUP_DEMO_INTENT,
+                delay_hours=WAKEUP_DEMO_DELAY_HOURS,
+            )
+            panel.last_scheduled_wakeup = (
+                wakeup.model_dump() if hasattr(wakeup, "model_dump") else dict(wakeup)
+            )
+            push_banner(
+                "success",
+                f"Wakeup scheduled (delay {WAKEUP_DEMO_DELAY_HOURS}h). "
+                "Now click 'Force consolidation now' to fire it.",
+            )
+        except Exception as err:  # noqa: BLE001
+            push_banner("warning", f"schedule_wakeup failed: {err}")
+    if panel.last_scheduled_wakeup:
+        with st.expander("Last scheduled wakeup", expanded=False):
+            st.json(panel.last_scheduled_wakeup)
+
+    # ----- delivery attempts (what the backend tried to POST) -----
+    st.markdown("**Recent webhook deliveries**")
+    st.caption(
+        "Pulled from `client.webhooks.list_delivery_attempts_for_project`. "
+        "Refreshes after each chat turn."
+    )
+    cols = st.columns([1, 3])
+    with cols[0]:
+        if st.button("Refresh deliveries", use_container_width=True):
+            panel.delivery_attempts = fetch_delivery_attempts(
+                client, ss.project_id, ss.webhook_event_type
+            )
+    if not panel.delivery_attempts:
+        st.caption(
+            "_No delivery attempts yet for this event type. "
+            "Register a URL above, schedule a wakeup, then force consolidation._"
+        )
+    else:
+        for a in panel.delivery_attempts[:5]:
+            ok = a["status"] == "success" and 200 <= a["response_code"] < 300
+            badge = "✅" if ok else "⚠️"
+            line = (
+                f"{badge} `{a['status']}` · HTTP {a['response_code']} · "
+                f"{a['duration_ms']}ms · attempt #{a['attempt_number']} · "
+                f"{a['created_at']}"
+            )
+            st.markdown(line)
+            if a.get("error_message"):
+                st.caption(f"  ↳ {a['error_message']}")
+
+    # ----- stored proactive notifications -----
+    st.markdown("**Stored proactive notifications**")
+    st.caption(
+        "From `client.agents.notifications.list(...)` — survives even if you "
+        "have no public webhook URL. Lets you build a polling fallback."
+    )
+    notes = panel.proactive_notifications or []
+    if not notes:
+        st.caption("_No proactive messages have been generated for this user yet._")
+    else:
+        for n in notes[:5]:
+            with st.container(border=True):
+                st.markdown(
+                    f"**{n.get('check_type') or 'wakeup'}** · "
+                    f"_{n.get('intent') or '—'}_ · `{n.get('status') or ''}`"
+                )
+                msg = n.get("generated_message") or ""
+                if msg:
+                    st.markdown(f"> {msg}")
+                st.caption(
+                    f"message_id `{(n.get('message_id') or '')[:8]}…` · "
+                    f"{n.get('created_at') or ''}"
+                )
+
+    with st.expander("Verify the `Sonzai-Signature` header (Python snippet)", expanded=False):
+        st.code(VERIFY_SIGNATURE_SNIPPET, language="python")
+
+
 def render_state_panel(client: Sonzai, ss: Any) -> None:
     panel: StatePanel = ss.panel
     st.subheader("Live state")
@@ -767,6 +1175,8 @@ def render_state_panel(client: Sonzai, ss: Any) -> None:
     render_constellation(panel)
     st.divider()
     render_force_consolidation(client, ss)
+    st.divider()
+    render_proactive_panel(client, ss)
 
 
 # ---------------------------------------------------------------------------
