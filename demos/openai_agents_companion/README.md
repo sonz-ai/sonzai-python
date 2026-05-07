@@ -61,9 +61,45 @@ exposes a **fallback** (`gemini-2.0-flash-exp`). Both work today.
 ## Prerequisites
 
 - Python 3.11+
-- `SONZAI_API_KEY` — get one at [platform.sonz.ai](https://platform.sonz.ai)
-- `GEMINI_API_KEY` — get one at
+- A Sonzai project + API key (see below)
+- A Gemini API key from
   [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+
+## Set up your own project
+
+You need a Sonzai project to scope your agents and webhooks against, and an
+API key tied to that project. The demo never talks to anything outside that
+project, so it's safe to spin up a fresh one just for kicking the tyres.
+
+1. **Sign in.** Open [platform.sonz.ai](https://platform.sonz.ai) and sign
+   in with your work email. Clerk handles auth; first-time sign-ups create a
+   personal organization.
+2. **Create a project.** From the dashboard, click **New project** and give
+   it a recognizable name (e.g. `companion-demo`). Production environment is
+   fine — projects are cheap; isolation is the win.
+3. **Generate an API key.** Inside the project, open **Keys → Create key**.
+   Copy the `sk_…` value immediately — the platform stores only a hash, so
+   the plaintext is shown **once**. Treat it like a password.
+4. **Get a Gemini key.** Visit
+   [aistudio.google.com/apikey](https://aistudio.google.com/apikey),
+   create a key, and copy it.
+5. **Save both into `.env`** (the demo dir's `.gitignore` already excludes
+   it):
+
+   ```bash
+   cat > .env <<'EOF'
+   SONZAI_API_KEY=sk_...your_demo_project_key...
+   GEMINI_API_KEY=AIza...
+   EOF
+   ```
+
+That's it. Every agent the demo creates lives inside that project, and the
+proactive webhook you'll register later is project-scoped to it as well.
+Other tenants/projects on the platform never see your traffic.
+
+> If you only have an organization-admin Clerk session and no project yet,
+> the platform auto-creates a Default project for you on first agent create.
+> But explicitly creating one keeps the boundary obvious during the demo.
 
 ## Run
 
@@ -77,8 +113,8 @@ pip install -e ../..
 # Option B — use PyPI sonzai
 pip install sonzai
 
-export SONZAI_API_KEY=sk-...
-export GEMINI_API_KEY=AI...
+# Load the .env you just created
+export $(grep -v '^#' .env | xargs)
 
 streamlit run app.py
 ```
