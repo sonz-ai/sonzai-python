@@ -4853,6 +4853,10 @@ class MoodState(BaseModel):
     last_interaction_at: AwareDatetime
     tension: float
     updated_at: AwareDatetime
+    user_baseline_affiliation: float
+    user_baseline_arousal: float
+    user_baseline_tension: float
+    user_baseline_valence: float
     user_id: str | None = None
     valence: float
 
