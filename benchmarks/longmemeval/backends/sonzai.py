@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 import uuid
 
 from sonzai import AsyncSonzai
@@ -237,6 +238,84 @@ async def _retrieve(
 _CHAT_WALL_CLOCK_TIMEOUT_S = 720.0
 
 
+async def _ask_question_async(
+    client: "AsyncSonzai",
+    agent_id: str,
+    user_id: str,
+    chat_body: dict,
+    content_parts: list,
+    diag: dict,
+) -> tuple[str, dict]:
+    """iter-141x.7 — durable async-chat path for the bench.
+
+    POSTs to /chat/async (returns processing_id immediately), then polls
+    /chat/result/{processing_id} every 2s until status is complete or
+    failed. The platform's NATS-backed worker (iter-141x.3) handles
+    the actual chat work — survives pod restart, JetStream redelivers
+    on transient failures. Bench client just keeps polling.
+
+    Returns (answer_text, diag) like the sync stream path.
+    """
+    diag["used_async_chat"] = True
+    poll_interval = 2.0
+    deadline = asyncio.get_event_loop().time() + _CHAT_WALL_CLOCK_TIMEOUT_S
+
+    # POST /chat/async
+    try:
+        start_resp = await client._http.request(  # type: ignore[attr-defined]
+            "POST",
+            f"/api/v1/agents/{agent_id}/chat/async",
+            json_data=chat_body,
+        )
+    except Exception as e:
+        logger.warning("_ask_question_async POST /chat/async failed: %s", e)
+        diag["async_chat_error"] = f"start: {e}"
+        return "", diag
+
+    processing_id = (start_resp or {}).get("processing_id")
+    if not processing_id:
+        logger.warning("_ask_question_async: missing processing_id in response: %s", start_resp)
+        diag["async_chat_error"] = "missing_processing_id"
+        return "", diag
+
+    diag["async_processing_id"] = processing_id
+
+    # Poll /chat/result/{processing_id}
+    last_status = ""
+    while asyncio.get_event_loop().time() < deadline:
+        await asyncio.sleep(poll_interval)
+        try:
+            result = await client._http.request(  # type: ignore[attr-defined]
+                "GET",
+                f"/api/v1/agents/{agent_id}/chat/result/{processing_id}",
+            )
+        except Exception as e:
+            logger.debug("_ask_question_async poll failed (will retry): %s", e)
+            continue
+
+        if not result:
+            continue
+        last_status = str(result.get("status") or "")
+        if last_status == "complete":
+            response = str(result.get("response") or "")
+            content_parts.append(response)
+            return "".join(content_parts), diag
+        if last_status == "failed":
+            err = str(result.get("error") or "unknown")
+            logger.warning("_ask_question_async: task failed: %s", err)
+            diag["async_chat_error"] = f"task: {err}"
+            partial = str(result.get("response") or "")
+            if partial:
+                content_parts.append(partial)
+            return "".join(content_parts), diag
+
+    # Wall-clock budget exhausted — return whatever we have plus the
+    # last status so the diag report can show "still running at deadline".
+    diag["async_chat_timeout"] = True
+    diag["async_last_status"] = last_status
+    return "".join(content_parts), diag
+
+
 async def _ask_question(
     client: AsyncSonzai,
     *,
@@ -300,6 +379,20 @@ async def _ask_question(
         chat_body["provider"] = chat_provider
     if chat_model:
         chat_body["model"] = chat_model
+
+    # iter-141x.7 — opt-in NATS-backed durable async chat path. Set
+    # BENCH_USE_ASYNC_CHAT=1 to route bench requests through
+    # POST /chat/async + poll /chat/result/{id} instead of the sync
+    # SSE stream. The async path survives pod restart and JetStream
+    # redelivery on transient failure, so a chat that would have
+    # returned empty / NULL on the sync path now retries until success
+    # in the background. Useful for runs that hit Gemini quota walls
+    # or pod-rolling deploys mid-bench.
+    if os.environ.get("BENCH_USE_ASYNC_CHAT", "").lower() in {"1", "true", "yes"}:
+        return await _ask_question_async(
+            client, agent_id, user_id, chat_body, content_parts, diag,
+        )
+
     async def _consume_stream() -> None:
         async for event in client._http.stream_sse(  # type: ignore[attr-defined]
             "POST",
