@@ -520,11 +520,11 @@ async def _run_sonzai_backend(
                         chat_provider=chat_provider,
                         chat_model=chat_model,
                     ),
-                    timeout=1800.0,
+                    timeout=3600.0,
                 )
             except asyncio.TimeoutError:
-                logger.error("sonzai backend TIMEOUT on %s after 1800s", q.question_id)
-                return _error_row(q, "sonzai", "per-question timeout (1800s)")
+                logger.error("sonzai backend TIMEOUT on %s after 3600s", q.question_id)
+                return _error_row(q, "sonzai", "per-question timeout (3600s)")
             except Exception as e:
                 logger.exception("sonzai backend failed on %s", q.question_id)
                 return _error_row(q, "sonzai", str(e))
