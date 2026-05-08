@@ -156,7 +156,7 @@ class ChatTurn:
 @dataclass
 class StatePanel:
     mood: dict[str, float] | None = None  # {valence, arousal, tension, affiliation}
-    big5: dict[str, float] | None = None  # 5 scores in 0..1
+    big5: dict[str, float] | None = None  # 5 scores in 0..1 (backend stores 0-100; we normalize)
     facts: list[str] = field(default_factory=list)
     inventory: list[dict[str, Any]] = field(default_factory=list)
     constellation: dict[str, Any] | None = None  # raw {nodes, edges}
@@ -353,6 +353,13 @@ def build_gemini_model(model_name: str, gemini_key: str) -> OpenAIChatCompletion
 # ---------------------------------------------------------------------------
 
 
+def _big5_to_fraction(v: float) -> float:
+    """Permissive scale: backend canonical is 0-100, this panel renders 0-1
+    progress bars. Normalize 0-100 inputs back to fractions."""
+    f = float(v)
+    return f / 100.0 if f > 1 else f
+
+
 def fetch_personality_big5(client: Sonzai, agent_id: str) -> dict[str, float] | None:
     try:
         resp = client.agents.personality.get(agent_id)
@@ -361,11 +368,11 @@ def fetch_personality_big5(client: Sonzai, agent_id: str) -> dict[str, float] | 
         return None
     p = resp.profile
     return {
-        "openness": float(p.big5.openness.score),
-        "conscientiousness": float(p.big5.conscientiousness.score),
-        "extraversion": float(p.big5.extraversion.score),
-        "agreeableness": float(p.big5.agreeableness.score),
-        "neuroticism": float(p.big5.neuroticism.score),
+        "openness": _big5_to_fraction(p.big5.openness.score),
+        "conscientiousness": _big5_to_fraction(p.big5.conscientiousness.score),
+        "extraversion": _big5_to_fraction(p.big5.extraversion.score),
+        "agreeableness": _big5_to_fraction(p.big5.agreeableness.score),
+        "neuroticism": _big5_to_fraction(p.big5.neuroticism.score),
     }
 
 

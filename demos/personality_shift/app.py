@@ -118,15 +118,21 @@ def get_client(api_key: str) -> Sonzai:
     return Sonzai(api_key=api_key)
 
 
+def _to_fraction(v: float) -> float:
+    """Permissive scale: backend stores Big5 on 0-100 canonical scale; this
+    demo's sliders work in 0-1. Normalize 0-100 inputs to fractions."""
+    return v / 100.0 if v > 1 else float(v)
+
+
 def fetch_personality(client: Sonzai, agent_id: str) -> tuple[dict, dict, list[str]]:
     resp = client.agents.personality.get(agent_id)
     p = resp.profile
     big5 = {
-        "openness": p.big5.openness.score,
-        "conscientiousness": p.big5.conscientiousness.score,
-        "extraversion": p.big5.extraversion.score,
-        "agreeableness": p.big5.agreeableness.score,
-        "neuroticism": p.big5.neuroticism.score,
+        "openness": _to_fraction(p.big5.openness.score),
+        "conscientiousness": _to_fraction(p.big5.conscientiousness.score),
+        "extraversion": _to_fraction(p.big5.extraversion.score),
+        "agreeableness": _to_fraction(p.big5.agreeableness.score),
+        "neuroticism": _to_fraction(p.big5.neuroticism.score),
     }
     dims = p.dimensions.model_dump() if hasattr(p.dimensions, "model_dump") else dict(p.dimensions or {})
     return big5, dims, list(p.primary_traits or [])

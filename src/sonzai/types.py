@@ -1518,6 +1518,12 @@ class ModelConfig(BaseModel):
 
 
 class Big5Scores(BaseModel):
+    """Raw Big5 personality scores for create/update payloads.
+
+    Canonical scale is 0-100. Values <=1 are accepted permissively as 0-1
+    fractions (e.g. 0.85 → 85) for backward compatibility with legacy clients.
+    """
+
     openness: float = 0.0
     conscientiousness: float = 0.0
     extraversion: float = 0.0

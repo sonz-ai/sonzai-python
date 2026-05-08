@@ -1,9 +1,12 @@
 """Curated Big5 presets for the Personality Shift Demo.
 
-Each preset ships a one-line description and a full Big5 block on the 0-1
-scale the Platform stores natively. When applied via the SDK, the backend
-automatically re-derives the derived Dimensions (Politeness, Compassion,
-Assertiveness, etc.) so prompt-layer behavior updates on the next turn.
+Each preset ships a one-line description and a full Big5 block. Values are
+expressed as 0-1 fractions for slider compatibility; the Platform's API
+permissively accepts either 0-1 or 0-100 (anything ≤ 1 is treated as a
+fraction and rescaled to the canonical 0-100 storage scale on write). When
+applied via the SDK, the backend automatically re-derives the BFAS
+Dimensions (Politeness, Compassion, Assertiveness, etc.) so prompt-layer
+behavior updates on the next turn.
 """
 
 from __future__ import annotations
