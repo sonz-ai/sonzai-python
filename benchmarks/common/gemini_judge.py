@@ -86,8 +86,28 @@ Assistant's answer:
 The assistant's answer is CORRECT if it conveys the same factual content as the
 ground truth. Minor phrasing differences, reasonable paraphrases, and equivalent
 units are acceptable (e.g. "3 days" == "72 hours"; "John's sister" == "his sister
-John"). The answer is INCORRECT if it contradicts the ground truth, omits the
-key fact, or fabricates details not supported by it.
+John").
+
+For COUNT and NUMERIC questions ("how many X", "how much $", "how many days"),
+the ONLY thing that matters is whether the NUMBER matches the ground-truth
+number. If the ground truth is "5" and the assistant's stated total is also
+"5", that is CORRECT — period. Ignore any item names, specific quantities
+per item, or other details the assistant lists alongside the number; those
+are supplementary, not the answer. The user asked "how many", they got the
+right count, that's a pass. Only mark INCORRECT when the ASSISTANT'S TOTAL
+NUMBER is wrong (e.g. ground truth "5", assistant says "3" or "8").
+
+Examples for count questions:
+  GOLD: "5"  PRED: "5 model kits: 2 B-29s, 2 Camaros, 1 Spitfire" -> CORRECT
+  GOLD: "5"  PRED: "5 model kits: a Spitfire, a Mustang"          -> CORRECT
+  GOLD: "5"  PRED: "5 — including the Tamiya kit and others"      -> CORRECT
+  GOLD: "5"  PRED: "I have 3 model kits"                          -> INCORRECT
+  GOLD: "5"  PRED: "8 model kits"                                  -> INCORRECT
+
+For non-numeric factual questions, the answer is INCORRECT if it
+contradicts the ground truth, omits the key fact, or fabricates details
+that contradict it. (Extra correct context is fine; extra contradictory
+context is not.)
 
 Respond with JSON matching this schema:
 {{"correct": <bool>, "rationale": "<one short sentence>"}}
