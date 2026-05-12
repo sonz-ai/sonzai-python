@@ -1517,7 +1517,7 @@ MOOD_PRESETS: dict[str, dict[str, float]] = {
     "Neutral":   {"valence": 50, "arousal": 50, "tension": 50, "affiliation": 50},
     "Cheerful":  {"valence": 85, "arousal": 70, "tension": 70, "affiliation": 80},
     "Angry":     {"valence": 15, "arousal": 90, "tension": 10, "affiliation": 20},
-    "Anxious":   {"valence": 30, "arousal": 75, "tension": 15, "affiliation": 45},
+    "Anxious":   {"valence": 30, "arousal": 75, "tension": 55, "affiliation": 45},
     "Melancholy":{"valence": 25, "arousal": 25, "tension": 40, "affiliation": 35},
     "Affectionate":{"valence": 75, "arousal": 55, "tension": 65, "affiliation": 95},
 }
