@@ -1192,11 +1192,11 @@ def render_big5_section(client: Sonzai, ss: Any) -> None:
     if st.button("Apply personality override", type="primary", use_container_width=True, key="apply_big5", disabled=track, help="Freeze a slider first (drag or pick a preset) to enable"):
         try:
             big5 = {k: float(st.session_state[f"big5_slider_{k}"]) for k in ("openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism")}
-            client.agents.personality.update(
-                ss.agent_id,
-                big5=big5,
-                assessment_method="manual_override",
-            )
+            # NOTE: do NOT pass assessment_method — the huma spec on PUT
+            # /personality has additionalProperties:false, so any extra body
+            # field hits a 422 ("unexpected property"). The SDK wrapper
+            # accepts the kwarg but the server rejects the resulting body.
+            client.agents.personality.update(ss.agent_id, big5=big5)
             if panel.big5:
                 panel.prev_big5 = dict(panel.big5)
             panel.big5 = {k: v / 100.0 for k, v in big5.items()}
