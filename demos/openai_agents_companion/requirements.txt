@@ -1,5 +1,5 @@
 openai-agents>=0.16
-sonzai>=1.4
+sonzai>=1.5.5
 streamlit>=1.37
 pyvis>=0.3
 python-dotenv>=1.0

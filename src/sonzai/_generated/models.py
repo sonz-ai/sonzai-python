@@ -4851,6 +4851,7 @@ class MoodState(BaseModel):
     label: str
     last_decay_at: AwareDatetime
     last_interaction_at: AwareDatetime
+    last_override_at: AwareDatetime | None = None
     tension: float
     updated_at: AwareDatetime
     user_baseline_affiliation: float
