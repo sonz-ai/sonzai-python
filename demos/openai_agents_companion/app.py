@@ -225,6 +225,10 @@ class StatePanel:
     # these. Writes happen from a daemon thread launched after session.turn.
     refresh_in_progress: bool = False
     last_refresh_at: float = 0.0
+    # Previous snapshots so the steering UI can render +/- deltas next to each
+    # current value. Captured immediately before mood/big5 are overwritten.
+    prev_mood: dict[str, float] | None = None
+    prev_big5: dict[str, float] | None = None
 
 
 def init_state() -> None:
@@ -251,6 +255,16 @@ def init_state() -> None:
     ss.setdefault("webhook_event_type", DEFAULT_PROACTIVE_EVENT)
     ss.setdefault("webhook_auth_header", "")
 
+    # Steering: sliders track the live backend value by default. Picking a
+    # preset or dragging a slider flips tracking off; "Resume" turns it back
+    # on. Default slider values are neutral so first paint isn't all-zero.
+    ss.setdefault("track_mood", True)
+    ss.setdefault("track_big5", True)
+    for dim in ("valence", "arousal", "tension", "affiliation"):
+        ss.setdefault(f"mood_slider_{dim}", 50.0)
+    for trait in ("openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"):
+        ss.setdefault(f"big5_slider_{trait}", 50.0)
+
 
 def push_banner(kind: str, text: str) -> None:
     st.session_state.banners.append({"kind": kind, "text": text, "ts": time.time()})
@@ -263,55 +277,31 @@ def push_banner(kind: str, text: str) -> None:
 
 
 def build_instructions(ctx: dict[str, Any], agent_name: str = "") -> str:
-    """Render Sonzai's enriched context as an OpenAI-Agents system prompt.
+    """Return the system prompt for the OpenAI Agents SDK.
 
-    The context dict is FLAT (matches `EnrichedAgentContext` from the platform's
-    `/agents/{agent_id}/context` endpoint): big5, speech_patterns, current_mood,
-    loaded_facts, etc. live at the top level — there is no nested "profile" /
-    "behavioral" / "memory" envelope.
+    The platform's /context endpoint now returns a fully-rendered behavioral
+    `system_prompt` (persona + Big5 traits as behavior phrases + mood as a
+    'RESPOND AS X' directive + relationship + facts + …) — SDK consumers
+    should paste it as-is instead of stitching structured fields in their
+    own language. We honour that contract here.
+
+    The legacy stitching path remains as a fallback for older platform
+    builds that don't emit `system_prompt` yet, so the demo doesn't break
+    against a stale backend.
     """
+    rendered = ctx.get("system_prompt")
+    if isinstance(rendered, str) and rendered.strip():
+        return rendered
+
+    # Fallback for old platforms — minimal, no mood-to-tone translation
+    # (the new path does this server-side; we don't want to drift).
     parts: list[str] = []
     name = agent_name or "Companion"
     persona = ctx.get("personality_prompt") or ctx.get("bio")
-    if persona:
-        parts.append(f"You are {name}. {persona}")
-    else:
-        parts.append(f"You are {name}, a helpful, curious companion.")
-
-    big5 = ctx.get("big5")
-    if isinstance(big5, dict) and big5:
-        traits = ", ".join(
-            f"{k} {float(v.get('score', v) if isinstance(v, dict) else v):.2f}"
-            for k, v in big5.items()
-        )
-        parts.append(f"Personality (Big5): {traits}.")
-
-    speech = ctx.get("speech_patterns")
-    if isinstance(speech, list) and speech:
-        parts.append("Speech patterns: " + "; ".join(str(s) for s in speech[:3]) + ".")
-
+    parts.append(f"You are {name}. {persona}" if persona else f"You are {name}.")
     mood = ctx.get("current_mood")
-    if isinstance(mood, dict) and any(k in mood for k in ("valence", "arousal", "tension")):
-        parts.append(
-            f"Current mood: valence={float(mood.get('valence', 0)):+.2f}, "
-            f"arousal={float(mood.get('arousal', 0)):+.2f}, "
-            f"tension={float(mood.get('tension', 0)):+.2f}."
-        )
-
-    facts = ctx.get("loaded_facts") or []
-    if isinstance(facts, list) and facts:
-        bullets = []
-        for f in facts[:8]:
-            if isinstance(f, dict):
-                text = f.get("atomic_text") or f.get("content") or f.get("text")
-            else:
-                text = str(f)
-            if text:
-                bullets.append(f"- {text}")
-        if bullets:
-            parts.append("Relevant memories about this user:\n" + "\n".join(bullets))
-
-    parts.append("Reply naturally; keep messages concise unless asked to elaborate.")
+    if isinstance(mood, dict) and mood.get("label"):
+        parts.append(f"Current mood: {mood['label']}.")
     return "\n\n".join(parts)
 
 
@@ -414,6 +404,31 @@ def _big5_to_fraction(v: float) -> float:
     progress bars. Normalize 0-100 inputs back to fractions."""
     f = float(v)
     return f / 100.0 if f > 1 else f
+
+
+def fetch_current_mood(client: Sonzai, agent_id: str, user_id: str) -> dict[str, float] | None:
+    """Absolute mood state on the 0-100 scale via `agents.get_mood`.
+
+    Distinct from `turn.mood`, which session.turn returns as a per-turn delta
+    (~-1..+1 range). The sliders / gauges want the absolute current value, so
+    we fetch from the dedicated endpoint.
+    """
+    try:
+        resp = client.agents.get_mood(agent_id, user_id=user_id)
+    except Exception as err:  # noqa: BLE001
+        push_banner("warning", f"get_mood failed: {err}")
+        return None
+    m = getattr(resp, "mood", None)
+    if m is None:
+        return None
+    out: dict[str, float] = {}
+    for k in ("valence", "arousal", "tension", "affiliation"):
+        v = getattr(m, k, None)
+        if v is not None:
+            # Clamp defensively — backend guarantees [0, 100] but a stale row
+            # or migration glitch shouldn't crash the slider.
+            out[k] = max(0.0, min(100.0, float(v)))
+    return out or None
 
 
 def fetch_personality_big5(client: Sonzai, agent_id: str) -> dict[str, float] | None:
@@ -519,7 +534,15 @@ def _do_refresh(
     """
     panel.refresh_in_progress = True
     try:
-        panel.big5 = fetch_personality_big5(client, agent_id)
+        new_mood = fetch_current_mood(client, agent_id, user_id)
+        if new_mood is not None and panel.mood:
+            panel.prev_mood = dict(panel.mood)
+        if new_mood is not None:
+            panel.mood = new_mood
+        new_big5 = fetch_personality_big5(client, agent_id)
+        if new_big5 is not None and panel.big5:
+            panel.prev_big5 = dict(panel.big5)
+        panel.big5 = new_big5
         panel.facts = fetch_recent_facts(client, agent_id, user_id)
         panel.inventory = fetch_inventory(client, agent_id, user_id)
         panel.constellation = fetch_constellation(client, agent_id, user_id)
@@ -867,38 +890,290 @@ def render_sidebar() -> None:
 # ---------------------------------------------------------------------------
 
 
-def render_mood(panel: StatePanel) -> None:
-    st.markdown("**Mood** — real-time, returned inline by `session.turn`.")
-    mood = panel.mood or {}
-    cols = st.columns(4)
-    dims = [
-        ("valence", "valence"),
-        ("arousal", "arousal"),
-        ("tension", "tension"),
-        ("affiliation", "affiliation"),
-    ]
-    for col, (key, label) in zip(cols, dims):
-        with col:
-            val = float(mood.get(key, 0.0)) if mood else 0.0
-            st.metric(label, f"{val:+.2f}")
+def _disable_mood_tracking() -> None:
+    """Slider on_change handler — user grabbed a slider, freeze auto-sync."""
+    st.session_state["track_mood"] = False
 
 
-def render_big5(panel: StatePanel) -> None:
-    st.markdown("**Personality (Big5)** — polled, lags 5-15s after extraction.")
-    big5 = panel.big5
-    if not big5:
-        st.caption("_Waiting for first extraction…_")
-        return
-    for trait in (
-        "openness",
-        "conscientiousness",
-        "extraversion",
-        "agreeableness",
-        "neuroticism",
-    ):
-        v = float(big5.get(trait, 0.5))
-        v_clamped = min(max(v, 0.0), 1.0)
-        st.progress(v_clamped, text=f"{trait}: {v:.2f}")
+def _disable_big5_tracking() -> None:
+    st.session_state["track_big5"] = False
+
+
+def _on_mood_preset_pick() -> None:
+    """Selectbox on_change — load preset values into sliders + freeze tracking."""
+    preset = st.session_state.get("mood_preset")
+    if preset and preset in MOOD_PRESETS:
+        for k, v in MOOD_PRESETS[preset].items():
+            st.session_state[f"mood_slider_{k}"] = float(v)
+        st.session_state["track_mood"] = False
+
+
+def _on_big5_preset_pick() -> None:
+    preset = st.session_state.get("big5_preset")
+    if preset and preset in BIG5_PRESETS:
+        for k, v in BIG5_PRESETS[preset].items():
+            st.session_state[f"big5_slider_{k}"] = float(v)
+        st.session_state["track_big5"] = False
+
+
+def _delta_str(current: float, prev: float | None) -> str:
+    """' (+5)' / ' (−3)' / ''  — empty when delta is tiny so it doesn't shout."""
+    if prev is None:
+        return ""
+    d = current - prev
+    if abs(d) < 0.5:
+        return ""
+    return f" ({d:+.0f})"
+
+
+def render_mood_section(client: Sonzai, ss: Any) -> None:
+    """Mood gauges merged with override sliders.
+
+    When `track_mood` is on (default), each fragment heartbeat writes the
+    current backend mood into the slider session_state — so the sliders
+    visibly animate as the agent's mood drifts. Dragging a slider or
+    picking a preset flips tracking off and freezes the sliders at the
+    chosen values; "Apply" POSTs them and re-enables tracking so you can
+    watch the override decay over subsequent turns.
+    """
+    panel: StatePanel = ss.panel
+    track = st.session_state.get("track_mood", True)
+
+    # Sanitize any stale slider state (defends against an older app version
+    # that wrote a delta like -0.9 into session_state). Always idempotent.
+    for k in ("valence", "arousal", "tension", "affiliation"):
+        key = f"mood_slider_{k}"
+        if key in st.session_state:
+            st.session_state[key] = max(0.0, min(100.0, float(st.session_state[key])))
+
+    # === Live mirror: backend → slider state, before slider widgets render. ===
+    if track and panel.mood:
+        for k in ("valence", "arousal", "tension", "affiliation"):
+            v = panel.mood.get(k)
+            if v is not None:
+                st.session_state[f"mood_slider_{k}"] = max(0.0, min(100.0, float(v)))
+
+    badge = "🔄 tracking" if track else "✏️ editing"
+    st.markdown(f"**Mood** &nbsp; <span style='font-size:0.8em;opacity:0.7'>{badge}</span>", unsafe_allow_html=True)
+    if panel.mood:
+        prev = panel.prev_mood or {}
+        cur = panel.mood
+        st.caption(
+            "Current → "
+            f"V {cur.get('valence', 0):.0f}{_delta_str(cur.get('valence', 0), prev.get('valence'))} · "
+            f"A {cur.get('arousal', 0):.0f}{_delta_str(cur.get('arousal', 0), prev.get('arousal'))} · "
+            f"T {cur.get('tension', 0):.0f}{_delta_str(cur.get('tension', 0), prev.get('tension'))} · "
+            f"Af {cur.get('affiliation', 0):.0f}{_delta_str(cur.get('affiliation', 0), prev.get('affiliation'))}"
+        )
+    else:
+        st.caption("Current → (no mood yet — send a message)")
+
+    preset_col, resume_col = st.columns([3, 1])
+    with preset_col:
+        st.selectbox(
+            "Mood preset",
+            options=list(MOOD_PRESETS.keys()),
+            index=0,
+            key="mood_preset",
+            label_visibility="collapsed",
+            on_change=_on_mood_preset_pick,
+        )
+    with resume_col:
+        if st.button("↺ Track", key="resume_mood", disabled=track, use_container_width=True, help="Resume auto-sync to live values"):
+            st.session_state["track_mood"] = True
+
+    cols = st.columns(2)
+    with cols[0]:
+        st.slider("Valence", 0.0, 100.0, step=1.0, key="mood_slider_valence", on_change=_disable_mood_tracking)
+        st.slider("Tension", 0.0, 100.0, step=1.0, key="mood_slider_tension", on_change=_disable_mood_tracking)
+    with cols[1]:
+        st.slider("Arousal", 0.0, 100.0, step=1.0, key="mood_slider_arousal", on_change=_disable_mood_tracking)
+        st.slider("Affiliation", 0.0, 100.0, step=1.0, key="mood_slider_affiliation", on_change=_disable_mood_tracking)
+
+    if st.button("Apply mood override", type="primary", use_container_width=True, key="apply_mood", disabled=track, help="Freeze a slider first (drag or pick a preset) to enable"):
+        try:
+            valence = float(st.session_state["mood_slider_valence"])
+            arousal = float(st.session_state["mood_slider_arousal"])
+            tension = float(st.session_state["mood_slider_tension"])
+            affiliation = float(st.session_state["mood_slider_affiliation"])
+            resp = client.agents.update_mood(
+                ss.agent_id,
+                valence=valence,
+                arousal=arousal,
+                tension=tension,
+                affiliation=affiliation,
+                user_id=ss.user_id,
+            )
+            # Snapshot prev BEFORE we overwrite, so deltas show the jump.
+            if panel.mood:
+                panel.prev_mood = dict(panel.mood)
+            panel.mood = {"valence": valence, "arousal": arousal, "tension": tension, "affiliation": affiliation}
+            label = getattr(resp.mood, "label", "") if getattr(resp, "mood", None) else ""
+            push_banner("success", f"Mood overridden → {label or 'applied'}. Resuming live tracking.")
+            # Re-enable tracking so the user can watch the override drift over subsequent turns.
+            st.session_state["track_mood"] = True
+        except Exception as err:  # noqa: BLE001
+            push_banner("warning", f"update_mood failed: {err}")
+
+
+def render_big5_section(client: Sonzai, ss: Any) -> None:
+    """Big5 bars merged with override sliders. Same tracking pattern as mood."""
+    panel: StatePanel = ss.panel
+    track = st.session_state.get("track_big5", True)
+
+    # Live mirror: panel.big5 stores fractions (0-1); sliders use 0-100.
+    if track and panel.big5:
+        for k in ("openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"):
+            v = panel.big5.get(k)
+            if v is not None:
+                st.session_state[f"big5_slider_{k}"] = float(v) * 100.0
+
+    badge = "🔄 tracking" if track else "✏️ editing"
+    st.markdown(f"**Personality (Big5)** &nbsp; <span style='font-size:0.8em;opacity:0.7'>{badge}</span>", unsafe_allow_html=True)
+    if panel.big5:
+        prev = panel.prev_big5 or {}
+        cur = panel.big5
+        st.caption(
+            "Current → "
+            f"O {cur.get('openness', 0) * 100:.0f}{_delta_str(cur.get('openness', 0) * 100, (prev.get('openness') or 0) * 100 if 'openness' in prev else None)} · "
+            f"C {cur.get('conscientiousness', 0) * 100:.0f}{_delta_str(cur.get('conscientiousness', 0) * 100, (prev.get('conscientiousness') or 0) * 100 if 'conscientiousness' in prev else None)} · "
+            f"E {cur.get('extraversion', 0) * 100:.0f}{_delta_str(cur.get('extraversion', 0) * 100, (prev.get('extraversion') or 0) * 100 if 'extraversion' in prev else None)} · "
+            f"A {cur.get('agreeableness', 0) * 100:.0f}{_delta_str(cur.get('agreeableness', 0) * 100, (prev.get('agreeableness') or 0) * 100 if 'agreeableness' in prev else None)} · "
+            f"N {cur.get('neuroticism', 0) * 100:.0f}{_delta_str(cur.get('neuroticism', 0) * 100, (prev.get('neuroticism') or 0) * 100 if 'neuroticism' in prev else None)}"
+        )
+    else:
+        st.caption("Current → (Big5 not extracted yet — give it a few turns)")
+
+    preset_col, resume_col = st.columns([3, 1])
+    with preset_col:
+        st.selectbox(
+            "Big5 preset",
+            options=list(BIG5_PRESETS.keys()),
+            index=0,
+            key="big5_preset",
+            label_visibility="collapsed",
+            on_change=_on_big5_preset_pick,
+        )
+    with resume_col:
+        if st.button("↺ Track", key="resume_big5", disabled=track, use_container_width=True, help="Resume auto-sync to live values"):
+            st.session_state["track_big5"] = True
+
+    cols = st.columns(2)
+    with cols[0]:
+        st.slider("Openness", 0.0, 100.0, step=1.0, key="big5_slider_openness", on_change=_disable_big5_tracking)
+        st.slider("Extraversion", 0.0, 100.0, step=1.0, key="big5_slider_extraversion", on_change=_disable_big5_tracking)
+        st.slider("Neuroticism", 0.0, 100.0, step=1.0, key="big5_slider_neuroticism", on_change=_disable_big5_tracking)
+    with cols[1]:
+        st.slider("Conscientiousness", 0.0, 100.0, step=1.0, key="big5_slider_conscientiousness", on_change=_disable_big5_tracking)
+        st.slider("Agreeableness", 0.0, 100.0, step=1.0, key="big5_slider_agreeableness", on_change=_disable_big5_tracking)
+
+    if st.button("Apply personality override", type="primary", use_container_width=True, key="apply_big5", disabled=track, help="Freeze a slider first (drag or pick a preset) to enable"):
+        try:
+            big5 = {k: float(st.session_state[f"big5_slider_{k}"]) for k in ("openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism")}
+            client.agents.personality.update(
+                ss.agent_id,
+                big5=big5,
+                assessment_method="manual_override",
+            )
+            if panel.big5:
+                panel.prev_big5 = dict(panel.big5)
+            panel.big5 = {k: v / 100.0 for k, v in big5.items()}
+            push_banner("success", "Big5 overridden. Resuming live tracking.")
+            st.session_state["track_big5"] = True
+        except Exception as err:  # noqa: BLE001
+            push_banner("warning", f"personality.update failed: {err}")
+
+
+def render_session_controls(client: Sonzai, ss: Any) -> None:
+    """End the current Sonzai session and immediately open a new one,
+    blocking on the server-side consolidation/extraction pipeline so the
+    right-pane state reflects the post-session-end snapshot.
+
+    Backend `session.end(wait=True)` runs the full CE pipeline synchronously:
+    user-personality overlay updates, mood baseline consolidation (L3→L2
+    EMA), atomic-fact extraction, diary entry generation, constellation
+    extraction. We refresh the panel inline so the user sees newly-extracted
+    facts / Big5 drift / etc. without waiting on the 3s heartbeat.
+
+    Local `ss.messages` is preserved — the chat history scroll stays put.
+    """
+    st.markdown("**Session controls**")
+    st.caption(
+        "Run the server-side CE pipeline (extraction, diary, consolidation, "
+        "personality drift) and open a fresh session in one click. The chat "
+        "history above is preserved — play around freely."
+    )
+    cols = st.columns(2)
+    with cols[0]:
+        if st.button(
+            "🔄 End & new session",
+            type="primary",
+            use_container_width=True,
+            disabled=ss.session is None,
+            key="end_and_new_session_btn",
+            help="Flushes CE pipeline synchronously; refreshes facts/personality; reopens session.",
+        ):
+            old_sid = ss.session_id
+            old_session = ss.session
+            with st.spinner("Running CE pipeline (extraction, diary, consolidation)…"):
+                try:
+                    old_session.end(wait=True)
+                except Exception as err:  # noqa: BLE001
+                    push_banner("warning", f"session.end failed (non-fatal): {err}")
+                ss.session = None
+                ss.session_id = ""
+                # Inline refresh — extraction already finished server-side, no
+                # need for the deferred 3s wait.
+                _do_refresh(
+                    client, ss.panel, ss.agent_id, ss.user_id,
+                    ss.project_id, ss.webhook_event_type,
+                )
+                # Reopen so the next message has a session to use.
+                try:
+                    start_chat_session(client, ss)
+                except Exception as err:  # noqa: BLE001
+                    push_banner("warning", f"could not reopen session: {err}")
+            push_banner(
+                "success",
+                f"Session `{old_sid[:12]}…` ended → CE pipeline flushed → "
+                f"new session `{ss.session_id[:12] if ss.session_id else '?'}…` started.",
+            )
+    with cols[1]:
+        if st.button(
+            "Force consolidation (25h)",
+            use_container_width=True,
+            key="force_consolidation_btn",
+            help="Advances simulated time to fire daily workers — diary, deeper consolidation.",
+        ):
+            try:
+                with st.spinner("Advancing simulated time…"):
+                    result = client.workbench.advance_time(
+                        ss.agent_id,
+                        ss.user_id,
+                        FORCE_CONSOLIDATION_HOURS,
+                        instance_id=ss.instance_id,
+                        run_async=False,
+                    )
+                if hasattr(result, "model_dump"):
+                    summary = result.model_dump()
+                elif isinstance(result, dict):
+                    summary = result
+                else:
+                    summary = {"raw": str(result)}
+                ss.panel.last_consolidation = summary
+                push_banner(
+                    "success",
+                    f"advance-time done — days={summary.get('days_processed', '?')}, "
+                    f"diary={summary.get('diary_entries_created', 0)}.",
+                )
+                schedule_background_refresh(client, ss)
+            except Exception as err:  # noqa: BLE001
+                push_banner("warning", f"advance-time failed: {err}")
+
+    last = ss.panel.last_consolidation
+    if last:
+        with st.expander("Last consolidation result", expanded=False):
+            st.json(last)
 
 
 def render_facts(panel: StatePanel) -> None:
@@ -992,47 +1267,6 @@ def render_constellation(panel: StatePanel) -> None:
         with open(tmp.name, encoding="utf-8") as fh:
             html = fh.read()
     st.components.v1.html(html, height=400, scrolling=True)
-
-
-def render_force_consolidation(client: Sonzai, ss: Any) -> None:
-    st.markdown("**Force consolidation**")
-    st.caption(
-        f"Calls `/workbench/advance-time` for {FORCE_CONSOLIDATION_HOURS:.0f}h "
-        "to fire daily workers (consolidation, diary, constellation extraction). "
-        "Use this when you want to skip the 8h deferred-consolidation gate."
-    )
-    if st.button("Force consolidation now", use_container_width=True):
-        try:
-            with st.spinner("Advancing simulated time…"):
-                result = client.workbench.advance_time(
-                    ss.agent_id,
-                    ss.user_id,
-                    FORCE_CONSOLIDATION_HOURS,
-                    instance_id=ss.instance_id,
-                    run_async=False,
-                )
-            if hasattr(result, "model_dump"):
-                summary = result.model_dump()
-            elif isinstance(result, dict):
-                summary = result
-            else:
-                summary = {"raw": str(result)}
-            ss.panel.last_consolidation = summary
-            push_banner(
-                "success",
-                f"advance-time done — days={summary.get('days_processed', '?')}, "
-                f"diary={summary.get('diary_entries_created', 0)}.",
-            )
-            refresh_right_panel(client, ss, wait_for_extraction=False)
-            st.rerun()
-        except Exception as err:  # noqa: BLE001
-            push_banner("warning", f"advance-time failed: {err}")
-            st.rerun()
-
-    last = ss.panel.last_consolidation
-    if last:
-        with st.expander("Last consolidation result", expanded=False):
-            st.json(last)
 
 
 # ---------------------------------------------------------------------------
@@ -1298,121 +1532,6 @@ BIG5_PRESETS: dict[str, dict[str, float]] = {
 }
 
 
-def _seed_slider_state(prefix: str, preset_name: str, preset_values: dict[str, float], last_key: str) -> None:
-    """Write preset values into session_state for each `{prefix}_{dim}` key.
-
-    Runs on first render and whenever the user picks a different preset. After
-    that, the slider widgets own the keys (Streamlit updates session_state on
-    every drag) and we leave them alone.
-    """
-    if st.session_state.get(last_key) != preset_name:
-        for dim, v in preset_values.items():
-            st.session_state[f"{prefix}_{dim}"] = float(v)
-        st.session_state[last_key] = preset_name
-
-
-def render_steering_panel(client: Sonzai, ss: Any) -> None:
-    """Steering controls — operator overrides for mood + Big5.
-
-    Lives OUTSIDE the live-state fragment so slider positions aren't reset on
-    the 3s heartbeat. Clicking Apply POSTs absolute values; subsequent turns
-    drift normally (overrides are not pinned), so the assistant's tone shifts
-    immediately and gradually relaxes back.
-    """
-    panel: StatePanel = ss.panel
-    st.subheader("🎛 Steering")
-    st.caption(
-        "Hard-set mood / Big5. The next message you send reflects the new "
-        "state; values drift normally afterwards."
-    )
-
-    # --- Mood ---
-    st.markdown("**Mood** (0–100 per dimension)")
-    mood_preset = st.selectbox(
-        "Mood preset",
-        options=list(MOOD_PRESETS.keys()),
-        index=0,
-        key="mood_preset",
-        label_visibility="collapsed",
-    )
-    _seed_slider_state("mood_slider", mood_preset, MOOD_PRESETS[mood_preset], "_last_mood_preset")
-    cols = st.columns(2)
-    with cols[0]:
-        valence = st.slider("Valence", 0.0, 100.0, step=1.0, key="mood_slider_valence")
-        tension = st.slider("Tension", 0.0, 100.0, step=1.0, key="mood_slider_tension")
-    with cols[1]:
-        arousal = st.slider("Arousal", 0.0, 100.0, step=1.0, key="mood_slider_arousal")
-        affiliation = st.slider("Affiliation", 0.0, 100.0, step=1.0, key="mood_slider_affiliation")
-
-    if st.button("Apply mood override", type="primary", use_container_width=True, key="apply_mood"):
-        try:
-            resp = client.agents.update_mood(
-                ss.agent_id,
-                valence=float(valence),
-                arousal=float(arousal),
-                tension=float(tension),
-                affiliation=float(affiliation),
-                user_id=ss.user_id,
-            )
-            panel.mood = {
-                "valence": float(valence),
-                "arousal": float(arousal),
-                "tension": float(tension),
-                "affiliation": float(affiliation),
-            }
-            label = getattr(resp.mood, "label", "") if getattr(resp, "mood", None) else ""
-            push_banner("success", f"Mood overridden → {label or 'applied'}. Send a message to see it.")
-        except Exception as err:  # noqa: BLE001
-            push_banner("warning", f"update_mood failed: {err}")
-
-    st.divider()
-
-    # --- Big5 ---
-    st.markdown("**Personality (Big5)** (0–100 per dimension)")
-    big5_preset = st.selectbox(
-        "Big5 preset",
-        options=list(BIG5_PRESETS.keys()),
-        index=0,
-        key="big5_preset",
-        label_visibility="collapsed",
-    )
-    _seed_slider_state("big5_slider", big5_preset, BIG5_PRESETS[big5_preset], "_last_big5_preset")
-    cols = st.columns(2)
-    with cols[0]:
-        openness = st.slider("Openness", 0.0, 100.0, step=1.0, key="big5_slider_openness")
-        extraversion = st.slider("Extraversion", 0.0, 100.0, step=1.0, key="big5_slider_extraversion")
-        neuroticism = st.slider("Neuroticism", 0.0, 100.0, step=1.0, key="big5_slider_neuroticism")
-    with cols[1]:
-        conscientiousness = st.slider("Conscientiousness", 0.0, 100.0, step=1.0, key="big5_slider_conscientiousness")
-        agreeableness = st.slider("Agreeableness", 0.0, 100.0, step=1.0, key="big5_slider_agreeableness")
-
-    if st.button("Apply personality override", type="primary", use_container_width=True, key="apply_big5"):
-        try:
-            client.agents.personality.update(
-                ss.agent_id,
-                big5={
-                    "openness": float(openness),
-                    "conscientiousness": float(conscientiousness),
-                    "extraversion": float(extraversion),
-                    "agreeableness": float(agreeableness),
-                    "neuroticism": float(neuroticism),
-                },
-                assessment_method="manual_override",
-            )
-            panel.big5 = {
-                "openness": float(openness) / 100.0,
-                "conscientiousness": float(conscientiousness) / 100.0,
-                "extraversion": float(extraversion) / 100.0,
-                "agreeableness": float(agreeableness) / 100.0,
-                "neuroticism": float(neuroticism) / 100.0,
-            }
-            push_banner("success", "Big5 overridden. Send a message to see it.")
-        except Exception as err:  # noqa: BLE001
-            push_banner("warning", f"personality.update failed: {err}")
-
-    st.divider()
-
-
 @st.fragment(run_every=3)
 def render_state_panel_live() -> None:
     """Right-pane heartbeat. Re-runs every 3s independently of the chat pane.
@@ -1450,9 +1569,9 @@ def render_state_panel(client: Sonzai, ss: Any) -> None:
         else:
             st.info(b["text"])
 
-    render_mood(panel)
+    render_mood_section(client, ss)
     st.divider()
-    render_big5(panel)
+    render_big5_section(client, ss)
     st.divider()
     render_facts(panel)
     st.divider()
@@ -1460,7 +1579,7 @@ def render_state_panel(client: Sonzai, ss: Any) -> None:
     st.divider()
     render_constellation(panel)
     st.divider()
-    render_force_consolidation(client, ss)
+    render_session_controls(client, ss)
     st.divider()
     render_proactive_panel(client, ss)
 
@@ -1585,13 +1704,13 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
         elapsed_ms = (time.time() - t0) * 1000
         ss.panel.last_extraction_id = turn.extraction_id
         ss.panel.last_extraction_status = turn.extraction_status
-        if turn.mood is not None:
-            ss.panel.mood = {
-                "valence": turn.mood.valence,
-                "arousal": turn.mood.arousal,
-                "tension": turn.mood.tension,
-                "affiliation": turn.mood.affiliation,
-            }
+        # turn.mood is a per-turn DELTA (≈ -1..+1) — not what the gauges
+        # want. Fetch the absolute 0-100 state via get_mood and use that.
+        new_mood = fetch_current_mood(client, ss.agent_id, ss.user_id)
+        if new_mood is not None:
+            if ss.panel.mood:
+                ss.panel.prev_mood = dict(ss.panel.mood)
+            ss.panel.mood = new_mood
         push_banner(
             "info",
             f"sonzai.turn {elapsed_ms:.0f}ms · extraction "
@@ -1635,7 +1754,6 @@ def main() -> None:
     with chat_col:
         render_chat_pane(st.session_state.client, st.session_state)
     with state_col:
-        render_steering_panel(st.session_state.client, st.session_state)
         render_state_panel_live()
 
 
