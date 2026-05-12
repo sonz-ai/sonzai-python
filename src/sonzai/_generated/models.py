@@ -7661,6 +7661,36 @@ class UpdateMetadataRequest(BaseModel):
     title: str | None = None
 
 
+class UpdateMoodInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/UpdateMoodInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    affiliation: Annotated[float, Field(ge=0.0, le=100.0)]
+    """
+    Affiliative warmth dimension (0-100)
+    """
+    arousal: Annotated[float, Field(ge=0.0, le=100.0)]
+    """
+    Activation level dimension (0-100)
+    """
+    tension: Annotated[float, Field(ge=0.0, le=100.0)]
+    """
+    Calm-tense dimension (0=tense, 100=calm)
+    """
+    valence: Annotated[float, Field(ge=0.0, le=100.0)]
+    """
+    Pleasure/displeasure dimension (0-100)
+    """
+
+
 class UpdatePayload(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -8583,39 +8613,6 @@ class WorkbenchStateResponse(BaseModel):
     mood: WorkbenchStateMood | None = None
     next_event_hours: float
     relationship: WorkbenchStateRelation | None = None
-
-
-class UpdateMoodInputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=['https://api.sonz.ai/api/v1/schemas/UpdateMoodInputBody.json'],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    affiliation: Annotated[float, Field(ge=0.0, le=100.0)]
-    """
-    Affiliative warmth dimension (0-100)
-    """
-    arousal: Annotated[float, Field(ge=0.0, le=100.0)]
-    """
-    Activation level dimension (0-100)
-    """
-    tension: Annotated[float, Field(ge=0.0, le=100.0)]
-    """
-    Calm-tense dimension (0=tense, 100=calm)
-    """
-    valence: Annotated[float, Field(ge=0.0, le=100.0)]
-    """
-    Pleasure/displeasure dimension (0-100)
-    """
 
 
 class AddContentRequest(BaseModel):
