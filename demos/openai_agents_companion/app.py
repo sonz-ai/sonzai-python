@@ -64,7 +64,7 @@ except ImportError as err:  # pragma: no cover
 # Primary Gemini model. If Gemini's OpenAI-compat layer rejects this name,
 # fall back to a known-working one (documented in the sidebar). Both are
 # accepted today on `https://generativelanguage.googleapis.com/v1beta/openai/`.
-GEMINI_MODEL_PRIMARY = "gemini-3.1-flash-lite-preview"
+GEMINI_MODEL_PRIMARY = "gemini-3.1-flash-lite"
 GEMINI_MODEL_FALLBACK = "gemini-2.0-flash-exp"
 
 GEMINI_OPENAI_COMPAT_BASE = "https://generativelanguage.googleapis.com/v1beta/openai/"

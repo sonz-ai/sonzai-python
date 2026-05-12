@@ -138,7 +138,7 @@ async def ensure_bench_agent_async(
 
     ``gender`` is optional; when empty the generation step picks something
     consistent with the description. ``model`` overrides the provider's
-    default so, e.g., benches can pin to ``gemini-3.1-flash-lite-preview``
+    default so, e.g., benches can pin to ``gemini-3.1-flash-lite``
     for profile expansion too.
 
     We use the raw transport rather than the typed SDK binding because

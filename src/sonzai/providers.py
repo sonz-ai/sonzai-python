@@ -49,7 +49,7 @@ CUSTOM = "custom"
 # ---------------------------------------------------------------------------
 
 # Google Gemini
-GEMINI_FLASH_LITE = "gemini-3.1-flash-lite-preview"
+GEMINI_FLASH_LITE = "gemini-3.1-flash-lite"
 """Fast, cost-efficient model — recommended default for most use cases."""
 
 # Zhipu AI

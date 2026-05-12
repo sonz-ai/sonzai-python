@@ -319,7 +319,7 @@ session = client.agents.sessions.start(
     user_id="user-123",
     session_id="session-456",
     provider="gemini",                              # session-level default
-    model="gemini-3.1-flash-lite-preview",          # (per-turn override OK)
+    model="gemini-3.1-flash-lite",          # (per-turn override OK)
 )
 
 # Per-turn loop: fetch enriched context, hand it to your LLM, submit the turn.

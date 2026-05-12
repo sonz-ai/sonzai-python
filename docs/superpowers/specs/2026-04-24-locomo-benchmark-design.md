@@ -427,7 +427,7 @@ Flags:
 | `--reuse-agents [PATH]` | off | snapshot-based skip-ingest |
 | `--clear-reused-memory` | off | memory.reset before reuse |
 | `--mode {retrieval,qa,both}` | both | fast retrieval-only mode skips reader+judge |
-| `--judge-model` | `gemini-3.1-flash-lite-preview` | judge LLM |
+| `--judge-model` | `gemini-3.1-flash-lite` | judge LLM |
 | `--output PATH` | auto-timestamped | JSONL location |
 | `--compare FILE...` | — | head-to-head table generator |
 

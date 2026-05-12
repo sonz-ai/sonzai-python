@@ -219,7 +219,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--model",
         default=None,
         help="Sonzai only: override the chat-answer LLM model for this run "
-        "(e.g. 'gpt-5.4-mini', 'gemini-3.1-flash-lite-preview'). "
+        "(e.g. 'gpt-5.4-mini', 'gemini-3.1-flash-lite'). "
         "See --provider.",
     )
     p.add_argument(

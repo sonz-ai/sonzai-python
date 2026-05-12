@@ -44,7 +44,7 @@ class TestSessionStartReturnsHandle:
             user_id="u1",
             session_id="s1",
             provider="gemini",
-            model="gemini-3.1-flash-lite-preview",
+            model="gemini-3.1-flash-lite",
         )
 
         assert isinstance(result, Session)
@@ -55,7 +55,7 @@ class TestSessionStartReturnsHandle:
         assert result.user_id == "u1"
         assert result.session_id == "s1"
         assert result.provider == "gemini"
-        assert result.model == "gemini-3.1-flash-lite-preview"
+        assert result.model == "gemini-3.1-flash-lite"
 
 
 class TestSessionContext:
@@ -101,7 +101,7 @@ class TestSessionTurn:
             user_id="u1",
             session_id="s1",
             provider="gemini",
-            model="gemini-3.1-flash-lite-preview",
+            model="gemini-3.1-flash-lite",
         )
         result = session.turn(
             messages=[{"role": "user", "content": "hi"}],
@@ -112,7 +112,7 @@ class TestSessionTurn:
         body = turn_route.calls[0].request.read()
         # Session-level provider/model flowed into the request.
         assert b'"provider":"gemini"' in body
-        assert b'"model":"gemini-3.1-flash-lite-preview"' in body
+        assert b'"model":"gemini-3.1-flash-lite"' in body
         assert b'"fetchNextContext"' in body
 
     @respx.mock
@@ -136,7 +136,7 @@ class TestSessionTurn:
             user_id="u1",
             session_id="s1",
             provider="gemini",
-            model="gemini-3.1-flash-lite-preview",
+            model="gemini-3.1-flash-lite",
         )
         session.turn(
             messages=[{"role": "user", "content": "hi"}],
@@ -215,7 +215,7 @@ class TestSessionEnd:
             user_id="u1",
             session_id="s1",
             provider="gemini",
-            model="gemini-3.1-flash-lite-preview",
+            model="gemini-3.1-flash-lite",
         )
         resp = session.end(total_messages=4, duration_seconds=42, wait=True)
 
@@ -225,7 +225,7 @@ class TestSessionEnd:
         assert b'"session_id":"s1"' in body
         # Session-default provider/model flow into /sessions/end.
         assert b'"provider":"gemini"' in body
-        assert b'"model":"gemini-3.1-flash-lite-preview"' in body
+        assert b'"model":"gemini-3.1-flash-lite"' in body
         assert b'"wait":true' in body
 
 

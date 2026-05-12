@@ -48,7 +48,7 @@ gemini_client = AsyncOpenAI(
     api_key=os.environ["GEMINI_API_KEY"],
 )
 model = OpenAIChatCompletionsModel(
-    model="gemini-3.1-flash-lite-preview",
+    model="gemini-3.1-flash-lite",
     openai_client=gemini_client,
 )
 agent = Agent(name="Companion", instructions=..., tools=[...], model=model)
@@ -122,7 +122,7 @@ streamlit run app.py
 The app opens at <http://localhost:8501>.
 
 1. **Sidebar**: paste your Sonzai + Gemini keys (or rely on the env vars).
-2. Pick a Gemini model. The default is `gemini-3.1-flash-lite-preview`; the
+2. Pick a Gemini model. The default is `gemini-3.1-flash-lite`; the
    fallback (`gemini-2.0-flash-exp`) is one click away if the compat layer
    ever rejects the primary name.
 3. Fill in a name + description and click **Create agent + start session**.

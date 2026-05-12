@@ -9,7 +9,7 @@ caller doesn't have to repeat them on every method:
         user_id="...",
         session_id="...",
         provider="gemini",
-        model="gemini-3.1-flash-lite-preview",
+        model="gemini-3.1-flash-lite",
         tool_definitions=[...],
     )
     ctx = session.context(query=user_message)
