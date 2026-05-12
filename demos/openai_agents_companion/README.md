@@ -113,11 +113,12 @@ pip install -e ../..
 # Option B — use PyPI sonzai
 pip install sonzai
 
-# Load the .env you just created
-export $(grep -v '^#' .env | xargs)
-
 streamlit run app.py
 ```
+
+`.env` (the file you created above) is auto-loaded by the app via
+`python-dotenv`, so `streamlit run app.py` is enough — no shell export
+step is required. The keys land pre-filled in the sidebar.
 
 The app opens at <http://localhost:8501>.
 

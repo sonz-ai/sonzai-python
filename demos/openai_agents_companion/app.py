@@ -19,12 +19,25 @@ Run:
 """
 from __future__ import annotations
 
+import http.server
 import json
 import os
+import socket
+import socketserver
 import tempfile
 import threading
 import time
+
+# Auto-load .env so `streamlit run app.py` Just Works without an explicit
+# `export $(grep -v '^#' .env | xargs)` step. python-dotenv is optional —
+# if missing, fall back to the manual-export instructions in README.md.
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 import uuid
+from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
@@ -98,6 +111,109 @@ DEFAULT_PROACTIVE_EVENT = "on_wakeup_ready"
 WAKEUP_DEMO_DELAY_HOURS = 1
 WAKEUP_DEMO_CHECK_TYPE = "interest_followup"
 WAKEUP_DEMO_INTENT = "demo_proactive_webhook"
+
+# Local webhook receiver: bounded ring buffer of the most recent deliveries
+# we observed on 127.0.0.1. 20 entries is enough to see retries from
+# dispatcher.go (4 attempts per event) and a few events back.
+LOCAL_RECEIVER_MAX_DELIVERIES = 20
+LOCAL_RECEIVER_BODY_PREVIEW_BYTES = 2048
+
+
+class _ReuseAddrServer(socketserver.TCPServer):
+    # SO_REUSEADDR so a quick Stop → Start cycle doesn't hit TIME_WAIT.
+    allow_reuse_address = True
+
+
+@dataclass
+class LocalReceiver:
+    """Per-session HTTP receiver for webhook deliveries.
+
+    Lives in `st.session_state` across Streamlit reruns. The handler runs
+    in a daemon thread and pushes every POST into `deliveries` (a
+    thread-safe `deque` — `append` is atomic in CPython and `maxlen`
+    keeps it bounded so a long session can't OOM).
+
+    Reachability is the caller's problem — Sonzai's dispatcher
+    (`webhook/dispatcher.go`) POSTs from the cloud, so 127.0.0.1 is not
+    reachable without a tunnel (ngrok / cloudflared). The UI surfaces
+    the local URL and tells the user how to expose it.
+    """
+
+    server: socketserver.TCPServer | None = None
+    thread: threading.Thread | None = None
+    port: int = 0
+    deliveries: "deque[dict[str, Any]]" = field(
+        default_factory=lambda: deque(maxlen=LOCAL_RECEIVER_MAX_DELIVERIES)
+    )
+
+    @property
+    def running(self) -> bool:
+        return self.server is not None
+
+    @property
+    def local_url(self) -> str:
+        return f"http://127.0.0.1:{self.port}" if self.port else ""
+
+
+def _pick_free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+
+
+def _make_receiver_handler(
+    deliveries: "deque[dict[str, Any]]",
+) -> type[http.server.BaseHTTPRequestHandler]:
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_POST(self) -> None:  # noqa: N802
+            length = int(self.headers.get("Content-Length", "0") or 0)
+            body = self.rfile.read(length) if length else b""
+            sig = (
+                self.headers.get("Sonzai-Signature")
+                or self.headers.get("sonzai-signature")
+                or ""
+            )
+            deliveries.append(
+                {
+                    "path": self.path,
+                    "signature": sig,
+                    "body": body[:LOCAL_RECEIVER_BODY_PREVIEW_BYTES],
+                    "body_len": len(body),
+                    "ts": time.time(),
+                }
+            )
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"ok":true}')
+
+        def log_message(self, *_a: Any, **_k: Any) -> None:  # silence stderr
+            return
+
+    return Handler
+
+
+def start_local_receiver() -> LocalReceiver:
+    port = _pick_free_port()
+    state = LocalReceiver(port=port)
+    handler = _make_receiver_handler(state.deliveries)
+    state.server = _ReuseAddrServer(("127.0.0.1", port), handler)
+    state.thread = threading.Thread(
+        target=state.server.serve_forever, daemon=True, name=f"sonzai-webhook-receiver-{port}"
+    )
+    state.thread.start()
+    return state
+
+
+def stop_local_receiver(state: LocalReceiver) -> None:
+    if state.server is None:
+        return
+    # shutdown() blocks until serve_forever returns; server_close() releases
+    # the socket so the port is immediately reusable.
+    state.server.shutdown()
+    state.server.server_close()
+    state.server = None
+    state.thread = None
 
 
 # Preset descriptions for `agents.generation.generate_and_create`. The dropdown
@@ -254,6 +370,7 @@ def init_state() -> None:
     ss.setdefault("webhook_url", "")
     ss.setdefault("webhook_event_type", DEFAULT_PROACTIVE_EVENT)
     ss.setdefault("webhook_auth_header", "")
+    ss.setdefault("local_receiver", None)  # LocalReceiver | None — populated when Start clicked
 
     # Steering: sliders track the live backend value by default. Picking a
     # preset or dragging a slider flips tracking off; "Resume" turns it back
@@ -1299,6 +1416,100 @@ def verify_sonzai_signature(
 '''
 
 
+def _render_local_receiver_section(ss: Any) -> None:
+    """Start/stop an in-process HTTP receiver for webhook deliveries.
+
+    The receiver itself can't fix the 404s seen in `Recent webhook
+    deliveries` — Sonzai's dispatcher POSTs from the cloud and can't
+    reach 127.0.0.1 directly. The flow is:
+
+      1. Start receiver here → get http://127.0.0.1:PORT
+      2. Expose with `ngrok http PORT` (or cloudflared) → public URL
+      3. Paste the public URL into the Webhook URL field below
+      4. Register, then trigger an event
+
+    Deliveries that land in the receiver appear under
+    "Recently received POSTs" with signature + body preview, which is
+    the side the SDK's `list_delivery_attempts_for_project` can't show
+    (it only knows what the backend sent + the status code received).
+    """
+    receiver: LocalReceiver | None = ss.get("local_receiver")
+    with st.expander(
+        "Local receiver", expanded=bool(receiver and receiver.running)
+    ):
+        if receiver and receiver.running:
+            cols = st.columns([3, 1])
+            with cols[0]:
+                st.code(receiver.local_url, language="text")
+                st.caption(
+                    "Expose this with a tunnel and paste the public URL into "
+                    "*Webhook URL* below. Examples:\n"
+                    f"`ngrok http {receiver.port}`  ·  "
+                    f"`cloudflared tunnel --url http://localhost:{receiver.port}`"
+                )
+            with cols[1]:
+                if st.button("Stop", use_container_width=True, key="local_recv_stop"):
+                    stop_local_receiver(receiver)
+                    ss.local_receiver = None
+                    push_banner("success", "Local receiver stopped.")
+                    st.rerun()
+                if st.button(
+                    "Refresh", use_container_width=True, key="local_recv_refresh"
+                ):
+                    st.rerun()
+
+            st.markdown("_Recently received POSTs:_")
+            items = list(receiver.deliveries)
+            if not items:
+                st.caption(
+                    "_Nothing received yet. Sonzai will POST here once your "
+                    "tunnel forwards traffic and the registered URL above "
+                    "points at it._"
+                )
+            else:
+                # Newest first.
+                for d in reversed(items[-5:]):
+                    ts = datetime.fromtimestamp(d["ts"], tz=timezone.utc).isoformat(
+                        timespec="seconds"
+                    )
+                    sig_badge = "🔏" if d["signature"] else "—"
+                    st.markdown(
+                        f"`POST {d['path']}` · {sig_badge} · "
+                        f"{d['body_len']}B · {ts}"
+                    )
+                    body_preview = d["body"]
+                    try:
+                        parsed = json.loads(body_preview.decode("utf-8"))
+                        st.code(
+                            json.dumps(parsed, indent=2, ensure_ascii=False)[:1500],
+                            language="json",
+                        )
+                    except (UnicodeDecodeError, json.JSONDecodeError):
+                        st.code(repr(body_preview[:500]), language="text")
+        else:
+            st.caption(
+                "Spawns an HTTP receiver on 127.0.0.1 inside this Streamlit "
+                "process. You still need a public tunnel (ngrok / "
+                "cloudflared) to make it reachable from Sonzai's backend — "
+                "this just gives you the local target."
+            )
+            if st.button(
+                "Start receiver",
+                type="primary",
+                use_container_width=True,
+                key="local_recv_start",
+            ):
+                try:
+                    ss.local_receiver = start_local_receiver()
+                    push_banner(
+                        "success",
+                        f"Local receiver listening on {ss.local_receiver.local_url}",
+                    )
+                    st.rerun()
+                except OSError as err:
+                    push_banner("warning", f"Failed to start receiver: {err}")
+
+
 def render_proactive_panel(client: Sonzai, ss: Any) -> None:
     """Manage proactive-message webhooks and view delivery activity.
 
@@ -1324,6 +1535,8 @@ def render_proactive_panel(client: Sonzai, ss: Any) -> None:
         "request with `Sonzai-Signature`. Project-scoped — registered on "
         f"`project_id={ss.project_id[:12]}…`."
     )
+
+    _render_local_receiver_section(ss)
 
     # ----- registration form -----
     with st.expander("Register / update webhook", expanded=not panel.webhook_endpoints):
