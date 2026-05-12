@@ -1241,26 +1241,16 @@ def render_session_controls(client: Sonzai, ss: Any) -> None:
 
             with st.spinner("Ending session — running extraction pipeline (5–30s)…"):
                 try:
+                    # Platform >=1.5.5: wait=True blocks until per-turn extraction
+                    # workers drain (CountInflightForSession). Facts are queryable
+                    # the moment this call returns — no more polling needed.
                     old_session.end(wait=True)
                 except Exception as err:  # noqa: BLE001
                     push_banner("warning", f"session.end failed (non-fatal): {err}")
                 ss.session = None
                 ss.session_id = ""
 
-                # `wait=True` is acknowledged by the server but doesn't actually
-                # block until the CE extraction pipeline lands facts in
-                # storage — empirically the call returns in ~2s while facts
-                # appear ~10–30s later. Poll list_user_facts here so the user
-                # sees the panel populate before we hand control back.
-                deadline = time.time() + 30.0
-                while time.time() < deadline:
-                    fresh = fetch_recent_facts(client, ss.agent_id, ss.user_id, limit=20)
-                    if len(fresh) > facts_before:
-                        ss.panel.facts = fresh
-                        break
-                    time.sleep(2.0)
-                # Fall through whether we beat the deadline or not — do the
-                # full panel refresh either way so big5/inventory/etc update.
+                # Single inline refresh — extraction already landed server-side.
                 _do_refresh(
                     client, ss.panel, ss.agent_id, ss.user_id,
                     ss.project_id, ss.webhook_event_type,
