@@ -319,6 +319,11 @@ def make_kb_search_tool(client: Sonzai, agent_id: str):
 class ChatTurn:
     role: str  # "user" | "assistant"
     content: str
+    # Mood label that was in effect at the moment THIS turn was generated.
+    # Rendered next to assistant replies so it's obvious which mood drove
+    # which reply — kills the "I changed the mood but the reply is wrong"
+    # confusion when the user clicked Apply AFTER the reply landed.
+    mood_label: str | None = None
 
 
 @dataclass
@@ -1228,19 +1233,34 @@ def render_session_controls(client: Sonzai, ss: Any) -> None:
             use_container_width=True,
             disabled=ss.session is None,
             key="end_and_new_session_btn",
-            help="Flushes CE pipeline synchronously; refreshes facts/personality; reopens session.",
+            help="Calls session.end, polls until extracted facts appear, refreshes the panel, then reopens a fresh session.",
         ):
             old_sid = ss.session_id
             old_session = ss.session
-            with st.spinner("Running CE pipeline (extraction, diary, consolidation)…"):
+            facts_before = len(ss.panel.facts or [])
+
+            with st.spinner("Ending session — running extraction pipeline (5–30s)…"):
                 try:
                     old_session.end(wait=True)
                 except Exception as err:  # noqa: BLE001
                     push_banner("warning", f"session.end failed (non-fatal): {err}")
                 ss.session = None
                 ss.session_id = ""
-                # Inline refresh — extraction already finished server-side, no
-                # need for the deferred 3s wait.
+
+                # `wait=True` is acknowledged by the server but doesn't actually
+                # block until the CE extraction pipeline lands facts in
+                # storage — empirically the call returns in ~2s while facts
+                # appear ~10–30s later. Poll list_user_facts here so the user
+                # sees the panel populate before we hand control back.
+                deadline = time.time() + 30.0
+                while time.time() < deadline:
+                    fresh = fetch_recent_facts(client, ss.agent_id, ss.user_id, limit=20)
+                    if len(fresh) > facts_before:
+                        ss.panel.facts = fresh
+                        break
+                    time.sleep(2.0)
+                # Fall through whether we beat the deadline or not — do the
+                # full panel refresh either way so big5/inventory/etc update.
                 _do_refresh(
                     client, ss.panel, ss.agent_id, ss.user_id,
                     ss.project_id, ss.webhook_event_type,
@@ -1250,9 +1270,13 @@ def render_session_controls(client: Sonzai, ss: Any) -> None:
                     start_chat_session(client, ss)
                 except Exception as err:  # noqa: BLE001
                     push_banner("warning", f"could not reopen session: {err}")
+
+            new_count = len(ss.panel.facts or [])
+            delta = new_count - facts_before
             push_banner(
                 "success",
-                f"Session `{old_sid[:12]}…` ended → CE pipeline flushed → "
+                f"Session `{old_sid[:12]}…` ended → "
+                f"{('+' + str(delta)) if delta > 0 else 'no new'} facts extracted → "
                 f"new session `{ss.session_id[:12] if ss.session_id else '?'}…` started.",
             )
     with cols[1]:
@@ -1816,6 +1840,8 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
         for turn in ss.messages:
             with st.chat_message(turn.role):
                 st.write(turn.content)
+                if turn.role == "assistant" and turn.mood_label:
+                    st.caption(f"_mood: {turn.mood_label}_")
 
     # Optional image attachment — tucked into an expander so the composer is
     # uncluttered. Gemini is multimodal; Sonzai gets a text marker. See
@@ -1892,6 +1918,11 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
     else:
         run_input = prompt
 
+    # Snapshot the mood label that the prompt was built from, so we can
+    # display it next to the reply. Lets the user verify which override
+    # was in effect for which reply at a glance.
+    turn_mood_label = (ctx.get("current_mood") or {}).get("label", "") if isinstance(ctx, dict) else ""
+
     with history, st.chat_message("assistant"):
         with st.spinner("Thinking…"):
             try:
@@ -1904,8 +1935,10 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
                 return
         reply = (result.final_output or "").strip()
         st.write(reply)
+        if turn_mood_label:
+            st.caption(f"_mood: {turn_mood_label}_")
 
-    ss.messages.append(ChatTurn(role="assistant", content=reply))
+    ss.messages.append(ChatTurn(role="assistant", content=reply, mood_label=turn_mood_label))
 
     # 3) Hand the transcript back to Sonzai. When an image was attached, the
     #    user message text gets a `[User shared image: <url>]` marker so the
