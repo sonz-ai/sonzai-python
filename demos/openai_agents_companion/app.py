@@ -1298,6 +1298,19 @@ BIG5_PRESETS: dict[str, dict[str, float]] = {
 }
 
 
+def _seed_slider_state(prefix: str, preset_name: str, preset_values: dict[str, float], last_key: str) -> None:
+    """Write preset values into session_state for each `{prefix}_{dim}` key.
+
+    Runs on first render and whenever the user picks a different preset. After
+    that, the slider widgets own the keys (Streamlit updates session_state on
+    every drag) and we leave them alone.
+    """
+    if st.session_state.get(last_key) != preset_name:
+        for dim, v in preset_values.items():
+            st.session_state[f"{prefix}_{dim}"] = float(v)
+        st.session_state[last_key] = preset_name
+
+
 def render_steering_panel(client: Sonzai, ss: Any) -> None:
     """Steering controls — operator overrides for mood + Big5.
 
@@ -1307,107 +1320,97 @@ def render_steering_panel(client: Sonzai, ss: Any) -> None:
     immediately and gradually relaxes back.
     """
     panel: StatePanel = ss.panel
-    with st.expander("🎛 Steering — override mood & personality", expanded=False):
-        st.caption(
-            "Hard-set mood / Big5 for this agent. The next message you send "
-            "will reflect the new state. Values drift normally afterwards."
-        )
+    st.subheader("🎛 Steering")
+    st.caption(
+        "Hard-set mood / Big5. The next message you send reflects the new "
+        "state; values drift normally afterwards."
+    )
 
-        # --- Mood ---
-        st.markdown("**Mood** (0-100 per dimension)")
-        mood_preset = st.selectbox(
-            "Preset",
-            options=list(MOOD_PRESETS.keys()),
-            index=0,
-            key="mood_preset",
-            label_visibility="collapsed",
-        )
-        defaults = MOOD_PRESETS[mood_preset]
-        # Seed initial slider values from the current panel mood if available
-        # (only on first paint — Streamlit preserves widget state by key after).
-        if panel.mood and "_mood_seeded" not in st.session_state:
-            for k in ("valence", "arousal", "tension", "affiliation"):
-                st.session_state[f"mood_slider_{k}"] = float(panel.mood.get(k, 50))
-            st.session_state["_mood_seeded"] = True
-        cols = st.columns(2)
-        with cols[0]:
-            valence = st.slider("Valence", 0.0, 100.0, defaults["valence"], 1.0, key="mood_slider_valence")
-            tension = st.slider("Tension", 0.0, 100.0, defaults["tension"], 1.0, key="mood_slider_tension")
-        with cols[1]:
-            arousal = st.slider("Arousal", 0.0, 100.0, defaults["arousal"], 1.0, key="mood_slider_arousal")
-            affiliation = st.slider("Affiliation", 0.0, 100.0, defaults["affiliation"], 1.0, key="mood_slider_affiliation")
+    # --- Mood ---
+    st.markdown("**Mood** (0–100 per dimension)")
+    mood_preset = st.selectbox(
+        "Mood preset",
+        options=list(MOOD_PRESETS.keys()),
+        index=0,
+        key="mood_preset",
+        label_visibility="collapsed",
+    )
+    _seed_slider_state("mood_slider", mood_preset, MOOD_PRESETS[mood_preset], "_last_mood_preset")
+    cols = st.columns(2)
+    with cols[0]:
+        valence = st.slider("Valence", 0.0, 100.0, step=1.0, key="mood_slider_valence")
+        tension = st.slider("Tension", 0.0, 100.0, step=1.0, key="mood_slider_tension")
+    with cols[1]:
+        arousal = st.slider("Arousal", 0.0, 100.0, step=1.0, key="mood_slider_arousal")
+        affiliation = st.slider("Affiliation", 0.0, 100.0, step=1.0, key="mood_slider_affiliation")
 
-        if st.button("Apply mood override", type="primary", use_container_width=True):
-            try:
-                resp = client.agents.update_mood(
-                    ss.agent_id,
-                    valence=valence,
-                    arousal=arousal,
-                    tension=tension,
-                    affiliation=affiliation,
-                    user_id=ss.user_id,
-                )
-                # Reflect immediately so the gauges don't have to wait for the heartbeat.
-                panel.mood = {
-                    "valence": valence,
-                    "arousal": arousal,
-                    "tension": tension,
-                    "affiliation": affiliation,
-                }
-                label = getattr(resp.mood, "label", "") if getattr(resp, "mood", None) else ""
-                push_banner("success", f"Mood overridden → {label or 'applied'}. Send a message to see it.")
-            except Exception as err:  # noqa: BLE001
-                push_banner("warning", f"update_mood failed: {err}")
+    if st.button("Apply mood override", type="primary", use_container_width=True, key="apply_mood"):
+        try:
+            resp = client.agents.update_mood(
+                ss.agent_id,
+                valence=float(valence),
+                arousal=float(arousal),
+                tension=float(tension),
+                affiliation=float(affiliation),
+                user_id=ss.user_id,
+            )
+            panel.mood = {
+                "valence": float(valence),
+                "arousal": float(arousal),
+                "tension": float(tension),
+                "affiliation": float(affiliation),
+            }
+            label = getattr(resp.mood, "label", "") if getattr(resp, "mood", None) else ""
+            push_banner("success", f"Mood overridden → {label or 'applied'}. Send a message to see it.")
+        except Exception as err:  # noqa: BLE001
+            push_banner("warning", f"update_mood failed: {err}")
 
-        st.divider()
+    st.divider()
 
-        # --- Big5 ---
-        st.markdown("**Personality (Big5)** (0-100 per dimension)")
-        big5_preset = st.selectbox(
-            "Big5 preset",
-            options=list(BIG5_PRESETS.keys()),
-            index=0,
-            key="big5_preset",
-            label_visibility="collapsed",
-        )
-        b5_defaults = BIG5_PRESETS[big5_preset]
-        if panel.big5 and "_big5_seeded" not in st.session_state:
-            for k, frac in panel.big5.items():
-                # Stored as fraction 0-1; convert back to 0-100 for the slider.
-                st.session_state[f"big5_slider_{k}"] = float(frac) * 100.0
-            st.session_state["_big5_seeded"] = True
-        cols = st.columns(2)
-        with cols[0]:
-            openness = st.slider("Openness", 0.0, 100.0, b5_defaults["openness"], 1.0, key="big5_slider_openness")
-            extraversion = st.slider("Extraversion", 0.0, 100.0, b5_defaults["extraversion"], 1.0, key="big5_slider_extraversion")
-            neuroticism = st.slider("Neuroticism", 0.0, 100.0, b5_defaults["neuroticism"], 1.0, key="big5_slider_neuroticism")
-        with cols[1]:
-            conscientiousness = st.slider("Conscientiousness", 0.0, 100.0, b5_defaults["conscientiousness"], 1.0, key="big5_slider_conscientiousness")
-            agreeableness = st.slider("Agreeableness", 0.0, 100.0, b5_defaults["agreeableness"], 1.0, key="big5_slider_agreeableness")
+    # --- Big5 ---
+    st.markdown("**Personality (Big5)** (0–100 per dimension)")
+    big5_preset = st.selectbox(
+        "Big5 preset",
+        options=list(BIG5_PRESETS.keys()),
+        index=0,
+        key="big5_preset",
+        label_visibility="collapsed",
+    )
+    _seed_slider_state("big5_slider", big5_preset, BIG5_PRESETS[big5_preset], "_last_big5_preset")
+    cols = st.columns(2)
+    with cols[0]:
+        openness = st.slider("Openness", 0.0, 100.0, step=1.0, key="big5_slider_openness")
+        extraversion = st.slider("Extraversion", 0.0, 100.0, step=1.0, key="big5_slider_extraversion")
+        neuroticism = st.slider("Neuroticism", 0.0, 100.0, step=1.0, key="big5_slider_neuroticism")
+    with cols[1]:
+        conscientiousness = st.slider("Conscientiousness", 0.0, 100.0, step=1.0, key="big5_slider_conscientiousness")
+        agreeableness = st.slider("Agreeableness", 0.0, 100.0, step=1.0, key="big5_slider_agreeableness")
 
-        if st.button("Apply personality override", type="primary", use_container_width=True):
-            try:
-                client.agents.personality.update(
-                    ss.agent_id,
-                    big5={
-                        "openness": openness,
-                        "conscientiousness": conscientiousness,
-                        "extraversion": extraversion,
-                        "agreeableness": agreeableness,
-                        "neuroticism": neuroticism,
-                    },
-                    assessment_method="manual_override",
-                )
-                panel.big5 = {
-                    "openness": openness / 100.0,
-                    "conscientiousness": conscientiousness / 100.0,
-                    "extraversion": extraversion / 100.0,
-                    "agreeableness": agreeableness / 100.0,
-                    "neuroticism": neuroticism / 100.0,
-                }
-                push_banner("success", "Big5 overridden. Send a message to see it.")
-            except Exception as err:  # noqa: BLE001
-                push_banner("warning", f"personality.update failed: {err}")
+    if st.button("Apply personality override", type="primary", use_container_width=True, key="apply_big5"):
+        try:
+            client.agents.personality.update(
+                ss.agent_id,
+                big5={
+                    "openness": float(openness),
+                    "conscientiousness": float(conscientiousness),
+                    "extraversion": float(extraversion),
+                    "agreeableness": float(agreeableness),
+                    "neuroticism": float(neuroticism),
+                },
+                assessment_method="manual_override",
+            )
+            panel.big5 = {
+                "openness": float(openness) / 100.0,
+                "conscientiousness": float(conscientiousness) / 100.0,
+                "extraversion": float(extraversion) / 100.0,
+                "agreeableness": float(agreeableness) / 100.0,
+                "neuroticism": float(neuroticism) / 100.0,
+            }
+            push_banner("success", "Big5 overridden. Send a message to see it.")
+        except Exception as err:  # noqa: BLE001
+            push_banner("warning", f"personality.update failed: {err}")
+
+    st.divider()
 
 
 @st.fragment(run_every=3)
