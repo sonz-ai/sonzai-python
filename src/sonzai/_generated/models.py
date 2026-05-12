@@ -8585,6 +8585,39 @@ class WorkbenchStateResponse(BaseModel):
     relationship: WorkbenchStateRelation | None = None
 
 
+class UpdateMoodInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/UpdateMoodInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    affiliation: Annotated[float, Field(ge=0.0, le=100.0)]
+    """
+    Affiliative warmth dimension (0-100)
+    """
+    arousal: Annotated[float, Field(ge=0.0, le=100.0)]
+    """
+    Activation level dimension (0-100)
+    """
+    tension: Annotated[float, Field(ge=0.0, le=100.0)]
+    """
+    Calm-tense dimension (0=tense, 100=calm)
+    """
+    valence: Annotated[float, Field(ge=0.0, le=100.0)]
+    """
+    Pleasure/displeasure dimension (0-100)
+    """
+
+
 class AddContentRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -8956,7 +8989,7 @@ class CreateAgentBody(BaseModel):
     """
     big5: CreateAgentBodyBig5Struct | None = None
     """
-    Big Five personality scores (0-1)
+    Big Five personality scores. Accepts either 0-100 (preferred) or 0-1 (fractional, legacy); auto-detected and normalized to 0-100 storage scale.
     """
     bio: str | None = None
     """

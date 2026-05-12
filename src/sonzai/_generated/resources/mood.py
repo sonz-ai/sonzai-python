@@ -10,6 +10,7 @@ from sonzai._generated.models import (
     MoodAggregateResponse,
     MoodHistoryResponse,
     MoodResponse,
+    UpdateMoodInputBody,
 )
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
@@ -36,6 +37,37 @@ class Mood(_MoodBase):
         if instance_id is not None:
             params["instance_id"] = instance_id
         data = self._http.get(path, params=params)
+        return MoodResponse.model_validate(data)
+
+    def update_mood(
+        self,
+        agent_id: str,
+        *,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+        affiliation: float,
+        arousal: float,
+        tension: float,
+        valence: float,
+    ) -> MoodResponse:
+        """Override agent mood state"""
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/mood"
+        params: dict[str, Any] = {}
+        if user_id is not None:
+            params["user_id"] = user_id
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+        _raw: dict[str, Any] = {}
+        if affiliation is not None:
+            _raw["affiliation"] = affiliation
+        if arousal is not None:
+            _raw["arousal"] = arousal
+        if tension is not None:
+            _raw["tension"] = tension
+        if valence is not None:
+            _raw["valence"] = valence
+        body = encode_body(UpdateMoodInputBody, _raw)
+        data = self._http.put(path, params=params, json_data=body)
         return MoodResponse.model_validate(data)
 
     def get_mood_history(
@@ -89,6 +121,37 @@ class AsyncMood(_MoodBase):
         if instance_id is not None:
             params["instance_id"] = instance_id
         data = await self._http.get(path, params=params)
+        return MoodResponse.model_validate(data)
+
+    async def update_mood(
+        self,
+        agent_id: str,
+        *,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+        affiliation: float,
+        arousal: float,
+        tension: float,
+        valence: float,
+    ) -> MoodResponse:
+        """Override agent mood state"""
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/mood"
+        params: dict[str, Any] = {}
+        if user_id is not None:
+            params["user_id"] = user_id
+        if instance_id is not None:
+            params["instance_id"] = instance_id
+        _raw: dict[str, Any] = {}
+        if affiliation is not None:
+            _raw["affiliation"] = affiliation
+        if arousal is not None:
+            _raw["arousal"] = arousal
+        if tension is not None:
+            _raw["tension"] = tension
+        if valence is not None:
+            _raw["valence"] = valence
+        body = encode_body(UpdateMoodInputBody, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
         return MoodResponse.model_validate(data)
 
     async def get_mood_history(

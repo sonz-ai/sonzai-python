@@ -830,6 +830,42 @@ class Agents(_GenAgents):
         data = self._http.get(f"/api/v1/agents/{agent_id}/mood", params=params)
         return MoodResponse.model_validate(data)
 
+    def update_mood(
+        self,
+        agent_id: str,
+        *,
+        valence: float,
+        arousal: float,
+        tension: float,
+        affiliation: float,
+        user_id: str | None = None,
+        instance_id: str | None = None,
+    ) -> MoodResponse:
+        """Override the agent's current mood (0-100 per dimension).
+
+        When `user_id` is set, the override applies to that user's per-user
+        mood; otherwise it applies to the agent-global mood. The override is
+        NOT pinned — subsequent turns continue to drift mood normally.
+        """
+        from urllib.parse import urlencode
+
+        path = f"/api/v1/agents/{agent_id}/mood"
+        qs: dict[str, str] = {}
+        if user_id:
+            qs["user_id"] = user_id
+        if instance_id:
+            qs["instance_id"] = instance_id
+        if qs:
+            path += "?" + urlencode(qs)
+        body = {
+            "valence": valence,
+            "arousal": arousal,
+            "tension": tension,
+            "affiliation": affiliation,
+        }
+        data = self._http.put(path, json_data=body)
+        return MoodResponse.model_validate(data)
+
     def get_mood_history(
         self, agent_id: str, *, user_id: str | None = None, instance_id: str | None = None
     ) -> MoodHistoryResponse:

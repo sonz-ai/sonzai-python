@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import threading
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -29,6 +30,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 import streamlit as st
+from streamlit.runtime.scriptrunner import add_script_run_ctx
 
 try:
     from sonzai import Sonzai
@@ -96,6 +98,56 @@ DEFAULT_PROACTIVE_EVENT = "on_wakeup_ready"
 WAKEUP_DEMO_DELAY_HOURS = 1
 WAKEUP_DEMO_CHECK_TYPE = "interest_followup"
 WAKEUP_DEMO_INTENT = "demo_proactive_webhook"
+
+
+# Preset descriptions for `agents.generation.generate_and_create`. The dropdown
+# in the sidebar lets the user pick one; the description text_area then prefills
+# from the chosen template (still editable before submit).
+PRESET_TEMPLATES: dict[str, dict[str, str]] = {
+    "Curious Companion": {
+        "description": (
+            "A curious, warm, slightly nerdy companion who likes asking "
+            "follow-up questions and remembers what the user shares."
+        ),
+        "gender": "nonbinary",
+    },
+    "Kira — Gaming AI Partner": {
+        "description": (
+            "Kira: the loveliest gaming AI partner — supportive, sharp, and "
+            "always ready to level up with you. Talks builds, callouts, and "
+            "clutch plays; hypes wins and helps debrief losses without ego."
+        ),
+        "gender": "female",
+    },
+    "Best Friend": {
+        "description": (
+            "A loyal, easygoing best friend who's quick to laugh, keeps your "
+            "inside jokes, and checks in when you've gone quiet. Direct when "
+            "you need honesty, gentle when you need a breather."
+        ),
+        "gender": "nonbinary",
+    },
+    "Patient Tutor": {
+        "description": (
+            "A patient, encouraging tutor who breaks hard concepts into small "
+            "steps, asks Socratic questions to check understanding, and "
+            "celebrates progress. Never condescends."
+        ),
+        "gender": "nonbinary",
+    },
+    "Seductive Girlfriend (NSFW)": {
+        "description": (
+            "A flirtatious, affectionate girlfriend — playful, suggestive, and "
+            "unafraid of adult themes. Warm, teasing, and possessive in equal "
+            "measure; loves attention and gives it back."
+        ),
+        "gender": "female",
+    },
+    "Custom (blank)": {
+        "description": "",
+        "gender": "nonbinary",
+    },
+}
 
 
 # ---------------------------------------------------------------------------
@@ -169,6 +221,10 @@ class StatePanel:
     proactive_notifications: list[dict[str, Any]] = field(default_factory=list)
     last_signing_secret: str | None = None  # only available right after register/rotate
     last_scheduled_wakeup: dict[str, Any] | None = None
+    # Background refresh state — the right pane heartbeats every 3s and reads
+    # these. Writes happen from a daemon thread launched after session.turn.
+    refresh_in_progress: bool = False
+    last_refresh_at: float = 0.0
 
 
 def init_state() -> None:
@@ -377,11 +433,11 @@ def fetch_personality_big5(client: Sonzai, agent_id: str) -> dict[str, float] | 
 
 
 def fetch_recent_facts(client: Sonzai, agent_id: str, user_id: str, limit: int = 8) -> list[str]:
-    """Pull recent facts via memory.list_all_facts (active facts for this pair)."""
+    """Pull recent facts via memory.list_user_facts (active facts for this pair)."""
     try:
-        resp = client.agents.memory.list_all_facts(agent_id, user_id, limit=limit)
+        resp = client.agents.memory.list_user_facts(agent_id, user_id, limit=limit)
     except Exception as err:  # noqa: BLE001
-        push_banner("warning", f"memory.list_all_facts failed: {err}")
+        push_banner("warning", f"memory.list_user_facts failed: {err}")
         return []
     facts = getattr(resp, "facts", None) or []
     out: list[str] = []
@@ -436,23 +492,75 @@ def fetch_constellation(
 def refresh_right_panel(client: Sonzai, ss: Any, *, wait_for_extraction: bool) -> None:
     """Re-pull the lagged state. Mood is set elsewhere from session.turn."""
     if wait_for_extraction:
-        # Give the 5-15s deferred extraction a small head-start. The user
-        # sees a spinner, and a re-poll on the next turn catches anything
-        # that didn't land yet.
         time.sleep(POST_TURN_REFRESH_DELAY_S)
-
-    panel: StatePanel = ss.panel
-    panel.big5 = fetch_personality_big5(client, ss.agent_id)
-    panel.facts = fetch_recent_facts(client, ss.agent_id, ss.user_id)
-    panel.inventory = fetch_inventory(client, ss.agent_id, ss.user_id)
-    panel.constellation = fetch_constellation(client, ss.agent_id, ss.user_id)
-    panel.proactive_notifications = fetch_proactive_notifications(
-        client, ss.agent_id, ss.user_id
+    _do_refresh(
+        client,
+        ss.panel,
+        ss.agent_id,
+        ss.user_id,
+        ss.project_id,
+        ss.webhook_event_type,
     )
-    if ss.project_id and ss.webhook_event_type:
-        panel.delivery_attempts = fetch_delivery_attempts(
-            client, ss.project_id, ss.webhook_event_type
+
+
+def _do_refresh(
+    client: Sonzai,
+    panel: StatePanel,
+    agent_id: str,
+    user_id: str,
+    project_id: str,
+    webhook_event_type: str,
+) -> None:
+    """Mutate `panel` in place with freshly-fetched server state.
+
+    Safe to call from a worker thread: the function holds direct references
+    to `panel` (no st.session_state lookups), and assigning to dataclass
+    fields is atomic under the GIL.
+    """
+    panel.refresh_in_progress = True
+    try:
+        panel.big5 = fetch_personality_big5(client, agent_id)
+        panel.facts = fetch_recent_facts(client, agent_id, user_id)
+        panel.inventory = fetch_inventory(client, agent_id, user_id)
+        panel.constellation = fetch_constellation(client, agent_id, user_id)
+        panel.proactive_notifications = fetch_proactive_notifications(
+            client, agent_id, user_id
         )
+        if project_id and webhook_event_type:
+            panel.delivery_attempts = fetch_delivery_attempts(
+                client, project_id, webhook_event_type
+            )
+    finally:
+        panel.refresh_in_progress = False
+        panel.last_refresh_at = time.time()
+
+
+def schedule_background_refresh(client: Sonzai, ss: Any) -> None:
+    """Kick off a daemon thread that refreshes the right pane post-turn.
+
+    The chat pane returns immediately so the user can type again. The right
+    pane's `@st.fragment(run_every=...)` heartbeat picks up the mutated panel
+    on its next tick — no blocking spinner, no st.rerun.
+    """
+    panel = ss.panel
+    agent_id = ss.agent_id
+    user_id = ss.user_id
+    project_id = ss.project_id
+    webhook_event_type = ss.webhook_event_type
+
+    def _worker() -> None:
+        time.sleep(POST_TURN_REFRESH_DELAY_S)
+        try:
+            _do_refresh(client, panel, agent_id, user_id, project_id, webhook_event_type)
+        except Exception:  # noqa: BLE001 — daemon thread; swallow to avoid crashing
+            panel.refresh_in_progress = False
+
+    t = threading.Thread(target=_worker, daemon=True)
+    # Attach the current ScriptRunContext so the worker's push_banner calls
+    # (inside fetch_*) don't emit "missing ScriptRunContext" warnings while
+    # the originating script run is still active.
+    add_script_run_ctx(t)
+    t.start()
 
 
 # ---------------------------------------------------------------------------
@@ -680,21 +788,35 @@ def render_sidebar() -> None:
             return
 
         st.divider()
-        st.subheader("Create new agent")
+        st.subheader("Generate + create agent")
         default_name = f"Companion {uuid.uuid4().hex[:4]}"
         name = st.text_input("Agent name", value=default_name)
+
+        template_name = st.selectbox(
+            "Template",
+            list(PRESET_TEMPLATES.keys()),
+            help="Prefills description + gender. Edit freely before submit.",
+        )
+        template = PRESET_TEMPLATES[template_name]
+        gender_options = ["nonbinary", "female", "male"]
+
+        # Keying both widgets by template_name forces Streamlit to remount them
+        # when the selection changes, so the new template's defaults take.
         description = st.text_area(
             "Description",
-            value=(
-                "A curious, warm, slightly nerdy companion who likes asking "
-                "follow-up questions and remembers what the user shares."
-            ),
-            height=110,
+            value=template["description"],
+            height=130,
+            key=f"desc__{template_name}",
         )
-        gender = st.selectbox("Gender", ["nonbinary", "female", "male"], index=0)
+        gender = st.selectbox(
+            "Gender",
+            gender_options,
+            index=gender_options.index(template["gender"]),
+            key=f"gender__{template_name}",
+        )
 
         can_create = bool(ss.sonzai_key and ss.gemini_key and name and description)
-        if st.button("Create agent + start session", type="primary", disabled=not can_create):
+        if st.button("Generate + create agent", type="primary", disabled=not can_create):
             try:
                 # 300s — workbench.advance_time(25h) routinely takes 60-90s on prod.
                 client = Sonzai(api_key=ss.sonzai_key, timeout=300.0)
@@ -1157,9 +1279,160 @@ def render_proactive_panel(client: Sonzai, ss: Any) -> None:
         st.code(VERIFY_SIGNATURE_SNIPPET, language="python")
 
 
+MOOD_PRESETS: dict[str, dict[str, float]] = {
+    "Neutral":   {"valence": 50, "arousal": 50, "tension": 50, "affiliation": 50},
+    "Cheerful":  {"valence": 85, "arousal": 70, "tension": 70, "affiliation": 80},
+    "Angry":     {"valence": 15, "arousal": 90, "tension": 10, "affiliation": 20},
+    "Anxious":   {"valence": 30, "arousal": 75, "tension": 15, "affiliation": 45},
+    "Melancholy":{"valence": 25, "arousal": 25, "tension": 40, "affiliation": 35},
+    "Affectionate":{"valence": 75, "arousal": 55, "tension": 65, "affiliation": 95},
+}
+
+BIG5_PRESETS: dict[str, dict[str, float]] = {
+    "Balanced":  {"openness": 50, "conscientiousness": 50, "extraversion": 50, "agreeableness": 50, "neuroticism": 50},
+    "Outgoing":  {"openness": 70, "conscientiousness": 55, "extraversion": 90, "agreeableness": 75, "neuroticism": 25},
+    "Introvert": {"openness": 65, "conscientiousness": 70, "extraversion": 15, "agreeableness": 60, "neuroticism": 40},
+    "Volatile":  {"openness": 60, "conscientiousness": 30, "extraversion": 65, "agreeableness": 35, "neuroticism": 90},
+    "Stoic":     {"openness": 55, "conscientiousness": 85, "extraversion": 35, "agreeableness": 55, "neuroticism": 10},
+    "Curious":   {"openness": 95, "conscientiousness": 60, "extraversion": 60, "agreeableness": 65, "neuroticism": 30},
+}
+
+
+def render_steering_panel(client: Sonzai, ss: Any) -> None:
+    """Steering controls — operator overrides for mood + Big5.
+
+    Lives OUTSIDE the live-state fragment so slider positions aren't reset on
+    the 3s heartbeat. Clicking Apply POSTs absolute values; subsequent turns
+    drift normally (overrides are not pinned), so the assistant's tone shifts
+    immediately and gradually relaxes back.
+    """
+    panel: StatePanel = ss.panel
+    with st.expander("🎛 Steering — override mood & personality", expanded=False):
+        st.caption(
+            "Hard-set mood / Big5 for this agent. The next message you send "
+            "will reflect the new state. Values drift normally afterwards."
+        )
+
+        # --- Mood ---
+        st.markdown("**Mood** (0-100 per dimension)")
+        mood_preset = st.selectbox(
+            "Preset",
+            options=list(MOOD_PRESETS.keys()),
+            index=0,
+            key="mood_preset",
+            label_visibility="collapsed",
+        )
+        defaults = MOOD_PRESETS[mood_preset]
+        # Seed initial slider values from the current panel mood if available
+        # (only on first paint — Streamlit preserves widget state by key after).
+        if panel.mood and "_mood_seeded" not in st.session_state:
+            for k in ("valence", "arousal", "tension", "affiliation"):
+                st.session_state[f"mood_slider_{k}"] = float(panel.mood.get(k, 50))
+            st.session_state["_mood_seeded"] = True
+        cols = st.columns(2)
+        with cols[0]:
+            valence = st.slider("Valence", 0.0, 100.0, defaults["valence"], 1.0, key="mood_slider_valence")
+            tension = st.slider("Tension", 0.0, 100.0, defaults["tension"], 1.0, key="mood_slider_tension")
+        with cols[1]:
+            arousal = st.slider("Arousal", 0.0, 100.0, defaults["arousal"], 1.0, key="mood_slider_arousal")
+            affiliation = st.slider("Affiliation", 0.0, 100.0, defaults["affiliation"], 1.0, key="mood_slider_affiliation")
+
+        if st.button("Apply mood override", type="primary", use_container_width=True):
+            try:
+                resp = client.agents.update_mood(
+                    ss.agent_id,
+                    valence=valence,
+                    arousal=arousal,
+                    tension=tension,
+                    affiliation=affiliation,
+                    user_id=ss.user_id,
+                )
+                # Reflect immediately so the gauges don't have to wait for the heartbeat.
+                panel.mood = {
+                    "valence": valence,
+                    "arousal": arousal,
+                    "tension": tension,
+                    "affiliation": affiliation,
+                }
+                label = getattr(resp.mood, "label", "") if getattr(resp, "mood", None) else ""
+                push_banner("success", f"Mood overridden → {label or 'applied'}. Send a message to see it.")
+            except Exception as err:  # noqa: BLE001
+                push_banner("warning", f"update_mood failed: {err}")
+
+        st.divider()
+
+        # --- Big5 ---
+        st.markdown("**Personality (Big5)** (0-100 per dimension)")
+        big5_preset = st.selectbox(
+            "Big5 preset",
+            options=list(BIG5_PRESETS.keys()),
+            index=0,
+            key="big5_preset",
+            label_visibility="collapsed",
+        )
+        b5_defaults = BIG5_PRESETS[big5_preset]
+        if panel.big5 and "_big5_seeded" not in st.session_state:
+            for k, frac in panel.big5.items():
+                # Stored as fraction 0-1; convert back to 0-100 for the slider.
+                st.session_state[f"big5_slider_{k}"] = float(frac) * 100.0
+            st.session_state["_big5_seeded"] = True
+        cols = st.columns(2)
+        with cols[0]:
+            openness = st.slider("Openness", 0.0, 100.0, b5_defaults["openness"], 1.0, key="big5_slider_openness")
+            extraversion = st.slider("Extraversion", 0.0, 100.0, b5_defaults["extraversion"], 1.0, key="big5_slider_extraversion")
+            neuroticism = st.slider("Neuroticism", 0.0, 100.0, b5_defaults["neuroticism"], 1.0, key="big5_slider_neuroticism")
+        with cols[1]:
+            conscientiousness = st.slider("Conscientiousness", 0.0, 100.0, b5_defaults["conscientiousness"], 1.0, key="big5_slider_conscientiousness")
+            agreeableness = st.slider("Agreeableness", 0.0, 100.0, b5_defaults["agreeableness"], 1.0, key="big5_slider_agreeableness")
+
+        if st.button("Apply personality override", type="primary", use_container_width=True):
+            try:
+                client.agents.personality.update(
+                    ss.agent_id,
+                    big5={
+                        "openness": openness,
+                        "conscientiousness": conscientiousness,
+                        "extraversion": extraversion,
+                        "agreeableness": agreeableness,
+                        "neuroticism": neuroticism,
+                    },
+                    assessment_method="manual_override",
+                )
+                panel.big5 = {
+                    "openness": openness / 100.0,
+                    "conscientiousness": conscientiousness / 100.0,
+                    "extraversion": extraversion / 100.0,
+                    "agreeableness": agreeableness / 100.0,
+                    "neuroticism": neuroticism / 100.0,
+                }
+                push_banner("success", "Big5 overridden. Send a message to see it.")
+            except Exception as err:  # noqa: BLE001
+                push_banner("warning", f"personality.update failed: {err}")
+
+
+@st.fragment(run_every=3)
+def render_state_panel_live() -> None:
+    """Right-pane heartbeat. Re-runs every 3s independently of the chat pane.
+
+    Background workers mutate `ss.panel` after each turn; this fragment picks
+    up the new state on its next tick. The chat pane never waits.
+    """
+    if not st.session_state.get("connected"):
+        return
+    render_state_panel(st.session_state.client, st.session_state)
+
+
 def render_state_panel(client: Sonzai, ss: Any) -> None:
     panel: StatePanel = ss.panel
-    st.subheader("Live state")
+    header_col, status_col = st.columns([3, 1])
+    with header_col:
+        st.subheader("Live state")
+    with status_col:
+        if panel.refresh_in_progress:
+            st.caption("⟳ updating…")
+        elif panel.last_refresh_at:
+            ago = max(0, int(time.time() - panel.last_refresh_at))
+            st.caption(f"updated {ago}s ago")
     if panel.last_extraction_id:
         st.caption(
             f"Last extraction `{panel.last_extraction_id[:8]}…` "
@@ -1201,26 +1474,29 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
         "Sonzai supplies context and ingests the transcript."
     )
 
-    # History
-    for turn in ss.messages:
-        with st.chat_message(turn.role):
-            st.write(turn.content)
+    # Scrollable history — fixed-height container so the composer below stays
+    # anchored at the bottom of the column (ChatGPT/character.ai style).
+    history = st.container(height=560, border=False)
+    with history:
+        for turn in ss.messages:
+            with st.chat_message(turn.role):
+                st.write(turn.content)
 
-    # Optional image attachment — Gemini is multimodal, so we pass any URL the
-    # user provides through to the Agents SDK as an `input_image` content
-    # block. The text-bridging into Sonzai is documented in
-    # `run_result_to_sonzai_messages`.
-    image_url = st.text_input(
-        "Attach image (URL)",
-        value="",
-        placeholder="https://… (jpg/png) — optional, sent to Gemini multimodally",
-        key="attached_image_url",
-        help=(
-            "Paste a public image URL. Gemini will see the actual image; "
-            "Sonzai gets a text marker `[User shared image: <url>]` so it can "
-            "extract facts about what was shared."
-        ),
-    )
+    # Optional image attachment — tucked into an expander so the composer is
+    # uncluttered. Gemini is multimodal; Sonzai gets a text marker. See
+    # `run_result_to_sonzai_messages` for the bridging convention.
+    with st.expander("Attach image", expanded=False):
+        image_url = st.text_input(
+            "Image URL",
+            value="",
+            placeholder="https://… (jpg/png)",
+            key="attached_image_url",
+            label_visibility="collapsed",
+            help=(
+                "Paste a public image URL. Gemini sees the actual image; "
+                "Sonzai gets `[User shared image: <url>]` to extract facts."
+            ),
+        )
     image_url = (image_url or "").strip() or None
 
     prompt = st.chat_input(f"Message {ss.agent_name or 'the agent'}…")
@@ -1233,13 +1509,14 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
 
     display_msg = prompt if not image_url else f"{prompt}\n\n[image: {image_url}]"
     ss.messages.append(ChatTurn(role="user", content=display_msg))
-    with st.chat_message("user"):
-        st.write(prompt)
-        if image_url:
-            try:
-                st.image(image_url, width=240)
-            except Exception:  # noqa: BLE001
-                st.caption(f"(image: {image_url})")
+    with history:
+        with st.chat_message("user"):
+            st.write(prompt)
+            if image_url:
+                try:
+                    st.image(image_url, width=240)
+                except Exception:  # noqa: BLE001
+                    st.caption(f"(image: {image_url})")
 
     # 1) Pull enriched context for this turn.
     try:
@@ -1252,7 +1529,7 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
     try:
         model = build_gemini_model(ss.gemini_model, ss.gemini_key)
     except Exception as err:  # noqa: BLE001
-        with st.chat_message("assistant"):
+        with history, st.chat_message("assistant"):
             st.error(f"Could not build Gemini model: {err}")
         return
 
@@ -1280,7 +1557,7 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
     else:
         run_input = prompt
 
-    with st.chat_message("assistant"):
+    with history, st.chat_message("assistant"):
         with st.spinner("Thinking…"):
             try:
                 result = Runner.run_sync(agent, run_input)
@@ -1321,11 +1598,11 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
     except Exception as err:  # noqa: BLE001
         push_banner("warning", f"session.turn failed: {err}")
 
-    # 4) Re-poll the lagged state. We sleep ~3s first so deferred extraction
-    #    has a chance to land — facts/Big5 are eventual, not immediate.
-    with st.spinner("Refreshing personality / facts / inventory / constellation…"):
-        refresh_right_panel(client, ss, wait_for_extraction=True)
-    st.rerun()
+    # 4) Kick the lagged-state refresh into a background thread. The right
+    #    pane is wrapped in `st.fragment(run_every=...)` and will pick up the
+    #    new panel state on its next heartbeat. No spinner, no st.rerun — the
+    #    user is free to type the next message immediately.
+    schedule_background_refresh(client, ss)
 
 
 # ---------------------------------------------------------------------------
@@ -1355,7 +1632,8 @@ def main() -> None:
     with chat_col:
         render_chat_pane(st.session_state.client, st.session_state)
     with state_col:
-        render_state_panel(st.session_state.client, st.session_state)
+        render_steering_panel(st.session_state.client, st.session_state)
+        render_state_panel_live()
 
 
 if __name__ == "__main__":

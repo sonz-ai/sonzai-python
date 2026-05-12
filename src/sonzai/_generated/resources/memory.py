@@ -66,7 +66,7 @@ class Memory(_MemoryBase):
         parent_id: str | None = None,
         include_contents: str | None = None,
         scope: str | None = None,
-        limit: str | None = None,
+        limit: int | None = 50,
         memory_type: str | None = None,
     ) -> MemoryResponse:
         """Get memory tree nodes for an agent"""
@@ -261,7 +261,7 @@ class Memory(_MemoryBase):
         user_id: str | None = None,
         instance_id: str | None = None,
         mode: str | None = None,
-        limit: str | None = None,
+        limit: int | None = 20,
         include_verbatim: str | None = None,
     ) -> SearchResponse:
         """Search agent memories (semantic or BM25)"""
@@ -352,7 +352,7 @@ class Memory(_MemoryBase):
         user_id: str,
         *,
         instance_id: str | None = None,
-        limit: str | None = None,
+        limit: int | None = 1000,
         has_metadata: str | None = None,
         metadata_kind: str | None = None,
         metadata_item_type: str | None = None,
@@ -412,7 +412,7 @@ class AsyncMemory(_MemoryBase):
         parent_id: str | None = None,
         include_contents: str | None = None,
         scope: str | None = None,
-        limit: str | None = None,
+        limit: int | None = 50,
         memory_type: str | None = None,
     ) -> MemoryResponse:
         """Get memory tree nodes for an agent"""
@@ -611,7 +611,7 @@ class AsyncMemory(_MemoryBase):
         user_id: str | None = None,
         instance_id: str | None = None,
         mode: str | None = None,
-        limit: str | None = None,
+        limit: int | None = 20,
         include_verbatim: str | None = None,
     ) -> SearchResponse:
         """Search agent memories (semantic or BM25)"""
@@ -702,7 +702,7 @@ class AsyncMemory(_MemoryBase):
         user_id: str,
         *,
         instance_id: str | None = None,
-        limit: str | None = None,
+        limit: int | None = 1000,
         has_metadata: str | None = None,
         metadata_kind: str | None = None,
         metadata_item_type: str | None = None,
