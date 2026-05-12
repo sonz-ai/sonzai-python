@@ -528,15 +528,20 @@ def _big5_to_fraction(v: float) -> float:
     return f / 100.0 if f > 1 else f
 
 
-def fetch_current_mood(client: Sonzai, agent_id: str, user_id: str) -> dict[str, float] | None:
+def fetch_current_mood(client: Sonzai, agent_id: str, user_id: str, instance_id: str | None = None) -> dict[str, float] | None:
     """Absolute mood state on the 0-100 scale via `agents.get_mood`.
 
     Distinct from `turn.mood`, which session.turn returns as a per-turn delta
     (~-1..+1 range). The sliders / gauges want the absolute current value, so
     we fetch from the dedicated endpoint.
+
+    CRITICAL: `instance_id` MUST match what `sessions.start` was called with.
+    The backend scopes per-user mood under `inst:<instance>:<user>` when an
+    instance is set; omitting it here reads the unscoped row, which never
+    matches what `session.context()` returns and the right pane lies.
     """
     try:
-        resp = client.agents.get_mood(agent_id, user_id=user_id)
+        resp = client.agents.get_mood(agent_id, user_id=user_id, instance_id=instance_id)
     except Exception as err:  # noqa: BLE001
         push_banner("warning", f"get_mood failed: {err}")
         return None
@@ -569,10 +574,13 @@ def fetch_personality_big5(client: Sonzai, agent_id: str) -> dict[str, float] | 
     }
 
 
-def fetch_recent_facts(client: Sonzai, agent_id: str, user_id: str, limit: int = 8) -> list[str]:
-    """Pull recent facts via memory.list_user_facts (active facts for this pair)."""
+def fetch_recent_facts(client: Sonzai, agent_id: str, user_id: str, limit: int = 8, instance_id: str | None = None) -> list[str]:
+    """Pull recent facts via memory.list_user_facts (active facts for this pair).
+
+    Pass `instance_id` so per-user facts under the scoped row are visible.
+    """
     try:
-        resp = client.agents.memory.list_user_facts(agent_id, user_id, limit=limit)
+        resp = client.agents.memory.list_user_facts(agent_id, user_id, limit=limit, instance_id=instance_id)
     except Exception as err:  # noqa: BLE001
         push_banner("warning", f"memory.list_user_facts failed: {err}")
         return []
@@ -585,17 +593,14 @@ def fetch_recent_facts(client: Sonzai, agent_id: str, user_id: str, limit: int =
     return out
 
 
-def fetch_inventory(client: Sonzai, agent_id: str, user_id: str) -> list[dict[str, Any]]:
+def fetch_inventory(client: Sonzai, agent_id: str, user_id: str, instance_id: str | None = None) -> list[dict[str, Any]]:
     """Pull a flat list of inventory items.
 
-    The platform endpoint paginates with mode=list returning {group, values}
-    rows where ``values`` carries the actual item fields. Inventory updates
-    may be lagged or real-time depending on whether the inventory-real-time
-    work has landed; this view simply re-polls per turn.
+    Pass `instance_id` so per-user inventory under the scoped row is visible.
     """
     try:
         page = client.agents.inventory.query_inventory(
-            agent_id, user_id, mode="list", limit=20
+            agent_id, user_id, mode="list", limit=20, instance_id=instance_id,
         )
     except Exception as err:  # noqa: BLE001
         push_banner("warning", f"inventory.query failed: {err}")
@@ -614,10 +619,10 @@ def fetch_inventory(client: Sonzai, agent_id: str, user_id: str) -> list[dict[st
 
 
 def fetch_constellation(
-    client: Sonzai, agent_id: str, user_id: str
+    client: Sonzai, agent_id: str, user_id: str, instance_id: str | None = None,
 ) -> dict[str, Any] | None:
     try:
-        resp = client.agents.get_constellation(agent_id, user_id=user_id)
+        resp = client.agents.get_constellation(agent_id, user_id=user_id, instance_id=instance_id)
     except Exception as err:  # noqa: BLE001
         push_banner("warning", f"get_constellation failed: {err}")
         return None
@@ -637,6 +642,7 @@ def refresh_right_panel(client: Sonzai, ss: Any, *, wait_for_extraction: bool) -
         ss.user_id,
         ss.project_id,
         ss.webhook_event_type,
+        ss.instance_id,
     )
 
 
@@ -647,16 +653,22 @@ def _do_refresh(
     user_id: str,
     project_id: str,
     webhook_event_type: str,
+    instance_id: str | None = None,
 ) -> None:
     """Mutate `panel` in place with freshly-fetched server state.
 
     Safe to call from a worker thread: the function holds direct references
     to `panel` (no st.session_state lookups), and assigning to dataclass
     fields is atomic under the GIL.
+
+    `instance_id` MUST match what `sessions.start` used — every per-user
+    fetch (mood, facts, inventory, constellation, notifications) is scoped
+    under `inst:<instance>:<user>` server-side. Omitting it reads a
+    completely different row that never receives the session's writes.
     """
     panel.refresh_in_progress = True
     try:
-        new_mood = fetch_current_mood(client, agent_id, user_id)
+        new_mood = fetch_current_mood(client, agent_id, user_id, instance_id=instance_id)
         if new_mood is not None and panel.mood:
             panel.prev_mood = dict(panel.mood)
         if new_mood is not None:
@@ -665,9 +677,9 @@ def _do_refresh(
         if new_big5 is not None and panel.big5:
             panel.prev_big5 = dict(panel.big5)
         panel.big5 = new_big5
-        panel.facts = fetch_recent_facts(client, agent_id, user_id)
-        panel.inventory = fetch_inventory(client, agent_id, user_id)
-        panel.constellation = fetch_constellation(client, agent_id, user_id)
+        panel.facts = fetch_recent_facts(client, agent_id, user_id, instance_id=instance_id)
+        panel.inventory = fetch_inventory(client, agent_id, user_id, instance_id=instance_id)
+        panel.constellation = fetch_constellation(client, agent_id, user_id, instance_id=instance_id)
         panel.proactive_notifications = fetch_proactive_notifications(
             client, agent_id, user_id
         )
@@ -692,11 +704,12 @@ def schedule_background_refresh(client: Sonzai, ss: Any) -> None:
     user_id = ss.user_id
     project_id = ss.project_id
     webhook_event_type = ss.webhook_event_type
+    instance_id = ss.instance_id
 
     def _worker() -> None:
         time.sleep(POST_TURN_REFRESH_DELAY_S)
         try:
-            _do_refresh(client, panel, agent_id, user_id, project_id, webhook_event_type)
+            _do_refresh(client, panel, agent_id, user_id, project_id, webhook_event_type, instance_id)
         except Exception:  # noqa: BLE001 — daemon thread; swallow to avoid crashing
             panel.refresh_in_progress = False
 
@@ -1118,6 +1131,14 @@ def render_mood_section(client: Sonzai, ss: Any) -> None:
             arousal = float(st.session_state["mood_slider_arousal"])
             tension = float(st.session_state["mood_slider_tension"])
             affiliation = float(st.session_state["mood_slider_affiliation"])
+            # CRITICAL: pass instance_id. The session was started with
+            # instance_id, so /context reads mood under the SCOPED user_id
+            # (`inst:<instance_id>:<user_id>`). If we omit instance_id here,
+            # update_mood writes to the UNSCOPED user_id row and /context
+            # never sees the override — the user picks Cheerful, the right
+            # pane shows V=85/A=70 (because get_mood is also unscoped),
+            # but the assistant reply is tagged "neutral" because /context
+            # is reading from a totally different mood row.
             resp = client.agents.update_mood(
                 ss.agent_id,
                 valence=valence,
@@ -1125,6 +1146,7 @@ def render_mood_section(client: Sonzai, ss: Any) -> None:
                 tension=tension,
                 affiliation=affiliation,
                 user_id=ss.user_id,
+                instance_id=ss.instance_id,
             )
             # Snapshot prev BEFORE we overwrite, so deltas show the jump.
             if panel.mood:
@@ -1254,6 +1276,7 @@ def render_session_controls(client: Sonzai, ss: Any) -> None:
                 _do_refresh(
                     client, ss.panel, ss.agent_id, ss.user_id,
                     ss.project_id, ss.webhook_event_type,
+                    ss.instance_id,
                 )
                 # Reopen so the next message has a session to use.
                 try:
@@ -1664,6 +1687,7 @@ def render_proactive_panel(client: Sonzai, ss: Any) -> None:
             wakeup = client.agents.schedule_wakeup(
                 ss.agent_id,
                 user_id=ss.user_id,
+                instance_id=ss.instance_id,
                 check_type=WAKEUP_DEMO_CHECK_TYPE,
                 intent=WAKEUP_DEMO_INTENT,
                 delay_hours=WAKEUP_DEMO_DELAY_HOURS,
@@ -1942,7 +1966,9 @@ def render_chat_pane(client: Sonzai, ss: Any) -> None:
         ss.panel.last_extraction_status = turn.extraction_status
         # turn.mood is a per-turn DELTA (≈ -1..+1) — not what the gauges
         # want. Fetch the absolute 0-100 state via get_mood and use that.
-        new_mood = fetch_current_mood(client, ss.agent_id, ss.user_id)
+        # Pass instance_id so we read the scoped per-user row that the
+        # session writes to (otherwise we'd read a stale unscoped row).
+        new_mood = fetch_current_mood(client, ss.agent_id, ss.user_id, instance_id=ss.instance_id)
         if new_mood is not None:
             if ss.panel.mood:
                 ss.panel.prev_mood = dict(ss.panel.mood)
