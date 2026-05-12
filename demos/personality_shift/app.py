@@ -595,16 +595,26 @@ def render_personality_panel() -> None:
 
     # Sliders are the source of truth for "what the user wants"; pending_big5
     # mirrors them so non-slider rerun paths can compare.
+    #
+    # Streamlit warns if a widget is created with BOTH ``value=`` and a
+    # ``key=`` whose session_state entry already exists (the value kwarg
+    # silently loses to the session_state value, but the API contract
+    # disallows the combination). After a preset/Restore click, the apply
+    # path above writes ``slider-{trait}`` into session_state — on the next
+    # rerun the widget must read from session_state without ``value=``.
+    # On the very first render the key is absent, so we seed it from
+    # pending_big5/applied first, then create the widget without ``value=``.
     new_slider_values: dict[str, float] = {}
     for trait in TRAIT_ORDER:
-        default = float((ss.pending_big5 or applied).get(trait, 0.5))
+        slider_key = f"slider-{trait}"
+        if slider_key not in ss:
+            ss[slider_key] = float((ss.pending_big5 or applied).get(trait, 0.5))
         new_slider_values[trait] = st.slider(
             trait,
             min_value=0.0,
             max_value=1.0,
-            value=default,
             step=0.05,
-            key=f"slider-{trait}",
+            key=slider_key,
         )
 
     ss.pending_big5 = new_slider_values
