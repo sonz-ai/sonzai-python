@@ -1131,22 +1131,11 @@ def render_mood_section(client: Sonzai, ss: Any) -> None:
             arousal = float(st.session_state["mood_slider_arousal"])
             tension = float(st.session_state["mood_slider_tension"])
             affiliation = float(st.session_state["mood_slider_affiliation"])
-            # CRITICAL: pass instance_id. The session was started with
-            # instance_id, so /context reads mood under the SCOPED user_id
-            # (`inst:<instance_id>:<user_id>`). If we omit instance_id here,
-            # update_mood writes to the UNSCOPED user_id row and /context
-            # never sees the override — the user picks Cheerful, the right
-            # pane shows V=85/A=70 (because get_mood is also unscoped),
-            # but the assistant reply is tagged "neutral" because /context
-            # is reading from a totally different mood row.
-            resp = client.agents.update_mood(
-                ss.agent_id,
-                valence=valence,
-                arousal=arousal,
-                tension=tension,
-                affiliation=affiliation,
-                user_id=ss.user_id,
-                instance_id=ss.instance_id,
+            # sonzai 1.5.6+: session.update_mood auto-scopes by
+            # (agent_id, user_id, instance_id) from the session handle —
+            # no more remembering to pass instance_id manually.
+            resp = ss.session.update_mood(
+                valence=valence, arousal=arousal, tension=tension, affiliation=affiliation,
             )
             # Snapshot prev BEFORE we overwrite, so deltas show the jump.
             if panel.mood:

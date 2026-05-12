@@ -56,6 +56,13 @@ class Sessions(_GenSessions):
     # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: HTTPClient) -> None:
         self._http = http
+        # Back-reference to the parent Agents resource. Wired by Agents.__init__
+        # immediately after construction so Session handles can proxy
+        # per-user methods (update_mood, get_mood, list_facts, etc.) and
+        # auto-scope by (agent_id, user_id, instance_id). Without this,
+        # callers have to remember to pass instance_id on every per-user
+        # call — the demo bug that motivated this plumbing.
+        self._agents: Any | None = None
 
     def start(
         self,
@@ -101,6 +108,7 @@ class Sessions(_GenSessions):
         start_resp = SessionResponse.model_validate(data)
         return Session(
             self,
+            agents=self._agents,
             agent_id=agent_id,
             user_id=user_id,
             session_id=session_id,
@@ -220,6 +228,7 @@ class AsyncSessions(_GenAsyncSessions):
     # takes Any. Override kept to preserve typed constructor signature.
     def __init__(self, http: AsyncHTTPClient) -> None:
         self._http = http
+        self._agents: Any | None = None  # see Sessions._agents
 
     async def start(
         self,
@@ -258,6 +267,7 @@ class AsyncSessions(_GenAsyncSessions):
         start_resp = SessionResponse.model_validate(data)
         return AsyncSession(
             self,
+            agents=self._agents,
             agent_id=agent_id,
             user_id=user_id,
             session_id=session_id,

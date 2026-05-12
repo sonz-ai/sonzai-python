@@ -120,6 +120,10 @@ class Agents(_GenAgents):
         self.memory = Memory(http)
         self.personality = Personality(http)
         self.sessions = Sessions(http)
+        # Wire the back-reference so Session handles can proxy per-user
+        # methods (update_mood, get_mood, list_facts, etc.) with auto-scoping
+        # by (agent_id, user_id, instance_id). See Session.update_mood etc.
+        self.sessions._agents = self
         self.instances = Instances(http)
         self.notifications = Notifications(http)
         self.custom_states = CustomStates(http)
@@ -1720,6 +1724,8 @@ class AsyncAgents(_GenAsyncAgents):
         self.memory = AsyncMemory(http)
         self.personality = AsyncPersonality(http)
         self.sessions = AsyncSessions(http)
+        # Back-reference for AsyncSession proxy methods — see Agents.__init__.
+        self.sessions._agents = self
         self.instances = AsyncInstances(http)
         self.notifications = AsyncNotifications(http)
         self.custom_states = AsyncCustomStates(http)

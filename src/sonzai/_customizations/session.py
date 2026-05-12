@@ -112,6 +112,7 @@ class Session(_SessionBase):
         user_display_name: str | None = None,
         user_timezone: str | None = None,
         start_response: SessionResponse | None = None,
+        agents: Any | None = None,
     ) -> None:
         super().__init__(
             agent_id=agent_id,
@@ -126,6 +127,90 @@ class Session(_SessionBase):
         )
         self._sessions = sessions
         self._http = sessions._http
+        # Optional back-reference to the parent Agents resource. When wired
+        # (always wired in production), the per-user proxy methods below
+        # (update_mood, get_mood, list_facts, …) route through Agents and
+        # auto-scope by (agent_id, user_id, instance_id) from this session
+        # handle. Without it, callers fall back to the unscoped Agents
+        # methods and silently write/read the wrong (unscoped) row.
+        self._agents = agents
+
+    # ------------------------------------------------------------------
+    # Per-user proxy methods — auto-scope by (agent_id, user_id, instance_id)
+    # ------------------------------------------------------------------
+    #
+    # The platform scopes per-user rows under `inst:<instance_id>:<user_id>`
+    # when an instance is set at sessions.start. Calling the agent-level
+    # API directly (client.agents.update_mood(user_id=...)) writes the
+    # UNSCOPED row, which session.context() never reads — leading to
+    # confusing demo behaviour where Apply mood succeeds and get_mood
+    # confirms the new value but the next chat reply still uses the old
+    # mood. These wrappers eliminate that footgun by always passing
+    # instance_id from the session handle.
+
+    def update_mood(
+        self,
+        *,
+        valence: float,
+        arousal: float,
+        tension: float,
+        affiliation: float,
+    ) -> Any:
+        """Operator override of mood, auto-scoped to this session's user."""
+        if self._agents is None:
+            raise RuntimeError(
+                "Session was constructed without an Agents back-reference; "
+                "use client.agents.update_mood(...) and pass instance_id manually."
+            )
+        return self._agents.update_mood(
+            self.agent_id,
+            valence=valence, arousal=arousal, tension=tension, affiliation=affiliation,
+            user_id=self.user_id, instance_id=self.instance_id,
+        )
+
+    def get_mood(self) -> Any:
+        """Current mood for this session's user, on the 0-100 scale."""
+        if self._agents is None:
+            raise RuntimeError("Session.get_mood needs an Agents back-reference.")
+        return self._agents.get_mood(self.agent_id, user_id=self.user_id, instance_id=self.instance_id)
+
+    def list_facts(self, *, limit: int = 20) -> Any:
+        """List active facts about this session's user."""
+        if self._agents is None:
+            raise RuntimeError("Session.list_facts needs an Agents back-reference.")
+        return self._agents.memory.list_user_facts(
+            self.agent_id, self.user_id, limit=limit, instance_id=self.instance_id,
+        )
+
+    def query_inventory(self, *, mode: str = "list", limit: int = 50) -> Any:
+        """Query this session's user's inventory."""
+        if self._agents is None:
+            raise RuntimeError("Session.query_inventory needs an Agents back-reference.")
+        return self._agents.inventory.query_inventory(
+            self.agent_id, self.user_id, mode=mode, limit=limit, instance_id=self.instance_id,
+        )
+
+    def get_constellation(self) -> Any:
+        """The agent's concept graph for this session's user."""
+        if self._agents is None:
+            raise RuntimeError("Session.get_constellation needs an Agents back-reference.")
+        return self._agents.get_constellation(self.agent_id, user_id=self.user_id, instance_id=self.instance_id)
+
+    def schedule_wakeup(
+        self,
+        *,
+        check_type: str,
+        intent: str,
+        delay_hours: int = 24,
+    ) -> Any:
+        """Schedule a proactive wakeup for this session's user."""
+        if self._agents is None:
+            raise RuntimeError("Session.schedule_wakeup needs an Agents back-reference.")
+        return self._agents.schedule_wakeup(
+            self.agent_id,
+            user_id=self.user_id, instance_id=self.instance_id,
+            check_type=check_type, intent=intent, delay_hours=delay_hours,
+        )
 
     def context(
         self,
@@ -279,6 +364,7 @@ class AsyncSession(_SessionBase):
         user_display_name: str | None = None,
         user_timezone: str | None = None,
         start_response: SessionResponse | None = None,
+        agents: Any | None = None,
     ) -> None:
         super().__init__(
             agent_id=agent_id,
@@ -293,6 +379,39 @@ class AsyncSession(_SessionBase):
         )
         self._sessions = sessions
         self._http = sessions._http
+        self._agents = agents  # see Session.__init__ for purpose
+
+    # Async per-user proxies — mirror Session's sync surface.
+
+    async def update_mood(self, *, valence: float, arousal: float, tension: float, affiliation: float) -> Any:
+        if self._agents is None: raise RuntimeError("AsyncSession needs an AsyncAgents back-reference.")
+        return await self._agents.update_mood(
+            self.agent_id, valence=valence, arousal=arousal, tension=tension, affiliation=affiliation,
+            user_id=self.user_id, instance_id=self.instance_id,
+        )
+
+    async def get_mood(self) -> Any:
+        if self._agents is None: raise RuntimeError("AsyncSession.get_mood needs an AsyncAgents back-reference.")
+        return await self._agents.get_mood(self.agent_id, user_id=self.user_id, instance_id=self.instance_id)
+
+    async def list_facts(self, *, limit: int = 20) -> Any:
+        if self._agents is None: raise RuntimeError("AsyncSession.list_facts needs an AsyncAgents back-reference.")
+        return await self._agents.memory.list_user_facts(self.agent_id, self.user_id, limit=limit, instance_id=self.instance_id)
+
+    async def query_inventory(self, *, mode: str = "list", limit: int = 50) -> Any:
+        if self._agents is None: raise RuntimeError("AsyncSession.query_inventory needs an AsyncAgents back-reference.")
+        return await self._agents.inventory.query_inventory(self.agent_id, self.user_id, mode=mode, limit=limit, instance_id=self.instance_id)
+
+    async def get_constellation(self) -> Any:
+        if self._agents is None: raise RuntimeError("AsyncSession.get_constellation needs an AsyncAgents back-reference.")
+        return await self._agents.get_constellation(self.agent_id, user_id=self.user_id, instance_id=self.instance_id)
+
+    async def schedule_wakeup(self, *, check_type: str, intent: str, delay_hours: int = 24) -> Any:
+        if self._agents is None: raise RuntimeError("AsyncSession.schedule_wakeup needs an AsyncAgents back-reference.")
+        return await self._agents.schedule_wakeup(
+            self.agent_id, user_id=self.user_id, instance_id=self.instance_id,
+            check_type=check_type, intent=intent, delay_hours=delay_hours,
+        )
 
     async def context(
         self,
