@@ -20,14 +20,17 @@ in scope for this package.
 
 from .agents import AgentCapabilities
 from .chat import ChatStreamEvent
+from .detached import DEFAULT_DETACHED_TIMEOUT_SECONDS, DetachOptions
 from .evaluation import EvalRun
 from .memory import StoredFact
 from .session import AsyncSession, Session
 
 __all__ = [
+    "DEFAULT_DETACHED_TIMEOUT_SECONDS",
     "AgentCapabilities",
     "AsyncSession",
     "ChatStreamEvent",
+    "DetachOptions",
     "EvalRun",
     "Session",
     "StoredFact",

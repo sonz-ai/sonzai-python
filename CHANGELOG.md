@@ -3,6 +3,39 @@
 All notable changes to `sonzai` are documented here. The project follows
 [Semantic Versioning](https://semver.org/). Dates are `YYYY-MM-DD`.
 
+## Unreleased
+
+### Added
+
+- **`temperature` chat option** — every chat method (`Agents.chat`,
+  `Agents.chat_async`, `AsyncAgents.chat`, `AsyncAgents.chat_async`, plus
+  the corresponding `*_blocking` / `*_detached` variants) accepts an
+  optional `temperature: float | None` keyword. The field is omitted
+  from the wire payload when `None` (default), so the AI service applies
+  its own per-model default. A value of `0.0` is preserved on the wire
+  (deterministic sampling).
+  - The Platform's AI service adapts or omits `temperature` for
+    providers whose models require it, so callers do not need to know
+    provider-specific constraints. Pass the value you want; the
+    Platform reconciles it where necessary.
+- **Detached streaming variants** — `AsyncAgents.chat_detached` and
+  `AsyncAgents.chat_stream_detached` shield the upstream AI call from
+  caller-task cancellation via `asyncio.shield(...)`. Use these when
+  the call must outlive its caller — NATS handlers, Watermill
+  subscribers, short-lived HTTP request handlers that ack before the
+  AI generation completes. A 5-minute hard timeout cap
+  (`DEFAULT_DETACHED_TIMEOUT_SECONDS = 300.0`) guards against leaked
+  tasks. A watchdog logs a warning (or fires `on_parent_cancel`) when
+  the caller bails mid-call.
+  - Sync mirrors `Agents.chat_detached` / `Agents.chat_stream_detached`
+    exist for API parity but delegate to the regular methods (Python
+    sync blocking calls have no caller-cancellation primitive).
+  - New public exports: `DetachOptions`,
+    `DEFAULT_DETACHED_TIMEOUT_SECONDS`.
+
+Both changes mirror the sonzai-go SDK (`ChatOptions.Temperature`,
+`ChatStreamChannelDetached` / `DetachOptions`).
+
 ## 1.5.2 — 2026-05-07
 
 ### Added

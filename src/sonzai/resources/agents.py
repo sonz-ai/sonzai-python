@@ -2,10 +2,18 @@
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Iterator
-from typing import Any, Literal
+import asyncio
+from collections.abc import AsyncIterator, Callable, Coroutine, Iterator
+from typing import Any, Literal, TypeVar
 from urllib.parse import quote
 
+from .._customizations.detached import (
+    DetachOptions,
+    _current_task_or_none,
+    _resolve_logger,
+    _resolve_timeout,
+    _watch_parent_task,
+)
 from .._generated.resources.agents import AsyncAgents as _GenAsyncAgents
 from .._generated.resources.agents import Agents as _GenAgents
 from .._http import AsyncHTTPClient, HTTPClient, _classify_chat_frame
@@ -99,6 +107,10 @@ from .priming import AsyncPriming, Priming
 from .schedules import AsyncSchedules, Schedules
 from .sessions import AsyncSessions, Sessions
 from .voice import AsyncVoiceResource, VoiceResource
+
+# TypeVar for the result of a detached coroutine. Generic across
+# aggregate (ChatResponse) and collected stream (list[ChatStreamEvent]).
+_DetachedT = TypeVar("_DetachedT")
 
 
 class Agents(_GenAgents):
@@ -298,6 +310,7 @@ class Agents(_GenAgents):
         timezone: str | None = None,
         tool_capabilities: dict[str, Any] | None = None,
         tool_definitions: list[dict[str, Any]] | None = None,
+        temperature: float | None = None,
         stream: bool = False,
     ) -> ChatResponse | Iterator[ChatStreamEvent]:
         """Send a chat message to an agent.
@@ -319,10 +332,74 @@ class Agents(_GenAgents):
             timezone: Optional user timezone.
             tool_capabilities: Optional built-in tool toggles.
             tool_definitions: Optional external tool definitions.
+            temperature: Optional sampling temperature for this chat.
+                Leave unset (``None``) to inherit the AI service's
+                per-model default. The Platform automatically adapts or
+                omits this value for providers whose models require it.
+                Callers do not need to know provider-specific
+                constraints — pass the value you want, and the Platform
+                will silently reconcile it where necessary. A value of
+                ``0.0`` is preserved on the wire (deterministic
+                sampling); only ``None`` omits the field.
             stream: If True, return an iterator of ChatStreamEvent.
 
         Returns:
             ChatResponse if stream=False, Iterator[ChatStreamEvent] if stream=True.
+        """
+        body = self._build_chat_body(
+            messages=messages,
+            user_id=user_id,
+            user_display_name=user_display_name,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+            continuation_token=continuation_token,
+            request_type=request_type,
+            language=language,
+            compiled_system_prompt=compiled_system_prompt,
+            interaction_role=interaction_role,
+            timezone=timezone,
+            tool_capabilities=tool_capabilities,
+            tool_definitions=tool_definitions,
+            temperature=temperature,
+        )
+
+        path = f"/api/v1/agents/{agent_id}/chat"
+
+        if stream:
+            return self._stream_chat(path, body)
+
+        return self._chat_sync(path, body)
+
+    @staticmethod
+    def _build_chat_body(
+        *,
+        messages: list[ChatMessage | dict[str, str]],
+        user_id: str | None = None,
+        user_display_name: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        continuation_token: str | None = None,
+        request_type: str | None = None,
+        language: str | None = None,
+        compiled_system_prompt: str | None = None,
+        interaction_role: str | None = None,
+        timezone: str | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
+        temperature: float | None = None,
+    ) -> dict[str, Any]:
+        """Build the JSON body for a chat request.
+
+        Extracted so the detached variants share the same payload-shape
+        invariants as the cancellation-honoring methods. ``None`` fields
+        are dropped from the wire JSON — notably ``temperature``, where
+        omission is the contract that lets the AI service apply its own
+        per-model default (and lets the Platform adapt the value for
+        providers that need it).
         """
         msgs = [m.model_dump() if isinstance(m, ChatMessage) else m for m in messages]
         body: dict[str, Any] = {"messages": msgs}
@@ -354,13 +431,14 @@ class Agents(_GenAgents):
             body["tool_capabilities"] = tool_capabilities
         if tool_definitions is not None:
             body["tool_definitions"] = tool_definitions
-
-        path = f"/api/v1/agents/{agent_id}/chat"
-
-        if stream:
-            return self._stream_chat(path, body)
-
-        return self._chat_sync(path, body)
+        if temperature is not None:
+            # Mirror sonzai-go's ChatOptions.Temperature contract: emit
+            # the field if and only if the caller picked a value. A
+            # temperature of 0.0 is a valid request for deterministic
+            # output and must survive the round-trip. The Platform
+            # reconciles the value for providers that require it.
+            body["temperature"] = temperature
+        return body
 
     def _chat_sync(self, path: str, body: dict[str, Any]) -> ChatResponse:
         """Consume SSE stream and return aggregated response."""
@@ -394,6 +472,146 @@ class Agents(_GenAgents):
         for event in self._http.stream_sse("POST", path, json_data=body):
             yield _classify_chat_frame(event)
 
+    # -- Chat (detached) --
+    #
+    # The detached variants exist so a long-running AI streaming call can
+    # outlive a short-lived caller (NATS handler, queue worker, asyncio task
+    # with a tight deadline). See sonzai._customizations.detached for the
+    # design rationale and the asyncio.shield-based implementation that
+    # backs the AsyncAgents variants.
+    #
+    # The SYNCHRONOUS variants below are provided purely for API parity
+    # with sonzai-go's ChatDetached / ChatStreamChannelDetached. Python's
+    # sync HTTP path does not have a caller-cancellation primitive (a
+    # blocking ``client.agents.chat(...)`` cannot be cancelled by the
+    # caller without process-level signals), so the sync detached methods
+    # currently delegate straight to the regular methods. If you need
+    # honest-to-goodness detached semantics, use the AsyncAgents variants
+    # — that is where the production incidents originated.
+
+    def chat_detached(
+        self,
+        agent_id: str,
+        *,
+        messages: list[ChatMessage | dict[str, str]],
+        user_id: str | None = None,
+        user_display_name: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        continuation_token: str | None = None,
+        request_type: str | None = None,
+        language: str | None = None,
+        compiled_system_prompt: str | None = None,
+        interaction_role: str | None = None,
+        timezone: str | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
+        temperature: float | None = None,
+        detach_options: DetachOptions | None = None,
+    ) -> ChatResponse:
+        """Sync parity surface for :meth:`AsyncAgents.chat_detached`.
+
+        Python's sync HTTP path has no caller-cancellation primitive — a
+        blocking ``chat`` call already runs to completion on the calling
+        thread — so this method delegates to :meth:`chat` with
+        ``stream=False``. The ``detach_options`` parameter is accepted
+        but has no effect on the sync API; it exists for surface parity
+        with the async variant.
+
+        Use :meth:`AsyncAgents.chat_detached` for honest-to-goodness
+        detached semantics. See
+        :class:`sonzai._customizations.detached.DetachOptions` for the
+        full design rationale.
+        """
+        # detach_options accepted for API parity with the async variant.
+        # The sync HTTP client doesn't honour cancellation, so there is
+        # nothing to shield against.
+        _ = detach_options
+        result = self.chat(
+            agent_id,
+            messages=messages,
+            user_id=user_id,
+            user_display_name=user_display_name,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+            continuation_token=continuation_token,
+            request_type=request_type,
+            language=language,
+            compiled_system_prompt=compiled_system_prompt,
+            interaction_role=interaction_role,
+            timezone=timezone,
+            tool_capabilities=tool_capabilities,
+            tool_definitions=tool_definitions,
+            temperature=temperature,
+            stream=False,
+        )
+        if not isinstance(result, ChatResponse):
+            # chat(stream=False) returns ChatResponse — this branch is
+            # defensive and should never fire.
+            raise TypeError(  # pragma: no cover
+                f"chat_detached expected ChatResponse, got {type(result).__name__}"
+            )
+        return result
+
+    def chat_stream_detached(
+        self,
+        agent_id: str,
+        *,
+        messages: list[ChatMessage | dict[str, str]],
+        user_id: str | None = None,
+        user_display_name: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        continuation_token: str | None = None,
+        request_type: str | None = None,
+        language: str | None = None,
+        compiled_system_prompt: str | None = None,
+        interaction_role: str | None = None,
+        timezone: str | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
+        temperature: float | None = None,
+        detach_options: DetachOptions | None = None,
+    ) -> Iterator[ChatStreamEvent]:
+        """Sync parity surface for :meth:`AsyncAgents.chat_stream_detached`.
+
+        See :meth:`chat_detached` for the rationale — sync Python has no
+        caller-cancellation primitive, so this delegates to
+        :meth:`chat` with ``stream=True``.
+        """
+        _ = detach_options
+        result = self.chat(
+            agent_id,
+            messages=messages,
+            user_id=user_id,
+            user_display_name=user_display_name,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+            continuation_token=continuation_token,
+            request_type=request_type,
+            language=language,
+            compiled_system_prompt=compiled_system_prompt,
+            interaction_role=interaction_role,
+            timezone=timezone,
+            tool_capabilities=tool_capabilities,
+            tool_definitions=tool_definitions,
+            temperature=temperature,
+            stream=True,
+        )
+        if isinstance(result, ChatResponse):  # pragma: no cover — defensive
+            raise TypeError(
+                "chat(stream=True) returned ChatResponse instead of Iterator"
+            )
+        return result
+
     # -- Chat (async / processing_id polling) --
 
     def chat_async(
@@ -415,6 +633,7 @@ class Agents(_GenAgents):
         timezone: str | None = None,
         tool_capabilities: dict[str, Any] | None = None,
         tool_definitions: list[dict[str, Any]] | None = None,
+        temperature: float | None = None,
     ) -> dict[str, Any]:
         """Queue a chat request for background processing (iter-140u-2).
 
@@ -425,27 +644,29 @@ class Agents(_GenAgents):
 
         Use this when the chat may run longer than your network can keep
         an SSE stream open (Cloudflare/LB ~100s).
+
+        See :meth:`chat` for the ``temperature`` contract (omitted from
+        the wire payload when ``None``; the Platform reconciles
+        provider-specific constraints).
         """
-        msgs = [m.model_dump() if isinstance(m, ChatMessage) else m for m in messages]
-        body: dict[str, Any] = {"messages": msgs}
-        for key, value in {
-            "user_id": user_id,
-            "user_display_name": user_display_name,
-            "session_id": session_id,
-            "instance_id": instance_id,
-            "provider": provider,
-            "model": model,
-            "continuation_token": continuation_token,
-            "request_type": request_type,
-            "language": language,
-            "compiled_system_prompt": compiled_system_prompt,
-            "interaction_role": interaction_role,
-            "timezone": timezone,
-            "tool_capabilities": tool_capabilities,
-            "tool_definitions": tool_definitions,
-        }.items():
-            if value is not None:
-                body[key] = value
+        body = self._build_chat_body(
+            messages=messages,
+            user_id=user_id,
+            user_display_name=user_display_name,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+            continuation_token=continuation_token,
+            request_type=request_type,
+            language=language,
+            compiled_system_prompt=compiled_system_prompt,
+            interaction_role=interaction_role,
+            timezone=timezone,
+            tool_capabilities=tool_capabilities,
+            tool_definitions=tool_definitions,
+            temperature=temperature,
+        )
 
         data = self._http.post(f"/api/v1/agents/{agent_id}/chat/async", json_data=body)
         if not isinstance(data, dict):
@@ -1898,42 +2119,35 @@ class AsyncAgents(_GenAsyncAgents):
         timezone: str | None = None,
         tool_capabilities: dict[str, Any] | None = None,
         tool_definitions: list[dict[str, Any]] | None = None,
+        temperature: float | None = None,
         stream: bool = False,
     ) -> ChatResponse | AsyncIterator[ChatStreamEvent]:
         """Send a chat message to an agent.
 
         Returns ChatResponse if stream=False, async iterator if stream=True.
+
+        See :meth:`Agents.chat` for the ``temperature`` contract (omitted
+        when ``None``; the Platform reconciles provider-specific
+        constraints).
         """
-        msgs = [m.model_dump() if isinstance(m, ChatMessage) else m for m in messages]
-        body: dict[str, Any] = {"messages": msgs}
-        if user_id is not None:
-            body["user_id"] = user_id
-        if user_display_name is not None:
-            body["user_display_name"] = user_display_name
-        if session_id is not None:
-            body["session_id"] = session_id
-        if instance_id is not None:
-            body["instance_id"] = instance_id
-        if provider is not None:
-            body["provider"] = provider
-        if model is not None:
-            body["model"] = model
-        if continuation_token is not None:
-            body["continuation_token"] = continuation_token
-        if request_type is not None:
-            body["request_type"] = request_type
-        if language is not None:
-            body["language"] = language
-        if compiled_system_prompt is not None:
-            body["compiled_system_prompt"] = compiled_system_prompt
-        if interaction_role is not None:
-            body["interaction_role"] = interaction_role
-        if timezone is not None:
-            body["timezone"] = timezone
-        if tool_capabilities is not None:
-            body["tool_capabilities"] = tool_capabilities
-        if tool_definitions is not None:
-            body["tool_definitions"] = tool_definitions
+        body = Agents._build_chat_body(
+            messages=messages,
+            user_id=user_id,
+            user_display_name=user_display_name,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+            continuation_token=continuation_token,
+            request_type=request_type,
+            language=language,
+            compiled_system_prompt=compiled_system_prompt,
+            interaction_role=interaction_role,
+            timezone=timezone,
+            tool_capabilities=tool_capabilities,
+            tool_definitions=tool_definitions,
+            temperature=temperature,
+        )
 
         path = f"/api/v1/agents/{agent_id}/chat"
 
@@ -1970,6 +2184,296 @@ class AsyncAgents(_GenAsyncAgents):
         async for event in self._http.stream_sse("POST", path, json_data=body):
             yield _classify_chat_frame(event)
 
+    # -- Chat (detached) --
+    #
+    # Use these when the streaming call must outlive its caller — e.g.
+    # inside a NATS message handler, a Watermill subscriber, or a
+    # short-lived HTTP request that ack'd before the AI generation
+    # completes. See sonzai._customizations.detached for the design
+    # rationale.
+
+    async def chat_detached(
+        self,
+        agent_id: str,
+        *,
+        messages: list[ChatMessage | dict[str, str]],
+        user_id: str | None = None,
+        user_display_name: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        continuation_token: str | None = None,
+        request_type: str | None = None,
+        language: str | None = None,
+        compiled_system_prompt: str | None = None,
+        interaction_role: str | None = None,
+        timezone: str | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
+        temperature: float | None = None,
+        timeout_seconds: float | None = None,
+        on_parent_cancel: Callable[[BaseException | None], None] | None = None,
+        detach_options: DetachOptions | None = None,
+    ) -> ChatResponse:
+        """Send a chat message and aggregate the response, detached from the caller.
+
+        Mirrors :meth:`chat` (``stream=False``) but the upstream HTTP
+        call is shielded from caller-task cancellation via
+        :func:`asyncio.shield`, so a parent ``task.cancel()`` does NOT
+        abort the AI generation. A hard ``timeout_seconds`` cap
+        (default :data:`DEFAULT_DETACHED_TIMEOUT_SECONDS` = 300s) guards
+        against leaked tasks.
+
+        Use this when the caller's lifetime is shorter than the
+        generation — NATS handlers, Watermill subscribers, short-lived
+        HTTP request handlers that ack before the AI replies.
+
+        Args:
+            timeout_seconds: Hard cap on the detached call. ``None`` uses
+                :data:`DEFAULT_DETACHED_TIMEOUT_SECONDS`. Pass a value
+                ``<= 0`` to disable the cap (rarely what you want).
+                Overrides ``detach_options.timeout_seconds`` if both are
+                set.
+            on_parent_cancel: Callback fired exactly once if the caller
+                task is cancelled while the detached call is in flight.
+                Receives the :class:`asyncio.CancelledError` (or
+                ``None``). Useful for metrics / structured tracing.
+                Overrides ``detach_options.on_parent_cancel`` if both
+                are set.
+            detach_options: Bundled options object. Convenience for
+                callers that want to share a configured
+                :class:`DetachOptions` across many calls.
+
+        See :meth:`Agents.chat` for the ``temperature`` contract.
+        """
+        opts = self._resolve_detach_options(
+            detach_options=detach_options,
+            timeout_seconds=timeout_seconds,
+            on_parent_cancel=on_parent_cancel,
+        )
+        body = Agents._build_chat_body(
+            messages=messages,
+            user_id=user_id,
+            user_display_name=user_display_name,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+            continuation_token=continuation_token,
+            request_type=request_type,
+            language=language,
+            compiled_system_prompt=compiled_system_prompt,
+            interaction_role=interaction_role,
+            timezone=timezone,
+            tool_capabilities=tool_capabilities,
+            tool_definitions=tool_definitions,
+            temperature=temperature,
+        )
+        path = f"/api/v1/agents/{agent_id}/chat"
+        return await self._run_detached(
+            self._chat_aggregate(path, body),
+            opts=opts,
+        )
+
+    async def chat_stream_detached(
+        self,
+        agent_id: str,
+        *,
+        messages: list[ChatMessage | dict[str, str]],
+        user_id: str | None = None,
+        user_display_name: str | None = None,
+        session_id: str | None = None,
+        instance_id: str | None = None,
+        provider: str | None = None,
+        model: str | None = None,
+        continuation_token: str | None = None,
+        request_type: str | None = None,
+        language: str | None = None,
+        compiled_system_prompt: str | None = None,
+        interaction_role: str | None = None,
+        timezone: str | None = None,
+        tool_capabilities: dict[str, Any] | None = None,
+        tool_definitions: list[dict[str, Any]] | None = None,
+        temperature: float | None = None,
+        timeout_seconds: float | None = None,
+        on_parent_cancel: Callable[[BaseException | None], None] | None = None,
+        detach_options: DetachOptions | None = None,
+    ) -> AsyncIterator[ChatStreamEvent]:
+        """Stream chat events detached from the caller.
+
+        Same shielding semantics as :meth:`chat_detached`, but yields
+        :class:`ChatStreamEvent` per frame. The shielded coroutine drains
+        the entire SSE stream into a list before any events are yielded
+        back to the caller — this is required for cancellation isolation
+        (an ``async for`` driven by the caller's task cannot be made
+        unilaterally cancellation-safe without buffering).
+
+        For very large streams the buffering is undesirable; use
+        :meth:`chat_detached` (aggregate-only) instead, or call the
+        regular :meth:`chat` with a context that you do not cancel.
+        """
+        opts = self._resolve_detach_options(
+            detach_options=detach_options,
+            timeout_seconds=timeout_seconds,
+            on_parent_cancel=on_parent_cancel,
+        )
+        body = Agents._build_chat_body(
+            messages=messages,
+            user_id=user_id,
+            user_display_name=user_display_name,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+            continuation_token=continuation_token,
+            request_type=request_type,
+            language=language,
+            compiled_system_prompt=compiled_system_prompt,
+            interaction_role=interaction_role,
+            timezone=timezone,
+            tool_capabilities=tool_capabilities,
+            tool_definitions=tool_definitions,
+            temperature=temperature,
+        )
+        path = f"/api/v1/agents/{agent_id}/chat"
+        events = await self._run_detached(
+            self._collect_stream(path, body),
+            opts=opts,
+        )
+        for event in events:
+            yield event
+
+    async def _collect_stream(
+        self, path: str, body: dict[str, Any]
+    ) -> list[ChatStreamEvent]:
+        """Drain the SSE stream into a list.
+
+        Used by :meth:`chat_stream_detached` — the shielded coroutine
+        must complete the network call in one shot; we can't hand the
+        caller an unconsumed iterator because the caller's task could
+        be cancelled before draining it, defeating the whole point.
+        """
+        out: list[ChatStreamEvent] = []
+        async for event in self._http.stream_sse("POST", path, json_data=body):
+            out.append(_classify_chat_frame(event))
+        return out
+
+    @staticmethod
+    def _resolve_detach_options(
+        *,
+        detach_options: DetachOptions | None,
+        timeout_seconds: float | None,
+        on_parent_cancel: Callable[[BaseException | None], None] | None,
+    ) -> DetachOptions:
+        """Merge per-call kwargs onto a :class:`DetachOptions` baseline.
+
+        Per-call values win when supplied (mirrors how the Go SDK accepts
+        ``DetachOptions`` directly). The baseline lets callers configure
+        a logger once and reuse across many calls.
+        """
+        base = detach_options if detach_options is not None else DetachOptions()
+        if timeout_seconds is None and on_parent_cancel is None:
+            return base
+        return DetachOptions(
+            timeout_seconds=(
+                timeout_seconds if timeout_seconds is not None else base.timeout_seconds
+            ),
+            logger=base.logger,
+            on_parent_cancel=(
+                on_parent_cancel
+                if on_parent_cancel is not None
+                else base.on_parent_cancel
+            ),
+        )
+
+    @staticmethod
+    async def _run_detached(
+        coro: Coroutine[Any, Any, _DetachedT],
+        *,
+        opts: DetachOptions,
+    ) -> _DetachedT:
+        """Shield ``coro`` from caller-task cancellation and apply the timeout.
+
+        Implementation notes:
+
+        * The shielded coroutine runs as its own task via
+          :func:`asyncio.ensure_future`, so a caller-task cancel only
+          propagates to the shield wrapper — never the underlying call.
+        * The timeout is applied via :func:`asyncio.wait_for` *around*
+          the shield. If the timeout fires, the inner task is cancelled
+          (this is the legitimate cancellation path).
+        * A watchdog task observes the caller's task; if the caller is
+          cancelled while the call is still running (i.e. before the
+          inner task signals completion via ``done_event``), it emits
+          the configured warning / callback exactly once.
+        """
+        timeout = _resolve_timeout(opts.timeout_seconds)
+        log = _resolve_logger(opts.logger)
+        parent = _current_task_or_none()
+
+        # done_event is set ONLY when the inner task completes — never
+        # when the outer wrapper exits via caller cancellation. This is
+        # what lets the watchdog distinguish "call finished cleanly" from
+        # "caller bailed but call is still running".
+        done_event = asyncio.Event()
+        inner_task: asyncio.Task[_DetachedT] = asyncio.ensure_future(coro)
+        inner_task.add_done_callback(lambda _t: done_event.set())
+
+        watchdog: asyncio.Task[None] | None = None
+        if parent is not None:
+            watchdog = asyncio.create_task(
+                _watch_parent_task(
+                    parent=parent,
+                    done_event=done_event,
+                    log=log,
+                    cb=opts.on_parent_cancel,
+                    timeout_seconds=timeout,
+                )
+            )
+
+        async def _await_inner() -> _DetachedT:
+            # Shielded so caller's task.cancel() doesn't propagate.
+            return await asyncio.shield(inner_task)
+
+        try:
+            if timeout is None:
+                # No timeout — still shielded so caller cancel is ignored.
+                # The caller cancel surfaces as CancelledError out of
+                # `_await_inner`; we re-raise but leave the inner task
+                # alive (the watchdog observes the cancel and warns).
+                return await _await_inner()
+            try:
+                return await asyncio.wait_for(_await_inner(), timeout=timeout)
+            except TimeoutError:
+                # Timeout fired: this IS legitimate cancellation. Cancel
+                # the inner task and re-raise. (Python 3.11+ unified
+                # asyncio.TimeoutError with the builtin TimeoutError.)
+                inner_task.cancel()
+                raise
+        except asyncio.CancelledError:
+            # Caller cancelled while inner is still running. The inner
+            # task is NOT bound to our cancellation (we used
+            # ensure_future + shield). Re-raise so the caller's
+            # cancellation propagates from their perspective; the
+            # inner task continues to completion in the background.
+            raise
+        finally:
+            if watchdog is not None and not watchdog.done():
+                # Best-effort cleanup. If the call completed normally
+                # the watchdog will exit itself via done_event; if the
+                # caller cancelled, the watchdog has already fired
+                # (or is about to) and we just want it not to leak.
+                # We don't await on cancelled caller (would re-raise).
+                try:
+                    await asyncio.wait_for(asyncio.shield(watchdog), timeout=0.05)
+                except (TimeoutError, asyncio.CancelledError):
+                    # Cancelled callers fall through here. Leave the
+                    # watchdog running long enough to observe parent
+                    # cancel + emit warning, then it terminates itself
+                    # once parent.done() is True.
+                    pass
+
     # -- Chat (async / processing_id polling) --
 
     async def chat_async(
@@ -1991,28 +2495,30 @@ class AsyncAgents(_GenAsyncAgents):
         timezone: str | None = None,
         tool_capabilities: dict[str, Any] | None = None,
         tool_definitions: list[dict[str, Any]] | None = None,
+        temperature: float | None = None,
     ) -> dict[str, Any]:
-        """Async equivalent of Sonzai.agents.chat_async (iter-140u-2)."""
-        msgs = [m.model_dump() if isinstance(m, ChatMessage) else m for m in messages]
-        body: dict[str, Any] = {"messages": msgs}
-        for key, value in {
-            "user_id": user_id,
-            "user_display_name": user_display_name,
-            "session_id": session_id,
-            "instance_id": instance_id,
-            "provider": provider,
-            "model": model,
-            "continuation_token": continuation_token,
-            "request_type": request_type,
-            "language": language,
-            "compiled_system_prompt": compiled_system_prompt,
-            "interaction_role": interaction_role,
-            "timezone": timezone,
-            "tool_capabilities": tool_capabilities,
-            "tool_definitions": tool_definitions,
-        }.items():
-            if value is not None:
-                body[key] = value
+        """Async equivalent of Sonzai.agents.chat_async (iter-140u-2).
+
+        See :meth:`Agents.chat` for the ``temperature`` contract.
+        """
+        body = Agents._build_chat_body(
+            messages=messages,
+            user_id=user_id,
+            user_display_name=user_display_name,
+            session_id=session_id,
+            instance_id=instance_id,
+            provider=provider,
+            model=model,
+            continuation_token=continuation_token,
+            request_type=request_type,
+            language=language,
+            compiled_system_prompt=compiled_system_prompt,
+            interaction_role=interaction_role,
+            timezone=timezone,
+            tool_capabilities=tool_capabilities,
+            tool_definitions=tool_definitions,
+            temperature=temperature,
+        )
 
         data = await self._http.post(f"/api/v1/agents/{agent_id}/chat/async", json_data=body)
         if not isinstance(data, dict):

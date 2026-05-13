@@ -200,8 +200,61 @@ response = client.agents.chat(
     tool_definitions=[
         {"name": "get_weather", "description": "Get current weather", "parameters": {"type": "object", "properties": {"city": {"type": "string"}}}},
     ],
+    temperature=0.7,   # see Temperature note below
 )
 ```
+
+#### Temperature
+
+`temperature` is optional and defaults to omitted from the wire payload —
+the AI service picks its own per-model default. The Platform
+automatically adapts or omits this value for providers whose models
+require it, so callers do not need to know provider-specific
+constraints: pass the value you want, and the Platform will silently
+reconcile it where necessary.
+
+A `temperature=0.0` request is preserved on the wire (deterministic
+output). Only `temperature=None` (the default) omits the field.
+
+### Streaming and cancellation
+
+The streaming chat call (`stream=True`) honours the caller's
+asyncio-task cancellation by default — `task.cancel()` aborts the
+in-flight AI generation. That is usually what you want.
+
+**When it isn't:** a NATS handler, Watermill subscriber, or short-lived
+HTTP request that returns to the client before the AI generation
+completes. Cancelling the caller would abort the LLM mid-stream, burning
+the upstream quota for no result. Use `chat_detached` /
+`chat_stream_detached` instead — the upstream call is shielded from
+caller cancellation via `asyncio.shield(...)`, with a default 5-minute
+hard timeout cap and a watchdog that warns (or fires a callback) if the
+caller bails mid-call.
+
+```python
+# Aggregate variant — returns ChatResponse when the AI finishes.
+resp = await client.agents.chat_detached(
+    "agent-id",
+    messages=[{"role": "user", "content": "Plan my week."}],
+    timeout_seconds=300.0,                # default DEFAULT_DETACHED_TIMEOUT_SECONDS = 300
+    on_parent_cancel=lambda exc: metrics.inc("detached.parent_cancelled"),
+)
+
+# Streaming variant — drains the SSE stream into memory first, then yields.
+async for event in client.agents.chat_stream_detached(
+    "agent-id",
+    messages=[{"role": "user", "content": "Plan my week."}],
+):
+    print(event.content, end="", flush=True)
+```
+
+The sync `Sonzai.agents.chat_detached(...)` / `chat_stream_detached(...)`
+methods exist for API parity but delegate to the regular `chat(...)` —
+Python's synchronous HTTP path has no caller-cancellation primitive, so
+sync blocking calls are effectively already detached.
+
+See `sonzai.DetachOptions` and `sonzai.DEFAULT_DETACHED_TIMEOUT_SECONDS`
+for the tunables.
 
 ### Chat (Async with Polling)
 
