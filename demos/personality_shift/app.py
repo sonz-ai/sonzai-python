@@ -44,6 +44,17 @@ from presets import PRESETS
 MESSAGES_PER_SESSION = 10  # assistant turns that trigger auto-consolidation
 TRAIT_ORDER = ["openness", "conscientiousness", "extraversion", "agreeableness", "neuroticism"]
 BIG5_EPSILON = 0.02  # below this, slider wiggle is treated as "no change"
+MOOD_DIMS = ["valence", "arousal", "tension", "affiliation"]
+MOOD_EPSILON = 1.0  # 0-100 scale — anything smaller is slider noise
+
+MOOD_PRESETS: dict[str, dict[str, float]] = {
+    "Neutral":     {"valence": 50, "arousal": 50, "tension": 50, "affiliation": 50},
+    "Cheerful":    {"valence": 85, "arousal": 70, "tension": 70, "affiliation": 80},
+    "Angry":       {"valence": 15, "arousal": 90, "tension": 10, "affiliation": 20},
+    "Anxious":     {"valence": 30, "arousal": 75, "tension": 55, "affiliation": 45},
+    "Melancholy":  {"valence": 25, "arousal": 25, "tension": 40, "affiliation": 35},
+    "Affectionate":{"valence": 75, "arousal": 55, "tension": 65, "affiliation": 95},
+}
 
 
 @dataclass
@@ -84,6 +95,12 @@ def init_state() -> None:
     # pending_big5 reflects the sliders' live value — may differ from applied
     # between an interaction and its PUT
     ss.setdefault("pending_big5", None)
+
+    # Mood state (parallel to Big5: baseline / applied / pending on 0-100 scale)
+    ss.setdefault("baseline_mood", None)
+    ss.setdefault("applied_mood", None)
+    ss.setdefault("pending_mood", None)
+    ss.setdefault("mood_label", "")
 
     # Sessions
     ss.setdefault("messages", [])           # flat list of ChatTurn (all sessions)
@@ -175,6 +192,99 @@ def summarize_delta(old: dict, new: dict) -> str:
             arrow = "↑" if d > 0 else "↓"
             parts.append(f"{trait[:3]} {arrow}{abs(d):.2f}")
     return "(" + ", ".join(parts) + ")" if parts else ""
+
+
+# ---------------------------------------------------------------------------
+# Mood helpers (per-user, scoped by agent_id + user_id + instance_id)
+# ---------------------------------------------------------------------------
+
+
+def mood_diff(a: dict | None, b: dict | None) -> bool:
+    if not a or not b:
+        return a != b
+    for d in MOOD_DIMS:
+        if abs(float(a.get(d, 0.0)) - float(b.get(d, 0.0))) > MOOD_EPSILON:
+            return True
+    return False
+
+
+def summarize_mood_delta(old: dict, new: dict) -> str:
+    parts = []
+    for d in MOOD_DIMS:
+        diff = new.get(d, 0) - old.get(d, 0)
+        if abs(diff) > MOOD_EPSILON:
+            arrow = "↑" if diff > 0 else "↓"
+            parts.append(f"{d[:3]} {arrow}{abs(diff):.0f}")
+    return "(" + ", ".join(parts) + ")" if parts else ""
+
+
+def fetch_mood(client: Sonzai, agent_id: str) -> tuple[dict[str, float], str]:
+    """Fetch the per-user mood scoped to this demo's (user_id, instance_id)."""
+    ss = st.session_state
+    resp = client.agents.get_mood(agent_id, user_id=ss.user_id, instance_id=ss.instance_id)
+    m = resp.mood
+    values = {dim: float(getattr(m, dim)) for dim in MOOD_DIMS}
+    label = getattr(m, "label", "") or ""
+    return values, label
+
+
+def apply_mood(client: Sonzai, agent_id: str, mood: dict[str, float]) -> None:
+    ss = st.session_state
+    resp = client.agents.update_mood(
+        agent_id,
+        valence=float(mood["valence"]),
+        arousal=float(mood["arousal"]),
+        tension=float(mood["tension"]),
+        affiliation=float(mood["affiliation"]),
+        user_id=ss.user_id,
+        instance_id=ss.instance_id,
+    )
+    # update_mood returns the post-override state; mirror it locally so the
+    # sliders, label, and "current vs baseline" expander all stay in sync.
+    m = resp.mood
+    new_mood = {dim: float(getattr(m, dim)) for dim in MOOD_DIMS}
+    ss.applied_mood = new_mood
+    ss.pending_mood = dict(new_mood)
+    ss.mood_label = getattr(m, "label", "") or ""
+    # Defer slider session_state writes to the next rerun (same constraint
+    # as needs_slider_sync above — can't write a widget key after the
+    # widget has rendered in the current run).
+    ss.needs_mood_slider_sync = True
+
+    # Platform workaround: reproducibly, the chat endpoint returns 502 on
+    # the next /chat call that reuses the same session_id after a mood
+    # override has been written. A fresh session_id makes the next chat
+    # work — Big5 PUT does not trigger this, only update_mood. Rotate the
+    # local session_id silently so the next turn uses a new session row
+    # on the server. The pre-rotation session is orphaned (never .end'd)
+    # but the assistant_count and message history continue uninterrupted
+    # from the user's POV.
+    if ss.current_session is not None and not ss.current_session.ended:
+        ss.current_session.session_id = (
+            f"demo-session-{ss.user_id}-s{ss.current_session.number}-mood-{uuid.uuid4().hex[:6]}"
+        )
+
+
+def ensure_mood_applied(client: Sonzai, agent_id: str) -> bool:
+    pending = st.session_state.pending_mood
+    applied = st.session_state.applied_mood
+    if not pending or not applied:
+        return False
+    if not mood_diff(pending, applied):
+        return False
+    delta = summarize_mood_delta(applied, pending)
+    apply_mood(client, agent_id, pending)
+    push_banner("success", f"Mood updated {delta}. Next turn will reflect it.")
+    return True
+
+
+def restore_mood_baseline(client: Sonzai, agent_id: str) -> None:
+    baseline = st.session_state.baseline_mood
+    if not baseline:
+        push_banner("warning", "No mood baseline — nothing to restore.")
+        return
+    apply_mood(client, agent_id, dict(baseline))
+    push_banner("success", "Mood restored to baseline.")
 
 
 def start_new_session() -> SessionEntry:
@@ -312,6 +422,17 @@ def close_session_and_consolidate(client: Sonzai, agent_id: str, session: Sessio
     except Exception as err:  # noqa: BLE001
         push_banner("warning", f"Could not refresh personality post-consolidation: {err}")
 
+    # Mood drifts during consolidation too — refresh so sliders + label
+    # reflect the post-CE state.
+    try:
+        new_mood, label = fetch_mood(client, agent_id)
+        ss.applied_mood = new_mood
+        ss.pending_mood = dict(new_mood)
+        ss.mood_label = label
+        ss.needs_mood_slider_sync = True
+    except Exception as err:  # noqa: BLE001
+        push_banner("warning", f"Could not refresh mood post-consolidation: {err}")
+
 
 def restore_baseline(client: Sonzai, agent_id: str) -> None:
     baseline = st.session_state.baseline_big5
@@ -362,6 +483,18 @@ def _connect(client: Sonzai, agent_id: str, agent_name: str) -> None:
     ss.sessions = []
     ss.current_session = None
     ss.messages = []
+
+    # Mood is created lazily server-side on first read for this (user, instance)
+    # scope, so this fetch establishes the baseline.
+    try:
+        mood, label = fetch_mood(client, agent_id)
+        ss.baseline_mood = dict(mood)
+        ss.applied_mood = dict(mood)
+        ss.pending_mood = dict(mood)
+        ss.mood_label = label
+    except Exception as err:  # noqa: BLE001
+        push_banner("warning", f"Could not fetch initial mood (non-fatal): {err}")
+
     push_banner("success", "Connected. Baseline captured. Start chatting.")
 
 
@@ -384,10 +517,17 @@ def render_sidebar() -> None:
                     "connected", "client", "agent_id", "agent_name",
                     "baseline_big5", "applied_big5", "pending_big5",
                     "current_dimensions", "primary_traits",
+                    "baseline_mood", "applied_mood", "pending_mood", "mood_label",
                     "sessions", "current_session", "messages",
                 ):
                     if k in ss:
                         del ss[k]
+                # Drop the slider widget keys too — otherwise the next
+                # connect would race against stale values.
+                for trait in TRAIT_ORDER:
+                    ss.pop(f"slider-{trait}", None)
+                for dim in MOOD_DIMS:
+                    ss.pop(f"mood-slider-{dim}", None)
                 st.rerun()
             return
 
@@ -475,8 +615,9 @@ def render_chat_panel() -> None:
         return
 
     # Flush any pending slider changes BEFORE the turn so the LLM sees the
-    # new personality.
+    # new personality and mood.
     ensure_applied(client, agent_id)
+    ensure_mood_applied(client, agent_id)
 
     # Open a new session if there isn't one active.
     if ss.current_session is None or ss.current_session.ended:
@@ -528,6 +669,17 @@ def render_chat_panel() -> None:
         )
     )
     session.assistant_count += 1
+
+    # Refresh mood post-turn: mood drifts on every assistant reply, so
+    # pulling the fresh state lets the slider track the live value.
+    try:
+        new_mood, label = fetch_mood(client, agent_id)
+        ss.applied_mood = new_mood
+        ss.pending_mood = dict(new_mood)
+        ss.mood_label = label
+        ss.needs_mood_slider_sync = True
+    except Exception as err:  # noqa: BLE001
+        push_banner("warning", f"Could not refresh mood after turn: {err}")
 
     # Auto-consolidate when the session hits its message cap.
     if session.assistant_count >= MESSAGES_PER_SESSION:
@@ -581,14 +733,6 @@ def render_personality_panel() -> None:
         for trait in TRAIT_ORDER:
             ss[f"slider-{trait}"] = float(ss.applied_big5.get(trait, 0.5))
         ss.needs_slider_sync = False
-
-    for b in ss.banners[-4:]:
-        if b["kind"] == "success":
-            st.success(b["text"])
-        elif b["kind"] == "warning":
-            st.warning(b["text"])
-        else:
-            st.info(b["text"])
 
     applied = ss.applied_big5 or {}
     baseline = ss.baseline_big5 or {}
@@ -677,17 +821,106 @@ def render_personality_panel() -> None:
 
 
 # ---------------------------------------------------------------------------
+# Mood panel — same shape as personality panel, on 0-100 scale
+# ---------------------------------------------------------------------------
+
+
+def render_mood_panel() -> None:
+    ss = st.session_state
+    client: Sonzai = ss.client
+    agent_id: str = ss.agent_id
+
+    st.subheader("Mood")
+    st.caption(
+        "Override the 4 mood dimensions (0-100). Mood drifts on every turn — "
+        "after each reply this panel refreshes to show where it landed."
+    )
+
+    # Apply any pending programmatic slider sync BEFORE the sliders render
+    # (same constraint as personality panel).
+    if ss.get("needs_mood_slider_sync") and ss.applied_mood:
+        for dim in MOOD_DIMS:
+            ss[f"mood-slider-{dim}"] = float(ss.applied_mood.get(dim, 50.0))
+        ss.needs_mood_slider_sync = False
+
+    applied = ss.applied_mood or {}
+    baseline = ss.baseline_mood or {}
+
+    if ss.mood_label:
+        st.markdown(f"**Current mood:** `{ss.mood_label}`")
+
+    new_slider_values: dict[str, float] = {}
+    for dim in MOOD_DIMS:
+        slider_key = f"mood-slider-{dim}"
+        if slider_key not in ss:
+            ss[slider_key] = float((ss.pending_mood or applied).get(dim, 50.0))
+        new_slider_values[dim] = st.slider(
+            dim,
+            min_value=0.0,
+            max_value=100.0,
+            step=1.0,
+            key=slider_key,
+        )
+
+    ss.pending_mood = new_slider_values
+
+    # Auto-apply on slider change — same pattern as Big5.
+    if mood_diff(new_slider_values, applied):
+        try:
+            delta = summarize_mood_delta(applied, new_slider_values)
+            apply_mood(client, agent_id, new_slider_values)
+            push_banner("success", f"Applied mood {delta}. The next turn reflects this.")
+            st.rerun()
+        except Exception as err:  # noqa: BLE001
+            push_banner("warning", f"Apply failed: {err}")
+
+    with st.expander("Current vs baseline", expanded=False):
+        if baseline:
+            for dim in MOOD_DIMS:
+                b = baseline.get(dim, 0.0)
+                c = applied.get(dim, b)
+                delta = c - b
+                sign = "↑" if delta > 0.5 else ("↓" if delta < -0.5 else "·")
+                st.caption(f"{dim}: baseline {b:.0f} · current {c:.0f} · {sign} {delta:+.0f}")
+
+    st.divider()
+    st.markdown("**Presets** — one-click mood swap.")
+    preset_names = list(MOOD_PRESETS.keys())
+    cols = st.columns(2)
+    for i, name in enumerate(preset_names):
+        col = cols[i % 2]
+        with col:
+            if st.button(name, key=f"mood-preset-{name}", use_container_width=True):
+                try:
+                    apply_mood(client, agent_id, MOOD_PRESETS[name])
+                    push_banner("success", f"Applied mood preset '{name}'.")
+                    st.rerun()
+                except Exception as err:  # noqa: BLE001
+                    push_banner("warning", f"Apply failed: {err}")
+                    st.rerun()
+
+    st.divider()
+    if st.button("Restore mood to baseline", use_container_width=True, key="restore-mood"):
+        try:
+            restore_mood_baseline(client, agent_id)
+            st.rerun()
+        except Exception as err:  # noqa: BLE001
+            push_banner("warning", f"Restore failed: {err}")
+            st.rerun()
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 
 def main() -> None:
-    st.set_page_config(page_title="Personality Shift Demo", layout="wide")
+    st.set_page_config(page_title="Personality & Mood Shift Demo", layout="wide")
     init_state()
 
-    st.title("Personality Shift Demo")
+    st.title("Personality & Mood Shift Demo")
     st.caption(
-        "Chat with an agent while dragging its Big5 in real time. Every "
+        "Chat with an agent while dragging its Big5 and mood in real time. Every "
         f"{MESSAGES_PER_SESSION} messages the demo auto-closes the session "
         "and runs CE consolidation (advance-time)."
     )
@@ -698,11 +931,22 @@ def main() -> None:
         st.info("Pick an agent in the sidebar (create new or enter an existing ID) to begin.")
         return
 
-    chat_col, personality_col = st.columns([3, 2], gap="large")
+    chat_col, state_col = st.columns([3, 2], gap="large")
     with chat_col:
         render_chat_panel()
-    with personality_col:
-        render_personality_panel()
+    with state_col:
+        for b in st.session_state.banners[-4:]:
+            if b["kind"] == "success":
+                st.success(b["text"])
+            elif b["kind"] == "warning":
+                st.warning(b["text"])
+            else:
+                st.info(b["text"])
+        personality_tab, mood_tab = st.tabs(["Personality", "Mood"])
+        with personality_tab:
+            render_personality_panel()
+        with mood_tab:
+            render_mood_panel()
 
 
 if __name__ == "__main__":
