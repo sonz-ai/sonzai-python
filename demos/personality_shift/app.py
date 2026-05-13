@@ -251,19 +251,6 @@ def apply_mood(client: Sonzai, agent_id: str, mood: dict[str, float]) -> None:
     # widget has rendered in the current run).
     ss.needs_mood_slider_sync = True
 
-    # Platform workaround: reproducibly, the chat endpoint returns 502 on
-    # the next /chat call that reuses the same session_id after a mood
-    # override has been written. A fresh session_id makes the next chat
-    # work — Big5 PUT does not trigger this, only update_mood. Rotate the
-    # local session_id silently so the next turn uses a new session row
-    # on the server. The pre-rotation session is orphaned (never .end'd)
-    # but the assistant_count and message history continue uninterrupted
-    # from the user's POV.
-    if ss.current_session is not None and not ss.current_session.ended:
-        ss.current_session.session_id = (
-            f"demo-session-{ss.user_id}-s{ss.current_session.number}-mood-{uuid.uuid4().hex[:6]}"
-        )
-
 
 def ensure_mood_applied(client: Sonzai, agent_id: str) -> bool:
     pending = st.session_state.pending_mood
