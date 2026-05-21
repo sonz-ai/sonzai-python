@@ -93,7 +93,7 @@ python -m benchmarks.lifelong_sotopia --backend sonzai
 python -m benchmarks.lifelong_sotopia --backend sonzai --full
 ```
 
-Required env vars: `SONZAI_API_KEY` (sonzai backend only), `GEMINI_API_KEY` (always).
+Required env vars: `SONZAI_API_KEY` (sonzai backend only), `GEMINI_API_KEY` (always). Optionally set `BENCHMARK_JUDGE_GEMINI_API_KEY` to use a dedicated key for the judge (falls back to `GEMINI_API_KEY` if unset).
 
 ## Backends
 

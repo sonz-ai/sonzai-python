@@ -557,6 +557,7 @@ python -m benchmarks.lifelong_sotopia --backend sonzai --full   # paper-comparab
 |---|---|---|
 | `SONZAI_API_KEY` | yes | — |
 | `GEMINI_API_KEY` | for `--mode qa` or SOTOPIA | — |
+| `BENCHMARK_JUDGE_GEMINI_API_KEY` | no | falls back to `GEMINI_API_KEY` |
 | `SONZAI_API_URL` | no | `https://api.sonz.ai` |
 | `SONZAI_BENCH_CACHE` | no | `~/.cache/sonzai-bench` |
 
@@ -604,6 +605,11 @@ Create a `.env` file or export these before running:
 SONZAI_API_URL=https://api.sonz.ai        # default; override for staging/local
 SONZAI_API_KEY=sk-...                      # get from https://platform.sonz.ai
 GEMINI_API_KEY=AIza...                     # get from https://aistudio.google.com/apikey
+
+# Optional: dedicated key for SOTOPIA / lifelong_sotopia judge — kept in
+# sonzai-labs-production-data so judge token usage is attributed to the
+# benchmarks project line item. Falls back to GEMINI_API_KEY if unset.
+BENCHMARK_JUDGE_GEMINI_API_KEY=
 ```
 
 Load it:

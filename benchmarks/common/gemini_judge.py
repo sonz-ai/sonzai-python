@@ -28,7 +28,9 @@ class GeminiJudge:
         model: str = DEFAULT_MODEL,
         api_key: str | None = None,
     ) -> None:
-        self._client = genai.Client(api_key=api_key or os.environ["GEMINI_API_KEY"])
+        self._client = genai.Client(
+            api_key=api_key or os.environ.get("BENCHMARK_JUDGE_GEMINI_API_KEY") or os.environ["GEMINI_API_KEY"]
+        )
         self._model = model
 
     def grade(self, prompt: str, schema: type[T]) -> T:
@@ -39,6 +41,7 @@ class GeminiJudge:
                 response_mime_type="application/json",
                 response_schema=schema,
                 temperature=0.0,
+                thinking_config=gt.ThinkingConfig(thinking_budget=0),
             ),
         )
         text = resp.text
@@ -54,6 +57,7 @@ class GeminiJudge:
                 response_mime_type="application/json",
                 response_schema=schema,
                 temperature=0.0,
+                thinking_config=gt.ThinkingConfig(thinking_budget=0),
             ),
         )
         text = resp.text
