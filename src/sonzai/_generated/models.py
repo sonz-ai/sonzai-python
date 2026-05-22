@@ -251,6 +251,7 @@ class AgentIndex(BaseModel):
     owner_display_name: str | None = None
     owner_email: str | None = None
     owner_user_id: str
+    proactive_mode: str | None = None
     project_id: str | None = None
     tenant_id: str
 
@@ -912,6 +913,73 @@ class CheckpointEvalRequest(BaseModel):
     """
     Session index for checkpoint
     """
+
+
+class ClaimInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ClaimInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    claim_token: str
+    """
+    The claim token from the claim link
+    """
+
+
+class ClaimLinkInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ClaimLinkInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+
+
+class ClaimLinkOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ClaimLinkOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    claim_url: str
+    expires_at: str
+
+
+class ClaimResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ClaimResult.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    agent_name: str
+    clerk_org_id: str
+    status: str
+    tenant_id: str
 
 
 class ColumnMappingSpec(BaseModel):
@@ -3414,6 +3482,16 @@ class KBConversionStats(BaseModel):
     total_leads: int
 
 
+class KBDocType(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    expected_relationships: list[str] | None = None
+    root_entity_type: str
+    type: str
+
+
 class KBDocument(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3427,8 +3505,12 @@ class KBDocument(BaseModel):
     A URL to the JSON Schema for this object.
     """
     checksum: str
+    classification_candidates_json: str | None = None
+    classification_confidence: float | None = None
+    classification_status: str | None = None
     content_type: str
     created_at: AwareDatetime
+    doc_type: str | None = None
     document_id: str
     edge_count: int
     effective_date: AwareDatetime | None = None
@@ -3439,6 +3521,10 @@ class KBDocument(BaseModel):
     gcs_path: str
     node_count: int
     project_id: str
+    root_entity_key: str | None = None
+    root_entity_node_id: str | None = None
+    root_entity_type: str | None = None
+    schema_version_used: int | None = None
     status: str
     updated_at: AwareDatetime
     uploaded_by: str
@@ -3506,6 +3592,21 @@ class KBRelatedNode(BaseModel):
     type: str
 
 
+class KBSchemaConfig(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    abstain_below_confidence: float | None = None
+    classify_auto_threshold: float | None = None
+    classify_model: str | None = None
+    extract_min_provenance_confidence: float | None = None
+    extract_model: str | None = None
+    ingestion_verifier_model: str | None = None
+    schema_propose_model: str | None = None
+    use_document_ai_preprocessor: bool | None = None
+
+
 class KBSchemaField(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3514,6 +3615,17 @@ class KBSchemaField(BaseModel):
     description: str | None = None
     enum_values: list[str] | None = None
     indexed: bool | None = None
+    name: str
+    required: bool
+    type: str
+
+
+class KBSchemaProperty(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    description: str | None = None
     name: str
     required: bool
     type: str
@@ -3676,6 +3788,45 @@ class KbCandidate(BaseModel):
     properties: dict[str, Any] | None = None
 
 
+class KbCompareEntity(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    key: dict[str, Any]
+    type: str
+
+
+class KbCompareInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/KbCompareInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    entities: list[KbCompareEntity] | None
+    """
+    Entities to compare (e.g. list of hospitals).
+    """
+    property_path: str
+    """
+    Dot-path of the property to extract from each fact (e.g. 'price').
+    """
+    target_entity: KbCompareEntity
+    """
+    Target entity all the listed entities should be related to (e.g. procedure 'MRI').
+    """
+    via_relation: str
+    """
+    Relation type connecting the entities to the target (e.g. 'hospital_offers_procedure').
+    """
+
+
 class KbCreateAnalyticsRuleInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3781,6 +3932,55 @@ class KbCreateSchemaInputBody(BaseModel):
     """
 
 
+class KbDocCostBreakdown(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    cost_usd: float
+    model: str
+    operation: str
+    pages: int | None = None
+
+
+class KbDocCostOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/KbDocCostOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    document_ai_rows: list[KbDocCostBreakdown] | None
+    document_id: str
+    llm_rows: list[KbDocCostBreakdown] | None
+    total_cost_usd: float
+
+
+class KbFactDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    created_at: AwareDatetime
+    effective_date: AwareDatetime
+    extraction_confidence: float
+    fact_id: str
+    from_node_id: str
+    is_active: bool
+    properties: dict[str, Any]
+    relation_type: str
+    source_document_id: str
+    source_page: int
+    source_snippet: str
+    to_node_id: str
+    version: int
+
+
 class KbGetConversionStatsOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3804,6 +4004,58 @@ class KbGetConversionStatsOutputBody(BaseModel):
     """
     Total count
     """
+
+
+class KbGetEntityOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/KbGetEntityOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    entity_key: dict[str, Any]
+    entity_node_id: str
+    entity_type: str
+    incoming_facts: list[KbFactDTO] | None
+    outgoing_facts: list[KbFactDTO] | None
+
+
+class KbGetFactHistoryOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/KbGetFactHistoryOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    versions: list[KbFactDTO] | None
+
+
+class KbGetFactOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/KbGetFactOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    fact: KbFactDTO
 
 
 class KbGetNodeHistoryOutputBody(BaseModel):
@@ -4046,6 +4298,60 @@ class KbListDocumentsOutputBody(BaseModel):
     """
 
 
+class KbListFactsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/KbListFactsOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    facts: list[KbFactDTO] | None
+    next_page_token: str | None = None
+
+
+class KbMultimodalSchemaActivateOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/KbMultimodalSchemaActivateOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    active_version: int
+    status: str
+
+
+class KbPatchClassificationOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/KbPatchClassificationOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    document_id: str
+    status: str
+
+
 class KbPromoteNodeInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -4127,6 +4433,23 @@ class KbRecordFeedbackOutputBody(BaseModel):
     """
 
 
+class KbReingestOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/KbReingestOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    document_id: str
+    mode: str
+    status: str
+
+
 class KbResolutionInfo(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -4178,6 +4501,15 @@ class KbSearchResultItem(BaseModel):
     score: float
     source: str | None = None
     type: str
+
+
+class KbTraversedFact(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    depth: int
+    fact: KbFactDTO
 
 
 class KbUpdateAnalyticsRuleInputBody(BaseModel):
@@ -5706,6 +6038,21 @@ class RevokeAPIKeyOutputBody(BaseModel):
     success: bool
 
 
+class RootEntityStruct(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    key: dict[str, Any]
+    """
+    Root entity key fields per schema entity_types[].key_fields.
+    """
+    type: str
+    """
+    Root entity type from the active schema.
+    """
+
+
 class RotateSigningSecretOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6674,10 +7021,13 @@ class Tenant(BaseModel):
     clerk_org_id: str | None = None
     created_at: AwareDatetime
     is_active: bool
+    is_trial: bool | None = None
     license_key_id: str | None = None
     name: str
     slug: str | None = None
     tenant_id: str
+    trial_expires_at: AwareDatetime | None = None
+    trial_source: str | None = None
 
 
 class TenantBillingLedgerEntry(BaseModel):
@@ -7335,6 +7685,12 @@ class UpdateCapabilitiesInputBody(BaseModel):
     ] = None
     """
     Supplementary memory recall timing. 'sync' (default) blocks context build until recall returns so facts land in the current turn. 'async' lets the recall race a deadline — slow hits spill to the next turn for lower first-response latency.
+    """
+    proactive_mode: Annotated[
+        Literal['full', 'scheduled_only', 'off'] | None, Field(alias='proactiveMode')
+    ] = None
+    """
+    Per-agent proactive-messaging mode. 'full' (default) fires all wakeup types; 'scheduled_only' fires only tenant-defined reminder schedules; 'off' fires nothing. Omitted = no change.
     """
     remember_name: Annotated[bool | None, Field(alias='rememberName')] = None
     """
@@ -8672,6 +9028,7 @@ class AgentCapabilities(BaseModel):
     pending_capabilities: Annotated[
         list[PendingCapability] | None, Field(alias='pendingCapabilities')
     ] = None
+    proactive_mode: Annotated[str | None, Field(alias='proactiveMode')] = None
     remember_name: Annotated[bool | None, Field(alias='rememberName')] = None
     shared_memory: Annotated[bool | None, Field(alias='sharedMemory')] = None
     skills: bool | None = None
@@ -9044,6 +9401,12 @@ class CreateAgentBody(BaseModel):
     """
     Primary personality traits
     """
+    proactive_mode: Annotated[
+        Literal['full', 'scheduled_only', 'off'] | None, Field(alias='proactiveMode')
+    ] = None
+    """
+    Initial per-agent proactive-messaging mode. Omitted defaults to 'full' (all wakeup types fire).
+    """
     project_id: str | None = None
     """
     Project UUID to assign
@@ -9411,6 +9774,18 @@ class KBEntitySchema(BaseModel):
     updated_at: AwareDatetime
 
 
+class KBEntityType(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    aliases_field: str | None = None
+    is_root_candidate: bool
+    key_fields: list[str] | None
+    properties: list[KBSchemaProperty] | None = None
+    type: str
+
+
 class KBNode(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -9472,6 +9847,43 @@ class KBNodeWithScope(BaseModel):
     version: int
 
 
+class KBRelationType(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    from_: Annotated[str, Field(alias='from')]
+    properties: list[KBSchemaProperty] | None = None
+    supersession_identity: list[str] | None
+    to: str
+    type: str
+
+
+class KBSchema(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/KBSchema.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    config: KBSchemaConfig
+    created_at: AwareDatetime
+    created_by: str | None = None
+    doc_types: list[KBDocType] | None
+    entity_types: list[KBEntityType] | None
+    project_id: str
+    relationship_types: list[KBRelationType] | None
+    schema_version: int
+    status: str
+    template_lineage: str | None = None
+    vertical_template: str | None = None
+
+
 class KBSearchResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -9529,6 +9941,18 @@ class KbAgentUpdateNodeOutputBody(BaseModel):
     """
     The updated node
     """
+
+
+class KbCompareRow(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    entity: KbCompareEntity
+    fact: KbFactDTO | None = None
+    missing: bool
+    missing_reason: str | None = None
+    value: Any | None = None
 
 
 class KbGetNodeOutputBody(BaseModel):
@@ -9625,6 +10049,60 @@ class KbListSchemasOutputBody(BaseModel):
     """
 
 
+class KbMultimodalSchemaCreateOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/KbMultimodalSchemaCreateOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    schema_: Annotated[KBSchema, Field(alias='schema')]
+
+
+class KbMultimodalSchemaListOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/KbMultimodalSchemaListOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    schemas: list[KBSchema] | None
+
+
+class KbPatchClassificationInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/KbPatchClassificationInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    root_entity: RootEntityStruct
+
+
 class KbSearchResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -9639,6 +10117,21 @@ class KbSearchResponse(BaseModel):
     """
     query: str
     results: list[KbSearchResultItem] | None
+
+
+class KbTraverseOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/KbTraverseOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    facts: list[KbTraversedFact] | None
 
 
 class ListAllFactsResponse(BaseModel):
@@ -10374,6 +10867,7 @@ class AgentDetailResponse(BaseModel):
     personality_prompt: str | None = None
     preferences: InteractionPreferences | None = None
     primary_traits: list[str] | None = None
+    proactive_mode: str | None = None
     project_id: str | None = None
     speech_patterns: list[str] | None = None
     tenant_id: str
@@ -10421,6 +10915,21 @@ class BatchPersonalityResponse(BaseModel):
     A URL to the JSON Schema for this object.
     """
     personalities: dict[str, BatchPersonalityEntry]
+
+
+class KbCompareOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/KbCompareOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    rows: list[KbCompareRow] | None
 
 
 class ListMCPCatalogOutputBody(BaseModel):

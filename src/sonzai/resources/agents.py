@@ -176,8 +176,15 @@ class Agents(_GenAgents):
         initial_goals: list[dict[str, Any]] | None = None,
         generate_avatar: bool | None = None,
         capabilities: dict[str, Any] | None = None,
+        proactive_mode: Literal["full", "scheduled_only", "off"] | None = None,
     ) -> Agent:
-        """Create a new agent."""
+        """Create a new agent.
+
+        ``proactive_mode`` controls whether the agent decides to message users
+        on its own (``"full"`` — all wakeup types; ``"scheduled_only"`` —
+        tenant-defined reminder schedules only; ``"off"`` — no proactive
+        outreach of any kind). Omitted defaults to ``"full"``.
+        """
         body: dict[str, Any] = {"name": name}
         if agent_id is not None:
             body["agent_id"] = agent_id
@@ -229,6 +236,8 @@ class Agents(_GenAgents):
             body["generate_avatar"] = generate_avatar
         if capabilities is not None:
             body["capabilities"] = capabilities
+        if proactive_mode is not None:
+            body["proactiveMode"] = proactive_mode
 
         data = self._http.post("/api/v1/agents", json_data=encode_body(CreateAgentBody, body))
         return Agent.model_validate(data)
@@ -1511,12 +1520,18 @@ class Agents(_GenAgents):
         auto_learn_skills: bool | None = None,
         memory_mode: Literal["sync", "async"] | None = None,
         mcp_enabled: list[str] | None = None,
+        proactive_mode: Literal["full", "scheduled_only", "off"] | None = None,
     ) -> AgentCapabilities:
         """Update an agent's capabilities.
 
         ``memory_mode`` controls supplementary memory recall timing:
         ``"sync"`` (default) blocks context build until recall returns;
         ``"async"`` lets recall race a deadline for lower first-token latency.
+
+        ``proactive_mode`` controls whether the agent decides to message users
+        on its own (``"full"`` — all wakeup types; ``"scheduled_only"`` —
+        tenant-defined reminder schedules only; ``"off"`` — no proactive
+        outreach of any kind). Omitted = no change.
 
         Capability gates:
         - ``shared_memory`` requires ``wisdom`` (server force-clears it otherwise).
@@ -1558,6 +1573,8 @@ class Agents(_GenAgents):
             body["memoryMode"] = memory_mode
         if mcp_enabled is not None:
             body["mcpEnabled"] = mcp_enabled
+        if proactive_mode is not None:
+            body["proactiveMode"] = proactive_mode
         return AgentCapabilities.model_validate(
             self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=encode_body(UpdateCapabilitiesInputBody, body))
         )
@@ -1987,8 +2004,15 @@ class AsyncAgents(_GenAsyncAgents):
         initial_goals: list[dict[str, Any]] | None = None,
         generate_avatar: bool | None = None,
         capabilities: dict[str, Any] | None = None,
+        proactive_mode: Literal["full", "scheduled_only", "off"] | None = None,
     ) -> Agent:
-        """Create a new agent."""
+        """Create a new agent.
+
+        ``proactive_mode`` controls whether the agent decides to message users
+        on its own (``"full"`` — all wakeup types; ``"scheduled_only"`` —
+        tenant-defined reminder schedules only; ``"off"`` — no proactive
+        outreach of any kind). Omitted defaults to ``"full"``.
+        """
         body: dict[str, Any] = {"name": name}
         if agent_id is not None:
             body["agent_id"] = agent_id
@@ -2040,6 +2064,8 @@ class AsyncAgents(_GenAsyncAgents):
             body["generate_avatar"] = generate_avatar
         if capabilities is not None:
             body["capabilities"] = capabilities
+        if proactive_mode is not None:
+            body["proactiveMode"] = proactive_mode
 
         data = await self._http.post("/api/v1/agents", json_data=encode_body(CreateAgentBody, body))
         return Agent.model_validate(data)
@@ -3325,6 +3351,7 @@ class AsyncAgents(_GenAsyncAgents):
         auto_learn_skills: bool | None = None,
         memory_mode: Literal["sync", "async"] | None = None,
         mcp_enabled: list[str] | None = None,
+        proactive_mode: Literal["full", "scheduled_only", "off"] | None = None,
     ) -> AgentCapabilities:
         """Update an agent's capabilities. Async.
 
@@ -3332,6 +3359,11 @@ class AsyncAgents(_GenAsyncAgents):
         ``skills``; ``knowledge_base_write`` requires ``knowledge_base``.
         ``knowledge_base_scope_mode`` is one of ``project_only`` (default),
         ``cascade``, ``union``, ``org_only``.
+
+        ``proactive_mode`` controls whether the agent decides to message users
+        on its own (``"full"`` — all wakeup types; ``"scheduled_only"`` —
+        tenant-defined reminder schedules only; ``"off"`` — no proactive
+        outreach of any kind). Omitted = no change.
         """
         body: dict[str, Any] = {}
         if web_search is not None:
@@ -3362,6 +3394,8 @@ class AsyncAgents(_GenAsyncAgents):
             body["memoryMode"] = memory_mode
         if mcp_enabled is not None:
             body["mcpEnabled"] = mcp_enabled
+        if proactive_mode is not None:
+            body["proactiveMode"] = proactive_mode
         return AgentCapabilities.model_validate(
             await self._http.put(f"/api/v1/agents/{agent_id}/capabilities", json_data=encode_body(UpdateCapabilitiesInputBody, body))
         )

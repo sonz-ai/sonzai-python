@@ -15,12 +15,19 @@ from sonzai._generated.models import (
     KBAnalyticsRule,
     KbBulkUpdateInputBody,
     KbBulkUpdateOutputBody,
+    KbCompareInputBody,
+    KbCompareOutputBody,
     KbCreateAnalyticsRuleInputBody,
     KbCreateOrgNodeInputBody,
     KbCreateSchemaInputBody,
+    KbDocCostOutputBody,
     KBDocument,
     KBEntitySchema,
+    KbFactDTO,
     KbGetConversionStatsOutputBody,
+    KbGetEntityOutputBody,
+    KbGetFactHistoryOutputBody,
+    KbGetFactOutputBody,
     KbGetNodeHistoryOutputBody,
     KbGetNodeOutputBody,
     KbGetRecommendationsOutputBody,
@@ -31,16 +38,25 @@ from sonzai._generated.models import (
     KbInsertFactsOutputBody,
     KbListAnalyticsRulesOutputBody,
     KbListDocumentsOutputBody,
+    KbListFactsOutputBody,
     KbListNodesOutputBody,
     KbListOrgNodesOutputBody,
     KbListSchemasOutputBody,
+    KbMultimodalSchemaActivateOutputBody,
+    KbMultimodalSchemaCreateOutputBody,
+    KbMultimodalSchemaListOutputBody,
     KBNode,
     KBNodeWithScope,
+    KbPatchClassificationInputBody,
+    KbPatchClassificationOutputBody,
     KbPromoteNodeInputBody,
     KbRecordFeedbackInputBody,
     KbRecordFeedbackOutputBody,
+    KbReingestOutputBody,
     KbRunAnalyticsRuleOutputBody,
+    KBSchema,
     KBSearchResponse,
+    KbTraverseOutputBody,
     KbUpdateAnalyticsRuleInputBody,
     KbUpdateSchemaInputBody,
     KbUploadDocumentOutputBody,
@@ -280,6 +296,31 @@ class Knowledge(_KnowledgeBase):
         data = self._http.patch(path, params=params, json_data=body)
         return KbBulkUpdateOutputBody.model_validate(data)
 
+    def kb_compare(
+        self,
+        project_id: str,
+        *,
+        entities: list[Any],
+        property_path: str,
+        target_entity: str,
+        via_relation: str,
+    ) -> KbCompareOutputBody:
+        """Compare a property across entities via a shared relation"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/compare"
+        params = None
+        _raw: dict[str, Any] = {}
+        if entities is not None:
+            _raw["entities"] = entities
+        if property_path is not None:
+            _raw["property_path"] = property_path
+        if target_entity is not None:
+            _raw["target_entity"] = target_entity
+        if via_relation is not None:
+            _raw["via_relation"] = via_relation
+        body = encode_body(KbCompareInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return KbCompareOutputBody.model_validate(data)
+
     def kb_list_documents(
         self,
         project_id: str,
@@ -330,6 +371,77 @@ class Knowledge(_KnowledgeBase):
         data = self._http.get(path, params=params)
         return KBDocument.model_validate(data)
 
+    def kb_patch_document_classification(
+        self,
+        project_id: str,
+        document_id: str,
+        *,
+        root_entity: str,
+    ) -> KbPatchClassificationOutputBody:
+        """Resolve a needs_classification document"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/documents/{quote(document_id, safe='')}/classification"
+        params = None
+        _raw: dict[str, Any] = {}
+        if root_entity is not None:
+            _raw["root_entity"] = root_entity
+        body = encode_body(KbPatchClassificationInputBody, _raw)
+        data = self._http.patch(path, params=params, json_data=body)
+        return KbPatchClassificationOutputBody.model_validate(data)
+
+    def kb_get_document_cost(
+        self,
+        project_id: str,
+        document_id: str,
+    ) -> KbDocCostOutputBody:
+        """Per-document billed cost breakdown"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/documents/{quote(document_id, safe='')}/cost"
+        params = None
+        data = self._http.get(path, params=params)
+        return KbDocCostOutputBody.model_validate(data)
+
+    def kb_reingest_document(
+        self,
+        project_id: str,
+        document_id: str,
+    ) -> KbReingestOutputBody:
+        """Re-ingest a previously uploaded document"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/documents/{quote(document_id, safe='')}/reingest"
+        params = None
+        data = self._http.post(path, params=params)
+        return KbReingestOutputBody.model_validate(data)
+
+    def kb_get_entity(
+        self,
+        project_id: str,
+        entity_type: str,
+        entity_key: str,
+    ) -> KbGetEntityOutputBody:
+        """Direct entity lookup by (type, key)"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/entities/{quote(entity_type, safe='')}/{quote(entity_key, safe='')}"
+        params = None
+        data = self._http.get(path, params=params)
+        return KbGetEntityOutputBody.model_validate(data)
+
+    def kb_list_facts(
+        self,
+        project_id: str,
+        *,
+        page_token: str | None = None,
+        limit: int = 100,
+    ) -> Page[KbFactDTO]:
+        """List active KB facts for a project"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/facts"
+        params: dict[str, Any] = {"limit": limit, "cursor": None}
+        if page_token is not None:
+            params["page_token"] = page_token
+        return Page(
+            fetcher=lambda p: self._http.get(path, params=p),
+            params=params,
+            item_key="facts",
+            item_parser=KbFactDTO.model_validate,
+            mode="cursor",
+        )
+
     def kb_insert_facts(
         self,
         project_id: str,
@@ -351,6 +463,113 @@ class Knowledge(_KnowledgeBase):
         body = encode_body(KbInsertFactsInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return KbInsertFactsOutputBody.model_validate(data)
+
+    def kb_get_active_fact(
+        self,
+        project_id: str,
+        *,
+        from_node_id: str | None = None,
+        to_node_id: str | None = None,
+        relation_type: str | None = None,
+    ) -> KbGetFactOutputBody:
+        """Get the active KB fact for a (from, to, relation) tuple"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/facts/active"
+        params: dict[str, Any] = {}
+        if from_node_id is not None:
+            params["from_node_id"] = from_node_id
+        if to_node_id is not None:
+            params["to_node_id"] = to_node_id
+        if relation_type is not None:
+            params["relation_type"] = relation_type
+        data = self._http.get(path, params=params)
+        return KbGetFactOutputBody.model_validate(data)
+
+    def kb_get_fact_history(
+        self,
+        project_id: str,
+        *,
+        from_node_id: str | None = None,
+        to_node_id: str | None = None,
+        relation_type: str | None = None,
+    ) -> KbGetFactHistoryOutputBody:
+        """Get the version chain for a KB fact tuple"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/facts/history"
+        params: dict[str, Any] = {}
+        if from_node_id is not None:
+            params["from_node_id"] = from_node_id
+        if to_node_id is not None:
+            params["to_node_id"] = to_node_id
+        if relation_type is not None:
+            params["relation_type"] = relation_type
+        data = self._http.get(path, params=params)
+        return KbGetFactHistoryOutputBody.model_validate(data)
+
+    def kb_list_multimodal_schemas(
+        self,
+        project_id: str,
+    ) -> KbMultimodalSchemaListOutputBody:
+        """List multimodal KB schema versions for a project"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/multimodal-schemas"
+        params = None
+        data = self._http.get(path, params=params)
+        return KbMultimodalSchemaListOutputBody.model_validate(data)
+
+    def kb_create_multimodal_schema(
+        self,
+        project_id: str,
+        *,
+        config: str,
+        created_at: str,
+        created_by: str | None = None,
+        doc_types: list[Any],
+        entity_types: list[Any],
+        project_id: str,
+        relationship_types: list[Any],
+        schema_version: int,
+        status: str,
+        template_lineage: str | None = None,
+        vertical_template: str | None = None,
+    ) -> KbMultimodalSchemaCreateOutputBody:
+        """Create a new multimodal KB schema version"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/multimodal-schemas"
+        params = None
+        _raw: dict[str, Any] = {}
+        if config is not None:
+            _raw["config"] = config
+        if created_at is not None:
+            _raw["created_at"] = created_at
+        if created_by is not None:
+            _raw["created_by"] = created_by
+        if doc_types is not None:
+            _raw["doc_types"] = doc_types
+        if entity_types is not None:
+            _raw["entity_types"] = entity_types
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if relationship_types is not None:
+            _raw["relationship_types"] = relationship_types
+        if schema_version is not None:
+            _raw["schema_version"] = schema_version
+        if status is not None:
+            _raw["status"] = status
+        if template_lineage is not None:
+            _raw["template_lineage"] = template_lineage
+        if vertical_template is not None:
+            _raw["vertical_template"] = vertical_template
+        body = encode_body(KBSchema, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return KbMultimodalSchemaCreateOutputBody.model_validate(data)
+
+    def kb_activate_multimodal_schema(
+        self,
+        project_id: str,
+        version: int,
+    ) -> KbMultimodalSchemaActivateOutputBody:
+        """Activate a draft multimodal schema version"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/multimodal-schemas/{version}/activate"
+        params = None
+        data = self._http.post(path, params=params)
+        return KbMultimodalSchemaActivateOutputBody.model_validate(data)
 
     def kb_list_nodes(
         self,
@@ -618,6 +837,32 @@ class Knowledge(_KnowledgeBase):
         data = self._http.get(path, params=params)
         return KbGetStatsOutputBody.model_validate(data)
 
+    def kb_traverse(
+        self,
+        project_id: str,
+        *,
+        from_type: str | None = None,
+        from_key: str | None = None,
+        relation_type: str | None = None,
+        direction: str | None = None,
+        max_depth: int | None = None,
+    ) -> KbTraverseOutputBody:
+        """Graph traversal from a starting entity"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/traverse"
+        params: dict[str, Any] = {}
+        if from_type is not None:
+            params["from_type"] = from_type
+        if from_key is not None:
+            params["from_key"] = from_key
+        if relation_type is not None:
+            params["relation_type"] = relation_type
+        if direction is not None:
+            params["direction"] = direction
+        if max_depth is not None:
+            params["max_depth"] = max_depth
+        data = self._http.get(path, params=params)
+        return KbTraverseOutputBody.model_validate(data)
+
     def kb_list_org_nodes(
         self,
         tenant_id: str,
@@ -883,6 +1128,31 @@ class AsyncKnowledge(_KnowledgeBase):
         data = await self._http.patch(path, params=params, json_data=body)
         return KbBulkUpdateOutputBody.model_validate(data)
 
+    async def kb_compare(
+        self,
+        project_id: str,
+        *,
+        entities: list[Any],
+        property_path: str,
+        target_entity: str,
+        via_relation: str,
+    ) -> KbCompareOutputBody:
+        """Compare a property across entities via a shared relation"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/compare"
+        params = None
+        _raw: dict[str, Any] = {}
+        if entities is not None:
+            _raw["entities"] = entities
+        if property_path is not None:
+            _raw["property_path"] = property_path
+        if target_entity is not None:
+            _raw["target_entity"] = target_entity
+        if via_relation is not None:
+            _raw["via_relation"] = via_relation
+        body = encode_body(KbCompareInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return KbCompareOutputBody.model_validate(data)
+
     async def kb_list_documents(
         self,
         project_id: str,
@@ -933,6 +1203,81 @@ class AsyncKnowledge(_KnowledgeBase):
         data = await self._http.get(path, params=params)
         return KBDocument.model_validate(data)
 
+    async def kb_patch_document_classification(
+        self,
+        project_id: str,
+        document_id: str,
+        *,
+        root_entity: str,
+    ) -> KbPatchClassificationOutputBody:
+        """Resolve a needs_classification document"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/documents/{quote(document_id, safe='')}/classification"
+        params = None
+        _raw: dict[str, Any] = {}
+        if root_entity is not None:
+            _raw["root_entity"] = root_entity
+        body = encode_body(KbPatchClassificationInputBody, _raw)
+        data = await self._http.patch(path, params=params, json_data=body)
+        return KbPatchClassificationOutputBody.model_validate(data)
+
+    async def kb_get_document_cost(
+        self,
+        project_id: str,
+        document_id: str,
+    ) -> KbDocCostOutputBody:
+        """Per-document billed cost breakdown"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/documents/{quote(document_id, safe='')}/cost"
+        params = None
+        data = await self._http.get(path, params=params)
+        return KbDocCostOutputBody.model_validate(data)
+
+    async def kb_reingest_document(
+        self,
+        project_id: str,
+        document_id: str,
+    ) -> KbReingestOutputBody:
+        """Re-ingest a previously uploaded document"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/documents/{quote(document_id, safe='')}/reingest"
+        params = None
+        data = await self._http.post(path, params=params)
+        return KbReingestOutputBody.model_validate(data)
+
+    async def kb_get_entity(
+        self,
+        project_id: str,
+        entity_type: str,
+        entity_key: str,
+    ) -> KbGetEntityOutputBody:
+        """Direct entity lookup by (type, key)"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/entities/{quote(entity_type, safe='')}/{quote(entity_key, safe='')}"
+        params = None
+        data = await self._http.get(path, params=params)
+        return KbGetEntityOutputBody.model_validate(data)
+
+    async def kb_list_facts(
+        self,
+        project_id: str,
+        *,
+        page_token: str | None = None,
+        limit: int = 100,
+    ) -> AsyncPage[KbFactDTO]:
+        """List active KB facts for a project"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/facts"
+        params: dict[str, Any] = {"limit": limit, "cursor": None}
+        if page_token is not None:
+            params["page_token"] = page_token
+
+        async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
+            return await self._http.get(path, params=p)
+
+        return AsyncPage(
+            fetcher=fetcher,
+            params=params,
+            item_key="facts",
+            item_parser=KbFactDTO.model_validate,
+            mode="cursor",
+        )
+
     async def kb_insert_facts(
         self,
         project_id: str,
@@ -954,6 +1299,113 @@ class AsyncKnowledge(_KnowledgeBase):
         body = encode_body(KbInsertFactsInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return KbInsertFactsOutputBody.model_validate(data)
+
+    async def kb_get_active_fact(
+        self,
+        project_id: str,
+        *,
+        from_node_id: str | None = None,
+        to_node_id: str | None = None,
+        relation_type: str | None = None,
+    ) -> KbGetFactOutputBody:
+        """Get the active KB fact for a (from, to, relation) tuple"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/facts/active"
+        params: dict[str, Any] = {}
+        if from_node_id is not None:
+            params["from_node_id"] = from_node_id
+        if to_node_id is not None:
+            params["to_node_id"] = to_node_id
+        if relation_type is not None:
+            params["relation_type"] = relation_type
+        data = await self._http.get(path, params=params)
+        return KbGetFactOutputBody.model_validate(data)
+
+    async def kb_get_fact_history(
+        self,
+        project_id: str,
+        *,
+        from_node_id: str | None = None,
+        to_node_id: str | None = None,
+        relation_type: str | None = None,
+    ) -> KbGetFactHistoryOutputBody:
+        """Get the version chain for a KB fact tuple"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/facts/history"
+        params: dict[str, Any] = {}
+        if from_node_id is not None:
+            params["from_node_id"] = from_node_id
+        if to_node_id is not None:
+            params["to_node_id"] = to_node_id
+        if relation_type is not None:
+            params["relation_type"] = relation_type
+        data = await self._http.get(path, params=params)
+        return KbGetFactHistoryOutputBody.model_validate(data)
+
+    async def kb_list_multimodal_schemas(
+        self,
+        project_id: str,
+    ) -> KbMultimodalSchemaListOutputBody:
+        """List multimodal KB schema versions for a project"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/multimodal-schemas"
+        params = None
+        data = await self._http.get(path, params=params)
+        return KbMultimodalSchemaListOutputBody.model_validate(data)
+
+    async def kb_create_multimodal_schema(
+        self,
+        project_id: str,
+        *,
+        config: str,
+        created_at: str,
+        created_by: str | None = None,
+        doc_types: list[Any],
+        entity_types: list[Any],
+        project_id: str,
+        relationship_types: list[Any],
+        schema_version: int,
+        status: str,
+        template_lineage: str | None = None,
+        vertical_template: str | None = None,
+    ) -> KbMultimodalSchemaCreateOutputBody:
+        """Create a new multimodal KB schema version"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/multimodal-schemas"
+        params = None
+        _raw: dict[str, Any] = {}
+        if config is not None:
+            _raw["config"] = config
+        if created_at is not None:
+            _raw["created_at"] = created_at
+        if created_by is not None:
+            _raw["created_by"] = created_by
+        if doc_types is not None:
+            _raw["doc_types"] = doc_types
+        if entity_types is not None:
+            _raw["entity_types"] = entity_types
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if relationship_types is not None:
+            _raw["relationship_types"] = relationship_types
+        if schema_version is not None:
+            _raw["schema_version"] = schema_version
+        if status is not None:
+            _raw["status"] = status
+        if template_lineage is not None:
+            _raw["template_lineage"] = template_lineage
+        if vertical_template is not None:
+            _raw["vertical_template"] = vertical_template
+        body = encode_body(KBSchema, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return KbMultimodalSchemaCreateOutputBody.model_validate(data)
+
+    async def kb_activate_multimodal_schema(
+        self,
+        project_id: str,
+        version: int,
+    ) -> KbMultimodalSchemaActivateOutputBody:
+        """Activate a draft multimodal schema version"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/multimodal-schemas/{version}/activate"
+        params = None
+        data = await self._http.post(path, params=params)
+        return KbMultimodalSchemaActivateOutputBody.model_validate(data)
 
     async def kb_list_nodes(
         self,
@@ -1220,6 +1672,32 @@ class AsyncKnowledge(_KnowledgeBase):
         params = None
         data = await self._http.get(path, params=params)
         return KbGetStatsOutputBody.model_validate(data)
+
+    async def kb_traverse(
+        self,
+        project_id: str,
+        *,
+        from_type: str | None = None,
+        from_key: str | None = None,
+        relation_type: str | None = None,
+        direction: str | None = None,
+        max_depth: int | None = None,
+    ) -> KbTraverseOutputBody:
+        """Graph traversal from a starting entity"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/knowledge/traverse"
+        params: dict[str, Any] = {}
+        if from_type is not None:
+            params["from_type"] = from_type
+        if from_key is not None:
+            params["from_key"] = from_key
+        if relation_type is not None:
+            params["relation_type"] = relation_type
+        if direction is not None:
+            params["direction"] = direction
+        if max_depth is not None:
+            params["max_depth"] = max_depth
+        data = await self._http.get(path, params=params)
+        return KbTraverseOutputBody.model_validate(data)
 
     async def kb_list_org_nodes(
         self,

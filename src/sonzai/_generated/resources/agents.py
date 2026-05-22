@@ -88,6 +88,7 @@ class Agents(_AgentsBase):
         personality_prompt: str | None = None,
         preferences: str | None = None,
         primary_traits: list[Any] | None = None,
+        proactive_mode: str | None = None,
         project_id: str | None = None,
         seed_memories: list[Any] | None = None,
         speech_patterns: list[Any] | None = None,
@@ -137,6 +138,8 @@ class Agents(_AgentsBase):
             _raw["preferences"] = preferences
         if primary_traits is not None:
             _raw["primary_traits"] = primary_traits
+        if proactive_mode is not None:
+            _raw["proactiveMode"] = proactive_mode
         if project_id is not None:
             _raw["project_id"] = project_id
         if seed_memories is not None:
@@ -202,6 +205,7 @@ class Agents(_AgentsBase):
         knowledge_base_write: bool | None = None,
         mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
+        proactive_mode: str | None = None,
         remember_name: bool | None = None,
         shared_memory: bool | None = None,
         skills: bool | None = None,
@@ -230,6 +234,8 @@ class Agents(_AgentsBase):
             _raw["mcpEnabled"] = mcp_enabled
         if memory_mode is not None:
             _raw["memoryMode"] = memory_mode
+        if proactive_mode is not None:
+            _raw["proactiveMode"] = proactive_mode
         if remember_name is not None:
             _raw["rememberName"] = remember_name
         if shared_memory is not None:
@@ -257,6 +263,7 @@ class Agents(_AgentsBase):
         knowledge_base_write: bool | None = None,
         mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
+        proactive_mode: str | None = None,
         remember_name: bool | None = None,
         shared_memory: bool | None = None,
         skills: bool | None = None,
@@ -285,6 +292,8 @@ class Agents(_AgentsBase):
             _raw["mcpEnabled"] = mcp_enabled
         if memory_mode is not None:
             _raw["memoryMode"] = memory_mode
+        if proactive_mode is not None:
+            _raw["proactiveMode"] = proactive_mode
         if remember_name is not None:
             _raw["rememberName"] = remember_name
         if shared_memory is not None:
@@ -534,6 +543,7 @@ class AsyncAgents(_AgentsBase):
         personality_prompt: str | None = None,
         preferences: str | None = None,
         primary_traits: list[Any] | None = None,
+        proactive_mode: str | None = None,
         project_id: str | None = None,
         seed_memories: list[Any] | None = None,
         speech_patterns: list[Any] | None = None,
@@ -583,6 +593,8 @@ class AsyncAgents(_AgentsBase):
             _raw["preferences"] = preferences
         if primary_traits is not None:
             _raw["primary_traits"] = primary_traits
+        if proactive_mode is not None:
+            _raw["proactiveMode"] = proactive_mode
         if project_id is not None:
             _raw["project_id"] = project_id
         if seed_memories is not None:
@@ -648,6 +660,7 @@ class AsyncAgents(_AgentsBase):
         knowledge_base_write: bool | None = None,
         mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
+        proactive_mode: str | None = None,
         remember_name: bool | None = None,
         shared_memory: bool | None = None,
         skills: bool | None = None,
@@ -676,6 +689,8 @@ class AsyncAgents(_AgentsBase):
             _raw["mcpEnabled"] = mcp_enabled
         if memory_mode is not None:
             _raw["memoryMode"] = memory_mode
+        if proactive_mode is not None:
+            _raw["proactiveMode"] = proactive_mode
         if remember_name is not None:
             _raw["rememberName"] = remember_name
         if shared_memory is not None:
@@ -703,6 +718,7 @@ class AsyncAgents(_AgentsBase):
         knowledge_base_write: bool | None = None,
         mcp_enabled: list[Any] | None = None,
         memory_mode: str | None = None,
+        proactive_mode: str | None = None,
         remember_name: bool | None = None,
         shared_memory: bool | None = None,
         skills: bool | None = None,
@@ -731,6 +747,8 @@ class AsyncAgents(_AgentsBase):
             _raw["mcpEnabled"] = mcp_enabled
         if memory_mode is not None:
             _raw["memoryMode"] = memory_mode
+        if proactive_mode is not None:
+            _raw["proactiveMode"] = proactive_mode
         if remember_name is not None:
             _raw["rememberName"] = remember_name
         if shared_memory is not None:
