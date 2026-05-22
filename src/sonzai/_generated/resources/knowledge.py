@@ -523,7 +523,6 @@ class Knowledge(_KnowledgeBase):
         created_by: str | None = None,
         doc_types: list[Any],
         entity_types: list[Any],
-        project_id: str,
         relationship_types: list[Any],
         schema_version: int,
         status: str,
@@ -544,8 +543,6 @@ class Knowledge(_KnowledgeBase):
             _raw["doc_types"] = doc_types
         if entity_types is not None:
             _raw["entity_types"] = entity_types
-        if project_id is not None:
-            _raw["project_id"] = project_id
         if relationship_types is not None:
             _raw["relationship_types"] = relationship_types
         if schema_version is not None:
@@ -1359,7 +1356,6 @@ class AsyncKnowledge(_KnowledgeBase):
         created_by: str | None = None,
         doc_types: list[Any],
         entity_types: list[Any],
-        project_id: str,
         relationship_types: list[Any],
         schema_version: int,
         status: str,
@@ -1380,8 +1376,6 @@ class AsyncKnowledge(_KnowledgeBase):
             _raw["doc_types"] = doc_types
         if entity_types is not None:
             _raw["entity_types"] = entity_types
-        if project_id is not None:
-            _raw["project_id"] = project_id
         if relationship_types is not None:
             _raw["relationship_types"] = relationship_types
         if schema_version is not None:

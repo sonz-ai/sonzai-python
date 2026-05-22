@@ -168,18 +168,28 @@ def parse_spec(spec: dict[str, Any]) -> dict[str, list[Operation]]:
             if ref:
                 operation.input_body_class = ref.rsplit("/", 1)[-1]
 
-            # Extract explicit input body fields for IDE autocomplete
+            # Extract explicit input body fields for IDE autocomplete.
+            # Skip body fields whose python_name collides with a path or
+            # query param — those would produce duplicate function arguments
+            # in the generated method signature. The path/query value wins
+            # (consumer expectation: the route key carries the identifier;
+            # repeating it in the body is a spec quirk we ignore).
             if operation.input_body_class:
                 schema = schemas.get(operation.input_body_class, {})
                 required_fields = set(schema.get("required", []))
+                reserved_names = {p.python_name for p in operation.path_params}
+                reserved_names.update(q.python_name for q in operation.query_params)
                 for fname, fdesc in schema.get("properties", {}).items():
                     if fname.startswith("$"):  # skip $schema etc
+                        continue
+                    py_name = _snake(fname).replace(".", "_")
+                    if py_name in reserved_names:
                         continue
                     ftype = _type_hint(fdesc.get("type"), fname in required_fields)
                     operation.input_body_fields.append(
                         InputBodyField(
                             name=fname,
-                            python_name=_snake(fname).replace(".", "_"),
+                            python_name=py_name,
                             type_hint=ftype,
                             required=fname in required_fields,
                             default=fdesc.get("default"),
