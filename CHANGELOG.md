@@ -7,6 +7,30 @@ All notable changes to `sonzai` are documented here. The project follows
 
 ### Added
 
+- **Sonzai Built-in Agents resource (`client.builtin_agents`)** —
+  first-class surface for the platform-hosted vertical task agents
+  (`lead_research`, `market_intel`, `lead_extract`, `lead_score`,
+  `lead_qualifier`). Sync and async.
+  - `list()` — catalog with per-agent provisioning state.
+  - `invoke(slug, input=..., title=None)` — run an agent to completion;
+    returns a typed `BuiltinAgentInvokeResult` (findings, summary,
+    usage, `cost_usd`). Applies a 15-minute per-request HTTP timeout by
+    default (`DEFAULT_INVOKE_TIMEOUT_SECONDS`) since deep-work runs
+    routinely take minutes; override via `timeout=`.
+  - `invoke_stream(...)` — generator that yields `BuiltinAgentUpdate`
+    progress frames (tool calls, status text, elapsed heartbeats) and
+    finishes by yielding the typed `BuiltinAgentInvokeResult` as the
+    last item. A terminal `event: error` frame raises `StreamError`.
+  - `sessions.create / list / get / send` — persistent multi-turn
+    sessions; `send(..., stream=True)` (sync) and `send_stream(...)`
+    (async) stream turn progress the same way.
+  - New types: `BuiltinAgent`, `BuiltinAgentListResponse`,
+    `BuiltinAgentInvokeResult`, `BuiltinAgentUpdate`,
+    `BuiltinAgentUsage`, `BuiltinAgentSession`,
+    `BuiltinAgentSessionListResponse`, `BuiltinAgentChatTurnResult`.
+  - HTTP layer: per-request `timeout=` override on `request`/`post`,
+    and `stream_sse_named(...)` which preserves SSE `event:` names
+    (`update` / `result` / `error`) instead of discarding them.
 - **`temperature` chat option** — every chat method (`Agents.chat`,
   `Agents.chat_async`, `AsyncAgents.chat`, `AsyncAgents.chat_async`, plus
   the corresponding `*_blocking` / `*_detached` variants) accepts an

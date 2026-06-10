@@ -2796,6 +2796,133 @@ class AdvanceTimeResponse(BaseModel):
         return [] if v is None else v
 
 
+# ---------------------------------------------------------------------------
+# Sonzai Built-in Agents
+# ---------------------------------------------------------------------------
+# Platform-hosted vertical task agents (lead_research, market_intel,
+# lead_extract, lead_score, lead_qualifier, ...). These endpoints are not in
+# the OpenAPI snapshot yet, so the models are hand-written here — same
+# pattern as the workbench types above.
+
+
+class BuiltinAgent(BaseModel):
+    """One entry from the Sonzai Built-in Agents catalog."""
+
+    slug: str
+    name: str = ""
+    description: str = ""
+    model: str = ""
+    provisioned: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+class BuiltinAgentListResponse(BaseModel):
+    """Result of ``GET /builtin-agents``."""
+
+    agents: list[BuiltinAgent] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+    @field_validator("agents", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+class BuiltinAgentUsage(BaseModel):
+    """Token usage for one built-in agent invocation or chat turn."""
+
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cache_creation_input_tokens: int = 0
+    cache_read_input_tokens: int = 0
+
+    model_config = {"extra": "allow"}
+
+
+class BuiltinAgentInvokeResult(BaseModel):
+    """Terminal result of ``POST /builtin-agents/{slug}/invoke``.
+
+    Returned directly for non-streaming invokes and carried by the
+    ``event: result`` frame when streaming.
+    """
+
+    findings: Any = None  # the agent's findings — typically a markdown report
+    summary: str = ""
+    session_id: str = ""
+    model: str = ""
+    byok: bool = False
+    usage: BuiltinAgentUsage | None = None
+    running_seconds: float = 0.0
+    cost_usd: float = 0.0
+
+    model_config = {"extra": "allow"}
+
+
+class BuiltinAgentUpdate(BaseModel):
+    """One ``event: update`` progress frame from a streaming invocation."""
+
+    type: str = ""
+    tool: str | None = None
+    text: str | None = None
+    detail: str | None = None
+    elapsed: float | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class BuiltinAgentSession(BaseModel):
+    """A built-in agent session (multi-turn conversation with one agent).
+
+    The ``billed_*`` token counters are only populated by
+    ``GET /builtin-agents/sessions/{id}``; list/create responses omit them.
+    """
+
+    id: str
+    agent: str = ""
+    model: str = ""
+    status: str = ""
+    title: str | None = None
+    byok: bool = False
+    cost_usd: float = 0.0
+    created_at: str | None = None
+    billed_input_tokens: int | None = None
+    billed_output_tokens: int | None = None
+    billed_cache_read_tokens: int | None = None
+    billed_cache_creation_tokens: int | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class BuiltinAgentSessionListResponse(BaseModel):
+    """Result of ``GET /builtin-agents/sessions``."""
+
+    sessions: list[BuiltinAgentSession] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+    @field_validator("sessions", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+class BuiltinAgentChatTurnResult(BaseModel):
+    """Terminal result of one session message turn.
+
+    Returned directly for non-streaming sends and carried by the
+    ``event: result`` frame when streaming.
+    """
+
+    reply: str = ""
+    findings: Any = None
+    usage: BuiltinAgentUsage | None = None
+    turn_cost_usd: float = 0.0
+    running_seconds: float = 0.0
+
+    model_config = {"extra": "allow"}
+
 
 # ---------------------------------------------------------------------------
 # Resolve forward references

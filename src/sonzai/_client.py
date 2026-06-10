@@ -11,6 +11,7 @@ from ._retry import RetryPolicy
 from .resources.account_config import AccountConfig, AsyncAccountConfig
 from .resources.agents import Agents, AsyncAgents
 from .resources.analytics import Analytics, AsyncAnalytics
+from .resources.builtin_agents import AsyncBuiltinAgents, BuiltinAgents
 from .resources.byok import BYOK, AsyncBYOK
 from .resources.composio import AsyncComposio, Composio
 from .types import PlatformModelsResponse
@@ -71,6 +72,7 @@ class Sonzai:
 
     agents: Agents
     analytics: Analytics
+    builtin_agents: BuiltinAgents
     knowledge: Knowledge
     eval_templates: EvalTemplates
     eval_runs: EvalRuns
@@ -143,6 +145,7 @@ class Sonzai:
 
         self.agents = Agents(self._http)
         self.analytics = Analytics(self._http)
+        self.builtin_agents = BuiltinAgents(self._http)
         self.knowledge = Knowledge(self._http)
         self.eval_templates = EvalTemplates(self._http)
         self.eval_runs = EvalRuns(self._http)
@@ -215,6 +218,7 @@ class AsyncSonzai:
 
     agents: AsyncAgents
     analytics: AsyncAnalytics
+    builtin_agents: AsyncBuiltinAgents
     knowledge: AsyncKnowledge
     eval_templates: AsyncEvalTemplates
     eval_runs: AsyncEvalRuns
@@ -277,6 +281,7 @@ class AsyncSonzai:
 
         self.agents = AsyncAgents(self._http)
         self.analytics = AsyncAnalytics(self._http)
+        self.builtin_agents = AsyncBuiltinAgents(self._http)
         self.knowledge = AsyncKnowledge(self._http)
         self.eval_templates = AsyncEvalTemplates(self._http)
         self.eval_runs = AsyncEvalRuns(self._http)

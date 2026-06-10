@@ -56,6 +56,15 @@ from .types import (
     Big5Trait,
     Breakthrough,
     BreakthroughsResponse,
+    # Built-in agents
+    BuiltinAgent,
+    BuiltinAgentChatTurnResult,
+    BuiltinAgentInvokeResult,
+    BuiltinAgentListResponse,
+    BuiltinAgentSession,
+    BuiltinAgentSessionListResponse,
+    BuiltinAgentUpdate,
+    BuiltinAgentUsage,
     ChatChoice,
     ChatMessage,
     ChatResponse,
@@ -240,7 +249,7 @@ from .types import (
     WisdomAuditResponse,
 )
 
-__version__ = "1.6.0"
+__version__ = "1.7.0"
 
 __all__ = [
     # Clients
@@ -515,4 +524,13 @@ __all__ = [
     "TicketDetailResponse",
     "TicketListResponse",
     "TicketSummary",
+    # Types - Sonzai Built-in Agents
+    "BuiltinAgent",
+    "BuiltinAgentChatTurnResult",
+    "BuiltinAgentInvokeResult",
+    "BuiltinAgentListResponse",
+    "BuiltinAgentSession",
+    "BuiltinAgentSessionListResponse",
+    "BuiltinAgentUpdate",
+    "BuiltinAgentUsage",
 ]

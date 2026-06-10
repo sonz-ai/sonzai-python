@@ -172,7 +172,7 @@ class HTTPClient:
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
-                    "User-Agent": "sonzai-python/1.6.0",
+                    "User-Agent": "sonzai-python/1.7.0",
                 },
                 timeout=httpx.Timeout(timeout, connect=10.0),
                 follow_redirects=True,
@@ -194,6 +194,7 @@ class HTTPClient:
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
         idempotency_key: str | None = None,
+        timeout: float | None = None,
     ) -> Any:
         # Strip None values from params
         if params:
@@ -215,6 +216,7 @@ class HTTPClient:
                     json=json_data,
                     params=params,
                     headers=extra_headers,
+                    timeout=_per_request_timeout(timeout),
                 )
             except Exception as exc:
                 if not self._retry.should_retry(attempt=attempt, status=None, exc=exc):
@@ -269,8 +271,16 @@ class HTTPClient:
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
         idempotency_key: str | None = None,
+        timeout: float | None = None,
     ) -> Any:
-        return self.request("POST", path, json_data=json_data, params=params, idempotency_key=idempotency_key)
+        return self.request(
+            "POST",
+            path,
+            json_data=json_data,
+            params=params,
+            idempotency_key=idempotency_key,
+            timeout=timeout,
+        )
 
     def put(
         self,
@@ -342,6 +352,36 @@ class HTTPClient:
             # data: line and can exceed 64 KB) are handled correctly.
             yield from _parse_sse_stream(response.iter_lines())
 
+    def stream_sse_named(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        timeout: float | None = None,
+    ) -> Iterator[tuple[str, dict[str, Any]]]:
+        """Send a request and yield ``(event_name, data)`` tuples.
+
+        Unlike :meth:`stream_sse` (which discards ``event:`` lines), this
+        variant tracks the SSE event name so callers can dispatch on named
+        frames such as ``event: update`` / ``event: result`` / ``event: error``.
+        Frames without an explicit ``event:`` line are reported with the SSE
+        default name ``"message"``.
+        """
+        if params:
+            params = {k: v for k, v in params.items() if v is not None}
+        with self._client.stream(
+            method,
+            path,
+            json=json_data,
+            params=params,
+            headers={"Accept": "text/event-stream"},
+            timeout=_per_request_timeout(timeout),
+        ) as response:
+            _raise_for_status(response)
+            yield from _parse_named_sse_stream(response.iter_lines())
+
     def close(self) -> None:
         self._client.close()
 
@@ -367,7 +407,7 @@ class AsyncHTTPClient:
                 headers={
                     "Authorization": f"Bearer {api_key}",
                     "Content-Type": "application/json",
-                    "User-Agent": "sonzai-python/1.6.0",
+                    "User-Agent": "sonzai-python/1.7.0",
                 },
                 timeout=httpx.Timeout(timeout, connect=10.0),
                 follow_redirects=True,
@@ -389,6 +429,7 @@ class AsyncHTTPClient:
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
         idempotency_key: str | None = None,
+        timeout: float | None = None,
     ) -> Any:
         import asyncio
 
@@ -411,6 +452,7 @@ class AsyncHTTPClient:
                     json=json_data,
                     params=params,
                     headers=extra_headers,
+                    timeout=_per_request_timeout(timeout),
                 )
             except Exception as exc:
                 if not self._retry.should_retry(attempt=attempt, status=None, exc=exc):
@@ -465,8 +507,16 @@ class AsyncHTTPClient:
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
         idempotency_key: str | None = None,
+        timeout: float | None = None,
     ) -> Any:
-        return await self.request("POST", path, json_data=json_data, params=params, idempotency_key=idempotency_key)
+        return await self.request(
+            "POST",
+            path,
+            json_data=json_data,
+            params=params,
+            idempotency_key=idempotency_key,
+            timeout=timeout,
+        )
 
     async def put(
         self,
@@ -581,6 +631,41 @@ class AsyncHTTPClient:
 
                     yield parsed
 
+    async def stream_sse_named(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        timeout: float | None = None,
+    ) -> AsyncIterator[tuple[str, dict[str, Any]]]:
+        """Send a request and yield ``(event_name, data)`` tuples asynchronously.
+
+        Async mirror of :meth:`HTTPClient.stream_sse_named` — tracks ``event:``
+        lines so callers can dispatch on named frames such as ``event: update``
+        / ``event: result`` / ``event: error``. Frames without an explicit
+        ``event:`` line are reported with the SSE default name ``"message"``.
+        """
+        if params:
+            params = {k: v for k, v in params.items() if v is not None}
+        async with self._client.stream(
+            method,
+            path,
+            json=json_data,
+            params=params,
+            headers={"Accept": "text/event-stream"},
+            timeout=_per_request_timeout(timeout),
+        ) as response:
+            _raise_for_status(response)
+            event_name = _SSE_DEFAULT_EVENT
+            async for line in response.aiter_lines():
+                item, event_name = _consume_named_sse_line(line, event_name)
+                if item is _SSE_STREAM_DONE:
+                    return
+                if item is not None:
+                    yield item  # type: ignore[misc]
+
     async def close(self) -> None:
         await self._client.aclose()
 
@@ -637,3 +722,79 @@ def _parse_sse_stream(lines: Iterator[str]) -> Generator[dict[str, Any], None, N
                 continue
 
             yield parsed
+
+
+def _per_request_timeout(timeout: float | None) -> httpx.Timeout | Any:
+    """Map an optional per-request timeout override to the httpx argument.
+
+    ``None`` means "use whatever the client was constructed with". A float
+    sets the total/read/write/pool timeout while keeping the same 10s connect
+    budget the client-level default uses — long-running calls (e.g. built-in
+    agent invocations) need a generous read timeout, not a slow handshake.
+    """
+    if timeout is None:
+        return httpx.USE_CLIENT_DEFAULT
+    return httpx.Timeout(timeout, connect=10.0)
+
+
+# Named-event SSE parsing (event:/data: pairs) -------------------------------
+#
+# `_parse_sse_stream` above predates endpoints that dispatch on the SSE event
+# name (it drops `event:` lines entirely). The built-in agents endpoints frame
+# their streams as `event: update` / `event: result` / `event: error`, so the
+# helpers below track the most recent `event:` line and pair it with the next
+# `data:` payload. Per the SSE spec the event name applies to the dispatch it
+# precedes, then resets to the default ("message").
+
+_SSE_DEFAULT_EVENT = "message"
+
+# Sentinel distinguishing "stream finished" ([DONE]) from "no event yet".
+_SSE_STREAM_DONE: tuple[str, dict[str, Any]] = ("__done__", {})
+
+
+def _consume_named_sse_line(
+    line: str, event_name: str
+) -> tuple[tuple[str, dict[str, Any]] | None, str]:
+    """Consume one SSE line; return ``(item, next_event_name)``.
+
+    ``item`` is ``None`` when the line carries no dispatchable payload (blank
+    line, ``event:`` line, malformed JSON), ``_SSE_STREAM_DONE`` on the
+    ``data: [DONE]`` terminator, and a ``(event_name, payload)`` tuple when a
+    ``data:`` line completes a frame.
+    """
+    line = line.strip()
+    if not line:
+        # Frame boundary — the pending event name (if any) was already
+        # consumed by its data line; reset defensively per the SSE spec.
+        return None, _SSE_DEFAULT_EVENT
+    if line.startswith("event:"):
+        return None, line[len("event:") :].strip() or _SSE_DEFAULT_EVENT
+    if line == "data: [DONE]":
+        return _SSE_STREAM_DONE, _SSE_DEFAULT_EVENT
+    if line.startswith("data:"):
+        data = line[len("data:") :].strip()
+        try:
+            parsed = json.loads(data)
+        except json.JSONDecodeError as e:
+            logger.warning("Malformed SSE event: %s", e)
+            return None, event_name
+        if not isinstance(parsed, dict):
+            logger.warning("Ignoring non-object SSE payload: %r", parsed)
+            return None, event_name
+        # Dispatch resets the event name to the default per the SSE spec.
+        return (event_name, parsed), _SSE_DEFAULT_EVENT
+    # Comments (`: keepalive`) and unknown fields are ignored.
+    return None, event_name
+
+
+def _parse_named_sse_stream(
+    lines: Iterator[str],
+) -> Generator[tuple[str, dict[str, Any]], None, None]:
+    """Parse named-event SSE lines into ``(event_name, payload)`` tuples."""
+    event_name = _SSE_DEFAULT_EVENT
+    for line in lines:
+        item, event_name = _consume_named_sse_line(line, event_name)
+        if item is _SSE_STREAM_DONE:
+            return
+        if item is not None:
+            yield item

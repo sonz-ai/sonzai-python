@@ -1,4 +1,10 @@
 from .agents import Agents, AsyncAgents
+from .builtin_agents import (
+    AsyncBuiltinAgents,
+    AsyncBuiltinAgentSessions,
+    BuiltinAgents,
+    BuiltinAgentSessions,
+)
 from .byok import BYOK, AsyncBYOK
 from .composio import AsyncComposio, Composio
 from .custom_llm import AsyncCustomLLM, CustomLLM
@@ -22,6 +28,10 @@ from .workbench import AsyncWorkbench, Workbench
 __all__ = [
     "Agents",
     "AsyncAgents",
+    "BuiltinAgents",
+    "AsyncBuiltinAgents",
+    "BuiltinAgentSessions",
+    "AsyncBuiltinAgentSessions",
     "BYOK",
     "AsyncBYOK",
     "Composio",
