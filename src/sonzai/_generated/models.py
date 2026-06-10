@@ -867,6 +867,33 @@ class CachedModelsPayload(BaseModel):
     providers: list[Any] | None
 
 
+class CatalogEntry(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    description: str
+    model: str
+    name: str
+    provisioned: bool
+    slug: str
+
+
+class ChatMsgInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ChatMsgInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    text: Annotated[str, Field(min_length=1)]
+
+
 class ChatSSEChunkError(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1075,6 +1102,30 @@ class ConsumeNotificationOutputBody(BaseModel):
     """
     Whether the notification was consumed
     """
+
+
+class ContactPoint(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    e164: str | None = None
+    type: str
+    value: str
+    verified: bool
+
+
+class ContactResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    confidence: str
+    credits_used: int
+    emails: list[ContactPoint] | None
+    ph_resolved: bool
+    phones: list[ContactPoint] | None
+    provider: str
 
 
 class ContextEngineEventByType(BaseModel):
@@ -2429,6 +2480,44 @@ class EndSessionOutputBody(BaseModel):
     """
 
 
+class EnrichPersonInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/EnrichPersonInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    country: str | None = None
+    """
+    ISO country (e.g. PH) — coverage caveats apply outside US/EU
+    """
+    email: str | None = None
+    """
+    Known email address (contact-resolution identifier)
+    """
+    employer: str | None = None
+    """
+    Current employer / company
+    """
+    linkedin_url: str | None = None
+    """
+    LinkedIn profile URL — the Crustdata identifier; strongly preferred
+    """
+    name: str | None = None
+    """
+    Full name
+    """
+    want: list[str] | None = None
+    """
+    Contact fields desired: "email", "phone". Defaults to both.
+    """
+
+
 class EnterpriseContract(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3074,6 +3163,27 @@ class GetAgentModelsOutputBody(BaseModel):
     """
 
 
+class GetBuiltinAgentSessionResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/GetBuiltinAgentSessionResponse.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    billed_cache_creation_tokens: int
+    billed_cache_read_tokens: int
+    billed_input_tokens: int
+    billed_output_tokens: int
+
+
 class GetSkillLoadCountOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3419,6 +3529,28 @@ class InventoryWriteRequest(BaseModel):
     label: str | None = None
     project_id: str | None = None
     properties: dict[str, Any] | None = None
+
+
+class InvokeInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/InvokeInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    input: dict[str, Any]
+    """
+    Task payload passed verbatim to the agent (e.g. lead fields: name, linkedin_url, employer, country, inquiry)
+    """
+    title: str | None = None
+    """
+    Optional session title for traceability
+    """
 
 
 class JobUser(BaseModel):
@@ -4637,6 +4769,23 @@ class ListBYOKKeysOutputBody(BaseModel):
     A URL to the JSON Schema for this object.
     """
     keys: list[BYOKKeyResponse] | None
+
+
+class ListBuiltinAgentsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ListBuiltinAgentsResponse.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agents: list[CatalogEntry] | None
 
 
 class ListComposioAuditOutputBody(BaseModel):
@@ -6316,6 +6465,28 @@ class ServiceUsageSummary(BaseModel):
     total_events: Annotated[int, Field(alias='totalEvents')]
 
 
+class SessionBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/SessionBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent: str
+    byok: bool
+    cost_usd: float
+    created_at: AwareDatetime
+    id: str
+    model: str
+    status: str
+    title: str
+
+
 class SessionEndStatusOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6671,6 +6842,25 @@ class SpeechToTextInputBody(BaseModel):
     """
 
 
+class StartChatInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/StartChatInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent: str
+    """
+    Built-in agent slug
+    """
+    title: str | None = None
+
+
 class StartSessionInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6731,6 +6921,15 @@ class StartSessionOutputBody(BaseModel):
     """
     Whether the session was started successfully
     """
+
+
+class Step(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    outcome: str
+    step: str
 
 
 class StoredFact(BaseModel):
@@ -8537,6 +8736,16 @@ class WakeupsResponse(BaseModel):
     wakeups: list[WakeupEntry] | None
 
 
+class WealthSignal(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    signal: str
+    source: str
+    weight: float | None = None
+
+
 class Webhook(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -9490,6 +9699,21 @@ class CreateEvalTemplateInputBody(BaseModel):
     """
 
 
+class EnrichResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    citations: list[str] | None
+    confidence: str
+    coverage_note: str | None = None
+    employer_guess: str | None = None
+    role_signals: list[str] | None
+    summary: str
+    tier: str
+    wealth_signals: list[WealthSignal] | None
+
+
 class EvalAgentConfigOverride(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10148,6 +10372,24 @@ class ListAllFactsResponse(BaseModel):
     """
     facts: list[StoredFact] | None
     total: int
+
+
+class ListBuiltinAgentSessionsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListBuiltinAgentSessionsResponse.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    sessions: list[SessionBody] | None
 
 
 class ListFactsResponse(BaseModel):
@@ -10915,6 +11157,46 @@ class BatchPersonalityResponse(BaseModel):
     A URL to the JSON Schema for this object.
     """
     personalities: dict[str, BatchPersonalityEntry]
+
+
+class EnrichPersonOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/EnrichPersonOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    cache_hit: bool
+    """
+    True when served from the ScyllaDB cache (no vendor was billed).
+    """
+    contact: ContactResult
+    """
+    Resolved contact points (Fiber/Apollo). null when unresolved.
+    """
+    credits_used: int
+    """
+    Best-effort estimate of vendor credits consumed (0 on cache hit).
+    """
+    providers_used: list[str] | None
+    """
+    Vendors actually invoked in this run.
+    """
+    research: EnrichResult
+    """
+    Person/company research (Crustdata). null when unresolved.
+    """
+    steps: list[Step] | None
+    """
+    Per-step waterfall trace for transparency.
+    """
 
 
 class KbCompareOutputBody(BaseModel):
