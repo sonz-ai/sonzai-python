@@ -2924,6 +2924,84 @@ class BuiltinAgentChatTurnResult(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class SegmentCal(BaseModel):
+    """A per-segment lead-scoring calibration adjustment.
+
+    ``adjust`` is a multiplicative correction the ``lead_score`` agent applies
+    to future leads matching this segment, derived from realized outcomes.
+    """
+
+    segment: str = ""
+    n: int = 0
+    conversions: int = 0
+    p_hat: float = 0.0
+    adjust: float = 0.0
+
+    model_config = {"extra": "allow"}
+
+
+class BandAccuracy(BaseModel):
+    """Predicted-vs-actual conversion accuracy for one score band."""
+
+    band: str = ""
+    n: int = 0
+    conversions: int = 0
+    predicted_rate: float = 0.0
+    actual_rate: float = 0.0
+    avg_score: float = 0.0
+    calibration_gap: float = 0.0
+
+    model_config = {"extra": "allow"}
+
+
+class Calibration(BaseModel):
+    """The project's lead-scoring calibration.
+
+    Predicted-vs-actual accuracy by band plus multiplicative per-segment
+    adjustments; returned by ``record_lead_outcome`` and ``get_lead_calibration``.
+    """
+
+    segments: list[SegmentCal] = Field(default_factory=list)
+    bands: list[BandAccuracy] = Field(default_factory=list)
+    base_rate: float = 0.0
+    updated_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+    @field_validator("segments", "bands", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+class LearnResult(BaseModel):
+    """Outcome of one agent distillation cycle (``learn_agent``).
+
+    ``changed`` reports whether a new guidance version was applied;
+    ``guidance`` carries the applied guidance when it did, and ``violations``
+    lists any bounds the candidate breached.
+    """
+
+    changed: bool = False
+    reason: str | None = None
+    guidance: dict[str, Any] | None = None
+    violations: list[str] | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class AgentGuidance(BaseModel):
+    """An agent's learned guidance: active version plus recent history.
+
+    Both fields may be ``None`` when no guidance has been distilled yet.
+    """
+
+    active: dict[str, Any] | None = None
+    history: list[dict[str, Any]] | None = None
+
+    model_config = {"extra": "allow"}
+
+
 # ---------------------------------------------------------------------------
 # Resolve forward references
 # ---------------------------------------------------------------------------

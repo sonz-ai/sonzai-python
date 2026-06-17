@@ -37,12 +37,15 @@ from typing import Any
 from .._exceptions import StreamError
 from .._http import AsyncHTTPClient, HTTPClient
 from ..types import (
+    AgentGuidance,
     BuiltinAgentChatTurnResult,
     BuiltinAgentInvokeResult,
     BuiltinAgentListResponse,
     BuiltinAgentSession,
     BuiltinAgentSessionListResponse,
     BuiltinAgentUpdate,
+    Calibration,
+    LearnResult,
 )
 
 # Built-in agent runs are long deep-work loops (web research, scoring whole
@@ -235,6 +238,87 @@ class BuiltinAgents:
                 return
             yield BuiltinAgentUpdate.model_validate(frame)
 
+    # -- Lead-scoring feedback loop (bandit) --
+
+    def record_lead_outcome(
+        self,
+        *,
+        lead_ref: str,
+        outcome: str,
+        predicted_score: int | None = None,
+        predicted_band: str | None = None,
+        features: dict[str, Any] | None = None,
+        score_signal: str | None = None,
+        note: str | None = None,
+    ) -> Calibration:
+        """Record a realized lead-scoring outcome (won/lost/…).
+
+        Recomputes and returns the project's scoring calibration the
+        ``lead_score`` agent applies to future leads.
+
+        Args:
+            lead_ref: Identifier for the lead this outcome belongs to.
+            outcome: The realized result (e.g. ``"won"``, ``"lost"``).
+            predicted_score: The score the agent assigned, if known.
+            predicted_band: The score band the agent assigned, if known.
+            features: The lead's scored features, for segment calibration.
+            score_signal: Optional override for how the outcome maps to a conversion.
+            note: Optional free-text annotation.
+        """
+        body: dict[str, Any] = {"lead_ref": lead_ref, "outcome": outcome}
+        if predicted_score is not None:
+            body["predicted_score"] = predicted_score
+        if predicted_band is not None:
+            body["predicted_band"] = predicted_band
+        if features is not None:
+            body["features"] = features
+        if score_signal is not None:
+            body["score_signal"] = score_signal
+        if note is not None:
+            body["note"] = note
+        data = self._http.post("/api/v1/builtin-agents/lead_score/outcome", json_data=body)
+        return Calibration.model_validate(data)
+
+    def get_lead_calibration(self) -> Calibration:
+        """Return the current lead-scoring calibration.
+
+        Predicted-vs-actual accuracy by band plus per-segment adjustments.
+        """
+        data = self._http.get("/api/v1/builtin-agents/lead_score/calibration")
+        return Calibration.model_validate(data)
+
+    # -- Closed-loop agent self-improvement (learned guidance) --
+
+    def learn_agent(self, slug: str, evidence: Any = None) -> LearnResult:
+        """Run one distillation cycle for an agent.
+
+        Turns accumulated critiques/outcomes into a new, bounded, auto-applied
+        guidance version (respects the project kill switch — see
+        :meth:`set_agent_learning`).
+        """
+        data = self._http.post(
+            f"/api/v1/builtin-agents/{slug}/learn", json_data={"evidence": evidence}
+        )
+        return LearnResult.model_validate(data)
+
+    def get_agent_guidance(self, slug: str) -> AgentGuidance:
+        """Return an agent's active learned guidance plus recent version history."""
+        data = self._http.get(f"/api/v1/builtin-agents/{slug}/guidance")
+        return AgentGuidance.model_validate(data)
+
+    def rollback_agent_guidance(self, slug: str) -> AgentGuidance:
+        """Roll an agent's active guidance back to the prior version."""
+        data = self._http.post(f"/api/v1/builtin-agents/{slug}/guidance/rollback", json_data={})
+        return AgentGuidance.model_validate(data)
+
+    def set_agent_learning(self, enabled: bool) -> bool:
+        """Toggle closed-loop auto-apply for the project (the kill switch).
+
+        Returns the effective enabled state.
+        """
+        data = self._http.put("/api/v1/builtin-agents/learning", json_data={"enabled": enabled})
+        return bool(data.get("enabled", enabled))
+
 
 class AsyncBuiltinAgentSessions:
     """Async session operations for built-in agents."""
@@ -374,6 +458,67 @@ class AsyncBuiltinAgents:
                 yield BuiltinAgentInvokeResult.model_validate(frame)
                 return
             yield BuiltinAgentUpdate.model_validate(frame)
+
+    # -- Lead-scoring feedback loop (bandit) --
+
+    async def record_lead_outcome(
+        self,
+        *,
+        lead_ref: str,
+        outcome: str,
+        predicted_score: int | None = None,
+        predicted_band: str | None = None,
+        features: dict[str, Any] | None = None,
+        score_signal: str | None = None,
+        note: str | None = None,
+    ) -> Calibration:
+        """Record a realized lead-scoring outcome and return the recomputed calibration."""
+        body: dict[str, Any] = {"lead_ref": lead_ref, "outcome": outcome}
+        if predicted_score is not None:
+            body["predicted_score"] = predicted_score
+        if predicted_band is not None:
+            body["predicted_band"] = predicted_band
+        if features is not None:
+            body["features"] = features
+        if score_signal is not None:
+            body["score_signal"] = score_signal
+        if note is not None:
+            body["note"] = note
+        data = await self._http.post("/api/v1/builtin-agents/lead_score/outcome", json_data=body)
+        return Calibration.model_validate(data)
+
+    async def get_lead_calibration(self) -> Calibration:
+        """Return the current lead-scoring calibration."""
+        data = await self._http.get("/api/v1/builtin-agents/lead_score/calibration")
+        return Calibration.model_validate(data)
+
+    # -- Closed-loop agent self-improvement (learned guidance) --
+
+    async def learn_agent(self, slug: str, evidence: Any = None) -> LearnResult:
+        """Run one distillation cycle for an agent (respects the kill switch)."""
+        data = await self._http.post(
+            f"/api/v1/builtin-agents/{slug}/learn", json_data={"evidence": evidence}
+        )
+        return LearnResult.model_validate(data)
+
+    async def get_agent_guidance(self, slug: str) -> AgentGuidance:
+        """Return an agent's active learned guidance plus recent version history."""
+        data = await self._http.get(f"/api/v1/builtin-agents/{slug}/guidance")
+        return AgentGuidance.model_validate(data)
+
+    async def rollback_agent_guidance(self, slug: str) -> AgentGuidance:
+        """Roll an agent's active guidance back to the prior version."""
+        data = await self._http.post(
+            f"/api/v1/builtin-agents/{slug}/guidance/rollback", json_data={}
+        )
+        return AgentGuidance.model_validate(data)
+
+    async def set_agent_learning(self, enabled: bool) -> bool:
+        """Toggle closed-loop auto-apply for the project (the kill switch)."""
+        data = await self._http.put(
+            "/api/v1/builtin-agents/learning", json_data={"enabled": enabled}
+        )
+        return bool(data.get("enabled", enabled))
 
 
 __all__ = [
