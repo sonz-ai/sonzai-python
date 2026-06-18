@@ -45,6 +45,7 @@ from ..types import (
     BuiltinAgentSessionListResponse,
     BuiltinAgentUpdate,
     Calibration,
+    EnrichJob,
     LearnResult,
 )
 
@@ -57,6 +58,35 @@ def _build_invoke_body(input: dict[str, Any], title: str | None) -> dict[str, An
     body: dict[str, Any] = {"input": input}
     if title is not None:
         body["title"] = title
+    return body
+
+
+def _build_enrich_body(
+    name: str,
+    phone: str | None,
+    email: str | None,
+    company: str | None,
+    brand: str | None,
+    vertical: str | None,
+    raw: str | None,
+    webhook_url: str | None,
+) -> dict[str, Any]:
+    lead: dict[str, Any] = {"name": name}
+    if phone is not None:
+        lead["phone"] = phone
+    if email is not None:
+        lead["email"] = email
+    if company is not None:
+        lead["company"] = company
+    if brand is not None:
+        lead["brand"] = brand
+    if vertical is not None:
+        lead["vertical"] = vertical
+    if raw is not None:
+        lead["raw"] = raw
+    body: dict[str, Any] = {"lead": lead}
+    if webhook_url is not None:
+        body["webhook_url"] = webhook_url
     return body
 
 
@@ -287,6 +317,51 @@ class BuiltinAgents:
         data = self._http.get("/api/v1/builtin-agents/lead_score/calibration")
         return Calibration.model_validate(data)
 
+    # -- Async lead enrichment --
+
+    def enrich_lead(
+        self,
+        *,
+        name: str,
+        phone: str | None = None,
+        email: str | None = None,
+        company: str | None = None,
+        brand: str | None = None,
+        vertical: str | None = None,
+        raw: str | None = None,
+        webhook_url: str | None = None,
+    ) -> EnrichJob:
+        """Enqueue an async lead-enrichment job.
+
+        Returns an :class:`~sonzai.types.EnrichJob` handle with
+        ``status="queued"``; poll :meth:`get_enrichment` with its ``job_id``
+        until ``status`` is ``"done"`` (or ``"error"``).
+
+        Args:
+            name: Lead name.
+            phone: Lead phone number.
+            email: Lead email.
+            company: Lead's company.
+            brand: Brand the lead is associated with.
+            vertical: Vertical the lead belongs to.
+            raw: Raw unstructured lead text.
+            webhook_url: Optional callback URL invoked when the job completes.
+        """
+        body = _build_enrich_body(
+            name, phone, email, company, brand, vertical, raw, webhook_url
+        )
+        data = self._http.post("/api/v1/builtin-agents/lead/enrich", json_data=body)
+        return EnrichJob.model_validate(data)
+
+    def get_enrichment(self, job_id: str) -> EnrichJob:
+        """Return the current state of an async lead-enrichment job.
+
+        When ``status`` is ``"done"``, ``result`` carries the enriched lead
+        profile; when ``"error"``, ``error`` carries the failure reason.
+        """
+        data = self._http.get(f"/api/v1/builtin-agents/lead/enrich/{job_id}")
+        return EnrichJob.model_validate(data)
+
     # -- Closed-loop agent self-improvement (learned guidance) --
 
     def learn_agent(self, slug: str, evidence: Any = None) -> LearnResult:
@@ -491,6 +566,37 @@ class AsyncBuiltinAgents:
         """Return the current lead-scoring calibration."""
         data = await self._http.get("/api/v1/builtin-agents/lead_score/calibration")
         return Calibration.model_validate(data)
+
+    # -- Async lead enrichment --
+
+    async def enrich_lead(
+        self,
+        *,
+        name: str,
+        phone: str | None = None,
+        email: str | None = None,
+        company: str | None = None,
+        brand: str | None = None,
+        vertical: str | None = None,
+        raw: str | None = None,
+        webhook_url: str | None = None,
+    ) -> EnrichJob:
+        """Enqueue an async lead-enrichment job.
+
+        Returns an :class:`~sonzai.types.EnrichJob` handle with
+        ``status="queued"``; poll :meth:`get_enrichment` with its ``job_id``
+        until ``status`` is ``"done"`` (or ``"error"``).
+        """
+        body = _build_enrich_body(
+            name, phone, email, company, brand, vertical, raw, webhook_url
+        )
+        data = await self._http.post("/api/v1/builtin-agents/lead/enrich", json_data=body)
+        return EnrichJob.model_validate(data)
+
+    async def get_enrichment(self, job_id: str) -> EnrichJob:
+        """Return the current state of an async lead-enrichment job."""
+        data = await self._http.get(f"/api/v1/builtin-agents/lead/enrich/{job_id}")
+        return EnrichJob.model_validate(data)
 
     # -- Closed-loop agent self-improvement (learned guidance) --
 

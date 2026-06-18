@@ -91,6 +91,7 @@ from .types import (
     DialogueResponse,
     DiaryEntry,
     DiaryResponse,
+    EnrichJob,
     EvalCategory,
     EvalRun,
     EvalRunListResponse,
@@ -539,6 +540,7 @@ __all__ = [
     "BuiltinAgentSessionListResponse",
     "BuiltinAgentUpdate",
     "BuiltinAgentUsage",
+    "EnrichJob",
     # Types - Built-in agent learning / lead-score calibration
     "AgentGuidance",
     "BandAccuracy",

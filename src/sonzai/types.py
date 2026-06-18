@@ -2924,6 +2924,24 @@ class BuiltinAgentChatTurnResult(BaseModel):
     model_config = {"extra": "allow"}
 
 
+class EnrichJob(BaseModel):
+    """State of an async lead-enrichment job.
+
+    ``status`` moves ``queued`` → ``processing`` → ``done`` (or ``error``).
+    When done, ``result`` carries the rich, evolving enrichment object
+    (identity, affiliations, current_location, net_worth, score, band, intent,
+    value, recommended_brand, next_best_action, recommended_message, …).
+    Returned by ``enrich_lead`` and ``get_enrichment``.
+    """
+
+    job_id: str = ""
+    status: str = ""
+    result: dict[str, Any] | None = None
+    error: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
 class SegmentCal(BaseModel):
     """A per-segment lead-scoring calibration adjustment.
 
