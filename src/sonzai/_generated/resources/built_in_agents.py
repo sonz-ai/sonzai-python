@@ -7,13 +7,50 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import quote
 from sonzai._generated.models import (
+    AgentGuidance,
+    Calibration,
     ChatMsgInputBody,
+    DecideMLNBARequest,
+    DecideResponse,
+    EnrichJobView,
+    EnrichLeadBody,
+    EvaluateMLOPERequest,
+    FeedbackResponse,
     GetBuiltinAgentSessionResponse,
+    GuidanceOutput,
     InvokeInputBody,
+    LearnInputBody,
+    LearnMLNBARequest,
+    LearnResponse,
+    LearnResult,
     ListBuiltinAgentSessionsResponse,
     ListBuiltinAgentsResponse,
+    ModelView,
+    NbaInputBody,
+    NBAResult,
+    OnboardProjectVerticalRequest,
+    OnboardSummary,
+    OPEResponse,
+    PolicyView,
+    PredictMLScoringRequest,
+    PredictResponse,
+    RecordMLFeedbackRequest,
+    RecordOutcomeInputBody,
+    ResetLearningResp,
+    RlTrainInputBody,
+    RLTrainResult,
     SessionBody,
+    SetAgentLearningEnabledRequest,
+    SetAgentLearningEnabledResponse,
+    SetProjectVerticalRequest,
+    SimulateMLRoundsRequest,
+    SimulateRoundsResponse,
     StartChatInputBody,
+    TrainInputBody,
+    TrainMLScoringRequest,
+    TrainResponse,
+    TrainResult,
+    VerticalConfig,
 )
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
@@ -33,6 +70,347 @@ class BuiltInAgents(_BuiltInAgentsBase):
         params = None
         data = self._http.get(path, params=params)
         return ListBuiltinAgentsResponse.model_validate(data)
+
+    def enqueue_lead_enrichment(
+        self,
+        *,
+        lead: str,
+        webhook_url: str | None = None,
+    ) -> Any:
+        """Enqueue an async lead-enrichment job"""
+        path = f"/api/v1/builtin-agents/lead/enrich"
+        params = None
+        _raw: dict[str, Any] = {}
+        if lead is not None:
+            _raw["lead"] = lead
+        if webhook_url is not None:
+            _raw["webhook_url"] = webhook_url
+        body = encode_body(EnrichLeadBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return data
+
+    def get_lead_enrichment(
+        self,
+        job_id: str,
+    ) -> EnrichJobView:
+        """Get an async lead-enrichment job"""
+        path = f"/api/v1/builtin-agents/lead/enrich/{quote(job_id, safe='')}"
+        params = None
+        data = self._http.get(path, params=params)
+        return EnrichJobView.model_validate(data)
+
+    def get_lead_score_calibration(
+        self,
+    ) -> Calibration:
+        """Get the current lead-scoring calibration"""
+        path = f"/api/v1/builtin-agents/lead_score/calibration"
+        params = None
+        data = self._http.get(path, params=params)
+        return Calibration.model_validate(data)
+
+    def get_lead_score_model(
+        self,
+    ) -> ModelView:
+        """Get the current lead-scoring model"""
+        path = f"/api/v1/builtin-agents/lead_score/model"
+        params = None
+        data = self._http.get(path, params=params)
+        return ModelView.model_validate(data)
+
+    def train_lead_score_model(
+        self,
+        *,
+        epochs: int | None = None,
+    ) -> TrainResult:
+        """Train the lead-scoring model (batch)"""
+        path = f"/api/v1/builtin-agents/lead_score/model/train"
+        params = None
+        _raw: dict[str, Any] = {}
+        if epochs is not None:
+            _raw["epochs"] = epochs
+        body = encode_body(TrainInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return TrainResult.model_validate(data)
+
+    def recommend_lead_score_nba(
+        self,
+        *,
+        features: dict[str, Any],
+    ) -> NBAResult:
+        """Recommend the Next-Best-Action for a lead"""
+        path = f"/api/v1/builtin-agents/lead_score/nba"
+        params = None
+        _raw: dict[str, Any] = {}
+        if features is not None:
+            _raw["features"] = features
+        body = encode_body(NbaInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return NBAResult.model_validate(data)
+
+    def record_lead_score_outcome(
+        self,
+        *,
+        features: dict[str, Any] | None = None,
+        lead_ref: str,
+        note: str | None = None,
+        outcome: str,
+        predicted_band: str,
+        predicted_score: int,
+        score_signal: str | None = None,
+    ) -> Calibration:
+        """Record a realized lead-scoring outcome"""
+        path = f"/api/v1/builtin-agents/lead_score/outcome"
+        params = None
+        _raw: dict[str, Any] = {}
+        if features is not None:
+            _raw["features"] = features
+        if lead_ref is not None:
+            _raw["lead_ref"] = lead_ref
+        if note is not None:
+            _raw["note"] = note
+        if outcome is not None:
+            _raw["outcome"] = outcome
+        if predicted_band is not None:
+            _raw["predicted_band"] = predicted_band
+        if predicted_score is not None:
+            _raw["predicted_score"] = predicted_score
+        if score_signal is not None:
+            _raw["score_signal"] = score_signal
+        body = encode_body(RecordOutcomeInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return Calibration.model_validate(data)
+
+    def reset_lead_score_learning(
+        self,
+    ) -> ResetLearningResp:
+        """Reset all learned lead-scoring state (demo blank-slate)"""
+        path = f"/api/v1/builtin-agents/lead_score/reset-learning"
+        params = None
+        data = self._http.post(path, params=params)
+        return ResetLearningResp.model_validate(data)
+
+    def get_lead_score_rl_policy(
+        self,
+    ) -> PolicyView:
+        """Get the current Next-Best-Action RL policy"""
+        path = f"/api/v1/builtin-agents/lead_score/rl/policy"
+        params = None
+        data = self._http.get(path, params=params)
+        return PolicyView.model_validate(data)
+
+    def train_lead_score_rl_policy(
+        self,
+        *,
+        episodes: int | None = None,
+    ) -> RLTrainResult:
+        """Train the Next-Best-Action RL policy"""
+        path = f"/api/v1/builtin-agents/lead_score/rl/train"
+        params = None
+        _raw: dict[str, Any] = {}
+        if episodes is not None:
+            _raw["episodes"] = episodes
+        body = encode_body(RlTrainInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return RLTrainResult.model_validate(data)
+
+    def set_agent_learning_enabled(
+        self,
+        *,
+        enabled: bool,
+    ) -> SetAgentLearningEnabledResponse:
+        """Enable or disable closed-loop agent learning"""
+        path = f"/api/v1/builtin-agents/learning"
+        params = None
+        _raw: dict[str, Any] = {}
+        if enabled is not None:
+            _raw["enabled"] = enabled
+        body = encode_body(SetAgentLearningEnabledRequest, _raw)
+        data = self._http.put(path, params=params, json_data=body)
+        return SetAgentLearningEnabledResponse.model_validate(data)
+
+    def record_ml_feedback(
+        self,
+        use_case: str,
+        *,
+        action_features: dict[str, Any] | None = None,
+        action_id: str | None = None,
+        context: dict[str, Any] | None = None,
+        converted: bool,
+        features: dict[str, Any] | None = None,
+        note: str | None = None,
+        predicted_score: int | None = None,
+        propensity: float | None = None,
+        reward: float | None = None,
+        subject_id: str | None = None,
+    ) -> FeedbackResponse:
+        """Record a realized outcome — improves the scoring model + the bandit in one call"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/feedback"
+        params = None
+        _raw: dict[str, Any] = {}
+        if action_features is not None:
+            _raw["action_features"] = action_features
+        if action_id is not None:
+            _raw["action_id"] = action_id
+        if context is not None:
+            _raw["context"] = context
+        if converted is not None:
+            _raw["converted"] = converted
+        if features is not None:
+            _raw["features"] = features
+        if note is not None:
+            _raw["note"] = note
+        if predicted_score is not None:
+            _raw["predicted_score"] = predicted_score
+        if propensity is not None:
+            _raw["propensity"] = propensity
+        if reward is not None:
+            _raw["reward"] = reward
+        if subject_id is not None:
+            _raw["subject_id"] = subject_id
+        body = encode_body(RecordMLFeedbackRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return FeedbackResponse.model_validate(data)
+
+    def decide_mlnba(
+        self,
+        use_case: str,
+        *,
+        actions: list[Any],
+        context: dict[str, Any] | None = None,
+        explore: bool | None = None,
+    ) -> DecideResponse:
+        """Next-best-action over a per-tenant variable action set"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/nba/decide"
+        params = None
+        _raw: dict[str, Any] = {}
+        if actions is not None:
+            _raw["actions"] = actions
+        if context is not None:
+            _raw["context"] = context
+        if explore is not None:
+            _raw["explore"] = explore
+        body = encode_body(DecideMLNBARequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return DecideResponse.model_validate(data)
+
+    def learn_mlnba(
+        self,
+        use_case: str,
+        *,
+        action_features: dict[str, Any] | None = None,
+        action_id: str,
+        context: dict[str, Any] | None = None,
+        propensity: float | None = None,
+        reward: float,
+    ) -> LearnResponse:
+        """Teach the bandit a realized (action, propensity, reward)"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/nba/learn"
+        params = None
+        _raw: dict[str, Any] = {}
+        if action_features is not None:
+            _raw["action_features"] = action_features
+        if action_id is not None:
+            _raw["action_id"] = action_id
+        if context is not None:
+            _raw["context"] = context
+        if propensity is not None:
+            _raw["propensity"] = propensity
+        if reward is not None:
+            _raw["reward"] = reward
+        body = encode_body(LearnMLNBARequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return LearnResponse.model_validate(data)
+
+    def evaluate_mlope(
+        self,
+        use_case: str,
+        *,
+        logged: list[Any],
+    ) -> OPEResponse:
+        """Off-policy evaluation (IPS / SNIPS / doubly-robust + CI)"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/ope/evaluate"
+        params = None
+        _raw: dict[str, Any] = {}
+        if logged is not None:
+            _raw["logged"] = logged
+        body = encode_body(EvaluateMLOPERequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return OPEResponse.model_validate(data)
+
+    def predict_ml_scoring(
+        self,
+        use_case: str,
+        *,
+        features: dict[str, Any],
+    ) -> PredictResponse:
+        """Score a record with the per-tenant model (falls back to the global prior)"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/scoring/predict"
+        params = None
+        _raw: dict[str, Any] = {}
+        if features is not None:
+            _raw["features"] = features
+        body = encode_body(PredictMLScoringRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return PredictResponse.model_validate(data)
+
+    def train_ml_scoring(
+        self,
+        use_case: str,
+        *,
+        optimize_budget: int | None = None,
+        rows: list[Any],
+    ) -> TrainResponse:
+        """Train the per-tenant scoring model (CatBoost + Optuna, calibrated)"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/scoring/train"
+        params = None
+        _raw: dict[str, Any] = {}
+        if optimize_budget is not None:
+            _raw["optimize_budget"] = optimize_budget
+        if rows is not None:
+            _raw["rows"] = rows
+        body = encode_body(TrainMLScoringRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return TrainResponse.model_validate(data)
+
+    def simulate_ml_rounds(
+        self,
+        use_case: str,
+        *,
+        rounds: int | None = None,
+        scenario: str | None = None,
+        seed: int | None = None,
+    ) -> SimulateRoundsResponse:
+        """Single-call self-learning simulation (train → decide → learn → OPE over rounds)"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/simulate-rounds"
+        params = None
+        _raw: dict[str, Any] = {}
+        if rounds is not None:
+            _raw["rounds"] = rounds
+        if scenario is not None:
+            _raw["scenario"] = scenario
+        if seed is not None:
+            _raw["seed"] = seed
+        body = encode_body(SimulateMLRoundsRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return SimulateRoundsResponse.model_validate(data)
+
+    def onboard_project_vertical(
+        self,
+        *,
+        seed_guidance: bool | None = None,
+        vertical: str,
+    ) -> OnboardSummary:
+        """Onboard a project onto a vertical"""
+        path = f"/api/v1/builtin-agents/onboard"
+        params = None
+        _raw: dict[str, Any] = {}
+        if seed_guidance is not None:
+            _raw["seed_guidance"] = seed_guidance
+        if vertical is not None:
+            _raw["vertical"] = vertical
+        body = encode_body(OnboardProjectVerticalRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return OnboardSummary.model_validate(data)
 
     def list_builtin_agent_sessions(
         self,
@@ -94,6 +472,53 @@ class BuiltInAgents(_BuiltInAgentsBase):
         data = self._http.post(path, params=params, json_data=body)
         return data
 
+    def get_project_vertical(
+        self,
+    ) -> VerticalConfig:
+        """Get the project's vertical config"""
+        path = f"/api/v1/builtin-agents/vertical"
+        params = None
+        data = self._http.get(path, params=params)
+        return VerticalConfig.model_validate(data)
+
+    def set_project_vertical(
+        self,
+        *,
+        config: str | None = None,
+        slug: str,
+    ) -> VerticalConfig:
+        """Set the project's vertical config"""
+        path = f"/api/v1/builtin-agents/vertical"
+        params = None
+        _raw: dict[str, Any] = {}
+        if config is not None:
+            _raw["config"] = config
+        if slug is not None:
+            _raw["slug"] = slug
+        body = encode_body(SetProjectVerticalRequest, _raw)
+        data = self._http.put(path, params=params, json_data=body)
+        return VerticalConfig.model_validate(data)
+
+    def get_builtin_agent_guidance(
+        self,
+        slug: str,
+    ) -> GuidanceOutput:
+        """Get an agent's learned guidance"""
+        path = f"/api/v1/builtin-agents/{quote(slug, safe='')}/guidance"
+        params = None
+        data = self._http.get(path, params=params)
+        return GuidanceOutput.model_validate(data)
+
+    def rollback_builtin_agent_guidance(
+        self,
+        slug: str,
+    ) -> AgentGuidance:
+        """Roll back an agent's learned guidance"""
+        path = f"/api/v1/builtin-agents/{quote(slug, safe='')}/guidance/rollback"
+        params = None
+        data = self._http.post(path, params=params)
+        return AgentGuidance.model_validate(data)
+
     def invoke_builtin_agent(
         self,
         slug: str,
@@ -116,6 +541,28 @@ class BuiltInAgents(_BuiltInAgentsBase):
         data = self._http.post(path, params=params, json_data=body)
         return data
 
+    def learn_builtin_agent_guidance(
+        self,
+        slug: str,
+        *,
+        evidence: dict[str, Any] | None = None,
+        metric_baseline: float | None = None,
+        metric_name: str | None = None,
+    ) -> LearnResult:
+        """Run one agent self-improvement cycle"""
+        path = f"/api/v1/builtin-agents/{quote(slug, safe='')}/learn"
+        params = None
+        _raw: dict[str, Any] = {}
+        if evidence is not None:
+            _raw["evidence"] = evidence
+        if metric_baseline is not None:
+            _raw["metric_baseline"] = metric_baseline
+        if metric_name is not None:
+            _raw["metric_name"] = metric_name
+        body = encode_body(LearnInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return LearnResult.model_validate(data)
+
 
 class AsyncBuiltInAgents(_BuiltInAgentsBase):
     async def list_builtin_agents(
@@ -126,6 +573,347 @@ class AsyncBuiltInAgents(_BuiltInAgentsBase):
         params = None
         data = await self._http.get(path, params=params)
         return ListBuiltinAgentsResponse.model_validate(data)
+
+    async def enqueue_lead_enrichment(
+        self,
+        *,
+        lead: str,
+        webhook_url: str | None = None,
+    ) -> Any:
+        """Enqueue an async lead-enrichment job"""
+        path = f"/api/v1/builtin-agents/lead/enrich"
+        params = None
+        _raw: dict[str, Any] = {}
+        if lead is not None:
+            _raw["lead"] = lead
+        if webhook_url is not None:
+            _raw["webhook_url"] = webhook_url
+        body = encode_body(EnrichLeadBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return data
+
+    async def get_lead_enrichment(
+        self,
+        job_id: str,
+    ) -> EnrichJobView:
+        """Get an async lead-enrichment job"""
+        path = f"/api/v1/builtin-agents/lead/enrich/{quote(job_id, safe='')}"
+        params = None
+        data = await self._http.get(path, params=params)
+        return EnrichJobView.model_validate(data)
+
+    async def get_lead_score_calibration(
+        self,
+    ) -> Calibration:
+        """Get the current lead-scoring calibration"""
+        path = f"/api/v1/builtin-agents/lead_score/calibration"
+        params = None
+        data = await self._http.get(path, params=params)
+        return Calibration.model_validate(data)
+
+    async def get_lead_score_model(
+        self,
+    ) -> ModelView:
+        """Get the current lead-scoring model"""
+        path = f"/api/v1/builtin-agents/lead_score/model"
+        params = None
+        data = await self._http.get(path, params=params)
+        return ModelView.model_validate(data)
+
+    async def train_lead_score_model(
+        self,
+        *,
+        epochs: int | None = None,
+    ) -> TrainResult:
+        """Train the lead-scoring model (batch)"""
+        path = f"/api/v1/builtin-agents/lead_score/model/train"
+        params = None
+        _raw: dict[str, Any] = {}
+        if epochs is not None:
+            _raw["epochs"] = epochs
+        body = encode_body(TrainInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return TrainResult.model_validate(data)
+
+    async def recommend_lead_score_nba(
+        self,
+        *,
+        features: dict[str, Any],
+    ) -> NBAResult:
+        """Recommend the Next-Best-Action for a lead"""
+        path = f"/api/v1/builtin-agents/lead_score/nba"
+        params = None
+        _raw: dict[str, Any] = {}
+        if features is not None:
+            _raw["features"] = features
+        body = encode_body(NbaInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return NBAResult.model_validate(data)
+
+    async def record_lead_score_outcome(
+        self,
+        *,
+        features: dict[str, Any] | None = None,
+        lead_ref: str,
+        note: str | None = None,
+        outcome: str,
+        predicted_band: str,
+        predicted_score: int,
+        score_signal: str | None = None,
+    ) -> Calibration:
+        """Record a realized lead-scoring outcome"""
+        path = f"/api/v1/builtin-agents/lead_score/outcome"
+        params = None
+        _raw: dict[str, Any] = {}
+        if features is not None:
+            _raw["features"] = features
+        if lead_ref is not None:
+            _raw["lead_ref"] = lead_ref
+        if note is not None:
+            _raw["note"] = note
+        if outcome is not None:
+            _raw["outcome"] = outcome
+        if predicted_band is not None:
+            _raw["predicted_band"] = predicted_band
+        if predicted_score is not None:
+            _raw["predicted_score"] = predicted_score
+        if score_signal is not None:
+            _raw["score_signal"] = score_signal
+        body = encode_body(RecordOutcomeInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return Calibration.model_validate(data)
+
+    async def reset_lead_score_learning(
+        self,
+    ) -> ResetLearningResp:
+        """Reset all learned lead-scoring state (demo blank-slate)"""
+        path = f"/api/v1/builtin-agents/lead_score/reset-learning"
+        params = None
+        data = await self._http.post(path, params=params)
+        return ResetLearningResp.model_validate(data)
+
+    async def get_lead_score_rl_policy(
+        self,
+    ) -> PolicyView:
+        """Get the current Next-Best-Action RL policy"""
+        path = f"/api/v1/builtin-agents/lead_score/rl/policy"
+        params = None
+        data = await self._http.get(path, params=params)
+        return PolicyView.model_validate(data)
+
+    async def train_lead_score_rl_policy(
+        self,
+        *,
+        episodes: int | None = None,
+    ) -> RLTrainResult:
+        """Train the Next-Best-Action RL policy"""
+        path = f"/api/v1/builtin-agents/lead_score/rl/train"
+        params = None
+        _raw: dict[str, Any] = {}
+        if episodes is not None:
+            _raw["episodes"] = episodes
+        body = encode_body(RlTrainInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return RLTrainResult.model_validate(data)
+
+    async def set_agent_learning_enabled(
+        self,
+        *,
+        enabled: bool,
+    ) -> SetAgentLearningEnabledResponse:
+        """Enable or disable closed-loop agent learning"""
+        path = f"/api/v1/builtin-agents/learning"
+        params = None
+        _raw: dict[str, Any] = {}
+        if enabled is not None:
+            _raw["enabled"] = enabled
+        body = encode_body(SetAgentLearningEnabledRequest, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
+        return SetAgentLearningEnabledResponse.model_validate(data)
+
+    async def record_ml_feedback(
+        self,
+        use_case: str,
+        *,
+        action_features: dict[str, Any] | None = None,
+        action_id: str | None = None,
+        context: dict[str, Any] | None = None,
+        converted: bool,
+        features: dict[str, Any] | None = None,
+        note: str | None = None,
+        predicted_score: int | None = None,
+        propensity: float | None = None,
+        reward: float | None = None,
+        subject_id: str | None = None,
+    ) -> FeedbackResponse:
+        """Record a realized outcome — improves the scoring model + the bandit in one call"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/feedback"
+        params = None
+        _raw: dict[str, Any] = {}
+        if action_features is not None:
+            _raw["action_features"] = action_features
+        if action_id is not None:
+            _raw["action_id"] = action_id
+        if context is not None:
+            _raw["context"] = context
+        if converted is not None:
+            _raw["converted"] = converted
+        if features is not None:
+            _raw["features"] = features
+        if note is not None:
+            _raw["note"] = note
+        if predicted_score is not None:
+            _raw["predicted_score"] = predicted_score
+        if propensity is not None:
+            _raw["propensity"] = propensity
+        if reward is not None:
+            _raw["reward"] = reward
+        if subject_id is not None:
+            _raw["subject_id"] = subject_id
+        body = encode_body(RecordMLFeedbackRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return FeedbackResponse.model_validate(data)
+
+    async def decide_mlnba(
+        self,
+        use_case: str,
+        *,
+        actions: list[Any],
+        context: dict[str, Any] | None = None,
+        explore: bool | None = None,
+    ) -> DecideResponse:
+        """Next-best-action over a per-tenant variable action set"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/nba/decide"
+        params = None
+        _raw: dict[str, Any] = {}
+        if actions is not None:
+            _raw["actions"] = actions
+        if context is not None:
+            _raw["context"] = context
+        if explore is not None:
+            _raw["explore"] = explore
+        body = encode_body(DecideMLNBARequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return DecideResponse.model_validate(data)
+
+    async def learn_mlnba(
+        self,
+        use_case: str,
+        *,
+        action_features: dict[str, Any] | None = None,
+        action_id: str,
+        context: dict[str, Any] | None = None,
+        propensity: float | None = None,
+        reward: float,
+    ) -> LearnResponse:
+        """Teach the bandit a realized (action, propensity, reward)"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/nba/learn"
+        params = None
+        _raw: dict[str, Any] = {}
+        if action_features is not None:
+            _raw["action_features"] = action_features
+        if action_id is not None:
+            _raw["action_id"] = action_id
+        if context is not None:
+            _raw["context"] = context
+        if propensity is not None:
+            _raw["propensity"] = propensity
+        if reward is not None:
+            _raw["reward"] = reward
+        body = encode_body(LearnMLNBARequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return LearnResponse.model_validate(data)
+
+    async def evaluate_mlope(
+        self,
+        use_case: str,
+        *,
+        logged: list[Any],
+    ) -> OPEResponse:
+        """Off-policy evaluation (IPS / SNIPS / doubly-robust + CI)"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/ope/evaluate"
+        params = None
+        _raw: dict[str, Any] = {}
+        if logged is not None:
+            _raw["logged"] = logged
+        body = encode_body(EvaluateMLOPERequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return OPEResponse.model_validate(data)
+
+    async def predict_ml_scoring(
+        self,
+        use_case: str,
+        *,
+        features: dict[str, Any],
+    ) -> PredictResponse:
+        """Score a record with the per-tenant model (falls back to the global prior)"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/scoring/predict"
+        params = None
+        _raw: dict[str, Any] = {}
+        if features is not None:
+            _raw["features"] = features
+        body = encode_body(PredictMLScoringRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return PredictResponse.model_validate(data)
+
+    async def train_ml_scoring(
+        self,
+        use_case: str,
+        *,
+        optimize_budget: int | None = None,
+        rows: list[Any],
+    ) -> TrainResponse:
+        """Train the per-tenant scoring model (CatBoost + Optuna, calibrated)"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/scoring/train"
+        params = None
+        _raw: dict[str, Any] = {}
+        if optimize_budget is not None:
+            _raw["optimize_budget"] = optimize_budget
+        if rows is not None:
+            _raw["rows"] = rows
+        body = encode_body(TrainMLScoringRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return TrainResponse.model_validate(data)
+
+    async def simulate_ml_rounds(
+        self,
+        use_case: str,
+        *,
+        rounds: int | None = None,
+        scenario: str | None = None,
+        seed: int | None = None,
+    ) -> SimulateRoundsResponse:
+        """Single-call self-learning simulation (train → decide → learn → OPE over rounds)"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/simulate-rounds"
+        params = None
+        _raw: dict[str, Any] = {}
+        if rounds is not None:
+            _raw["rounds"] = rounds
+        if scenario is not None:
+            _raw["scenario"] = scenario
+        if seed is not None:
+            _raw["seed"] = seed
+        body = encode_body(SimulateMLRoundsRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return SimulateRoundsResponse.model_validate(data)
+
+    async def onboard_project_vertical(
+        self,
+        *,
+        seed_guidance: bool | None = None,
+        vertical: str,
+    ) -> OnboardSummary:
+        """Onboard a project onto a vertical"""
+        path = f"/api/v1/builtin-agents/onboard"
+        params = None
+        _raw: dict[str, Any] = {}
+        if seed_guidance is not None:
+            _raw["seed_guidance"] = seed_guidance
+        if vertical is not None:
+            _raw["vertical"] = vertical
+        body = encode_body(OnboardProjectVerticalRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return OnboardSummary.model_validate(data)
 
     async def list_builtin_agent_sessions(
         self,
@@ -187,6 +975,53 @@ class AsyncBuiltInAgents(_BuiltInAgentsBase):
         data = await self._http.post(path, params=params, json_data=body)
         return data
 
+    async def get_project_vertical(
+        self,
+    ) -> VerticalConfig:
+        """Get the project's vertical config"""
+        path = f"/api/v1/builtin-agents/vertical"
+        params = None
+        data = await self._http.get(path, params=params)
+        return VerticalConfig.model_validate(data)
+
+    async def set_project_vertical(
+        self,
+        *,
+        config: str | None = None,
+        slug: str,
+    ) -> VerticalConfig:
+        """Set the project's vertical config"""
+        path = f"/api/v1/builtin-agents/vertical"
+        params = None
+        _raw: dict[str, Any] = {}
+        if config is not None:
+            _raw["config"] = config
+        if slug is not None:
+            _raw["slug"] = slug
+        body = encode_body(SetProjectVerticalRequest, _raw)
+        data = await self._http.put(path, params=params, json_data=body)
+        return VerticalConfig.model_validate(data)
+
+    async def get_builtin_agent_guidance(
+        self,
+        slug: str,
+    ) -> GuidanceOutput:
+        """Get an agent's learned guidance"""
+        path = f"/api/v1/builtin-agents/{quote(slug, safe='')}/guidance"
+        params = None
+        data = await self._http.get(path, params=params)
+        return GuidanceOutput.model_validate(data)
+
+    async def rollback_builtin_agent_guidance(
+        self,
+        slug: str,
+    ) -> AgentGuidance:
+        """Roll back an agent's learned guidance"""
+        path = f"/api/v1/builtin-agents/{quote(slug, safe='')}/guidance/rollback"
+        params = None
+        data = await self._http.post(path, params=params)
+        return AgentGuidance.model_validate(data)
+
     async def invoke_builtin_agent(
         self,
         slug: str,
@@ -208,3 +1043,25 @@ class AsyncBuiltInAgents(_BuiltInAgentsBase):
         body = encode_body(InvokeInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
+
+    async def learn_builtin_agent_guidance(
+        self,
+        slug: str,
+        *,
+        evidence: dict[str, Any] | None = None,
+        metric_baseline: float | None = None,
+        metric_name: str | None = None,
+    ) -> LearnResult:
+        """Run one agent self-improvement cycle"""
+        path = f"/api/v1/builtin-agents/{quote(slug, safe='')}/learn"
+        params = None
+        _raw: dict[str, Any] = {}
+        if evidence is not None:
+            _raw["evidence"] = evidence
+        if metric_baseline is not None:
+            _raw["metric_baseline"] = metric_baseline
+        if metric_name is not None:
+            _raw["metric_name"] = metric_name
+        body = encode_body(LearnInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return LearnResult.model_validate(data)

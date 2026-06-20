@@ -92,6 +92,25 @@ class ActionLogEntry(BaseModel):
     user_id: str
 
 
+class ActionScore(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    action_id: str
+    propensity: float
+    score: float
+
+
+class ActionValue(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    name: str
+    q: float
+
+
 class ActiveCharacterSummary(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -234,6 +253,32 @@ class AgentDialogueOutputBody(BaseModel):
     """
     Side effects produced by the agent
     """
+
+
+class AgentGuidance(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/AgentGuidance.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    activated_at: AwareDatetime | None = None
+    agent_slug: str
+    created_at: AwareDatetime
+    evidence: Any | None = None
+    guidance: Any
+    id: str
+    metric_baseline: float | None = None
+    metric_name: str | None = None
+    project_id: str
+    status: str
+    tenant_id: str
+    version: int
 
 
 class AgentIndex(BaseModel):
@@ -546,6 +591,29 @@ class BYOKKeyResponse(BaseModel):
     last_used_at: AwareDatetime | None = None
     provider: str
     updated_at: AwareDatetime
+
+
+class BandAccuracy(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    actual_rate: float
+    avg_score: float
+    band: str
+    calibration_gap: float
+    conversions: int
+    n: int
+    predicted_rate: float
+
+
+class BanditAction(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    features: dict[str, Any] | None = None
+    id: str
 
 
 class BatchGetPersonalitiesInputBody(BaseModel):
@@ -2104,6 +2172,42 @@ class DailyStatsEntry(BaseModel):
     sessions: int
 
 
+class DecideMLNBARequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/DecideMLNBARequest.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    actions: list[BanditAction] | None
+    context: dict[str, Any] | None = None
+    explore: bool | None = None
+
+
+class DecideResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/DecideResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    action_id: str
+    explore: bool
+    model_n: int
+    propensity: float
+    scores: list[ActionScore] | None
+
+
 class DeleteAgentOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -2480,6 +2584,68 @@ class EndSessionOutputBody(BaseModel):
     """
 
 
+class EnrichJobView(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/EnrichJobView.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    error: str | None = None
+    result: Any | None = None
+    status: str
+
+
+class EnrichLeadBodyLeadStruct(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    brand: str | None = None
+    """
+    Preferred / hinted brand
+    """
+    company: str | None = None
+    email: str | None = None
+    name: str
+    """
+    Lead full name (minimum input)
+    """
+    phone: str | None = None
+    """
+    Lead phone (minimum input)
+    """
+    raw: str | None = None
+    """
+    Raw inquiry text, if any
+    """
+    vertical: str | None = None
+    """
+    Vertical key (default real_estate)
+    """
+
+
+class EnrichLeadResp(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/EnrichLeadResp.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    job_id: str
+    status: str
+
+
 class EnrichPersonInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -2564,6 +2730,17 @@ class EnterpriseContract(BaseModel):
     tenant_id: Annotated[str, Field(alias='tenantId')]
     total_value_usd: Annotated[float, Field(alias='totalValueUsd')]
     updated_at: Annotated[AwareDatetime, Field(alias='updatedAt')]
+
+
+class EpochMetric(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    accuracy: float
+    auc: float
+    epoch: int
+    log_loss: float
 
 
 class ErrorDetail(BaseModel):
@@ -2826,6 +3003,37 @@ class FactHistoryResponse(BaseModel):
     """
     current: AtomicFact
     previous_versions: list[AtomicFact] | None
+
+
+class FeatureWeight(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    name: str
+    weight: float
+
+
+class FeedbackResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/FeedbackResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    bandit_error: str | None = None
+    bandit_n: int | None = None
+    bandit_updated: bool
+    converted: bool
+    message: str
+    ok: bool
+    outcome_recorded: bool
+    use_case: str
 
 
 class ForkAgentInputBody(BaseModel):
@@ -3252,6 +3460,22 @@ class GroupResult(BaseModel):
     values: dict[str, Any]
 
 
+class GuidanceOutput(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/GuidanceOutput.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    active: AgentGuidance
+    history: list[AgentGuidance] | None
+
+
 class Habit(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3295,6 +3519,20 @@ class HabitsResponse(BaseModel):
     habits: list[Habit] | None
 
 
+class HyperParams(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    gamma: float
+    lambda_: Annotated[float, Field(alias='lambda')]
+    learning_rate: float
+    max_depth: int
+    min_child_weight: float
+    n_estimators: int
+    subsample: float
+
+
 class ImportJob(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3329,6 +3567,15 @@ class ImportJob(BaseModel):
     updated_at: AwareDatetime
     user_id: str | None = None
     warmth_score: int
+
+
+class Importance(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    gain: float
+    name: str
 
 
 class InitiateComposioConnectInputBody(BaseModel):
@@ -4754,6 +5001,85 @@ class KbUploadDocumentOutputBody(BaseModel):
     """
 
 
+class LearnInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/LearnInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    evidence: dict[str, Any] | None = None
+    """
+    Optional evidence payload: recent critiques (research_grader/qualifier_critic outputs) and outcomes (won/lost). Required for agents without a server-side critique store.
+    """
+    metric_baseline: float | None = None
+    """
+    Optional metric value at activation (prior version's recent metric).
+    """
+    metric_name: str | None = None
+    """
+    Optional metric the new version is judged on (e.g. research_grade | won_rate | calibration_gap_abs).
+    """
+
+
+class LearnMLNBARequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/LearnMLNBARequest.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    action_features: dict[str, Any] | None = None
+    action_id: str
+    context: dict[str, Any] | None = None
+    propensity: float | None = None
+    reward: float
+
+
+class LearnResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/LearnResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    n: int
+    ok: bool
+
+
+class LearnResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/LearnResult.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    changed: bool
+    guidance: AgentGuidance | None = None
+    reason: str | None = None
+    violations: list[str] | None = None
+
+
 class ListBYOKKeysOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5069,6 +5395,17 @@ class LoadSkillOutputBody(BaseModel):
     when_to_use: str | None = None
 
 
+class LoggedTuple(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    action_id: str
+    context: dict[str, Any] | None = None
+    propensity: float
+    reward: float
+
+
 class MCPCatalogAuth(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5261,6 +5598,25 @@ class MemorySummary(BaseModel):
     user_id: str | None = None
 
 
+class ModelView(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ModelView.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    metrics: EpochMetric | None = None
+    n: int
+    pending: int
+    trained: bool
+    weights: list[FeatureWeight] | None
+
+
 class MoodAggregateResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5342,6 +5698,42 @@ class MoodState(BaseModel):
     valence: float
 
 
+class NBAResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/NBAResult.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    action_values: list[ActionValue] | None
+    recommended_action: str
+    score_0_100: float
+    value: float
+
+
+class NbaInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/NbaInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    features: dict[str, Any]
+    """
+    Lead facts (financing/budget/timeline known flags, engagement, value_tier, band, touchpoints, elapsed).
+    """
+
+
 class Node(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5383,6 +5775,53 @@ class Notification(BaseModel):
     project_id: str
     status: str
     user_id: str | None = None
+
+
+class OPEResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/OPEResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    ci_high: float
+    ci_low: float
+    dr: float
+    ess: float
+    estimator_ci: str
+    ips: float
+    n: int
+    snips: float
+
+
+class OnboardProjectVerticalRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/OnboardProjectVerticalRequest.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    seed_guidance: bool | None = None
+    """
+    When true, seed per-vertical starter guidance for agents without active guidance.
+    """
+    vertical: str
+    """
+    Vertical slug (required): real_estate | insurance | auto.
+    """
 
 
 class OrgBillingCheckoutInputBody(BaseModel):
@@ -5646,6 +6085,72 @@ class PersonalityShift(BaseModel):
     timestamp: str | None = None
     trait_name: str
     trigger_types: list[str] | None
+
+
+class PolicyEntry(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    archetype: str
+    recommended_action: str
+    value: float
+
+
+class PolicyView(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/PolicyView.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    actions: list[str] | None
+    avg_return: float
+    episodes: int
+    features: list[str] | None
+    policy: list[PolicyEntry] | None
+    trained: bool
+
+
+class PredictMLScoringRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/PredictMLScoringRequest.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    features: dict[str, Any]
+
+
+class PredictResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/PredictResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    calibration_method: str
+    model_version: int
+    raw: float
+    score: float
+    served_from: str
 
 
 class Preferences(BaseModel):
@@ -5947,6 +6452,26 @@ class PutBYOKKeyInputBody(BaseModel):
     """
 
 
+class RLTrainResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/RLTrainResult.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    algo: str | None = None
+    episodes: int
+    final_avg_return: float
+    kl_divergence: float | None = None
+    policy: list[PolicyEntry] | None
+    return_history: list[float] | None
+
+
 class RecentShiftsResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5978,6 +6503,76 @@ class RecentTurn(BaseModel):
     timestamp: str
     """
     RFC3339 UTC timestamp of when /process received the turn
+    """
+
+
+class RecordMLFeedbackRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/RecordMLFeedbackRequest.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    action_features: dict[str, Any] | None = None
+    action_id: str | None = None
+    context: dict[str, Any] | None = None
+    converted: bool
+    features: dict[str, Any] | None = None
+    note: str | None = None
+    predicted_score: int | None = None
+    propensity: float | None = None
+    reward: float | None = None
+    subject_id: str | None = None
+
+
+class RecordOutcomeInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/RecordOutcomeInputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    features: dict[str, Any] | None = None
+    """
+    Lead features used to derive the calibration segment (budget, financing, timeline, …)
+    """
+    lead_ref: str
+    """
+    Stable lead identifier (primed user ID, CRM ref, …)
+    """
+    note: str | None = None
+    """
+    Optional human note
+    """
+    outcome: str
+    """
+    Realized outcome, e.g. won | lost | site_visit | reserved
+    """
+    predicted_band: str
+    """
+    Band the agent assigned: Hot | Warm | Nurture
+    """
+    predicted_score: int
+    """
+    Score the agent assigned at qualification time (0–100)
+    """
+    score_signal: str | None = None
+    """
+    Optional free-text signal note for the outcome
     """
 
 
@@ -6148,6 +6743,24 @@ class ResetInstanceOutputBody(BaseModel):
     """
 
 
+class ResetLearningResp(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ResetLearningResp.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    reset: list[str] | None
+    """
+    Resources successfully cleared (subset of rl_policy, score_model, lead_outcomes, agent_guidance).
+    """
+
+
 class ResetMemoryResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6185,6 +6798,24 @@ class RevokeAPIKeyOutputBody(BaseModel):
     A URL to the JSON Schema for this object.
     """
     success: bool
+
+
+class RlTrainInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/RlTrainInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    episodes: int | None = None
+    """
+    Training episodes (default 3000, max 50000)
+    """
 
 
 class RootEntityStruct(BaseModel):
@@ -6436,6 +7067,18 @@ class SeedStaticLoreMemory(BaseModel):
     importance: float
 
 
+class SegmentCal(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    adjust: int
+    conversions: int
+    n: int
+    p_hat: float
+    segment: str
+
+
 class ServiceUsageByOp(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6586,6 +7229,45 @@ class SetAccountConfigOutputBody(BaseModel):
     A URL to the JSON Schema for this object.
     """
     success: bool
+
+
+class SetAgentLearningEnabledRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/SetAgentLearningEnabledRequest.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    enabled: bool
+    """
+    true → closed loop enabled (default); false → auto-apply disabled.
+    """
+
+
+class SetAgentLearningEnabledResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/SetAgentLearningEnabledResponse.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    enabled: bool
 
 
 class SetAgentStatusInputBody(BaseModel):
@@ -6767,6 +7449,50 @@ class SimConfig(BaseModel):
     model: str | None = None
     playback_speed: float | None = None
     simulated_duration_hours: int
+
+
+class SimulateMLRoundsRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/SimulateMLRoundsRequest.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    rounds: int | None = None
+    scenario: str | None = None
+    seed: int | None = None
+
+
+class SimulateRoundPoint(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    auc: float
+    ci_high: float
+    ci_low: float
+    n: int
+    nba_reward: float
+    nba_value: float
+    ope_dr: float
+    round: int
+
+
+class SimulateRoundsResponseOPEStruct(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    ci_high: float
+    ci_low: float
+    dr: float
 
 
 class SimulateRunningBody(BaseModel):
@@ -7417,6 +8143,59 @@ class ToolSchemaEntry(BaseModel):
     """
 
 
+class TrainInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/TrainInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    epochs: int | None = None
+    """
+    Training epochs (default 50, max 1000)
+    """
+
+
+class TrainResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/TrainResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    auc: float
+    best_params: dict[str, Any]
+    brier: float
+    brier_baseline: float
+    brier_uncalibrated: float
+    calibration_method: str
+    ece: float
+    importances: list[Importance] | None
+    logloss: float
+    model_version: int
+    n: int
+    trials: int
+
+
+class TrainRow(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    features: dict[str, Any]
+    label: int
+
+
 class TraitPrecision(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -7425,6 +8204,16 @@ class TraitPrecision(BaseModel):
     last_updated_at: AwareDatetime
     observation_count: int
     precision: float
+
+
+class TrialResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    cv_auc: float
+    cv_logloss: float
+    params: HyperParams
 
 
 class TriggerConsolidationInputBody(BaseModel):
@@ -7537,6 +8326,17 @@ class TriggerEventOutputBody(BaseModel):
     """
     Unique identifier for the accepted event
     """
+
+
+class TuningResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    best_cv_auc: float
+    chosen: HyperParams
+    summary: list[TrialResult] | None = None
+    trials: int
 
 
 class Turn(BaseModel):
@@ -8623,6 +9423,28 @@ class UserPrimingMetadata(BaseModel):
     warmth_score: Annotated[int, Field(alias='WarmthScore')]
 
 
+class VerticalConfig(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/VerticalConfig.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    brands: list[str] | None = None
+    intent_signals: list[str] | None
+    label: str
+    notes: str | None = None
+    qualify_fields: list[str] | None
+    segment_features: list[str] | None
+    slug: str
+    value_signals: list[str] | None
+
+
 class VoiceConfig(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -9343,6 +10165,24 @@ class Big5Assessment(BaseModel):
     openness: Big5Trait
 
 
+class Calibration(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/Calibration.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    bands: list[BandAccuracy] | None
+    base_rate: float
+    segments: list[SegmentCal] | None
+    updated_at: AwareDatetime
+
+
 class ChatSSEChoice(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -9699,6 +10539,25 @@ class CreateEvalTemplateInputBody(BaseModel):
     """
 
 
+class EnrichLeadBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/EnrichLeadBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    lead: EnrichLeadBodyLeadStruct
+    webhook_url: str | None = None
+    """
+    Override delivery URL; defaults to the project's registered lead.enriched webhook
+    """
+
+
 class EnrichResult(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -9775,6 +10634,21 @@ class EvalAgentConfigOverride(BaseModel):
     """
     Voice synthesis config
     """
+
+
+class EvaluateMLOPERequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/EvaluateMLOPERequest.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    logged: list[LoggedTuple] | None
 
 
 class EvaluateRequest(BaseModel):
@@ -10572,6 +11446,22 @@ class MoodResponse(BaseModel):
     mood: MoodState
 
 
+class OnboardSummary(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/OnboardSummary.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    seeded_agents: list[str] | None
+    vertical_config: VerticalConfig
+
+
 class PaginatedDeliveryAttemptsResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10755,6 +11645,30 @@ class SessionToolCall(BaseModel):
     """
 
 
+class SetProjectVerticalRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/SetProjectVerticalRequest.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    config: VerticalConfig | None = None
+    """
+    Optional override merged onto the default config (non-empty fields win).
+    """
+    slug: str
+    """
+    Vertical slug (real_estate | insurance | auto).
+    """
+
+
 class SimulateRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10791,6 +11705,28 @@ class SimulateRequest(BaseModel):
     """
     Synthetic user persona (defaults to DefaultUserPersona)
     """
+
+
+class SimulateRoundsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/SimulateRoundsResponse.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    action_labels: dict[str, str]
+    model: Any
+    ope: SimulateRoundsResponseOPEStruct
+    policy: Any
+    scenario: str
+    series: list[SimulateRoundPoint] | None
 
 
 class SupportTicket(BaseModel):
@@ -10889,6 +11825,42 @@ class TimelineResponse(BaseModel):
     """
     sessions: list[TimelineSession] | None
     total_facts: int
+
+
+class TrainMLScoringRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/TrainMLScoringRequest.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    optimize_budget: int | None = None
+    rows: list[TrainRow] | None
+
+
+class TrainResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/TrainResult.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    algo: str | None = None
+    final: EpochMetric
+    history: list[EpochMetric] | None
+    n: int
+    tuning: TuningResult | None = None
+    weights: list[FeatureWeight] | None
 
 
 class TurnToolCall(BaseModel):
