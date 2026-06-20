@@ -19,6 +19,8 @@ from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
 from .resources.eval_templates import AsyncEvalTemplates, EvalTemplates
 from .resources.knowledge import AsyncKnowledge, Knowledge
+from .resources.mcp_catalog import AsyncMCPCatalog, MCPCatalog
+from .resources.ml import ML, AsyncML
 from .resources.org import AsyncOrg, Org
 from .resources.project_config import AsyncProjectConfig, ProjectConfig
 from .resources.project_notifications import (
@@ -73,7 +75,9 @@ class Sonzai:
     agents: Agents
     analytics: Analytics
     builtin_agents: BuiltinAgents
+    ml: ML
     knowledge: Knowledge
+    mcp_catalog: MCPCatalog
     eval_templates: EvalTemplates
     eval_runs: EvalRuns
     projects: Projects
@@ -146,7 +150,9 @@ class Sonzai:
         self.agents = Agents(self._http)
         self.analytics = Analytics(self._http)
         self.builtin_agents = BuiltinAgents(self._http)
+        self.ml = ML(self._http)
         self.knowledge = Knowledge(self._http)
+        self.mcp_catalog = MCPCatalog(self._http)
         self.eval_templates = EvalTemplates(self._http)
         self.eval_runs = EvalRuns(self._http)
         self.projects = Projects(self._http)
@@ -219,7 +225,9 @@ class AsyncSonzai:
     agents: AsyncAgents
     analytics: AsyncAnalytics
     builtin_agents: AsyncBuiltinAgents
+    ml: AsyncML
     knowledge: AsyncKnowledge
+    mcp_catalog: AsyncMCPCatalog
     eval_templates: AsyncEvalTemplates
     eval_runs: AsyncEvalRuns
     projects: AsyncProjects
@@ -282,7 +290,9 @@ class AsyncSonzai:
         self.agents = AsyncAgents(self._http)
         self.analytics = AsyncAnalytics(self._http)
         self.builtin_agents = AsyncBuiltinAgents(self._http)
+        self.ml = AsyncML(self._http)
         self.knowledge = AsyncKnowledge(self._http)
+        self.mcp_catalog = AsyncMCPCatalog(self._http)
         self.eval_templates = AsyncEvalTemplates(self._http)
         self.eval_runs = AsyncEvalRuns(self._http)
         self.projects = AsyncProjects(self._http)

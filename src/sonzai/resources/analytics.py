@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from .._generated.models import ComposioUsageResponse
 from .._generated.resources.analytics import Analytics as _GenAnalytics
 from .._generated.resources.analytics import AsyncAnalytics as _GenAsyncAnalytics
 from .._http import AsyncHTTPClient, HTTPClient
@@ -49,6 +50,21 @@ class Analytics(_GenAnalytics):
         data = self._http.get("/api/v1/analytics/cost/breakdown", params=params if params else None)
         return data  # type: ignore[return-value]
 
+    def get_composio_usage(
+        self,
+        *,
+        start: str | None = None,
+        end: str | None = None,
+        agent_id: str | None = None,
+    ) -> ComposioUsageResponse:
+        """Composio plugin usage analytics (clean alias of ``analytics_composio_usage``).
+
+        Mirrors the Go SDK's ``analytics.ComposioUsage`` / the TS SDK's
+        ``analytics.getComposioUsage``. The inherited
+        :meth:`analytics_composio_usage` remains available.
+        """
+        return self.analytics_composio_usage(start=start, end=end, agent_id=agent_id)
+
 
 class AsyncAnalytics(_GenAsyncAnalytics):
     """Async analytics operations."""
@@ -89,3 +105,13 @@ class AsyncAnalytics(_GenAsyncAnalytics):
             params["days"] = days
         data = await self._http.get("/api/v1/analytics/cost/breakdown", params=params if params else None)
         return data  # type: ignore[return-value]
+
+    async def get_composio_usage(
+        self,
+        *,
+        start: str | None = None,
+        end: str | None = None,
+        agent_id: str | None = None,
+    ) -> ComposioUsageResponse:
+        """Composio plugin usage analytics (clean alias of ``analytics_composio_usage``)."""
+        return await self.analytics_composio_usage(start=start, end=end, agent_id=agent_id)

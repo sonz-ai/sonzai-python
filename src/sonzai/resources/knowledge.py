@@ -11,12 +11,18 @@ from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
 from .._generated.models import (
     KbBulkUpdateInputBody,
+    KbCompareInputBody,
+    KbCompareOutputBody,
     KbCreateAnalyticsRuleInputBody,
     KbCreateOrgNodeInputBody,
     KbCreateSchemaInputBody,
+    KbGetEntityOutputBody,
+    KbGetFactHistoryOutputBody,
+    KbGetFactOutputBody,
     KbInsertFactsInputBody,
     KbPromoteNodeInputBody,
     KbRecordFeedbackInputBody,
+    KbTraverseOutputBody,
     KbUpdateAnalyticsRuleInputBody,
     KbUpdateSchemaInputBody,
 )
@@ -445,6 +451,107 @@ class Knowledge(_GenKnowledge):
             )
         )
 
+    # -- Clean aliases over ugly inherited generated names (non-breaking) --
+
+    def active_fact(
+        self,
+        project_id: str,
+        *,
+        from_node_id: str | None = None,
+        to_node_id: str | None = None,
+        relation_type: str | None = None,
+    ) -> KbGetFactOutputBody:
+        """Get the active KB fact for a (from, to, relation) tuple.
+
+        Clean alias of the inherited :meth:`kb_get_active_fact`.
+        """
+        return self.kb_get_active_fact(
+            project_id,
+            from_node_id=from_node_id,
+            to_node_id=to_node_id,
+            relation_type=relation_type,
+        )
+
+    def fact_history(
+        self,
+        project_id: str,
+        *,
+        from_node_id: str | None = None,
+        to_node_id: str | None = None,
+        relation_type: str | None = None,
+    ) -> KbGetFactHistoryOutputBody:
+        """Get the version chain for a KB fact tuple.
+
+        Clean alias of the inherited :meth:`kb_get_fact_history`.
+        """
+        return self.kb_get_fact_history(
+            project_id,
+            from_node_id=from_node_id,
+            to_node_id=to_node_id,
+            relation_type=relation_type,
+        )
+
+    def entity(
+        self, project_id: str, entity_type: str, entity_key: str
+    ) -> KbGetEntityOutputBody:
+        """Direct entity lookup by (type, key).
+
+        Clean alias of the inherited :meth:`kb_get_entity`.
+        """
+        return self.kb_get_entity(project_id, entity_type, entity_key)
+
+    def traverse(
+        self,
+        project_id: str,
+        *,
+        from_type: str | None = None,
+        from_key: str | None = None,
+        relation_type: str | None = None,
+        direction: str | None = None,
+        max_depth: int | None = None,
+    ) -> KbTraverseOutputBody:
+        """Graph traversal from a starting entity.
+
+        Clean alias of the inherited :meth:`kb_traverse`.
+        """
+        return self.kb_traverse(
+            project_id,
+            from_type=from_type,
+            from_key=from_key,
+            relation_type=relation_type,
+            direction=direction,
+            max_depth=max_depth,
+        )
+
+    def compare(
+        self,
+        project_id: str,
+        *,
+        entities: list[Any],
+        property_path: str,
+        target_entity: dict[str, Any],
+        via_relation: str,
+    ) -> KbCompareOutputBody:
+        """Compare a property across entities via a shared relation.
+
+        Clean alias of the inherited :meth:`kb_compare`. ``target_entity`` is a
+        ``KbCompareEntity`` mapping (``{"type": ..., "key": {...}}``) — same
+        shape as each item of ``entities``. (Calls the endpoint directly: the
+        generated ``kb_compare`` mis-types this field as ``str``.)
+        """
+        path = f"/api/v1/projects/{project_id}/knowledge/compare"
+        body = encode_body(
+            KbCompareInputBody,
+            {
+                "entities": entities,
+                "property_path": property_path,
+                "target_entity": target_entity,
+                "via_relation": via_relation,
+            },
+        )
+        data = self._http.post(path, json_data=body)
+        return KbCompareOutputBody.model_validate(data)
+
 
 class AsyncKnowledge(_GenAsyncKnowledge):
     """Async hand-written overrides on top of generated AsyncKnowledge."""
@@ -806,3 +913,103 @@ class AsyncKnowledge(_GenAsyncKnowledge):
                 json_data=encode_body(KbPromoteNodeInputBody, {"tenant_id": tenant_id}),
             )
         )
+
+    # -- Clean aliases over ugly inherited generated names (non-breaking) --
+
+    async def active_fact(
+        self,
+        project_id: str,
+        *,
+        from_node_id: str | None = None,
+        to_node_id: str | None = None,
+        relation_type: str | None = None,
+    ) -> KbGetFactOutputBody:
+        """Get the active KB fact for a (from, to, relation) tuple.
+
+        Clean alias of the inherited :meth:`kb_get_active_fact`.
+        """
+        return await self.kb_get_active_fact(
+            project_id,
+            from_node_id=from_node_id,
+            to_node_id=to_node_id,
+            relation_type=relation_type,
+        )
+
+    async def fact_history(
+        self,
+        project_id: str,
+        *,
+        from_node_id: str | None = None,
+        to_node_id: str | None = None,
+        relation_type: str | None = None,
+    ) -> KbGetFactHistoryOutputBody:
+        """Get the version chain for a KB fact tuple.
+
+        Clean alias of the inherited :meth:`kb_get_fact_history`.
+        """
+        return await self.kb_get_fact_history(
+            project_id,
+            from_node_id=from_node_id,
+            to_node_id=to_node_id,
+            relation_type=relation_type,
+        )
+
+    async def entity(
+        self, project_id: str, entity_type: str, entity_key: str
+    ) -> KbGetEntityOutputBody:
+        """Direct entity lookup by (type, key).
+
+        Clean alias of the inherited :meth:`kb_get_entity`.
+        """
+        return await self.kb_get_entity(project_id, entity_type, entity_key)
+
+    async def traverse(
+        self,
+        project_id: str,
+        *,
+        from_type: str | None = None,
+        from_key: str | None = None,
+        relation_type: str | None = None,
+        direction: str | None = None,
+        max_depth: int | None = None,
+    ) -> KbTraverseOutputBody:
+        """Graph traversal from a starting entity.
+
+        Clean alias of the inherited :meth:`kb_traverse`.
+        """
+        return await self.kb_traverse(
+            project_id,
+            from_type=from_type,
+            from_key=from_key,
+            relation_type=relation_type,
+            direction=direction,
+            max_depth=max_depth,
+        )
+
+    async def compare(
+        self,
+        project_id: str,
+        *,
+        entities: list[Any],
+        property_path: str,
+        target_entity: dict[str, Any],
+        via_relation: str,
+    ) -> KbCompareOutputBody:
+        """Compare a property across entities via a shared relation.
+
+        Clean alias of the inherited :meth:`kb_compare`. ``target_entity`` is a
+        ``KbCompareEntity`` mapping (``{"type": ..., "key": {...}}``). (Calls the
+        endpoint directly: the generated ``kb_compare`` mis-types it as ``str``.)
+        """
+        path = f"/api/v1/projects/{project_id}/knowledge/compare"
+        body = encode_body(
+            KbCompareInputBody,
+            {
+                "entities": entities,
+                "property_path": property_path,
+                "target_entity": target_entity,
+                "via_relation": via_relation,
+            },
+        )
+        data = await self._http.post(path, json_data=body)
+        return KbCompareOutputBody.model_validate(data)

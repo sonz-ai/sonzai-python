@@ -483,6 +483,53 @@ class TestSessions:
         assert items[1].reply == "Here is what I found."
 
     @respx.mock
+    def test_send_stream_sync(self, client: Sonzai, base_url: str) -> None:
+        """The public sync ``send_stream`` mirrors the async ``send_stream``."""
+        body = _sse(
+            [
+                ("update", {"type": "text", "text": "thinking", "elapsed": 0.5}),
+                ("result", CHAT_TURN_RESULT),
+            ]
+        )
+        route = respx.post(
+            f"{base_url}/api/v1/builtin-agents/sessions/ses-1/messages"
+        ).mock(
+            return_value=httpx.Response(
+                200, content=body, headers={"content-type": "text/event-stream"}
+            )
+        )
+
+        items = list(client.builtin_agents.sessions.send_stream("ses-1", "Hi"))
+
+        request = route.calls.last.request
+        assert request.method == "POST"
+        assert request.url.params["stream"] == "true"
+        assert json.loads(request.content) == {"text": "Hi"}
+        assert len(items) == 2
+        assert isinstance(items[0], BuiltinAgentUpdate)
+        assert isinstance(items[1], BuiltinAgentChatTurnResult)
+        assert items[1].reply == "Here is what I found."
+
+    @respx.mock
+    def test_send_stream_sync_raises_on_error_frame(
+        self, client: Sonzai, base_url: str
+    ) -> None:
+        body = _sse(
+            [
+                ("update", {"type": "tool_use", "tool": "web_search"}),
+                ("error", {"error": "turn failed: budget exceeded"}),
+            ]
+        )
+        respx.post(f"{base_url}/api/v1/builtin-agents/sessions/ses-1/messages").mock(
+            return_value=httpx.Response(
+                200, content=body, headers={"content-type": "text/event-stream"}
+            )
+        )
+
+        with pytest.raises(StreamError, match="budget exceeded"):
+            list(client.builtin_agents.sessions.send_stream("ses-1", "Hi"))
+
+    @respx.mock
     async def test_session_flow_async(self, async_client: AsyncSonzai, base_url: str) -> None:
         respx.post(f"{base_url}/api/v1/builtin-agents/sessions").mock(
             return_value=httpx.Response(200, json=SESSION)

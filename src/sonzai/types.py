@@ -51,6 +51,16 @@ from ._generated.models import (  # noqa: F401
     KBTrendAggregation,
     KBTrendRanking,
     ListAllFactsResponse,
+    ListMCPCatalogOutputBody,
+    MCPCatalogAuth,
+    MCPCatalogCreateBody,
+    MCPCatalogEntry,
+    MCPCatalogToolsResponse,
+    MCPCatalogUpdateBody,
+    MCPCatalogUsagesResponse,
+    MCPHealthDTO,
+    MCPProbeResponseBody,
+    MCPToolDTO,
     MemoryNode,
     MemoryResponse,
     MemorySummary,
@@ -3016,6 +3026,245 @@ class AgentGuidance(BaseModel):
 
     active: dict[str, Any] | None = None
     history: list[dict[str, Any]] | None = None
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# ML & RL primitives (client.ml — generalized scoring / NBA / OPE)
+# ---------------------------------------------------------------------------
+# Result shapes for the platform's multi-tenant, multi-vertical ML & RL
+# surface under /api/v1/builtin-agents/ml/{use_case}/...: supervised scoring
+# (train + calibrated predict), contextual-bandit next-best-action (decide +
+# learn), off-policy evaluation, an end-to-end learning simulation, and the
+# unified feedback call. Mirrors the Go SDK's ml.go shapes.
+
+
+class FeatureImportance(BaseModel):
+    """One feature's contribution to a trained scoring model, by total gain."""
+
+    name: str = ""
+    gain: float = 0.0
+
+    model_config = {"extra": "allow"}
+
+
+class TrainScoringResult(BaseModel):
+    """Held-out metrics, chosen hyperparameters, and new model version from
+    training a scoring model. ``brier`` is post-calibration; the
+    ``brier_uncalibrated`` / ``brier_baseline`` pair contextualizes the lift.
+    """
+
+    auc: float = 0.0
+    logloss: float = 0.0
+    brier: float = 0.0
+    brier_uncalibrated: float = 0.0
+    brier_baseline: float = 0.0
+    ece: float = 0.0
+    n: int = 0
+    importances: list[FeatureImportance] = Field(default_factory=list)
+    best_params: dict[str, Any] = Field(default_factory=dict)
+    calibration_method: str = ""
+    trials: int = 0
+    model_version: int = 0
+
+    model_config = {"extra": "allow"}
+
+    @field_validator("importances", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+class PredictScoreResult(BaseModel):
+    """Calibrated prediction for one example. ``score`` is the calibrated
+    probability; ``raw`` is the pre-calibration model output.
+    """
+
+    score: float = 0.0
+    raw: float = 0.0
+    model_version: int = 0
+    served_from: str = ""
+    calibration_method: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class NBAActionScore(BaseModel):
+    """The scored result for one candidate action in an NBA decision."""
+
+    action_id: str = ""
+    score: float = 0.0
+    propensity: float = 0.0
+
+    model_config = {"extra": "allow"}
+
+
+class DecideNBAResult(BaseModel):
+    """The policy's chosen action plus the full scored slate.
+
+    ``propensity`` is the probability the policy assigned the chosen action —
+    record it and pass it back to ``learn_nba`` for unbiased learning.
+    ``explore`` reports whether the choice was an exploration step.
+    """
+
+    action_id: str = ""
+    propensity: float = 0.0
+    scores: list[NBAActionScore] = Field(default_factory=list)
+    explore: bool = False
+    model_n: int = 0
+
+    model_config = {"extra": "allow"}
+
+    @field_validator("scores", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+class LearnNBAResult(BaseModel):
+    """Acknowledges a recorded NBA reward. ``n`` is the running count of
+    learning examples the policy has ingested.
+    """
+
+    ok: bool = False
+    n: int = 0
+
+    model_config = {"extra": "allow"}
+
+
+class EvaluateOPEResult(BaseModel):
+    """Off-policy value estimates for the current policy against logged data:
+    inverse-propensity (``ips``), self-normalized IPS (``snips``), and
+    doubly-robust (``dr``), with a confidence interval, the effective sample
+    size (``ess``), and which estimator the CI bounds describe.
+    """
+
+    ips: float = 0.0
+    snips: float = 0.0
+    dr: float = 0.0
+    ci_low: float = 0.0
+    ci_high: float = 0.0
+    n: int = 0
+    ess: float = 0.0
+    estimator_ci: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class SimulateRoundPoint(BaseModel):
+    """One round of a learning-simulation curve. ``auc`` is the scoring model's
+    held-out accuracy that round; ``nba_value`` is the bandit policy's
+    off-policy value; ``ope_dr`` / ``ci_low`` / ``ci_high`` are the
+    doubly-robust estimate and its CI on that round's logged decisions.
+    """
+
+    round: int = 0
+    n: int = 0
+    auc: float = 0.0
+    nba_value: float = 0.0
+    nba_reward: float = 0.0
+    ope_dr: float = 0.0
+    ci_low: float = 0.0
+    ci_high: float = 0.0
+
+    model_config = {"extra": "allow"}
+
+
+class SimulateModelSummary(BaseModel):
+    """The final scoring model after a simulation's last round, summarized."""
+
+    auc: float = 0.0
+    brier: float = 0.0
+    ece: float = 0.0
+    n: int = 0
+    calibration_method: str = ""
+    best_params: dict[str, Any] = Field(default_factory=dict)
+    importances: list[FeatureImportance] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+    @field_validator("importances", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+class SimulatePolicyActionScore(BaseModel):
+    """One action's learned value within a segment's policy, with a label."""
+
+    action_id: str = ""
+    score: float = 0.0
+    label: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class SimulatePolicyEntry(BaseModel):
+    """The learned next-best-action policy for one segment: the recommended
+    action plus every action's learned value.
+    """
+
+    segment: str = ""
+    recommended_action: str = ""
+    recommended_label: str = ""
+    scores: list[SimulatePolicyActionScore] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+    @field_validator("scores", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+class SimulateOPE(BaseModel):
+    """The off-policy value estimate of a simulation's final policy."""
+
+    dr: float = 0.0
+    ci_low: float = 0.0
+    ci_high: float = 0.0
+
+    model_config = {"extra": "allow"}
+
+
+class SimulateRoundsResult(BaseModel):
+    """Outcome of a learning simulation: the per-round learning curve plus the
+    final trained model, the learned policy per segment, and the off-policy
+    value estimate of the final policy.
+    """
+
+    scenario: str = ""
+    action_labels: dict[str, str] = Field(default_factory=dict)
+    series: list[SimulateRoundPoint] = Field(default_factory=list)
+    model: SimulateModelSummary | None = None
+    policy: list[SimulatePolicyEntry] = Field(default_factory=list)
+    ope: SimulateOPE | None = None
+
+    model_config = {"extra": "allow"}
+
+    @field_validator("series", "policy", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+class RecordFeedbackResult(BaseModel):
+    """Acknowledges a unified feedback call. ``outcome_recorded`` reports
+    whether the labeled scoring outcome was persisted; ``bandit_updated``
+    reports whether the bandit was taught (only when ``action_id`` was given),
+    with ``bandit_n`` as the policy's running learning-example count and
+    ``bandit_error`` carrying any non-fatal bandit-update error.
+    """
+
+    ok: bool = False
+    use_case: str = ""
+    converted: bool = False
+    outcome_recorded: bool = False
+    bandit_updated: bool = False
+    bandit_n: int | None = None
+    bandit_error: str | None = None
+    message: str = ""
 
     model_config = {"extra": "allow"}
 

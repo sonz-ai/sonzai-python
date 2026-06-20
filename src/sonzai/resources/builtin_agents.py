@@ -161,6 +161,31 @@ class BuiltinAgentSessions:
         )
         return BuiltinAgentChatTurnResult.model_validate(data)
 
+    def send_stream(
+        self,
+        session_id: str,
+        text: str,
+        *,
+        timeout: float = DEFAULT_INVOKE_TIMEOUT_SECONDS,
+    ) -> Iterator[BuiltinAgentUpdate | BuiltinAgentChatTurnResult]:
+        """Send a message turn, streaming progress updates.
+
+        The streaming twin of :meth:`send` — equivalent to
+        ``send(..., stream=True)`` but named to mirror
+        :meth:`AsyncBuiltinAgentSessions.send_stream` and the Go SDK's
+        ``SendMessage(stream=true)`` / TS ``sessions.send`` streaming surface.
+        Yields :class:`~sonzai.types.BuiltinAgentUpdate` frames; the final item
+        is the :class:`~sonzai.types.BuiltinAgentChatTurnResult`. Raises
+        :class:`sonzai.StreamError` on a terminal error frame.
+
+        Args:
+            session_id: Session ID from :meth:`create` / :meth:`list`.
+            text: The user message for this turn.
+            timeout: HTTP timeout in seconds (turns can run for minutes).
+        """
+        path = f"/api/v1/builtin-agents/sessions/{session_id}/messages"
+        return self._send_stream(path, text, timeout)
+
     def _send_stream(
         self, path: str, text: str, timeout: float
     ) -> Iterator[BuiltinAgentUpdate | BuiltinAgentChatTurnResult]:

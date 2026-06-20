@@ -12,6 +12,8 @@ from .custom_states import AsyncCustomStates, CustomStates
 from .eval_runs import AsyncEvalRuns, EvalRuns
 from .eval_templates import AsyncEvalTemplates, EvalTemplates
 from .generation import AsyncGeneration, Generation
+from .mcp_catalog import AsyncMCPCatalog, MCPCatalog
+from .ml import ML, AsyncML
 from .org import AsyncOrg, Org
 from .project_config import AsyncProjectConfig, ProjectConfig
 from .project_notifications import AsyncProjectNotifications, ProjectNotifications
@@ -46,6 +48,10 @@ __all__ = [
     "AsyncEvalTemplates",
     "Generation",
     "AsyncGeneration",
+    "MCPCatalog",
+    "AsyncMCPCatalog",
+    "ML",
+    "AsyncML",
     "Org",
     "AsyncOrg",
     "ProjectConfig",
