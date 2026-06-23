@@ -16,6 +16,7 @@ from .resources.byok import BYOK, AsyncBYOK
 from .resources.channels import AsyncChannels, Channels
 from .resources.composio import AsyncComposio, Composio
 from .types import PlatformModelsResponse
+from .resources.custom_agents import AsyncCustomAgents, CustomAgents
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
 from .resources.eval_templates import AsyncEvalTemplates, EvalTemplates
@@ -23,6 +24,7 @@ from .resources.knowledge import AsyncKnowledge, Knowledge
 from .resources.mcp_catalog import AsyncMCPCatalog, MCPCatalog
 from .resources.ml import ML, AsyncML
 from .resources.org import AsyncOrg, Org
+from .resources.pipelines import AsyncPipelines, Pipelines
 from .resources.project_config import AsyncProjectConfig, ProjectConfig
 from .resources.project_notifications import (
     AsyncProjectNotifications,
@@ -86,6 +88,8 @@ class Sonzai:
     voices: Voices
     webhooks: Webhooks
     channels: Channels
+    custom_agents: CustomAgents
+    pipelines: Pipelines
     project_config: ProjectConfig
     account_config: AccountConfig
     byok: BYOK
@@ -162,6 +166,8 @@ class Sonzai:
         self.voices = Voices(self._http)
         self.webhooks = Webhooks(self._http)
         self.channels = Channels(self._http)
+        self.custom_agents = CustomAgents(self._http)
+        self.pipelines = Pipelines(self._http)
         self.project_config = ProjectConfig(self._http)
         self.account_config = AccountConfig(self._http)
         self.byok = BYOK(self._http)
@@ -238,6 +244,8 @@ class AsyncSonzai:
     voices: AsyncVoices
     webhooks: AsyncWebhooks
     channels: AsyncChannels
+    custom_agents: AsyncCustomAgents
+    pipelines: AsyncPipelines
     project_config: AsyncProjectConfig
     account_config: AsyncAccountConfig
     byok: AsyncBYOK
@@ -304,6 +312,8 @@ class AsyncSonzai:
         self.voices = AsyncVoices(self._http)
         self.webhooks = AsyncWebhooks(self._http)
         self.channels = AsyncChannels(self._http)
+        self.custom_agents = AsyncCustomAgents(self._http)
+        self.pipelines = AsyncPipelines(self._http)
         self.project_config = AsyncProjectConfig(self._http)
         self.account_config = AsyncAccountConfig(self._http)
         self.byok = AsyncBYOK(self._http)

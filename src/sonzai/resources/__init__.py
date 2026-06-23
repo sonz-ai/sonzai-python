@@ -8,6 +8,7 @@ from .builtin_agents import (
 from .byok import BYOK, AsyncBYOK
 from .channels import AsyncChannels, Channels
 from .composio import AsyncComposio, Composio
+from .custom_agents import AsyncCustomAgents, CustomAgents
 from .custom_llm import AsyncCustomLLM, CustomLLM
 from .custom_states import AsyncCustomStates, CustomStates
 from .eval_runs import AsyncEvalRuns, EvalRuns
@@ -16,6 +17,7 @@ from .generation import AsyncGeneration, Generation
 from .mcp_catalog import AsyncMCPCatalog, MCPCatalog
 from .ml import ML, AsyncML
 from .org import AsyncOrg, Org
+from .pipelines import AsyncPipelines, Pipelines
 from .project_config import AsyncProjectConfig, ProjectConfig
 from .project_notifications import AsyncProjectNotifications, ProjectNotifications
 from .schedules import AsyncSchedules, Schedules
@@ -41,6 +43,8 @@ __all__ = [
     "AsyncChannels",
     "Composio",
     "AsyncComposio",
+    "CustomAgents",
+    "AsyncCustomAgents",
     "CustomLLM",
     "AsyncCustomLLM",
     "CustomStates",
@@ -57,6 +61,8 @@ __all__ = [
     "AsyncML",
     "Org",
     "AsyncOrg",
+    "Pipelines",
+    "AsyncPipelines",
     "ProjectConfig",
     "AsyncProjectConfig",
     "ProjectNotifications",

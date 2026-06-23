@@ -757,6 +757,86 @@ class ChannelListResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Custom Agents
+# ---------------------------------------------------------------------------
+
+
+class CustomAgent(BaseModel):
+    agent_id: str = ""
+    project_id: str = ""
+    slug: str = ""
+    name: str = ""
+    description: str = ""
+    model: str = ""
+    system: str = ""
+    findings_schema: dict[str, Any] | None = None
+    tools: list[str] = Field(default_factory=list)
+    disable_tools: bool = False
+    max_tool_rounds: int = 0
+    created_at: str = ""
+    updated_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class CustomAgentListResponse(BaseModel):
+    agents: list[CustomAgent] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Pipelines
+# ---------------------------------------------------------------------------
+
+
+class PipelineStep(BaseModel):
+    slug: str = ""
+    title: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class Pipeline(BaseModel):
+    pipeline_id: str = ""
+    project_id: str = ""
+    name: str = ""
+    description: str = ""
+    steps: list[PipelineStep] = Field(default_factory=list)
+    created_at: str = ""
+    updated_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class PipelineListResponse(BaseModel):
+    pipelines: list[Pipeline] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+class PipelineStepResult(BaseModel):
+    slug: str = ""
+    title: str | None = None
+    findings: Any = None
+    summary: str | None = None
+    cost_usd: float = 0.0
+    error: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class PipelineRun(BaseModel):
+    pipeline_id: str = ""
+    steps: list[PipelineStepResult] = Field(default_factory=list)
+    final_findings: Any = None
+    total_cost_usd: float = 0.0
+    completed: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
 # Project Config
 # ---------------------------------------------------------------------------
 

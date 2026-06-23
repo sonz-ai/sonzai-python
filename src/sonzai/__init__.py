@@ -81,6 +81,8 @@ from .types import (
     ConstellationResponse,
     CreateAPIKeyResponse,
     CreateOrgNodeOptions,
+    CustomAgent,
+    CustomAgentListResponse,
     CustomLLMConfigResponse,
     CustomState,
     CustomStateListResponse,
@@ -205,6 +207,11 @@ from .types import (
     PersonalityResponse,
     PersonalityShift,
     PersonalityUpdateResponse,
+    Pipeline,
+    PipelineListResponse,
+    PipelineRun,
+    PipelineStep,
+    PipelineStepResult,
     PlatformModelsResponse,
     PredictScoreResult,
     PrimeContentBlock,
@@ -427,6 +434,15 @@ __all__ = [
     # Types - Channels
     "Channel",
     "ChannelListResponse",
+    # Types - Custom Agents
+    "CustomAgent",
+    "CustomAgentListResponse",
+    # Types - Pipelines
+    "Pipeline",
+    "PipelineListResponse",
+    "PipelineRun",
+    "PipelineStep",
+    "PipelineStepResult",
     # Types - Webhooks
     "DeliveryAttemptsResponse",
     "WebhookDeliveryAttempt",

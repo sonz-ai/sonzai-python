@@ -2173,6 +2173,74 @@ class CreateWisdomRelationOutputBody(BaseModel):
     relation: AttributedRelation
 
 
+class CustomAgentDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CustomAgentDTO.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    created_at: AwareDatetime
+    description: str | None = None
+    disable_tools: bool
+    findings_schema: dict[str, Any] | None = None
+    max_tool_rounds: int
+    model: str
+    name: str
+    project_id: str
+    slug: str
+    system: str
+    tools: list[str] | None
+    updated_at: AwareDatetime
+
+
+class CustomAgentWriteBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CustomAgentWriteBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    description: str | None = None
+    disable_tools: bool | None = None
+    """
+    Disable the toolset entirely (pure reasoning)
+    """
+    findings_schema: dict[str, Any] | None = None
+    """
+    JSON Schema for the agent's structured return_findings output
+    """
+    max_tool_rounds: int | None = None
+    model: str
+    """
+    Anthropic model: claude-sonnet-4-6 | claude-haiku-4-5
+    """
+    name: str
+    slug: str
+    """
+    Project-scoped agent slug (referenced from pipeline steps)
+    """
+    system: str
+    """
+    The agent's system prompt
+    """
+    tools: list[str] | None = None
+    """
+    Sandbox toolset tools to enable (empty = all)
+    """
+
+
 class CustomLLMConfigResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5259,6 +5327,24 @@ class ListComposioConnectionsOutputBody(BaseModel):
     connections: list[Connection] | None
 
 
+class ListCustomAgentsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListCustomAgentsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agents: list[CustomAgentDTO] | None
+
+
 class ListCustomStatesOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6178,6 +6264,55 @@ class PersonalityShift(BaseModel):
     trigger_types: list[str] | None
 
 
+class PipelineStep(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/PipelineStep.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    slug: str
+    title: str | None = None
+
+
+class PipelineStepResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    cost_usd: float
+    error: str | None = None
+    findings: Any
+    slug: str
+    summary: str | None = None
+    title: str | None = None
+
+
+class PipelineWriteBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/PipelineWriteBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    description: str | None = None
+    name: str
+    steps: list[PipelineStep] | None = None
+    """
+    Ordered agent steps (each {slug, title?}); slug is a built-in or custom agent
+    """
+
+
 class PolicyEntry(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6946,6 +7081,24 @@ class RotateSigningSecretOutputBody(BaseModel):
     success: bool
     """
     Whether the secret was rotated
+    """
+
+
+class RunPipelineInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/RunPipelineInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    input: dict[str, Any] | None = None
+    """
+    Initial input passed to the first step
     """
 
 
@@ -11633,6 +11786,46 @@ class PersonalityResponse(BaseModel):
     profile: PersonalityProfile
 
 
+class PipelineDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/PipelineDTO.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    created_at: AwareDatetime
+    description: str | None = None
+    name: str
+    pipeline_id: str
+    project_id: str
+    steps: list[PipelineStep] | None
+    updated_at: AwareDatetime
+
+
+class PipelineRun(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/PipelineRun.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    completed: bool
+    final_findings: Any
+    pipeline_id: str
+    steps: list[PipelineStepResult] | None
+    total_cost_usd: float
+
+
 class PrimeUserRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -12295,6 +12488,23 @@ class ListMCPCatalogOutputBody(BaseModel):
     """
     Catalog entries
     """
+
+
+class ListPipelinesOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ListPipelinesOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    pipelines: list[PipelineDTO] | None
 
 
 class ProcessMessage(BaseModel):
