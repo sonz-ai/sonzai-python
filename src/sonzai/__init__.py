@@ -210,6 +210,7 @@ from .types import (
     Pipeline,
     PipelineListResponse,
     PipelineRun,
+    PipelineRunListResponse,
     PipelineStep,
     PipelineStepResult,
     PlatformModelsResponse,
@@ -441,6 +442,7 @@ __all__ = [
     "Pipeline",
     "PipelineListResponse",
     "PipelineRun",
+    "PipelineRunListResponse",
     "PipelineStep",
     "PipelineStepResult",
     # Types - Webhooks

@@ -11820,10 +11820,15 @@ class PipelineRun(BaseModel):
     A URL to the JSON Schema for this object.
     """
     completed: bool
+    created_at: AwareDatetime
+    error: str | None = None
     final_findings: Any
     pipeline_id: str
+    run_id: str
+    status: str
     steps: list[PipelineStepResult] | None
     total_cost_usd: float
+    updated_at: AwareDatetime
 
 
 class PrimeUserRequest(BaseModel):
@@ -12505,6 +12510,21 @@ class ListPipelinesOutputBody(BaseModel):
     A URL to the JSON Schema for this object.
     """
     pipelines: list[PipelineDTO] | None
+
+
+class ListRunsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ListRunsOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    runs: list[PipelineRun] | None
 
 
 class ProcessMessage(BaseModel):

@@ -3,20 +3,31 @@
 Pipelines are tenant-scoped, ordered sequences of named steps that can be
 executed to produce structured findings. Backed by the CRUD
 ``/api/v1/pipelines`` endpoints plus ``/steps`` and ``/run`` actions.
+
+Runs are asynchronous: ``run()`` enqueues a run and returns immediately with a
+queued :class:`PipelineRun`. Poll ``get_run()`` (or use the convenience
+``run_and_wait()``) until the run reaches a terminal status.
 """
 
 from __future__ import annotations
 
+import asyncio
+import time
 from typing import Any
 
 from .._http import AsyncHTTPClient, HTTPClient
-from ..types import Pipeline, PipelineListResponse, PipelineRun
+from ..types import (
+    Pipeline,
+    PipelineListResponse,
+    PipelineRun,
+    PipelineRunListResponse,
+)
 
 # Step definitions are passed as a list of ``{"slug", "title"?}`` dicts.
 _StepList = list[dict[str, Any]]
 
-# Pipeline runs can take minutes — give them a generous timeout.
-_RUN_TIMEOUT_SECONDS = 600.0
+# Terminal statuses for an async pipeline run.
+_TERMINAL_STATUSES = frozenset({"completed", "failed"})
 
 
 def _build_body(
@@ -101,16 +112,60 @@ class Pipelines:
         *,
         input: dict[str, Any] | None = None,
     ) -> PipelineRun:
-        """Run a pipeline. May take minutes; uses an extended request timeout."""
+        """Enqueue a pipeline run.
+
+        Returns immediately with a queued :class:`PipelineRun` (``status`` is
+        ``"queued"``). Poll :meth:`get_run` to observe progress, or use
+        :meth:`run_and_wait` to block until the run completes.
+        """
         body: dict[str, Any] = {}
         if input is not None:
             body["input"] = input
         data = self._http.post(
             f"/api/v1/pipelines/{pipeline_id}/run",
             json_data=body,
-            timeout=_RUN_TIMEOUT_SECONDS,
         )
         return PipelineRun.model_validate(data)
+
+    def get_run(self, pipeline_id: str, run_id: str) -> PipelineRun:
+        """Fetch a single pipeline run by ID."""
+        data = self._http.get(
+            f"/api/v1/pipelines/{pipeline_id}/runs/{run_id}"
+        )
+        return PipelineRun.model_validate(data)
+
+    def list_runs(self, pipeline_id: str) -> PipelineRunListResponse:
+        """List all runs for a pipeline."""
+        data = self._http.get(f"/api/v1/pipelines/{pipeline_id}/runs")
+        return PipelineRunListResponse.model_validate(data)
+
+    def run_and_wait(
+        self,
+        pipeline_id: str,
+        *,
+        input: dict[str, Any] | None = None,
+        poll_interval: float = 2.0,
+        timeout: float = 1800.0,
+    ) -> PipelineRun:
+        """Enqueue a run and poll until it reaches a terminal status.
+
+        Raises:
+            TimeoutError: if the run does not complete within ``timeout`` seconds.
+        """
+        run = self.run(pipeline_id, input=input)
+        if run.status in _TERMINAL_STATUSES:
+            return run
+        deadline = time.monotonic() + timeout
+        while True:
+            if time.monotonic() >= deadline:
+                raise TimeoutError(
+                    f"pipeline run {run.run_id} did not complete within "
+                    f"{timeout}s (last status: {run.status!r})"
+                )
+            time.sleep(poll_interval)
+            run = self.get_run(pipeline_id, run.run_id)
+            if run.status in _TERMINAL_STATUSES:
+                return run
 
 
 class AsyncPipelines:
@@ -182,13 +237,57 @@ class AsyncPipelines:
         *,
         input: dict[str, Any] | None = None,
     ) -> PipelineRun:
-        """Run a pipeline. May take minutes; uses an extended request timeout."""
+        """Enqueue a pipeline run.
+
+        Returns immediately with a queued :class:`PipelineRun` (``status`` is
+        ``"queued"``). Poll :meth:`get_run` to observe progress, or use
+        :meth:`run_and_wait` to block until the run completes.
+        """
         body: dict[str, Any] = {}
         if input is not None:
             body["input"] = input
         data = await self._http.post(
             f"/api/v1/pipelines/{pipeline_id}/run",
             json_data=body,
-            timeout=_RUN_TIMEOUT_SECONDS,
         )
         return PipelineRun.model_validate(data)
+
+    async def get_run(self, pipeline_id: str, run_id: str) -> PipelineRun:
+        """Fetch a single pipeline run by ID."""
+        data = await self._http.get(
+            f"/api/v1/pipelines/{pipeline_id}/runs/{run_id}"
+        )
+        return PipelineRun.model_validate(data)
+
+    async def list_runs(self, pipeline_id: str) -> PipelineRunListResponse:
+        """List all runs for a pipeline."""
+        data = await self._http.get(f"/api/v1/pipelines/{pipeline_id}/runs")
+        return PipelineRunListResponse.model_validate(data)
+
+    async def run_and_wait(
+        self,
+        pipeline_id: str,
+        *,
+        input: dict[str, Any] | None = None,
+        poll_interval: float = 2.0,
+        timeout: float = 1800.0,
+    ) -> PipelineRun:
+        """Enqueue a run and poll until it reaches a terminal status.
+
+        Raises:
+            TimeoutError: if the run does not complete within ``timeout`` seconds.
+        """
+        run = await self.run(pipeline_id, input=input)
+        if run.status in _TERMINAL_STATUSES:
+            return run
+        deadline = time.monotonic() + timeout
+        while True:
+            if time.monotonic() >= deadline:
+                raise TimeoutError(
+                    f"pipeline run {run.run_id} did not complete within "
+                    f"{timeout}s (last status: {run.status!r})"
+                )
+            await asyncio.sleep(poll_interval)
+            run = await self.get_run(pipeline_id, run.run_id)
+            if run.status in _TERMINAL_STATUSES:
+                return run

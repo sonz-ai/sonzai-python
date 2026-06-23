@@ -8,6 +8,7 @@ from typing import Any
 from urllib.parse import quote
 from sonzai._generated.models import (
     ListPipelinesOutputBody,
+    ListRunsOutputBody,
     PipelineDTO,
     PipelineRun,
     PipelineStep,
@@ -101,8 +102,8 @@ class Pipelines(_PipelinesBase):
         pipeline_id: str,
         *,
         input: dict[str, Any] | None = None,
-    ) -> PipelineRun:
-        """Run a pipeline end to end"""
+    ) -> Any:
+        """Start a pipeline run (async)"""
         path = f"/api/v1/pipelines/{quote(pipeline_id, safe='')}/run"
         params = None
         _raw: dict[str, Any] = {}
@@ -110,6 +111,31 @@ class Pipelines(_PipelinesBase):
             _raw["input"] = input
         body = encode_body(RunPipelineInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
+        return data
+
+    def list_pipeline_runs(
+        self,
+        pipeline_id: str,
+        *,
+        limit: int | None = None,
+    ) -> ListRunsOutputBody:
+        """List recent runs for a pipeline"""
+        path = f"/api/v1/pipelines/{quote(pipeline_id, safe='')}/runs"
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        data = self._http.get(path, params=params)
+        return ListRunsOutputBody.model_validate(data)
+
+    def get_pipeline_run(
+        self,
+        pipeline_id: str,
+        run_id: str,
+    ) -> PipelineRun:
+        """Get a pipeline run (poll for status + results)"""
+        path = f"/api/v1/pipelines/{quote(pipeline_id, safe='')}/runs/{quote(run_id, safe='')}"
+        params = None
+        data = self._http.get(path, params=params)
         return PipelineRun.model_validate(data)
 
     def append_pipeline_step(
@@ -210,8 +236,8 @@ class AsyncPipelines(_PipelinesBase):
         pipeline_id: str,
         *,
         input: dict[str, Any] | None = None,
-    ) -> PipelineRun:
-        """Run a pipeline end to end"""
+    ) -> Any:
+        """Start a pipeline run (async)"""
         path = f"/api/v1/pipelines/{quote(pipeline_id, safe='')}/run"
         params = None
         _raw: dict[str, Any] = {}
@@ -219,6 +245,31 @@ class AsyncPipelines(_PipelinesBase):
             _raw["input"] = input
         body = encode_body(RunPipelineInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
+        return data
+
+    async def list_pipeline_runs(
+        self,
+        pipeline_id: str,
+        *,
+        limit: int | None = None,
+    ) -> ListRunsOutputBody:
+        """List recent runs for a pipeline"""
+        path = f"/api/v1/pipelines/{quote(pipeline_id, safe='')}/runs"
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        data = await self._http.get(path, params=params)
+        return ListRunsOutputBody.model_validate(data)
+
+    async def get_pipeline_run(
+        self,
+        pipeline_id: str,
+        run_id: str,
+    ) -> PipelineRun:
+        """Get a pipeline run (poll for status + results)"""
+        path = f"/api/v1/pipelines/{quote(pipeline_id, safe='')}/runs/{quote(run_id, safe='')}"
+        params = None
+        data = await self._http.get(path, params=params)
         return PipelineRun.model_validate(data)
 
     async def append_pipeline_step(

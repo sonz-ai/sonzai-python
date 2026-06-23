@@ -827,11 +827,22 @@ class PipelineStepResult(BaseModel):
 
 
 class PipelineRun(BaseModel):
+    run_id: str = ""
     pipeline_id: str = ""
+    status: str = ""
     steps: list[PipelineStepResult] = Field(default_factory=list)
     final_findings: Any = None
     total_cost_usd: float = 0.0
+    error: str = ""
     completed: bool = False
+    created_at: str = ""
+    updated_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class PipelineRunListResponse(BaseModel):
+    runs: list[PipelineRun] = Field(default_factory=list)
 
     model_config = {"extra": "allow"}
 
