@@ -292,7 +292,7 @@ from .types import (
     WisdomAuditResponse,
 )
 
-__version__ = "1.7.5"
+__version__ = "1.7.6"
 
 __all__ = [
     # Clients
