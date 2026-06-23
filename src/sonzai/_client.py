@@ -13,6 +13,7 @@ from .resources.agents import Agents, AsyncAgents
 from .resources.analytics import Analytics, AsyncAnalytics
 from .resources.builtin_agents import AsyncBuiltinAgents, BuiltinAgents
 from .resources.byok import BYOK, AsyncBYOK
+from .resources.channels import AsyncChannels, Channels
 from .resources.composio import AsyncComposio, Composio
 from .types import PlatformModelsResponse
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
@@ -84,6 +85,7 @@ class Sonzai:
     user_personas: UserPersonas
     voices: Voices
     webhooks: Webhooks
+    channels: Channels
     project_config: ProjectConfig
     account_config: AccountConfig
     byok: BYOK
@@ -159,6 +161,7 @@ class Sonzai:
         self.user_personas = UserPersonas(self._http)
         self.voices = Voices(self._http)
         self.webhooks = Webhooks(self._http)
+        self.channels = Channels(self._http)
         self.project_config = ProjectConfig(self._http)
         self.account_config = AccountConfig(self._http)
         self.byok = BYOK(self._http)
@@ -234,6 +237,7 @@ class AsyncSonzai:
     user_personas: AsyncUserPersonas
     voices: AsyncVoices
     webhooks: AsyncWebhooks
+    channels: AsyncChannels
     project_config: AsyncProjectConfig
     account_config: AsyncAccountConfig
     byok: AsyncBYOK
@@ -299,6 +303,7 @@ class AsyncSonzai:
         self.user_personas = AsyncUserPersonas(self._http)
         self.voices = AsyncVoices(self._http)
         self.webhooks = AsyncWebhooks(self._http)
+        self.channels = AsyncChannels(self._http)
         self.project_config = AsyncProjectConfig(self._http)
         self.account_config = AsyncAccountConfig(self._http)
         self.byok = AsyncBYOK(self._http)

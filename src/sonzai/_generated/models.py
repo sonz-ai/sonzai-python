@@ -947,6 +947,80 @@ class CatalogEntry(BaseModel):
     slug: str
 
 
+class ChannelDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ChannelDTO.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    active: bool
+    channel_id: str
+    config: dict[str, Any]
+    """
+    Type-specific config; secret fields are returned masked
+    """
+    created_at: AwareDatetime
+    events: list[str] | None
+    """
+    Subscribed event types (empty = all)
+    """
+    filter: dict[str, Any] | None = None
+    """
+    Optional delivery predicate, e.g. {agents, min_score}
+    """
+    name: str
+    project_id: str
+    type: str
+    """
+    Delivery backend: webhook | email | composio
+    """
+    updated_at: AwareDatetime
+
+
+class ChannelWriteBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ChannelWriteBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    active: bool | None = None
+    """
+    Whether the channel is active (default true)
+    """
+    config: dict[str, Any] | None = None
+    """
+    Type-specific config (url / api_key+from / agent_id+action ...)
+    """
+    events: list[str] | None = None
+    """
+    Event types to subscribe to (empty = all events)
+    """
+    filter: dict[str, Any] | None = None
+    """
+    Optional delivery predicate, e.g. {"agents":["lead_research"],"min_score":80}
+    """
+    name: str
+    """
+    Human-readable channel name
+    """
+    type: Literal['webhook', 'email', 'composio']
+    """
+    Delivery backend
+    """
+
+
 class ChatMsgInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5112,6 +5186,23 @@ class ListBuiltinAgentsResponse(BaseModel):
     A URL to the JSON Schema for this object.
     """
     agents: list[CatalogEntry] | None
+
+
+class ListChannelsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ListChannelsOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    channels: list[ChannelDTO] | None
 
 
 class ListComposioAuditOutputBody(BaseModel):

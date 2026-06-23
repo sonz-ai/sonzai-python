@@ -731,6 +731,32 @@ class DeliveryAttemptsResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Channels (notification channels)
+# ---------------------------------------------------------------------------
+
+
+class Channel(BaseModel):
+    channel_id: str = ""
+    project_id: str = ""
+    name: str = ""
+    type: Literal["webhook", "email", "composio"] = "webhook"
+    config: dict[str, Any] = Field(default_factory=dict)
+    events: list[str] = Field(default_factory=list)
+    filter: dict[str, Any] | None = None
+    active: bool = True
+    created_at: str = ""
+    updated_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class ChannelListResponse(BaseModel):
+    channels: list[Channel] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
 # Project Config
 # ---------------------------------------------------------------------------
 

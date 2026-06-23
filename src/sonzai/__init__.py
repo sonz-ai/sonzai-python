@@ -37,6 +37,7 @@ from ._exceptions import (
 )
 from ._pagination import AsyncPage, Page
 from ._retry import RetryPolicy
+from .event_types import BUILTIN_AGENT_COMPLETED, LEAD_ENRICHED
 from .sse_chunk import DEFAULT_MAX_CHUNK_SIZE, chunk_payload
 from .types import (
     AcknowledgeResponse,
@@ -69,6 +70,8 @@ from .types import (
     BuiltinAgentUpdate,
     BuiltinAgentUsage,
     Calibration,
+    Channel,
+    ChannelListResponse,
     ChatChoice,
     ChatMessage,
     ChatResponse,
@@ -292,6 +295,9 @@ __all__ = [
     "AsyncPage",
     # Provider constants
     "providers",
+    # Event-type constants
+    "BUILTIN_AGENT_COMPLETED",
+    "LEAD_ENRICHED",
     # Exceptions
     "SonzaiError",
     "APIError",
@@ -418,6 +424,9 @@ __all__ = [
     # Types - Custom States
     "CustomState",
     "CustomStateListResponse",
+    # Types - Channels
+    "Channel",
+    "ChannelListResponse",
     # Types - Webhooks
     "DeliveryAttemptsResponse",
     "WebhookDeliveryAttempt",

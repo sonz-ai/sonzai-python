@@ -6,6 +6,7 @@ from .builtin_agents import (
     BuiltinAgentSessions,
 )
 from .byok import BYOK, AsyncBYOK
+from .channels import AsyncChannels, Channels
 from .composio import AsyncComposio, Composio
 from .custom_llm import AsyncCustomLLM, CustomLLM
 from .custom_states import AsyncCustomStates, CustomStates
@@ -36,6 +37,8 @@ __all__ = [
     "AsyncBuiltinAgentSessions",
     "BYOK",
     "AsyncBYOK",
+    "Channels",
+    "AsyncChannels",
     "Composio",
     "AsyncComposio",
     "CustomLLM",
