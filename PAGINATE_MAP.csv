@@ -1,0 +1,11 @@
+path,mode,item_key,total_key,operation_id
+/agents,offset,items,,listAgents
+/agents/{agentId}/users,offset,users,total,listUsers
+/agents/{agentId}/users/{userId}/inventory,offset,groups,,queryInventory
+/conversations,cursor,conversations,total,listConversations
+/conversations/{id}/messages,cursor,items,,listConversationMessages
+/eval-runs,offset,runs,,listEvalRuns
+/projects/{projectId}/knowledge/nodes,offset,nodes,total,kbListNodes
+/projects/{projectId}/webhooks/{eventType}/attempts,offset,attempts,,listDeliveryAttempts
+/support/tickets,offset,tickets,total,listMyTickets
+/webhooks/{eventType}/attempts,offset,attempts,,listDeliveryAttemptsForTenant

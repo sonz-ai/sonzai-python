@@ -33,20 +33,22 @@ from __future__ import annotations
 
 import builtins
 from typing import Any
+from urllib.parse import quote
 
-_list = builtins.list
-
-from .._generated.resources.memory import AsyncMemory as _GenAsyncMemory
-from .._generated.resources.memory import Memory as _GenMemory
-from .._request_helpers import encode_body
 from .._generated.models import (
     AtomicFact,
     CreateFactInputBody,
+    ListUserConversationsOutputBody,
 )
+from .._generated.resources.memory import AsyncMemory as _GenAsyncMemory
+from .._generated.resources.memory import Memory as _GenMemory
+from .._request_helpers import encode_body
 from ..types import (
     FactListResponse,
     SeedMemoriesResponse,
 )
+
+_list = builtins.list
 
 
 class Memory(_GenMemory):
@@ -75,9 +77,7 @@ class Memory(_GenMemory):
         if instance_id is not None:
             body["instance_id"] = instance_id
 
-        data = self._http.post(
-            f"/api/v1/agents/{agent_id}/memory/seed", json_data=body
-        )
+        data = self._http.post(f"/api/v1/agents/{agent_id}/memory/seed", json_data=body)
         return SeedMemoriesResponse.model_validate(data)
 
     # TODO(B.2/Bug6): Generated list_facts is missing `offset` param (spec only
@@ -103,9 +103,7 @@ class Memory(_GenMemory):
         if offset is not None:
             params["offset"] = offset
 
-        data = self._http.get(
-            f"/api/v1/agents/{agent_id}/memory/facts", params=params
-        )
+        data = self._http.get(f"/api/v1/agents/{agent_id}/memory/facts", params=params)
         return FactListResponse.model_validate(data)
 
     # TODO: Spec marks fact_type required but historical contract treats it as
@@ -146,6 +144,27 @@ class Memory(_GenMemory):
         )
         return AtomicFact.model_validate(data)
 
+    def list_user_conversations(
+        self,
+        agent_id: str,
+        user_id: str,
+        *,
+        limit: int | None = None,
+    ) -> ListUserConversationsOutputBody:
+        """Get an agent-user conversation history from the memory timeline."""
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/users/"
+            f"{quote(user_id, safe='')}/conversations"
+        )
+        data = self._http.get(
+            path,
+            params=params,
+        )
+        return ListUserConversationsOutputBody.model_validate(data)
+
 
 class AsyncMemory(_GenAsyncMemory):
     """Async mirror of Memory — thin convenience layer over generated AsyncMemory.
@@ -170,9 +189,7 @@ class AsyncMemory(_GenAsyncMemory):
         if instance_id is not None:
             body["instance_id"] = instance_id
 
-        data = await self._http.post(
-            f"/api/v1/agents/{agent_id}/memory/seed", json_data=body
-        )
+        data = await self._http.post(f"/api/v1/agents/{agent_id}/memory/seed", json_data=body)
         return SeedMemoriesResponse.model_validate(data)
 
     # TODO(B.2/Bug6): missing `offset`, limit typed str vs int, different return class.
@@ -196,9 +213,7 @@ class AsyncMemory(_GenAsyncMemory):
         if offset is not None:
             params["offset"] = offset
 
-        data = await self._http.get(
-            f"/api/v1/agents/{agent_id}/memory/facts", params=params
-        )
+        data = await self._http.get(f"/api/v1/agents/{agent_id}/memory/facts", params=params)
         return FactListResponse.model_validate(data)
 
     # TODO: fact_type optional vs required; no instance_id in historical contract.
@@ -236,3 +251,24 @@ class AsyncMemory(_GenAsyncMemory):
             json_data=encode_body(CreateFactInputBody, body),
         )
         return AtomicFact.model_validate(data)
+
+    async def list_user_conversations(
+        self,
+        agent_id: str,
+        user_id: str,
+        *,
+        limit: int | None = None,
+    ) -> ListUserConversationsOutputBody:
+        """Get an agent-user conversation history from the memory timeline."""
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        path = (
+            f"/api/v1/agents/{quote(agent_id, safe='')}/users/"
+            f"{quote(user_id, safe='')}/conversations"
+        )
+        data = await self._http.get(
+            path,
+            params=params,
+        )
+        return ListUserConversationsOutputBody.model_validate(data)

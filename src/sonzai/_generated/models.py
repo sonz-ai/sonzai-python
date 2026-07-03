@@ -12812,3 +12812,392 @@ class ProcessInputBody(BaseModel):
     """
     ID of the user whose conversation is being processed
     """
+
+
+# Omnichannel Conversations / Meta channel connections (from monolith OpenAPI).
+class ChannelConnectionDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ChannelConnectionDTO.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    app_id: str | None = None
+    channel_type: str
+    connection_id: str
+    created_at: AwareDatetime
+    default_agent_id: str | None = None
+    display_name: str
+    ig_account_id: str | None = None
+    page_id: str | None = None
+    phone_number_id: str | None = None
+    project_id: str
+    provider_mode: str
+    status: str
+    status_detail: str | None = None
+    templates: Any | None = None
+    test_send_succeeded: bool | None = None
+    updated_at: AwareDatetime
+    verify_token: str | None = None
+    waba_id: str | None = None
+    webhook_callback_url: str | None = None
+
+
+class ChannelConnectionsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ChannelConnectionsOutputBody.json'
+            ],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    connections: list[ChannelConnectionDTO] | None
+    items: list[ChannelConnectionDTO] | None
+
+
+class ConversationHandoff(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    from_: Annotated[str, Field(alias='from')]
+    to: str
+    when: str
+
+
+class ConversationMessage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    content: str
+    role: str
+    session_id: str
+    timestamp: AwareDatetime
+
+
+class OmnichannelConversationDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/OmnichannelConversationDTO.json'
+            ],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    channel_type: str
+    connection_id: str | None = None
+    controller: str
+    controller_operator_id: str | None = None
+    conversation_id: str
+    created_at: AwareDatetime
+    handoffs: Any
+    last_direction: str | None = None
+    last_message_at: AwareDatetime
+    last_message_preview: str | None = None
+    meta: Any
+    project_id: str
+    session_id: str | None = None
+    status: str
+    takeover_started_at: AwareDatetime | None = None
+    unread_count: int
+    updated_at: AwareDatetime
+    user_id: str
+
+
+class OmnichannelMessageDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    attachments: Any | None = None
+    author_id: str | None = None
+    author_type: str
+    channel_message_id: str | None = None
+    content: str
+    conversation_id: str
+    created_at: AwareDatetime
+    delivery_detail: str | None = None
+    delivery_status: str | None = None
+    direction: str
+    message_id: str
+    role: str
+    session_id: str | None = None
+
+
+class CreateChannelConnectionInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/CreateChannelConnectionInputBody.json'
+            ],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    access_token: str | None = None
+    """
+    Customer system-user access token; encrypted at rest; required for byo_app.
+    """
+    app_id: str | None = None
+    """
+    Customer Meta app id; required for byo_app.
+    """
+    app_secret: str | None = None
+    """
+    Customer Meta app secret; encrypted at rest; required for byo_app.
+    """
+    channel_type: Literal['whatsapp', 'messenger', 'instagram']
+    code: str | None = None
+    """
+    Embedded Signup OAuth code; required for embedded_signup.
+    """
+    default_agent_id: str | None = None
+    display_name: str | None = None
+    ig_account_id: str | None = None
+    page_id: str | None = None
+    phone_number_id: str | None = None
+    provider_mode: Literal['byo_app', 'embedded_signup'] | None = None
+    """
+    Connection provider mode. Defaults to byo_app.
+    """
+    templates: Any | None = None
+    test_message: str | None = None
+    test_to: str | None = None
+    """
+    Optional channel recipient id for an immediate test send.
+    """
+    verify_token: str | None = None
+    """
+    Customer webhook verify token; required for byo_app.
+    """
+    waba_id: str | None = None
+
+
+class PatchChannelConnectionInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/PatchChannelConnectionInputBody.json'
+            ],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    default_agent_id: str | None = None
+    status: str | None = None
+    templates: Any | None = None
+
+
+class PatchConversationInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/PatchConversationInputBody.json'
+            ],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str | None = None
+    """
+    Reassign to agent id
+    """
+    status: Literal['open', 'snoozed', 'closed'] | None = None
+
+
+class SendConversationMessageInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/SendConversationMessageInputBody.json'
+            ],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    attachments: Any | None = None
+    content: str
+
+
+class TestChannelConnectionInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/TestChannelConnectionInputBody.json'
+            ],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    message: str
+    to: str
+
+
+class ConversationBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    agent: str
+    agent_name: str
+    channel: str
+    cost_usd: float
+    created_at: AwareDatetime
+    handoffs: list[ConversationHandoff] | None
+    id: str
+    last_activity: AwareDatetime
+    last_message: str
+    model: str
+    status: str
+    tags: list[str] | None
+    tier: str
+    title: str
+
+
+class ConversationDetailBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['https://api.sonz.ai/api/v1/schemas/ConversationDetailBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    conversation: OmnichannelConversationDTO
+    source: str
+
+
+class ListConversationMessagesOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListConversationMessagesOutputBody.json'
+            ],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    has_more: bool
+    items: list[OmnichannelMessageDTO] | None
+    messages: list[OmnichannelMessageDTO] | None
+    next_cursor: str | None = None
+
+
+class ListConversationsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListConversationsOutputBody.json'
+            ],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    conversations: list[ConversationBody] | None
+    has_more: bool
+    items: list[ConversationBody] | None
+    next_cursor: str | None = None
+    total: int
+
+
+class ListUserConversationsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=[
+                'https://api.sonz.ai/api/v1/schemas/ListUserConversationsOutputBody.json'
+            ],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    messages: list[ConversationMessage] | None
+    source: str
