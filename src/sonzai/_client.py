@@ -13,9 +13,10 @@ from .resources.agents import Agents, AsyncAgents
 from .resources.analytics import Analytics, AsyncAnalytics
 from .resources.builtin_agents import AsyncBuiltinAgents, BuiltinAgents
 from .resources.byok import BYOK, AsyncBYOK
+from .resources.channel_connections import AsyncChannelConnections, ChannelConnections
 from .resources.channels import AsyncChannels, Channels
 from .resources.composio import AsyncComposio, Composio
-from .types import PlatformModelsResponse
+from .resources.conversations import AsyncConversations, Conversations
 from .resources.custom_agents import AsyncCustomAgents, CustomAgents
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
@@ -41,6 +42,7 @@ from .resources.voice import AsyncVoices, Voices
 from .resources.webhooks import AsyncWebhooks, Webhooks
 from .resources.wisdom import AsyncWisdom, Wisdom
 from .resources.workbench import AsyncWorkbench, Workbench
+from .types import PlatformModelsResponse
 
 DEFAULT_BASE_URL = "https://api.sonz.ai"
 
@@ -88,6 +90,8 @@ class Sonzai:
     voices: Voices
     webhooks: Webhooks
     channels: Channels
+    channel_connections: ChannelConnections
+    conversations: Conversations
     custom_agents: CustomAgents
     pipelines: Pipelines
     project_config: ProjectConfig
@@ -166,6 +170,8 @@ class Sonzai:
         self.voices = Voices(self._http)
         self.webhooks = Webhooks(self._http)
         self.channels = Channels(self._http)
+        self.channel_connections = ChannelConnections(self._http)
+        self.conversations = Conversations(self._http)
         self.custom_agents = CustomAgents(self._http)
         self.pipelines = Pipelines(self._http)
         self.project_config = ProjectConfig(self._http)
@@ -244,6 +250,8 @@ class AsyncSonzai:
     voices: AsyncVoices
     webhooks: AsyncWebhooks
     channels: AsyncChannels
+    channel_connections: AsyncChannelConnections
+    conversations: AsyncConversations
     custom_agents: AsyncCustomAgents
     pipelines: AsyncPipelines
     project_config: AsyncProjectConfig
@@ -312,6 +320,8 @@ class AsyncSonzai:
         self.voices = AsyncVoices(self._http)
         self.webhooks = AsyncWebhooks(self._http)
         self.channels = AsyncChannels(self._http)
+        self.channel_connections = AsyncChannelConnections(self._http)
+        self.conversations = AsyncConversations(self._http)
         self.custom_agents = AsyncCustomAgents(self._http)
         self.pipelines = AsyncPipelines(self._http)
         self.project_config = AsyncProjectConfig(self._http)

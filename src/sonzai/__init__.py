@@ -37,7 +37,16 @@ from ._exceptions import (
 )
 from ._pagination import AsyncPage, Page
 from ._retry import RetryPolicy
-from .event_types import BUILTIN_AGENT_COMPLETED, LEAD_ENRICHED
+from .event_types import (
+    BUILTIN_AGENT_COMPLETED,
+    CONVERSATION_MESSAGE,
+    CONVERSATION_MESSAGE_FAILED,
+    CONVERSATION_STARTED,
+    CONVERSATION_TAKEOVER_RELEASED,
+    CONVERSATION_TAKEOVER_STARTED,
+    CONVERSATION_UNROUTED,
+    LEAD_ENRICHED,
+)
 from .sse_chunk import DEFAULT_MAX_CHUNK_SIZE, chunk_payload
 from .types import (
     AcknowledgeResponse,
@@ -71,6 +80,8 @@ from .types import (
     BuiltinAgentUsage,
     Calibration,
     Channel,
+    ChannelConnectionDTO,
+    ChannelConnectionsOutputBody,
     ChannelListResponse,
     ChatChoice,
     ChatMessage,
@@ -79,6 +90,9 @@ from .types import (
     ConsolidateResponse,
     ConstellationNode,
     ConstellationResponse,
+    ConversationBody,
+    ConversationDetailBody,
+    ConversationHandoff,
     CreateAPIKeyResponse,
     CreateOrgNodeOptions,
     CustomAgent,
@@ -172,6 +186,8 @@ from .types import (
     LearnNBAResult,
     LearnResult,
     ListAllFactsResponse,
+    ListConversationMessagesOutputBody,
+    ListConversationsOutputBody,
     ListMCPCatalogOutputBody,
     MCPCatalogAuth,
     MCPCatalogCreateBody,
@@ -198,6 +214,8 @@ from .types import (
     NBAActionScore,
     Notification,
     NotificationListResponse,
+    OmnichannelConversationDTO,
+    OmnichannelMessageDTO,
     PendingCapability,
     PersonalityBehaviors,
     PersonalityDelta,
@@ -305,6 +323,12 @@ __all__ = [
     "providers",
     # Event-type constants
     "BUILTIN_AGENT_COMPLETED",
+    "CONVERSATION_MESSAGE",
+    "CONVERSATION_MESSAGE_FAILED",
+    "CONVERSATION_STARTED",
+    "CONVERSATION_TAKEOVER_RELEASED",
+    "CONVERSATION_TAKEOVER_STARTED",
+    "CONVERSATION_UNROUTED",
     "LEAD_ENRICHED",
     # Exceptions
     "SonzaiError",
@@ -434,7 +458,16 @@ __all__ = [
     "CustomStateListResponse",
     # Types - Channels
     "Channel",
+    "ChannelConnectionDTO",
+    "ChannelConnectionsOutputBody",
     "ChannelListResponse",
+    "ConversationBody",
+    "ConversationDetailBody",
+    "ConversationHandoff",
+    "ListConversationMessagesOutputBody",
+    "ListConversationsOutputBody",
+    "OmnichannelConversationDTO",
+    "OmnichannelMessageDTO",
     # Types - Custom Agents
     "CustomAgent",
     "CustomAgentListResponse",

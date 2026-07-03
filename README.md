@@ -157,6 +157,57 @@ client.byok.delete("project-id", "xai")
 Supported providers: `"openai"` | `"gemini"` | `"xai"` | `"openrouter"`.
 REST path: `/api/v1/projects/{project_id}/byok-keys[/{provider}[/test]]`.
 
+## Omnichannel Conversations
+
+```python
+# List active WhatsApp conversations for a project
+for conversation in client.conversations.list(
+    project_id="project-id",
+    channel="whatsapp",
+    status="open",
+):
+    print(conversation.id, conversation.last_message)
+
+# Fetch messages with cursor pagination
+messages = client.conversations.messages("conversation-id")
+for message in messages:
+    print(message.author_type, message.content)
+
+# Human handoff controls
+client.conversations.take_over("conversation-id", operator_id="op-123", force=True)
+client.conversations.send_as_agent("conversation-id", content="I can help with that.")
+client.conversations.mark_read("conversation-id")
+client.conversations.release("conversation-id")
+
+# Stream conversation events
+for event in client.conversations.stream(project_id="project-id"):
+    print(event)
+```
+
+## Meta Channel Connections
+
+```python
+connection = client.channel_connections.create(
+    "project-id",
+    channel_type="whatsapp",
+    provider_mode="byo_app",
+    app_id="meta-app-id",
+    app_secret="meta-app-secret",
+    phone_number_id="phone-number-id",
+    waba_id="waba-id",
+    access_token="system-user-token",
+    verify_token="webhook-verify-token",
+    display_name="Support WhatsApp",
+)
+
+client.channel_connections.test(
+    "project-id",
+    connection.connection_id,
+    to="+15551234567",
+    message="Sonzai test message",
+)
+```
+
 ## Usage
 
 ### Chat (Streaming)

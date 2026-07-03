@@ -21,7 +21,12 @@ from ._generated.models import (  # noqa: F401
     Big5Trait,
     Breakthrough,
     BreakthroughsResponse,
+    ChannelConnectionDTO,
+    ChannelConnectionsOutputBody,
     ConstellationResponse,
+    ConversationBody,
+    ConversationDetailBody,
+    ConversationHandoff,
     CustomState,
     CustomToolDefinition,
     DiaryEntry,
@@ -51,6 +56,8 @@ from ._generated.models import (  # noqa: F401
     KBTrendAggregation,
     KBTrendRanking,
     ListAllFactsResponse,
+    ListConversationMessagesOutputBody,
+    ListConversationsOutputBody,
     ListMCPCatalogOutputBody,
     MCPCatalogAuth,
     MCPCatalogCreateBody,
@@ -69,6 +76,8 @@ from ._generated.models import (  # noqa: F401
     MoodHistoryResponse,
     MoodResponse,
     MoodState,
+    OmnichannelConversationDTO,
+    OmnichannelMessageDTO,
     PendingCapability,
     PersonalityDelta,
     PersonalityDimensions,
@@ -157,7 +166,6 @@ class ToolCallResponseOptions(BaseModel):
 # ---------------------------------------------------------------------------
 # Memory
 # ---------------------------------------------------------------------------
-
 
 
 class MemorySearchResult(BaseModel):
@@ -451,7 +459,6 @@ class DialogueResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Constellation / Breakthroughs / Wakeups / Mood Aggregate
 # ---------------------------------------------------------------------------
-
 
 
 class WakeupsResponse(BaseModel):
@@ -1349,7 +1356,6 @@ class KBNodeHistoryResponse(BaseModel):
     total: int = 0
 
 
-
 class KBSchemaListResponse(BaseModel):
     schemas: list[KBEntitySchema] = Field(default_factory=list)
     total: int = 0
@@ -1385,11 +1391,9 @@ class InsertFactsResponse(BaseModel):
     edges: list[InsertFactEdgeDetail] = Field(default_factory=list)
 
 
-
 class KBAnalyticsRuleListResponse(BaseModel):
     rules: list[KBAnalyticsRule] = Field(default_factory=list)
     total: int = 0
-
 
 
 class KBRecommendationsResponse(BaseModel):
@@ -2163,13 +2167,11 @@ class VoiceListOptions(BaseModel):
     model_config = {"extra": "allow"}
 
 
-
 class DeleteWisdomResponse(BaseModel):
     success: bool = False
     fact_id: str = ""
 
     model_config = {"extra": "allow"}
-
 
 
 class AgentKBSearchOptions(BaseModel):
@@ -2790,6 +2792,7 @@ class ToolDefinition(BaseModel):
 # Projects
 # ---------------------------------------------------------------------------
 
+
 class ProjectList(BaseModel):
     projects: list[Any] = Field(default_factory=list)
 
@@ -2850,6 +2853,7 @@ class DeleteUserPersonaResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Tool Schemas (distinct from custom tool list)
 # ---------------------------------------------------------------------------
+
 
 class ToolSchemaEntry(BaseModel):
     name: str = ""
