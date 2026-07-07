@@ -19,6 +19,7 @@ from .._generated.resources.conversations import Conversations as _GenConversati
 from .._http import AsyncHTTPClient, HTTPClient
 from .._pagination import AsyncPage, Page
 from .._request_helpers import encode_body
+from ..types import PushMessageResult
 
 ConversationController = Literal["agent", "human"]
 ConversationStatus = Literal["open", "snoozed", "closed"]
@@ -156,6 +157,39 @@ class Conversations(_GenConversations):
             json_data=body,
         )
         return OmnichannelConversationDTO.model_validate(data)
+
+    def push(
+        self,
+        *,
+        agent_id: str,
+        user_id: str,
+        content: str,
+        project_id: str | None = None,
+        channel_type: str | None = None,
+        connection_id: str | None = None,
+    ) -> PushMessageResult:
+        """Push a proactive agent-authored message to a user's connected
+        messaging channel (WhatsApp/Messenger/Instagram), outside the
+        reply-to-inbound flow. Honours the WhatsApp 24h customer-service
+        window: outside it, the connection's approved re-engagement template
+        is used, and the call raises if none is configured.
+
+        Args:
+            agent_id: Agent UUID or name authoring the message.
+            user_id: Platform user id to deliver to (channel identity owner).
+            content: Message text.
+            project_id: Defaults to the authenticated project/default project.
+            channel_type: Restrict delivery to one channel (whatsapp,
+                messenger, instagram); defaults to the first identity found.
+            connection_id: Pin the outbound channel connection UUID.
+        """
+        data = self._http.post(
+            "/api/v1/conversations/push",
+            json_data=_push_body(
+                agent_id, user_id, content, project_id, channel_type, connection_id
+            ),
+        )
+        return PushMessageResult.model_validate(data)
 
 
 class AsyncConversations(_GenAsyncConversations):
@@ -301,6 +335,44 @@ class AsyncConversations(_GenAsyncConversations):
             json_data=body,
         )
         return OmnichannelConversationDTO.model_validate(data)
+
+    async def push(
+        self,
+        *,
+        agent_id: str,
+        user_id: str,
+        content: str,
+        project_id: str | None = None,
+        channel_type: str | None = None,
+        connection_id: str | None = None,
+    ) -> PushMessageResult:
+        """Push a proactive agent-authored message to a user's connected
+        messaging channel (WhatsApp/Messenger/Instagram)."""
+        data = await self._http.post(
+            "/api/v1/conversations/push",
+            json_data=_push_body(
+                agent_id, user_id, content, project_id, channel_type, connection_id
+            ),
+        )
+        return PushMessageResult.model_validate(data)
+
+
+def _push_body(
+    agent_id: str,
+    user_id: str,
+    content: str,
+    project_id: str | None,
+    channel_type: str | None,
+    connection_id: str | None,
+) -> dict[str, Any]:
+    body: dict[str, Any] = {"agent_id": agent_id, "user_id": user_id, "content": content}
+    if project_id is not None:
+        body["project_id"] = project_id
+    if channel_type is not None:
+        body["channel_type"] = channel_type
+    if connection_id is not None:
+        body["connection_id"] = connection_id
+    return body
 
 
 def _conversation_params(

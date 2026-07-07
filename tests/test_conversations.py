@@ -212,6 +212,61 @@ def test_mutating_methods(client: Sonzai, base_url: str) -> None:
 
 
 @respx.mock
+def test_push(client: Sonzai, base_url: str) -> None:
+    route = respx.post(f"{base_url}/api/v1/conversations/push").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "conversation_id": "conv-1",
+                "channel_type": "whatsapp",
+                "external_id": "+639171234567",
+                "delivery_status": "sent",
+                "session_id": "sess-1",
+                "used_template": True,
+            },
+        )
+    )
+
+    result = client.conversations.push(
+        agent_id="agent-1",
+        user_id="user-1",
+        content="New lead: score 82 Hot",
+        channel_type="whatsapp",
+    )
+
+    assert json.loads(route.calls.last.request.content) == {
+        "agent_id": "agent-1",
+        "user_id": "user-1",
+        "content": "New lead: score 82 Hot",
+        "channel_type": "whatsapp",
+    }
+    assert result.conversation_id == "conv-1"
+    assert result.delivery_status == "sent"
+    assert result.used_template is True
+
+
+@respx.mock
+async def test_push_async(async_client: AsyncSonzai, base_url: str) -> None:
+    respx.post(f"{base_url}/api/v1/conversations/push").mock(
+        return_value=httpx.Response(
+            200,
+            json={
+                "channel_type": "whatsapp",
+                "external_id": "+639171234567",
+                "delivery_status": "sent",
+            },
+        )
+    )
+    try:
+        result = await async_client.conversations.push(
+            agent_id="agent-1", user_id="user-1", content="hi"
+        )
+        assert result.delivery_status == "sent"
+    finally:
+        await async_client.close()
+
+
+@respx.mock
 def test_stream(client: Sonzai, base_url: str) -> None:
     body = 'data: {"type":"conversation.message","conversation_id":"conv-1"}\n\ndata: [DONE]\n\n'
     route = respx.get(f"{base_url}/api/v1/conversations/stream").mock(

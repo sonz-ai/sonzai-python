@@ -21,7 +21,9 @@ from .resources.custom_agents import AsyncCustomAgents, CustomAgents
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
 from .resources.eval_templates import AsyncEvalTemplates, EvalTemplates
+from .resources.ingest import AsyncIngest, Ingest
 from .resources.knowledge import AsyncKnowledge, Knowledge
+from .resources.lead_assignments import AsyncLeadAssignments, LeadAssignments
 from .resources.mcp_catalog import AsyncMCPCatalog, MCPCatalog
 from .resources.ml import ML, AsyncML
 from .resources.org import AsyncOrg, Org
@@ -81,6 +83,8 @@ class Sonzai:
     analytics: Analytics
     builtin_agents: BuiltinAgents
     ml: ML
+    lead_assignments: LeadAssignments
+    ingest: Ingest
     knowledge: Knowledge
     mcp_catalog: MCPCatalog
     eval_templates: EvalTemplates
@@ -161,6 +165,8 @@ class Sonzai:
         self.analytics = Analytics(self._http)
         self.builtin_agents = BuiltinAgents(self._http)
         self.ml = ML(self._http)
+        self.lead_assignments = LeadAssignments(self._http)
+        self.ingest = Ingest(self._http)
         self.knowledge = Knowledge(self._http)
         self.mcp_catalog = MCPCatalog(self._http)
         self.eval_templates = EvalTemplates(self._http)
@@ -241,6 +247,8 @@ class AsyncSonzai:
     analytics: AsyncAnalytics
     builtin_agents: AsyncBuiltinAgents
     ml: AsyncML
+    lead_assignments: AsyncLeadAssignments
+    ingest: AsyncIngest
     knowledge: AsyncKnowledge
     mcp_catalog: AsyncMCPCatalog
     eval_templates: AsyncEvalTemplates
@@ -311,6 +319,8 @@ class AsyncSonzai:
         self.analytics = AsyncAnalytics(self._http)
         self.builtin_agents = AsyncBuiltinAgents(self._http)
         self.ml = AsyncML(self._http)
+        self.lead_assignments = AsyncLeadAssignments(self._http)
+        self.ingest = AsyncIngest(self._http)
         self.knowledge = AsyncKnowledge(self._http)
         self.mcp_catalog = AsyncMCPCatalog(self._http)
         self.eval_templates = AsyncEvalTemplates(self._http)

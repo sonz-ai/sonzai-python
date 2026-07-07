@@ -13,14 +13,13 @@ from ._generated.models import (  # noqa: F401
     AgentIndex,
     AgentInstance,
     AtomicFact,
-    BYOKKeyResponse,
-    ListBYOKKeysOutputBody,
     BatchImportUser,
     BatchPersonalityEntry,
     Big5,
     Big5Trait,
     Breakthrough,
     BreakthroughsResponse,
+    BYOKKeyResponse,
     ChannelConnectionDTO,
     ChannelConnectionsOutputBody,
     ConstellationResponse,
@@ -32,6 +31,8 @@ from ._generated.models import (  # noqa: F401
     DiaryEntry,
     EvalCategory,
     EvalTemplate,
+    ForkResponse,
+    ForkStatusResponse,
     Goal,
     GoalsResponse,
     Habit,
@@ -56,6 +57,7 @@ from ._generated.models import (  # noqa: F401
     KBTrendAggregation,
     KBTrendRanking,
     ListAllFactsResponse,
+    ListBYOKKeysOutputBody,
     ListConversationMessagesOutputBody,
     ListConversationsOutputBody,
     ListMCPCatalogOutputBody,
@@ -92,21 +94,19 @@ from ._generated.models import (  # noqa: F401
     SignificantMoment,
     SignificantMomentsResponse,
     SummariesResponse,
-    TimeMachineMoodSnapshot,
-    TimeMachineResponse,
-    TimelineSession,
-    TraitPrecision,
-    UserPersona,
-    UserPersonaRecord,
-    UsersResponse,
-    ForkResponse,
-    ForkStatusResponse,
     SupportTicket,
     SupportTicketComment,
     SupportTicketHistory,
     TicketDetailResponse,
     TicketListResponse,
     TicketSummary,
+    TimelineSession,
+    TimeMachineMoodSnapshot,
+    TimeMachineResponse,
+    TraitPrecision,
+    UserPersona,
+    UserPersonaRecord,
+    UsersResponse,
     WebhookDeliveryAttempt,
     WisdomAuditResponse,
 )
@@ -463,7 +463,7 @@ class DialogueResponse(BaseModel):
 
 class WakeupsResponse(BaseModel):
     # Forward reference: ScheduledWakeup is defined later in this module.
-    wakeups: list["ScheduledWakeup"] = Field(default_factory=list)
+    wakeups: list[ScheduledWakeup] = Field(default_factory=list)
 
     model_config = {"extra": "allow"}
 
@@ -1216,7 +1216,7 @@ class EnrichedContextResponse(BaseModel):
     # Raw messages buffered by /process for the current session.
     # Chronological order. Closes the latency gap between a fact being said
     # this turn and that fact becoming searchable via consolidated facts.
-    recent_turns: list["RecentTurn"] | None = None
+    recent_turns: list[RecentTurn] | None = None
     # Layer 6b: Proactive
     proactive_memories: list[Any] | None = None
     # Layer 6c: Constellation
@@ -3386,6 +3386,152 @@ class RecordFeedbackResult(BaseModel):
     bandit_n: int | None = None
     bandit_error: str | None = None
     message: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+# ---------------------------------------------------------------------------
+# Lead Assignments (client.lead_assignments) — Wave-3 rep-copilot follow-up
+# ---------------------------------------------------------------------------
+# The tenant-generic work-distribution primitive (any vertical — leads,
+# tickets, shifts): offer a unit of work to one rep from a candidate roster,
+# structurally dedup (one active assignment per lead_ref), and re-offer on SLA
+# expiry. Mirrors the Go SDK's lead_assignments.go shapes.
+
+
+class LeadAssignment(BaseModel):
+    """One row of the assignment ledger."""
+
+    assignment_id: str = ""
+    lead_ref: str = ""
+    rep_user_id: str = ""
+    state: str = ""
+    policy: str = ""
+    propensity: float | None = None
+    features: dict[str, Any] | None = None
+    offered_at: str = ""
+    sla_expires_at: str = ""
+    claimed_at: str | None = None
+    completed_at: str | None = None
+    prior_assignment_id: str | None = None
+
+    model_config = {"extra": "allow"}
+
+
+class OfferLeadAssignmentResult(BaseModel):
+    """Outcome of an offer call. ``deduplicated`` is true when the lead
+    already had an active assignment; ``assignment`` is then the pre-existing
+    one, not a new one.
+    """
+
+    assignment: LeadAssignment = Field(default_factory=LeadAssignment)
+    deduplicated: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+class ListLeadAssignmentsResult(BaseModel):
+    """A page of the project's assignment ledger, newest offer first."""
+
+    assignments: list[LeadAssignment] = Field(default_factory=list)
+
+    model_config = {"extra": "allow"}
+
+    @field_validator("assignments", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+# ---------------------------------------------------------------------------
+# Adapter ingestion (client.ingest) — Wave-3 rep-copilot follow-up
+# ---------------------------------------------------------------------------
+# A customer-owned adapter (e.g. a CRM sidecar under app-runtime) normalizes
+# its own events/contacts and POSTs them here, so the platform's pipelines,
+# lead-assignment ledger, and outbound webhooks can react without the
+# platform ever holding CRM tables. Mirrors the Go SDK's ingest.go shapes.
+
+
+class IngestEventResult(BaseModel):
+    """Outcome of storing one domain event. ``duplicate`` is true when this
+    event_id was already stored for the project — the replay was a no-op and
+    no fan-out happened.
+    """
+
+    event_id: str = ""
+    type: str = ""
+    duplicate: bool = False
+
+    model_config = {"extra": "allow"}
+
+
+class IngestContact(BaseModel):
+    """A stored contact/rep registry entry."""
+
+    id: str = ""
+    contact_ref: str = ""
+    kind: str = ""
+    display_name: str = ""
+    phone_e164: str = ""
+    email: str = ""
+    crm_owner_id: str = ""
+    metadata: dict[str, Any] = Field(default_factory=dict)
+    created_at: str = ""
+    updated_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class IngestedEvent(BaseModel):
+    """One row of the ``list_events`` read path — the envelope minus the
+    payload body (a completeness/gap check needs the keys, not the verbatim
+    body).
+    """
+
+    event_id: str = ""
+    type: str = ""
+    occurred_at: str = ""
+    lead_ref: str = ""
+    contact_ref: str = ""
+    created_at: str = ""
+
+    model_config = {"extra": "allow"}
+
+
+class ListIngestEventsResult(BaseModel):
+    """A page of stored domain events. ``next_cursor`` is set only when a
+    full page was returned; feed it back as ``cursor`` to fetch the next
+    page.
+    """
+
+    events: list[IngestedEvent] = Field(default_factory=list)
+    next_cursor: str = ""
+
+    model_config = {"extra": "allow"}
+
+    @field_validator("events", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+# ---------------------------------------------------------------------------
+# Conversation push (client.conversations.push) — Wave-3 rep-copilot follow-up
+# ---------------------------------------------------------------------------
+
+
+class PushMessageResult(BaseModel):
+    """Outcome of a proactive agent-authored message push to a user's
+    connected messaging channel (WhatsApp/Messenger/Instagram).
+    """
+
+    conversation_id: str = ""
+    channel_type: str = ""
+    external_id: str = ""
+    channel_message_id: str = ""
+    delivery_status: str = ""
+    session_id: str = ""
+    used_template: bool = False
 
     model_config = {"extra": "allow"}
 
