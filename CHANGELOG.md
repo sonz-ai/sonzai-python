@@ -3,7 +3,7 @@
 All notable changes to `sonzai` are documented here. The project follows
 [Semantic Versioning](https://semver.org/). Dates are `YYYY-MM-DD`.
 
-## Unreleased
+## 1.8.0 — 2026-07-10
 
 ### Added
 
@@ -59,6 +59,49 @@ All notable changes to `sonzai` are documented here. The project follows
 
 Both changes mirror the sonzai-go SDK (`ChatOptions.Temperature`,
 `ChatStreamChannelDetached` / `DetachOptions`).
+
+## 1.8.0 — 2026-07-10
+
+### Added
+
+- **Runtime CRM resource (`client.crm`)** — sync and async access to an
+  app-runtime's adapter-token CRM surface. Configure `runtime_base_url` and
+  `runtime_api_key` (or `SONZAI_RUNTIME_BASE_URL` and
+  `SONZAI_RUNTIME_API_KEY`); CRM calls target the deployed runtime's
+  `/api/rt/crm/*` routes, not `https://api.sonz.ai`.
+  - `import_contacts(...)` bulk-upserts contacts by `external_ref`, with
+    optional tenant and idempotency headers.
+  - `events(...)` provides a cursor-paginated CRM change feed.
+  - These are the only adapter-token routes exposed. Browser-session staff
+    CRM CRUD endpoints are intentionally not SDK methods.
+- **Omnichannel conversations and channel connections** — sync and async
+  resources for public messaging integrations.
+  - `client.conversations` lists and reads conversations/messages with cursor
+    pagination, streams events over SSE, manages human takeovers, sends
+    agent-authored messages, marks conversations read, and updates mutable
+    conversation fields.
+  - `client.conversations.push(...)` sends proactive messages through a
+    user's connected WhatsApp, Messenger, or Instagram channel, including
+    WhatsApp's template fallback outside its 24-hour service window.
+  - `client.channel_connections` manages project-scoped WhatsApp, Messenger,
+    and Instagram connections (`list`, `create`, `get`, `update`, `delete`,
+    `test`); returned connection credentials are redacted.
+  - New `CONVERSATION_*` event-type constants cover message, lifecycle,
+    takeover, and unrouted conversation events.
+- **Lead distribution and adapter ingestion** — sync and async
+  `client.lead_assignments` methods for `offer`, `list`, `get`, `claim`,
+  `release`, and `complete`; `client.ingest` methods for idempotent domain
+  event submission, contact/rep registry upserts, and cursor-based event
+  reconciliation.
+- **User conversation history** — `memory.list_user_conversations(...)` and
+  its async counterpart retrieve an agent-user conversation timeline.
+
+### Changed
+
+- **Pipeline runs are asynchronous** — `pipelines.run(...)` now enqueues a
+  run and returns its queued `PipelineRun`. Use new `get_run(...)` or
+  `list_runs(...)` polling methods, or `run_and_wait(...)` to block until a
+  terminal result. Sync and async resources expose the same lifecycle.
 
 ## 1.5.2 — 2026-05-07
 
