@@ -184,6 +184,43 @@ for event in client.conversations.stream(project_id="project-id"):
     print(event)
 ```
 
+## Runtime CRM
+
+The runtime CRM is served by a deployed app-runtime instance under
+`/api/rt/crm/*`, not by the Sonzai platform API. Configure a runtime base URL
+and use the app-runtime adapter token for the CRM resource.
+
+```python
+from sonzai import Sonzai
+
+client = Sonzai(
+    api_key="platform-api-key",
+    runtime_base_url="https://your-runtime.example.com",
+    runtime_api_key="adapter-token",
+)
+
+result = client.crm.import_contacts(
+    [
+        {
+            "external_ref": "sf-001",
+            "first_name": "Grace",
+            "last_name": "Hopper",
+            "emails": ["grace@example.com"],
+            "source": "salesforce",
+        }
+    ],
+    # Required only when the runtime is not pinned to one TENANT_ID.
+    tenant_id="tenant-id",
+)
+print(result.imported)
+
+for event in client.crm.events(cursor=None, tenant_id="tenant-id"):
+    print(event.cursor, event.event, event.payload)
+```
+
+Only adapter-token routes are exposed: bulk contact import and the CRM change
+feed. Browser-session staff CRM CRUD routes are intentionally not SDK methods.
+
 ## Meta Channel Connections
 
 ```python
@@ -765,10 +802,12 @@ asyncio.run(main())
 
 ```python
 client = Sonzai(
-    api_key="sk-...",            # or SONZAI_API_KEY env var
-    base_url="https://api.sonz.ai",  # or SONZAI_BASE_URL env var
-    timeout=30.0,                # request timeout in seconds
-    max_retries=2,               # retry count for failed requests
+    api_key="sk-...",                         # or SONZAI_API_KEY env var
+    base_url="https://api.sonz.ai",           # or SONZAI_BASE_URL env var
+    runtime_base_url="https://rt.example.com",  # or SONZAI_RUNTIME_BASE_URL
+    runtime_api_key="adapter-token",          # or SONZAI_RUNTIME_API_KEY
+    timeout=30.0,                             # request timeout in seconds
+    max_retries=2,                            # retry count for failed requests
 )
 ```
 

@@ -193,6 +193,7 @@ class HTTPClient:
         *,
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
         idempotency_key: str | None = None,
         timeout: float | None = None,
     ) -> Any:
@@ -202,6 +203,8 @@ class HTTPClient:
 
         # Build per-request headers; add Idempotency-Key for mutating methods
         extra_headers: dict[str, str] = {}
+        if headers:
+            extra_headers.update(headers)
         if method.upper() in self._MUTATING_METHODS:
             extra_headers["Idempotency-Key"] = idempotency_key or uuid.uuid4().hex
 
@@ -261,8 +264,14 @@ class HTTPClient:
             raise last_exc
         raise APIError(0, "retries exhausted")  # pragma: no cover
 
-    def get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
-        return self.request("GET", path, params=params)
+    def get(
+        self,
+        path: str,
+        *,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
+        return self.request("GET", path, params=params, headers=headers)
 
     def post(
         self,
@@ -270,6 +279,7 @@ class HTTPClient:
         *,
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
         idempotency_key: str | None = None,
         timeout: float | None = None,
     ) -> Any:
@@ -278,6 +288,7 @@ class HTTPClient:
             path,
             json_data=json_data,
             params=params,
+            headers=headers,
             idempotency_key=idempotency_key,
             timeout=timeout,
         )
@@ -428,6 +439,7 @@ class AsyncHTTPClient:
         *,
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
         idempotency_key: str | None = None,
         timeout: float | None = None,
     ) -> Any:
@@ -438,6 +450,8 @@ class AsyncHTTPClient:
 
         # Build per-request headers; add Idempotency-Key for mutating methods
         extra_headers: dict[str, str] = {}
+        if headers:
+            extra_headers.update(headers)
         if method.upper() in self._MUTATING_METHODS:
             extra_headers["Idempotency-Key"] = idempotency_key or uuid.uuid4().hex
 
@@ -497,8 +511,14 @@ class AsyncHTTPClient:
             raise last_exc
         raise APIError(0, "retries exhausted")  # pragma: no cover
 
-    async def get(self, path: str, *, params: dict[str, Any] | None = None) -> Any:
-        return await self.request("GET", path, params=params)
+    async def get(
+        self,
+        path: str,
+        *,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+    ) -> Any:
+        return await self.request("GET", path, params=params, headers=headers)
 
     async def post(
         self,
@@ -506,6 +526,7 @@ class AsyncHTTPClient:
         *,
         json_data: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
         idempotency_key: str | None = None,
         timeout: float | None = None,
     ) -> Any:
@@ -514,6 +535,7 @@ class AsyncHTTPClient:
             path,
             json_data=json_data,
             params=params,
+            headers=headers,
             idempotency_key=idempotency_key,
             timeout=timeout,
         )

@@ -17,6 +17,7 @@ from .resources.channel_connections import AsyncChannelConnections, ChannelConne
 from .resources.channels import AsyncChannels, Channels
 from .resources.composio import AsyncComposio, Composio
 from .resources.conversations import AsyncConversations, Conversations
+from .resources.crm import AsyncCrm, Crm
 from .resources.custom_agents import AsyncCustomAgents, CustomAgents
 from .resources.custom_llm import AsyncCustomLLM, CustomLLM
 from .resources.eval_runs import AsyncEvalRuns, EvalRuns
@@ -96,6 +97,7 @@ class Sonzai:
     channels: Channels
     channel_connections: ChannelConnections
     conversations: Conversations
+    crm: Crm
     custom_agents: CustomAgents
     pipelines: Pipelines
     project_config: ProjectConfig
@@ -115,6 +117,8 @@ class Sonzai:
         api_key: str | None = None,
         *,
         base_url: str | None = None,
+        runtime_base_url: str | None = None,
+        runtime_api_key: str | None = None,
         timeout: float = 30.0,
         retry: RetryPolicy | None = None,
         max_retries: int | None = None,
@@ -125,6 +129,11 @@ class Sonzai:
         Args:
             api_key: Your project API key. Falls back to ``SONZAI_API_KEY`` env var.
             base_url: API base URL. Falls back to ``SONZAI_BASE_URL`` or the default.
+            runtime_base_url: Deployed app-runtime base URL for runtime-local resources
+                such as CRM. Falls back to ``SONZAI_RUNTIME_BASE_URL``.
+            runtime_api_key: Runtime adapter token for ``Authorization: Bearer`` on
+                app-runtime routes. Falls back to ``SONZAI_RUNTIME_API_KEY`` and then
+                ``api_key``.
             timeout: Request timeout in seconds.
             retry: ``RetryPolicy`` instance controlling retry behaviour. When provided,
                 takes precedence over ``max_retries``.
@@ -140,6 +149,10 @@ class Sonzai:
             )
 
         resolved_url = base_url or os.environ.get("SONZAI_BASE_URL", DEFAULT_BASE_URL)
+        resolved_runtime_url = runtime_base_url or os.environ.get("SONZAI_RUNTIME_BASE_URL")
+        resolved_runtime_key = (
+            runtime_api_key or os.environ.get("SONZAI_RUNTIME_API_KEY") or resolved_key
+        )
 
         # Build the effective RetryPolicy. retry= wins; max_retries= is compat shim.
         if retry is None and max_retries is not None:
@@ -160,6 +173,16 @@ class Sonzai:
                 timeout=timeout,
                 retry=retry,
             )
+        self._runtime_http = (
+            HTTPClient(
+                base_url=resolved_runtime_url,
+                api_key=resolved_runtime_key,
+                timeout=timeout,
+                retry=retry,
+            )
+            if resolved_runtime_url
+            else None
+        )
 
         self.agents = Agents(self._http)
         self.analytics = Analytics(self._http)
@@ -178,6 +201,7 @@ class Sonzai:
         self.channels = Channels(self._http)
         self.channel_connections = ChannelConnections(self._http)
         self.conversations = Conversations(self._http)
+        self.crm = Crm(self._runtime_http)
         self.custom_agents = CustomAgents(self._http)
         self.pipelines = Pipelines(self._http)
         self.project_config = ProjectConfig(self._http)
@@ -213,6 +237,8 @@ class Sonzai:
     def close(self) -> None:
         """Close the underlying HTTP client."""
         self._http.close()
+        if self._runtime_http is not None:
+            self._runtime_http.close()
 
     def __enter__(self) -> Sonzai:
         return self
@@ -260,6 +286,7 @@ class AsyncSonzai:
     channels: AsyncChannels
     channel_connections: AsyncChannelConnections
     conversations: AsyncConversations
+    crm: AsyncCrm
     custom_agents: AsyncCustomAgents
     pipelines: AsyncPipelines
     project_config: AsyncProjectConfig
@@ -282,6 +309,8 @@ class AsyncSonzai:
         api_key: str | None = None,
         *,
         base_url: str | None = None,
+        runtime_base_url: str | None = None,
+        runtime_api_key: str | None = None,
         timeout: float = 30.0,
         retry: RetryPolicy | None = None,
         max_retries: int | None = None,
@@ -294,6 +323,10 @@ class AsyncSonzai:
             )
 
         resolved_url = base_url or os.environ.get("SONZAI_BASE_URL", DEFAULT_BASE_URL)
+        resolved_runtime_url = runtime_base_url or os.environ.get("SONZAI_RUNTIME_BASE_URL")
+        resolved_runtime_key = (
+            runtime_api_key or os.environ.get("SONZAI_RUNTIME_API_KEY") or resolved_key
+        )
 
         # Build the effective RetryPolicy. retry= wins; max_retries= is compat shim.
         if retry is None and max_retries is not None:
@@ -314,6 +347,16 @@ class AsyncSonzai:
                 timeout=timeout,
                 retry=retry,
             )
+        self._runtime_http = (
+            AsyncHTTPClient(
+                base_url=resolved_runtime_url,
+                api_key=resolved_runtime_key,
+                timeout=timeout,
+                retry=retry,
+            )
+            if resolved_runtime_url
+            else None
+        )
 
         self.agents = AsyncAgents(self._http)
         self.analytics = AsyncAnalytics(self._http)
@@ -332,6 +375,7 @@ class AsyncSonzai:
         self.channels = AsyncChannels(self._http)
         self.channel_connections = AsyncChannelConnections(self._http)
         self.conversations = AsyncConversations(self._http)
+        self.crm = AsyncCrm(self._runtime_http)
         self.custom_agents = AsyncCustomAgents(self._http)
         self.pipelines = AsyncPipelines(self._http)
         self.project_config = AsyncProjectConfig(self._http)
@@ -367,6 +411,8 @@ class AsyncSonzai:
     async def close(self) -> None:
         """Close the underlying HTTP client."""
         await self._http.close()
+        if self._runtime_http is not None:
+            await self._runtime_http.close()
 
     async def __aenter__(self) -> AsyncSonzai:
         return self

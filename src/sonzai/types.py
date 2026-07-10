@@ -3516,6 +3516,212 @@ class ListIngestEventsResult(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Runtime CRM (client.crm) — adapter-token surface on app-runtime
+# ---------------------------------------------------------------------------
+
+
+class CRMContact(BaseModel):
+    """Runtime-local CRM contact."""
+
+    id: str = ""
+    tenant_id: str = ""
+    project_id: str = ""
+    first_name: str = ""
+    last_name: str = ""
+    emails: list[Any] = Field(default_factory=list)
+    phones: list[Any] = Field(default_factory=list)
+    lead_ref: str = ""
+    owner_user_id: str = ""
+    source: str = ""
+    external_ref: str = ""
+    custom: dict[str, Any] = Field(default_factory=dict)
+    archived: bool = False
+    created_at: str = ""
+    updated_at: str = ""
+    deleted_at: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CRMCompany(BaseModel):
+    """Runtime-local CRM company."""
+
+    id: str = ""
+    tenant_id: str = ""
+    project_id: str = ""
+    name: str = ""
+    domain: str = ""
+    custom: dict[str, Any] = Field(default_factory=dict)
+    archived: bool = False
+    created_at: str = ""
+    updated_at: str = ""
+    deleted_at: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CRMPipeline(BaseModel):
+    """Runtime-local CRM pipeline."""
+
+    id: str = ""
+    tenant_id: str = ""
+    project_id: str = ""
+    name: str = ""
+    is_default: bool = False
+    archived: bool = False
+    created_at: str = ""
+    updated_at: str = ""
+    deleted_at: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CRMStage(BaseModel):
+    """Runtime-local CRM pipeline stage."""
+
+    id: str = ""
+    pipeline_id: str = ""
+    tenant_id: str = ""
+    name: str = ""
+    kind: str = ""
+    sort_order: int = 0
+    archived: bool = False
+    created_at: str = ""
+    updated_at: str = ""
+    deleted_at: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CRMDeal(BaseModel):
+    """Runtime-local CRM deal."""
+
+    id: str = ""
+    tenant_id: str = ""
+    project_id: str = ""
+    contact_id: str = ""
+    company_id: str = ""
+    pipeline_id: str = ""
+    stage_id: str = ""
+    catalog_item_id: str = ""
+    value_cents: int | None = None
+    currency: str = ""
+    owner_user_id: str = ""
+    lead_ref: str = ""
+    custom: dict[str, Any] = Field(default_factory=dict)
+    archived: bool = False
+    created_at: str = ""
+    updated_at: str = ""
+    deleted_at: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CRMDealStageHistory(BaseModel):
+    """Runtime-local CRM deal stage transition."""
+
+    id: str = ""
+    deal_id: str = ""
+    tenant_id: str = ""
+    from_stage_id: str = ""
+    to_stage_id: str = ""
+    moved_by_user_id: str = ""
+    moved_at: str = ""
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CRMActivity(BaseModel):
+    """Runtime-local CRM activity."""
+
+    id: str = ""
+    tenant_id: str = ""
+    project_id: str = ""
+    kind: str = ""
+    contact_id: str = ""
+    deal_id: str = ""
+    body: str = ""
+    payload: dict[str, Any] | None = None
+    due_at: str | None = None
+    done_at: str | None = None
+    author_user_id: str = ""
+    archived: bool = False
+    created_at: str = ""
+    updated_at: str = ""
+    deleted_at: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CRMCustomField(BaseModel):
+    """Runtime-local CRM custom field definition."""
+
+    id: str = ""
+    tenant_id: str = ""
+    object_type: str = ""
+    field_key: str = ""
+    label: str = ""
+    field_type: str = ""
+    options: Any | None = None
+    required: bool = False
+    archived: bool = False
+    created_at: str = ""
+    updated_at: str = ""
+    deleted_at: str | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CRMEvent(BaseModel):
+    """Runtime CRM change-feed envelope."""
+
+    cursor: str = ""
+    tenant_id: str = ""
+    event: str = ""
+    entity_id: str = ""
+    entity_type: str = ""
+    payload: dict[str, Any] = Field(default_factory=dict)
+    at: str = ""
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CRMImportItem(BaseModel):
+    """Contact import row for ``client.crm.import_contacts``.
+
+    ``external_ref`` is required by app-runtime and is the idempotency key for
+    upserts within a tenant/project.
+    """
+
+    external_ref: str
+    project_id: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    emails: list[Any] | None = None
+    phones: list[Any] | None = None
+    lead_ref: str | None = None
+    owner_user_id: str | None = None
+    source: str | None = None
+    custom: dict[str, Any] | None = None
+
+    model_config = ConfigDict(extra="allow")
+
+
+class CRMImportResult(BaseModel):
+    """Result from runtime CRM contact import."""
+
+    imported: int = 0
+    contacts: list[CRMContact] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
+
+    @field_validator("contacts", mode="before")
+    @classmethod
+    def _none_is_empty_list(cls, v: Any) -> Any:
+        return [] if v is None else v
+
+
+# ---------------------------------------------------------------------------
 # Conversation push (client.conversations.push) — Wave-3 rep-copilot follow-up
 # ---------------------------------------------------------------------------
 

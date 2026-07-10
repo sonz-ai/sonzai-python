@@ -10,6 +10,7 @@ from .channel_connections import AsyncChannelConnections, ChannelConnections
 from .channels import AsyncChannels, Channels
 from .composio import AsyncComposio, Composio
 from .conversations import AsyncConversations, Conversations
+from .crm import AsyncCrm, Crm
 from .custom_agents import AsyncCustomAgents, CustomAgents
 from .custom_llm import AsyncCustomLLM, CustomLLM
 from .custom_states import AsyncCustomStates, CustomStates
@@ -49,6 +50,8 @@ __all__ = [
     "AsyncComposio",
     "Conversations",
     "AsyncConversations",
+    "Crm",
+    "AsyncCrm",
     "CustomAgents",
     "AsyncCustomAgents",
     "CustomLLM",
