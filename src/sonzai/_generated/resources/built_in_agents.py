@@ -10,14 +10,21 @@ from sonzai._generated.models import (
     AgentGuidance,
     Calibration,
     ChatMsgInputBody,
+    ContactTimingSuggestBody,
+    ContactTimingSuggestResponse,
     DecideMLNBARequest,
     DecideResponse,
     EnrichJobView,
     EnrichLeadBody,
     EvaluateMLOPERequest,
+    EvResponseBody,
     FeedbackResponse,
+    ForecastResponseBody,
+    GenerateMLWinLossReportRequest,
     GetBuiltinAgentSessionResponse,
     GuidanceOutput,
+    HandoffSuggestBody,
+    HandoffSuggestResponse,
     InvokeInputBody,
     LearnInputBody,
     LearnMLNBARequest,
@@ -25,18 +32,26 @@ from sonzai._generated.models import (
     LearnResult,
     ListBuiltinAgentSessionsResponse,
     ListBuiltinAgentsResponse,
+    ListLeadEnrichmentJobsResponse,
+    LookalikeRankResponse,
+    LookalikeScoreBody,
+    LookalikeScoreResponse,
     ModelView,
     NbaInputBody,
     NBAResult,
+    OfferSuggestBody,
+    OfferSuggestResponse,
     OnboardProjectVerticalRequest,
     OnboardSummary,
     OPEResponse,
     PolicyView,
+    PredictMLExpectedValueRequest,
     PredictMLScoringRequest,
     PredictResponse,
     RecordMLFeedbackRequest,
     RecordOutcomeInputBody,
     ResetLearningResp,
+    RevivalQueueBody,
     RlTrainInputBody,
     RLTrainResult,
     SessionBody,
@@ -46,11 +61,13 @@ from sonzai._generated.models import (
     SimulateMLRoundsRequest,
     SimulateRoundsResponse,
     StartChatInputBody,
+    StreamMLRoundsRequest,
     TrainInputBody,
     TrainMLScoringRequest,
     TrainResponse,
     TrainResult,
     VerticalConfig,
+    WinlossReportResponse,
 )
 from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
@@ -70,6 +87,15 @@ class BuiltInAgents(_BuiltInAgentsBase):
         params = None
         data = self._http.get(path, params=params)
         return ListBuiltinAgentsResponse.model_validate(data)
+
+    def list_lead_enrichment_jobs(
+        self,
+    ) -> ListLeadEnrichmentJobsResponse:
+        """List lead-enrichment jobs"""
+        path = f"/api/v1/builtin-agents/lead/enrich"
+        params = None
+        data = self._http.get(path, params=params)
+        return ListLeadEnrichmentJobsResponse.model_validate(data)
 
     def enqueue_lead_enrichment(
         self,
@@ -235,13 +261,15 @@ class BuiltInAgents(_BuiltInAgentsBase):
         action_features: dict[str, Any] | None = None,
         action_id: str | None = None,
         context: dict[str, Any] | None = None,
-        converted: bool,
+        converted: bool | None = None,
+        event: str | None = None,
         features: dict[str, Any] | None = None,
         note: str | None = None,
         predicted_score: int | None = None,
         propensity: float | None = None,
         reward: float | None = None,
         subject_id: str | None = None,
+        value: float | None = None,
     ) -> FeedbackResponse:
         """Record a realized outcome — improves the scoring model + the bandit in one call"""
         path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/feedback"
@@ -255,6 +283,8 @@ class BuiltInAgents(_BuiltInAgentsBase):
             _raw["context"] = context
         if converted is not None:
             _raw["converted"] = converted
+        if event is not None:
+            _raw["event"] = event
         if features is not None:
             _raw["features"] = features
         if note is not None:
@@ -267,6 +297,8 @@ class BuiltInAgents(_BuiltInAgentsBase):
             _raw["reward"] = reward
         if subject_id is not None:
             _raw["subject_id"] = subject_id
+        if value is not None:
+            _raw["value"] = value
         body = encode_body(RecordMLFeedbackRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return FeedbackResponse.model_validate(data)
@@ -393,6 +425,28 @@ class BuiltInAgents(_BuiltInAgentsBase):
         body = encode_body(SimulateMLRoundsRequest, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return SimulateRoundsResponse.model_validate(data)
+
+    def stream_ml_rounds(
+        self,
+        use_case: str,
+        *,
+        rounds: int | None = None,
+        scenario: str | None = None,
+        seed: int | None = None,
+    ) -> Any:
+        """Stream self-learning simulation rounds as they complete"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/simulate-rounds/stream"
+        params = None
+        _raw: dict[str, Any] = {}
+        if rounds is not None:
+            _raw["rounds"] = rounds
+        if scenario is not None:
+            _raw["scenario"] = scenario
+        if seed is not None:
+            _raw["seed"] = seed
+        body = encode_body(StreamMLRoundsRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return data
 
     def onboard_project_vertical(
         self,
@@ -563,6 +617,167 @@ class BuiltInAgents(_BuiltInAgentsBase):
         data = self._http.post(path, params=params, json_data=body)
         return LearnResult.model_validate(data)
 
+    def suggest_ml_contact_timing(
+        self,
+        *,
+        channels: list[Any],
+        contact_id: str,
+        context: dict[str, Any] | None = None,
+    ) -> ContactTimingSuggestResponse:
+        """Send-time & channel suggestion: next-best daypart/day-type/channel to contact (P3)"""
+        path = f"/api/v1/ml/contact_timing/suggest"
+        params = None
+        _raw: dict[str, Any] = {}
+        if channels is not None:
+            _raw["channels"] = channels
+        if contact_id is not None:
+            _raw["contact_id"] = contact_id
+        if context is not None:
+            _raw["context"] = context
+        body = encode_body(ContactTimingSuggestBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return ContactTimingSuggestResponse.model_validate(data)
+
+    def predict_ml_expected_value(
+        self,
+        *,
+        features: dict[str, Any],
+    ) -> EvResponseBody:
+        """Expected-value ranking: P(convert) × predicted deal value (P1)"""
+        path = f"/api/v1/ml/ev"
+        params = None
+        _raw: dict[str, Any] = {}
+        if features is not None:
+            _raw["features"] = features
+        body = encode_body(PredictMLExpectedValueRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return EvResponseBody.model_validate(data)
+
+    def forecast_ml_pipeline(
+        self,
+        *,
+        window_days: int | None = None,
+    ) -> ForecastResponseBody:
+        """Pipeline revenue forecast: Monte Carlo over open-pipeline expected value (P4)"""
+        path = f"/api/v1/ml/forecast"
+        params: dict[str, Any] = {}
+        if window_days is not None:
+            params["window_days"] = window_days
+        data = self._http.get(path, params=params)
+        return ForecastResponseBody.model_validate(data)
+
+    def suggest_ml_handoff_timing(
+        self,
+        *,
+        contact_id: str,
+        context: dict[str, Any],
+    ) -> HandoffSuggestResponse:
+        """Human-handoff timing: bandit over {escalate_now, wait_one_day, keep_automated} (P7)"""
+        path = f"/api/v1/ml/handoff/suggest"
+        params = None
+        _raw: dict[str, Any] = {}
+        if contact_id is not None:
+            _raw["contact_id"] = contact_id
+        if context is not None:
+            _raw["context"] = context
+        body = encode_body(HandoffSuggestBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return HandoffSuggestResponse.model_validate(data)
+
+    def rank_lookalike(
+        self,
+        *,
+        limit: int | None = None,
+    ) -> LookalikeRankResponse:
+        """Lookalike prospecting rank: non-converted leads ranked by similarity to the won-deal centroid (P6)"""
+        path = f"/api/v1/ml/lookalike/rank"
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        data = self._http.get(path, params=params)
+        return LookalikeRankResponse.model_validate(data)
+
+    def score_lookalike(
+        self,
+        *,
+        lead_ref: str | None = None,
+        profile: str | None = None,
+    ) -> LookalikeScoreResponse:
+        """Lookalike prospecting score: similarity to the project's won-deal centroid (P6)"""
+        path = f"/api/v1/ml/lookalike/score"
+        params = None
+        _raw: dict[str, Any] = {}
+        if lead_ref is not None:
+            _raw["lead_ref"] = lead_ref
+        if profile is not None:
+            _raw["profile"] = profile
+        body = encode_body(LookalikeScoreBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return LookalikeScoreResponse.model_validate(data)
+
+    def suggest_ml_offer(
+        self,
+        *,
+        contact_id: str,
+        context: dict[str, Any] | None = None,
+    ) -> OfferSuggestResponse:
+        """Offer suggestion: bandit over the tenant manifest's offer-type actions, margin-weighted (P7)"""
+        path = f"/api/v1/ml/offers/suggest"
+        params = None
+        _raw: dict[str, Any] = {}
+        if contact_id is not None:
+            _raw["contact_id"] = contact_id
+        if context is not None:
+            _raw["context"] = context
+        body = encode_body(OfferSuggestBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return OfferSuggestResponse.model_validate(data)
+
+    def get_ml_revival_queue(
+        self,
+    ) -> RevivalQueueBody:
+        """Latest computed dead-lead revival queue (P2)"""
+        path = f"/api/v1/ml/revival-queue"
+        params = None
+        data = self._http.get(path, params=params)
+        return RevivalQueueBody.model_validate(data)
+
+    def compute_ml_revival_queue(
+        self,
+    ) -> RevivalQueueBody:
+        """Trigger an on-demand revival-queue sweep for this project (P2)"""
+        path = f"/api/v1/ml/revival-queue/compute"
+        params = None
+        data = self._http.post(path, params=params)
+        return RevivalQueueBody.model_validate(data)
+
+    def generate_ml_win_loss_report(
+        self,
+        *,
+        force: bool | None = None,
+        window_days: int | None = None,
+    ) -> WinlossReportResponse:
+        """Generate the Win/Loss Intelligence report (P5)"""
+        path = f"/api/v1/ml/winloss/generate"
+        params = None
+        _raw: dict[str, Any] = {}
+        if force is not None:
+            _raw["force"] = force
+        if window_days is not None:
+            _raw["window_days"] = window_days
+        body = encode_body(GenerateMLWinLossReportRequest, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return WinlossReportResponse.model_validate(data)
+
+    def get_ml_win_loss_latest(
+        self,
+    ) -> WinlossReportResponse:
+        """Latest persisted Win/Loss Intelligence report (P5)"""
+        path = f"/api/v1/ml/winloss/latest"
+        params = None
+        data = self._http.get(path, params=params)
+        return WinlossReportResponse.model_validate(data)
+
 
 class AsyncBuiltInAgents(_BuiltInAgentsBase):
     async def list_builtin_agents(
@@ -573,6 +788,15 @@ class AsyncBuiltInAgents(_BuiltInAgentsBase):
         params = None
         data = await self._http.get(path, params=params)
         return ListBuiltinAgentsResponse.model_validate(data)
+
+    async def list_lead_enrichment_jobs(
+        self,
+    ) -> ListLeadEnrichmentJobsResponse:
+        """List lead-enrichment jobs"""
+        path = f"/api/v1/builtin-agents/lead/enrich"
+        params = None
+        data = await self._http.get(path, params=params)
+        return ListLeadEnrichmentJobsResponse.model_validate(data)
 
     async def enqueue_lead_enrichment(
         self,
@@ -738,13 +962,15 @@ class AsyncBuiltInAgents(_BuiltInAgentsBase):
         action_features: dict[str, Any] | None = None,
         action_id: str | None = None,
         context: dict[str, Any] | None = None,
-        converted: bool,
+        converted: bool | None = None,
+        event: str | None = None,
         features: dict[str, Any] | None = None,
         note: str | None = None,
         predicted_score: int | None = None,
         propensity: float | None = None,
         reward: float | None = None,
         subject_id: str | None = None,
+        value: float | None = None,
     ) -> FeedbackResponse:
         """Record a realized outcome — improves the scoring model + the bandit in one call"""
         path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/feedback"
@@ -758,6 +984,8 @@ class AsyncBuiltInAgents(_BuiltInAgentsBase):
             _raw["context"] = context
         if converted is not None:
             _raw["converted"] = converted
+        if event is not None:
+            _raw["event"] = event
         if features is not None:
             _raw["features"] = features
         if note is not None:
@@ -770,6 +998,8 @@ class AsyncBuiltInAgents(_BuiltInAgentsBase):
             _raw["reward"] = reward
         if subject_id is not None:
             _raw["subject_id"] = subject_id
+        if value is not None:
+            _raw["value"] = value
         body = encode_body(RecordMLFeedbackRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return FeedbackResponse.model_validate(data)
@@ -896,6 +1126,28 @@ class AsyncBuiltInAgents(_BuiltInAgentsBase):
         body = encode_body(SimulateMLRoundsRequest, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return SimulateRoundsResponse.model_validate(data)
+
+    async def stream_ml_rounds(
+        self,
+        use_case: str,
+        *,
+        rounds: int | None = None,
+        scenario: str | None = None,
+        seed: int | None = None,
+    ) -> Any:
+        """Stream self-learning simulation rounds as they complete"""
+        path = f"/api/v1/builtin-agents/ml/{quote(use_case, safe='')}/simulate-rounds/stream"
+        params = None
+        _raw: dict[str, Any] = {}
+        if rounds is not None:
+            _raw["rounds"] = rounds
+        if scenario is not None:
+            _raw["scenario"] = scenario
+        if seed is not None:
+            _raw["seed"] = seed
+        body = encode_body(StreamMLRoundsRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return data
 
     async def onboard_project_vertical(
         self,
@@ -1065,3 +1317,164 @@ class AsyncBuiltInAgents(_BuiltInAgentsBase):
         body = encode_body(LearnInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return LearnResult.model_validate(data)
+
+    async def suggest_ml_contact_timing(
+        self,
+        *,
+        channels: list[Any],
+        contact_id: str,
+        context: dict[str, Any] | None = None,
+    ) -> ContactTimingSuggestResponse:
+        """Send-time & channel suggestion: next-best daypart/day-type/channel to contact (P3)"""
+        path = f"/api/v1/ml/contact_timing/suggest"
+        params = None
+        _raw: dict[str, Any] = {}
+        if channels is not None:
+            _raw["channels"] = channels
+        if contact_id is not None:
+            _raw["contact_id"] = contact_id
+        if context is not None:
+            _raw["context"] = context
+        body = encode_body(ContactTimingSuggestBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return ContactTimingSuggestResponse.model_validate(data)
+
+    async def predict_ml_expected_value(
+        self,
+        *,
+        features: dict[str, Any],
+    ) -> EvResponseBody:
+        """Expected-value ranking: P(convert) × predicted deal value (P1)"""
+        path = f"/api/v1/ml/ev"
+        params = None
+        _raw: dict[str, Any] = {}
+        if features is not None:
+            _raw["features"] = features
+        body = encode_body(PredictMLExpectedValueRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return EvResponseBody.model_validate(data)
+
+    async def forecast_ml_pipeline(
+        self,
+        *,
+        window_days: int | None = None,
+    ) -> ForecastResponseBody:
+        """Pipeline revenue forecast: Monte Carlo over open-pipeline expected value (P4)"""
+        path = f"/api/v1/ml/forecast"
+        params: dict[str, Any] = {}
+        if window_days is not None:
+            params["window_days"] = window_days
+        data = await self._http.get(path, params=params)
+        return ForecastResponseBody.model_validate(data)
+
+    async def suggest_ml_handoff_timing(
+        self,
+        *,
+        contact_id: str,
+        context: dict[str, Any],
+    ) -> HandoffSuggestResponse:
+        """Human-handoff timing: bandit over {escalate_now, wait_one_day, keep_automated} (P7)"""
+        path = f"/api/v1/ml/handoff/suggest"
+        params = None
+        _raw: dict[str, Any] = {}
+        if contact_id is not None:
+            _raw["contact_id"] = contact_id
+        if context is not None:
+            _raw["context"] = context
+        body = encode_body(HandoffSuggestBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return HandoffSuggestResponse.model_validate(data)
+
+    async def rank_lookalike(
+        self,
+        *,
+        limit: int | None = None,
+    ) -> LookalikeRankResponse:
+        """Lookalike prospecting rank: non-converted leads ranked by similarity to the won-deal centroid (P6)"""
+        path = f"/api/v1/ml/lookalike/rank"
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        data = await self._http.get(path, params=params)
+        return LookalikeRankResponse.model_validate(data)
+
+    async def score_lookalike(
+        self,
+        *,
+        lead_ref: str | None = None,
+        profile: str | None = None,
+    ) -> LookalikeScoreResponse:
+        """Lookalike prospecting score: similarity to the project's won-deal centroid (P6)"""
+        path = f"/api/v1/ml/lookalike/score"
+        params = None
+        _raw: dict[str, Any] = {}
+        if lead_ref is not None:
+            _raw["lead_ref"] = lead_ref
+        if profile is not None:
+            _raw["profile"] = profile
+        body = encode_body(LookalikeScoreBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return LookalikeScoreResponse.model_validate(data)
+
+    async def suggest_ml_offer(
+        self,
+        *,
+        contact_id: str,
+        context: dict[str, Any] | None = None,
+    ) -> OfferSuggestResponse:
+        """Offer suggestion: bandit over the tenant manifest's offer-type actions, margin-weighted (P7)"""
+        path = f"/api/v1/ml/offers/suggest"
+        params = None
+        _raw: dict[str, Any] = {}
+        if contact_id is not None:
+            _raw["contact_id"] = contact_id
+        if context is not None:
+            _raw["context"] = context
+        body = encode_body(OfferSuggestBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return OfferSuggestResponse.model_validate(data)
+
+    async def get_ml_revival_queue(
+        self,
+    ) -> RevivalQueueBody:
+        """Latest computed dead-lead revival queue (P2)"""
+        path = f"/api/v1/ml/revival-queue"
+        params = None
+        data = await self._http.get(path, params=params)
+        return RevivalQueueBody.model_validate(data)
+
+    async def compute_ml_revival_queue(
+        self,
+    ) -> RevivalQueueBody:
+        """Trigger an on-demand revival-queue sweep for this project (P2)"""
+        path = f"/api/v1/ml/revival-queue/compute"
+        params = None
+        data = await self._http.post(path, params=params)
+        return RevivalQueueBody.model_validate(data)
+
+    async def generate_ml_win_loss_report(
+        self,
+        *,
+        force: bool | None = None,
+        window_days: int | None = None,
+    ) -> WinlossReportResponse:
+        """Generate the Win/Loss Intelligence report (P5)"""
+        path = f"/api/v1/ml/winloss/generate"
+        params = None
+        _raw: dict[str, Any] = {}
+        if force is not None:
+            _raw["force"] = force
+        if window_days is not None:
+            _raw["window_days"] = window_days
+        body = encode_body(GenerateMLWinLossReportRequest, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return WinlossReportResponse.model_validate(data)
+
+    async def get_ml_win_loss_latest(
+        self,
+    ) -> WinlossReportResponse:
+        """Latest persisted Win/Loss Intelligence report (P5)"""
+        path = f"/api/v1/ml/winloss/latest"
+        params = None
+        data = await self._http.get(path, params=params)
+        return WinlossReportResponse.model_validate(data)

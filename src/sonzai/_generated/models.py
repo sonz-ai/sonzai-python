@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from typing import Annotated, Any, Literal
+from uuid import UUID
 
 from pydantic import AnyUrl, AwareDatetime, BaseModel, ConfigDict, Field
 
@@ -107,6 +108,7 @@ class ActionValue(BaseModel):
         extra='forbid',
         populate_by_name=True,
     )
+    masked: bool | None = None
     name: str
     q: float
 
@@ -385,6 +387,44 @@ class AnalyticsOverview(BaseModel):
     total_sessions: Annotated[int, Field(alias='totalSessions')]
 
 
+class ApprovalItemBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ApprovalItemBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    agent_name: str
+    approval_id: str
+    channel: str
+    confidence: float
+    contact_name: str
+    context: str
+    created_at: str
+    payload: Any
+    resolved_at: str | None = None
+    resolved_by: str | None = None
+    status: str
+    tags: list[str] | None
+    type: str
+    user_id: str
+
+
+class ArtifactCalibration(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    method: str
+    params: dict[str, Any]
+
+
 class AsyncChatResultOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -455,6 +495,38 @@ class AsyncChatStartOutputBody(BaseModel):
     """
     Initial status — always 'queued' on success
     """
+
+
+class AtRiskContact(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    agent_id: str
+    band: str
+    contact_name: str
+    days_since: int
+    depth: float
+    last_interaction: AwareDatetime | None
+    recommended_action: str
+    trend: float
+    user_id: str
+
+
+class AtRiskContactsBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/AtRiskContactsBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    contacts: list[AtRiskContact] | None
+    total: int
 
 
 class AtomicFact(BaseModel):
@@ -935,6 +1007,94 @@ class CachedModelsPayload(BaseModel):
     providers: list[Any] | None
 
 
+class CatalogBooking(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CatalogBooking.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str | None = None
+    booking_id: str
+    conversation_id: str | None = None
+    created_at: AwareDatetime
+    external_ref: str | None = None
+    hold_expires_at: AwareDatetime | None = None
+    item_id: str
+    kind: str
+    metadata: dict[str, Any]
+    project_id: str
+    slot_id: str | None = None
+    status: str
+    tenant_id: str
+    updated_at: AwareDatetime
+    user_id: str
+
+
+class CatalogBookingWriteBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/CatalogBookingWriteBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    conversation_id: str | None = None
+    """
+    Omnichannel conversation this booking was made in.
+    """
+    hold_expires_at: str | None = None
+    """
+    RFC3339 timestamp. Defaults to now()+24h.
+    """
+    item_id: str
+    kind: str | None = None
+    """
+    'viewing' (default) or 'reservation'.
+    """
+    metadata: dict[str, Any] | None = None
+    slot_id: str | None = None
+    """
+    Viewing slot to hold. Omit for a plain unit reservation (kind=reservation).
+    """
+    user_id: str
+    """
+    End-user identity (matches the context engine's user_id space).
+    """
+
+
+class CatalogConfirmBookingInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CatalogConfirmBookingInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    external_ref: str | None = None
+    """
+    Tenant-side booking id to stamp on confirmation.
+    """
+
+
 class CatalogEntry(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -945,6 +1105,269 @@ class CatalogEntry(BaseModel):
     name: str
     provisioned: bool
     slug: str
+
+
+class CatalogListBookingsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CatalogListBookingsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    bookings: list[CatalogBooking] | None
+
+
+class CatalogMedia(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    gcs_uri: str
+    kb_document_id: str | None = None
+    kind: str
+
+
+class CatalogPatchStatusInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CatalogPatchStatusInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    status: str
+
+
+class CatalogSchemaField(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    description: str | None = None
+    enum_values: list[str] | None = None
+    filterable: bool | None = None
+    key: str
+    required: bool | None = None
+    type: str
+    unit: str | None = None
+
+
+class CatalogSchemaWriteBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/CatalogSchemaWriteBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    fields: list[CatalogSchemaField] | None
+    item_type: str
+
+
+class CatalogSlot(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CatalogSlot.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    booked_count: int
+    capacity: int
+    created_at: AwareDatetime
+    ends_at: AwareDatetime
+    item_id: str
+    project_id: str
+    slot_id: str
+    starts_at: AwareDatetime
+    status: str
+    tenant_id: str
+    updated_at: AwareDatetime
+
+
+class CatalogSlotWriteBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CatalogSlotWriteBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    capacity: int | None = None
+    ends_at: str
+    """
+    RFC3339 timestamp
+    """
+    starts_at: str
+    """
+    RFC3339 timestamp
+    """
+
+
+class CatalogSyncItemBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    attributes: dict[str, Any] | None = None
+    currency: str | None = None
+    description: str | None = None
+    external_ref: str
+    item_type: str
+    media: list[CatalogMedia] | None = None
+    name: str
+    price: float | None = None
+    price_unit: str | None = None
+    status: str | None = None
+
+
+class CatalogSyncResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CatalogSyncResult.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    created: int
+    deactivated: int
+    item_ids: list[str] | None
+    updated: int
+
+
+class CatalogUpdateSchemaInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CatalogUpdateSchemaInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    fields: list[CatalogSchemaField] | None
+
+
+class CatalogUpdateSlotInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CatalogUpdateSlotInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    capacity: int
+    ends_at: str
+    starts_at: str
+    status: str
+
+
+class ChannelBinding(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    agent_id: str
+    channel_type: str | None = None
+    connection_id: str | None = None
+    use_guide: bool
+
+
+class ChannelConnectionDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ChannelConnectionDTO.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    app_id: str | None = None
+    channel_type: str
+    connection_id: str
+    created_at: AwareDatetime
+    default_agent_id: str | None = None
+    display_name: str
+    ig_account_id: str | None = None
+    page_id: str | None = None
+    phone_number_id: str | None = None
+    project_id: str
+    provider_mode: str
+    status: str
+    status_detail: str | None = None
+    templates: Any | None = None
+    test_send_succeeded: bool | None = None
+    updated_at: AwareDatetime
+    verify_token: str | None = None
+    waba_id: str | None = None
+    webhook_callback_url: str | None = None
+
+
+class ChannelConnectionsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ChannelConnectionsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    connections: list[ChannelConnectionDTO] | None
+    items: list[ChannelConnectionDTO] | None
 
 
 class ChannelDTO(BaseModel):
@@ -981,6 +1404,28 @@ class ChannelDTO(BaseModel):
     Delivery backend: webhook | email | composio
     """
     updated_at: AwareDatetime
+
+
+class ChannelDeliverBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ChannelDeliverBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    event_type: str
+    """
+    Event type to deliver, e.g. lead.outreach.send
+    """
+    payload: dict[str, Any] | None = None
+    """
+    Structured event payload used by channel templates and filters
+    """
 
 
 class ChannelWriteBody(BaseModel):
@@ -1151,6 +1596,57 @@ class ClaimResult(BaseModel):
     tenant_id: str
 
 
+class ClassifyContactRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ClassifyContactRequest.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    """
+    The tier-specific agent ID to route to
+    """
+    contact_name: str
+    """
+    The contact's display name
+    """
+    tier: str
+    """
+    The classified tier (e.g. Premier, VIP, Value)
+    """
+    user_id: str
+    """
+    The contact's user ID
+    """
+
+
+class CohortPoint(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    avg_depth: float
+    count: int
+    week: int
+
+
+class ColumnMapping(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    column: str
+    field: str
+
+
 class ColumnMappingSpec(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1270,6 +1766,34 @@ class ContactResult(BaseModel):
     provider: str
 
 
+class ContactTimingSuggestBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ContactTimingSuggestBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    channels: list[str] | None
+    """
+    Candidate send channels for this contact (e.g. whatsapp, sms, email). Required, nonempty.
+    """
+    contact_id: str
+    """
+    Stable contact/lead identifier — report replies via /builtin-agents/ml/contact_timing/feedback with the returned action_id.
+    """
+    context: dict[str, Any] | None = None
+    """
+    Optional bandit context features (e.g. this contact's engagement signals).
+    """
+
+
 class ContextEngineEventByType(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -1313,6 +1837,27 @@ class ContractPayment(BaseModel):
     paid: bool
     period: str
     service_usd: Annotated[float, Field(alias='serviceUsd')]
+
+
+class ConversationHandoff(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    from_: Annotated[str, Field(alias='from')]
+    to: str
+    when: str
+
+
+class ConversationMessage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    content: str
+    role: str
+    session_id: str
+    timestamp: AwareDatetime
 
 
 class CostBreakdownEntry(BaseModel):
@@ -1583,6 +2128,14 @@ class CreateAgentBodyToolCapabilitiesStruct(BaseModel):
     """
     Enable agent-authored skills (sonzai_create_skill / sonzai_update_skill). Requires skills.
     """
+    catalog_booking: bool | None = None
+    """
+    Enable the catalog_book_viewing tool (creates a TTL'd booking hold against a catalog item/slot). Off by default.
+    """
+    catalog_grounding: bool | None = None
+    """
+    Enable the sales-inventory grounding layer: the proactive context-builder block plus the catalog_search/catalog_item_details tools. Off by default.
+    """
     composio: bool | None = None
     """
     Enable per-agent Composio SaaS integrations.
@@ -1661,6 +2214,114 @@ class CreateAgentSeedMemory(BaseModel):
     entities: list[str] | None = None
     fact_type: str
     importance: float
+
+
+class CreateApprovalRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CreateApprovalRequest.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    """
+    The agent proposing the action
+    """
+    agent_name: str
+    """
+    Display name of the agent
+    """
+    channel: str
+    """
+    Channel: app, WhatsApp, web, goal, handoff
+    """
+    confidence: float
+    """
+    Agent confidence score (0-1)
+    """
+    contact_name: str
+    """
+    Display name of the contact
+    """
+    context: str
+    """
+    Human-readable context summary
+    """
+    payload: Any
+    """
+    Action-specific payload (message text, goal spec, etc.)
+    """
+    tags: list[str] | None
+    """
+    Tags for categorization
+    """
+    type: str
+    """
+    Type: message, goal, or handoff
+    """
+    user_id: str
+    """
+    The end-user/contact ID
+    """
+
+
+class CreateChannelConnectionInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CreateChannelConnectionInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    access_token: str | None = None
+    """
+    Customer system-user access token; encrypted at rest; required for byo_app.
+    """
+    app_id: str | None = None
+    """
+    Customer Meta app id; required for byo_app.
+    """
+    app_secret: str | None = None
+    """
+    Customer Meta app secret; encrypted at rest; required for byo_app.
+    """
+    channel_type: Literal['whatsapp', 'messenger', 'instagram']
+    code: str | None = None
+    """
+    Embedded Signup OAuth code; required for embedded_signup.
+    """
+    default_agent_id: str | None = None
+    display_name: str | None = None
+    ig_account_id: str | None = None
+    page_id: str | None = None
+    phone_number_id: str | None = None
+    provider_mode: Literal['byo_app', 'embedded_signup'] | None = None
+    """
+    Connection provider mode. Defaults to byo_app.
+    """
+    templates: Any | None = None
+    test_message: str | None = None
+    test_to: str | None = None
+    """
+    Optional channel recipient id for an immediate test send.
+    """
+    verify_token: str | None = None
+    """
+    Customer webhook verify token; required for byo_app.
+    """
+    waba_id: str | None = None
 
 
 class CreateConstellationNodeInputBody(BaseModel):
@@ -1956,6 +2617,28 @@ class CreateInventoryItemHumaInputBody(BaseModel):
     """
 
 
+class CreateJobInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CreateJobInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    params: dict[str, Any] | None = None
+    """
+    Handler-specific parameters
+    """
+    type: str
+    """
+    Job type: train_scoring | train_bandit
+    """
+
+
 class CreateProjectInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -2038,6 +2721,35 @@ class CreateScheduleOutputBody(BaseModel):
     next_fire_at: str
     next_fire_at_local: str
     schedule_id: str
+
+
+class CreateTenantDomainRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/CreateTenantDomainRequest.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    domain: str | None = None
+    """
+    For domain_type=custom: the full FQDN, e.g. 'crm.ayala.com'.
+    """
+    domain_type: Literal['subdomain', 'custom']
+    """
+    'subdomain' (a label under the base domain) or 'custom' (a full customer-owned FQDN).
+    """
+    is_primary: bool | None = None
+    subdomain: str | None = None
+    """
+    For domain_type=subdomain: the label, e.g. 'ayala'.
+    """
 
 
 class CreateTicketRequest(BaseModel):
@@ -2507,6 +3219,50 @@ class DeleteWisdomResponse(BaseModel):
     success: bool
 
 
+class DeliveryResult(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    channel_id: str
+    error: str | None = None
+    status: str
+    type: str
+
+
+class DepthBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/DepthBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    at_risk: bool
+    band: str
+    computed_at: AwareDatetime
+    contact_name: str
+    depth: float
+    last_interaction: AwareDatetime | None
+    trend: float
+    user_id: str
+
+
+class DepthTrend(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    avg_depth: float
+    count: int
+    date: str
+
+
 class DialogueMsgHuma(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -2647,6 +3403,26 @@ class DisclosureEntry(BaseModel):
     user_id: str | None = None
 
 
+class DomainBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/DomainBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    domain: str
+    domain_type: str
+    is_primary: bool
+    verification_token: str | None = None
+    verified: bool
+    verified_at: AwareDatetime | None = None
+
+
 class Edge(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -2724,6 +3500,21 @@ class EndSessionOutputBody(BaseModel):
     """
     Whether the session end was accepted
     """
+
+
+class EnrichJobListItem(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    attempts: int
+    created_at: AwareDatetime
+    error: str | None = None
+    id: str
+    input: Any
+    result: Any | None = None
+    status: str
+    updated_at: AwareDatetime
 
 
 class EnrichJobView(BaseModel):
@@ -2948,6 +3739,25 @@ class ErrorModel(BaseModel):
     """
 
 
+class EvResponseBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/EvResponseBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    expected_value: float
+    prob_served_from: str
+    probability: float
+    value: float
+    value_served_from: str
+
+
 class EvalCategory(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3131,6 +3941,24 @@ class EvaluateTranscriptMsg(BaseModel):
     """
 
 
+class EvidenceStats(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    attribution_window_days: int
+    episodes_included: int
+    episodes_truncated: int
+    leads_skipped_no_identity: int
+    lost_leads: int
+    lost_leads_truncated: int
+    pack_chars: int
+    used_fallback_attribution_window: bool
+    window_days: int
+    won_leads: int
+    won_leads_truncated: int
+
+
 class FactHistoryResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3176,6 +4004,40 @@ class FeedbackResponse(BaseModel):
     ok: bool
     outcome_recorded: bool
     use_case: str
+
+
+class FleetActivityItem(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    action: str
+    agent_id: str
+    agent_name: str
+    contact_name: str
+    id: str
+    summary: str
+    timestamp: AwareDatetime
+
+
+class ForecastResponseBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ForecastResponseBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    assumptions: list[str] | None
+    expected_revenue: float
+    open_leads: int
+    p10: float
+    p50: float
+    p90: float
 
 
 class ForkAgentInputBody(BaseModel):
@@ -3485,6 +4347,31 @@ class GenerateImageOutputBody(BaseModel):
     """
 
 
+class GenerateMLWinLossReportRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/GenerateMLWinLossReportRequest.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    force: bool | None = None
+    """
+    Regenerate even if a report already exists for this (project, window).
+    """
+    window_days: int | None = None
+    """
+    Report lookback window in days. Defaults to 90.
+    """
+
+
 class GetAgentModelsOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3593,6 +4480,75 @@ class GoalsResponse(BaseModel):
     goals: list[Goal] | None
 
 
+class GroundingAvailabilityBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    from_: Annotated[str | None, Field(alias='from')] = None
+    """
+    RFC3339 or YYYY-MM-DD
+    """
+    require_open_slot: bool | None = None
+    to: str | None = None
+    """
+    RFC3339 or YYYY-MM-DD
+    """
+
+
+class GroundingAvailabilityInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/GroundingAvailabilityInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    availability: GroundingAvailabilityBody
+    item_ids: list[str] | None
+
+
+class GroundingFiltersBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    attributes: dict[str, Any] | None = None
+    item_type: str | None = None
+    price_max: float | None = None
+
+
+class GroundingQueryInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/GroundingQueryInputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    availability: GroundingAvailabilityBody | None = None
+    filters: GroundingFiltersBody | None = None
+    query: str | None = None
+    scope: str | None = None
+    """
+    KB scope mode: project_only|cascade|union|org_only
+    """
+    top_k: int | None = None
+
+
 class GroupResult(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3616,6 +4572,17 @@ class GuidanceOutput(BaseModel):
     """
     active: AgentGuidance
     history: list[AgentGuidance] | None
+
+
+class GuideAgent(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    agent_id: str
+    agent_name: str
+    criteria: list[str] | None
+    questions: list[str] | None
 
 
 class Habit(BaseModel):
@@ -3659,6 +4626,63 @@ class HabitsResponse(BaseModel):
     A URL to the JSON Schema for this object.
     """
     habits: list[Habit] | None
+
+
+class Handoff(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    carry: list[str] | None
+    from_: Annotated[str, Field(alias='from')]
+    mode: str
+    to: str
+    when: str
+
+
+class HandoffSuggestBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/HandoffSuggestBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    contact_id: str
+    """
+    Stable contact/lead identifier.
+    """
+    context: dict[str, Any]
+    """
+    Bandit context features (e.g. days since last reply, sentiment, deal stage). Required, nonempty — handoff timing has no meaningful context-free default.
+    """
+
+
+class HandoffSuggestResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/HandoffSuggestResponse.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    action_id: str | None = None
+    approval_enqueued: bool
+    approval_id: str | None = None
+    gated: bool
+    have: int | None = None
+    needed: int | None = None
+    propensity: float | None = None
 
 
 class HyperParams(BaseModel):
@@ -3711,6 +4735,15 @@ class ImportJob(BaseModel):
     warmth_score: int
 
 
+class ImportRowError(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    reason: str
+    row_index: int
+
+
 class Importance(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -3718,6 +4751,139 @@ class Importance(BaseModel):
     )
     gain: float
     name: str
+
+
+class IngestContact(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/IngestContact.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    contact_ref: str
+    created_at: AwareDatetime
+    crm_owner_id: str | None = None
+    display_name: str | None = None
+    email: str | None = None
+    id: str
+    kind: str
+    metadata: dict[str, Any] | None = None
+    phone_e164: str | None = None
+    project_id: str
+    tenant_id: str
+    updated_at: AwareDatetime
+
+
+class IngestContactInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/IngestContactInputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    contact_ref: str
+    """
+    Stable external contact identifier the adapter owns; upsert key within the project
+    """
+    crm_owner_id: str | None = None
+    """
+    CRM-side owner/user id (e.g. Salesforce OwnerId) for write-back routing
+    """
+    display_name: str | None = None
+    email: str | None = None
+    kind: Literal['rep', 'lead_contact']
+    """
+    Registry kind: rep (the tenant's own salesperson) or lead_contact (an end customer)
+    """
+    metadata: dict[str, Any] | None = None
+    """
+    Free-form registry metadata (channel identities, desk, brand assignments, …)
+    """
+    phone_e164: str | None = None
+    """
+    E.164 phone number, e.g. +639171234567
+    """
+
+
+class IngestEventInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/IngestEventInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    contact_ref: str | None = None
+    """
+    Stable external contact identifier (see POST /ingest/contacts)
+    """
+    event_id: UUID
+    """
+    Adapter-chosen idempotency key (UUID); replaying the same event_id into the same project is a no-op
+    """
+    lead_ref: str | None = None
+    """
+    Stable external lead identifier (CRM record id, …)
+    """
+    occurred_at: AwareDatetime
+    """
+    When the event happened in the source system (RFC 3339)
+    """
+    payload: dict[str, Any] | None = None
+    """
+    Type-specific event body, stored verbatim and fanned out to subscribers
+    """
+    type: Literal[
+        'lead.created',
+        'lead.updated',
+        'lead.stage_changed',
+        'inventory.updated',
+        'price.changed',
+        'message.received',
+        'outcome.recorded',
+    ]
+    """
+    DomainEvent v1 type (closed enum)
+    """
+
+
+class IngestEventOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/IngestEventOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    duplicate: bool
+    event_id: str
+    """
+    The stored event's idempotency key
+    """
+    type: str
+    """
+    The stored event's type
+    """
 
 
 class InitiateComposioConnectInputBody(BaseModel):
@@ -3819,6 +4985,29 @@ class Insight(BaseModel):
     surfaced: Annotated[bool, Field(alias='Surfaced')]
     updated_at: Annotated[AwareDatetime, Field(alias='UpdatedAt')]
     user_id: Annotated[str, Field(alias='UserID')]
+
+
+class InstanceHeartbeatInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    app_version: str | None = None
+    """
+    Currently-deployed release tag, e.g. from SONZAI_VERSION
+    """
+    vitals: dict[str, Any] | None = None
+    """
+    Free-form basic vitals; not persisted beyond this request in v1
+    """
+
+
+class InstanceHeartbeatOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    ok: bool
 
 
 class InteractionPreferences(BaseModel):
@@ -3940,6 +5129,26 @@ class InvokeInputBody(BaseModel):
     """
     Optional session title for traceability
     """
+
+
+class ItemAvailability(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    as_of: AwareDatetime
+    next_open_slots: list[AwareDatetime] | None = None
+    status: str
+
+
+class JobProgressDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    message: str | None = None
+    pct: int | None = None
+    stage: str | None = None
 
 
 class JobUser(BaseModel):
@@ -5143,6 +6352,43 @@ class KbUploadDocumentOutputBody(BaseModel):
     """
 
 
+class KnowledgeHit(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    content: str
+    label: str
+    node_id: str
+    score: float
+
+
+class LeadAssignmentBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/LeadAssignmentBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    assignment_id: str
+    claimed_at: AwareDatetime | None = None
+    completed_at: AwareDatetime | None = None
+    features: Any | None = None
+    lead_ref: str
+    offered_at: AwareDatetime
+    policy: str
+    prior_assignment_id: str | None = None
+    propensity: float | None = None
+    rep_user_id: str
+    sla_expires_at: AwareDatetime
+    state: str
+
+
 class LearnInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5220,6 +6466,22 @@ class LearnResult(BaseModel):
     guidance: AgentGuidance | None = None
     reason: str | None = None
     violations: list[str] | None = None
+
+
+class ListApprovalsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ListApprovalsResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    items: list[ApprovalItemBody] | None
+    pending_count: int
 
 
 class ListBYOKKeysOutputBody(BaseModel):
@@ -5494,6 +6756,97 @@ class ListInstancesOutputBody(BaseModel):
     """
 
 
+class ListLeadAssignmentsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListLeadAssignmentsResponse.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    assignments: list[LeadAssignmentBody] | None
+
+
+class ListLeadEnrichmentJobsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListLeadEnrichmentJobsResponse.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    jobs: list[EnrichJobListItem] | None
+
+
+class ListProjectDepthScoresResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListProjectDepthScoresResponse.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    scores: list[DepthBody] | None
+    total: int
+
+
+class ListTenantDomainsResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ListTenantDomainsResponse.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    domains: list[DomainBody] | None
+
+
+class ListUserConversationsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListUserConversationsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    messages: list[ConversationMessage] | None
+    source: str
+
+
 class ListWisdomAttributedOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5581,6 +6934,92 @@ class LoggedTuple(BaseModel):
     context: dict[str, Any] | None = None
     propensity: float
     reward: float
+
+
+class LookalikeProfileBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    company: str | None = None
+    industry: str | None = None
+    location: str | None = None
+    notes: str | None = None
+    role: str | None = None
+
+
+class LookalikeRankItem(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    lead_ref: str
+    lookalike_score: float
+
+
+class LookalikeRankResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/LookalikeRankResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    items: list[LookalikeRankItem] | None
+
+
+class LookalikeScoreBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/LookalikeScoreBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    lead_ref: str | None = None
+    """
+    Score an existing lead by its lead_outcomes lead_ref — looks up its cached enrichment dossier. Mutually exclusive with profile.
+    """
+    profile: LookalikeProfileBody | None = None
+    """
+    Score an explicit profile directly. Mutually exclusive with lead_ref.
+    """
+
+
+class LookalikeScoreResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/LookalikeScoreResponse.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    centroid_won_profiles: int
+    """
+    Number of won profiles that contributed to the centroid this request scored against.
+    """
+    lookalike_score: float
+    """
+    Cosine similarity to the project's won-deal centroid, mapped to [0,1].
+    """
+    used_cached_dossier: bool
+    """
+    True when the score came from a lead_ref's cached enrichment dossier; false when an explicit profile was supplied.
+    """
 
 
 class MCPCatalogAuth(BaseModel):
@@ -5713,6 +7152,25 @@ class MCPToolDTO(BaseModel):
     name: str
 
 
+class ManifestVersionOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ManifestVersionOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    manifest: Any
+    tenant_id: str
+    version: int
+
+
 class MemoryNode(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -5773,6 +7231,50 @@ class MemorySummary(BaseModel):
     summary_id: str
     topics: list[str] | None = None
     user_id: str | None = None
+
+
+class MoatIndexComparison(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    last_month: float
+    last_quarter: float
+
+
+class MoatIndexComponents(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    breadth: float
+    depth_quality: float
+    risk: float
+    trend: float
+
+
+class ModelExportOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ModelExportOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    artifact: Any | None = None
+    artifact_b64: str | None = None
+    calibration: ArtifactCalibration | None = None
+    exported_at: AwareDatetime
+    feature_schema: list[str] | None
+    format: str
+    served_from: str | None = None
+    sha256: str
+    use_case: str
+    version: int
 
 
 class ModelView(BaseModel):
@@ -5976,6 +7478,166 @@ class OPEResponse(BaseModel):
     snips: float
 
 
+class Objection(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    cohort: str
+    frequency_hint: str
+    objection: str
+
+
+class OfferLeadAssignmentRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/OfferLeadAssignmentRequest.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    candidates: Annotated[list[str] | None, Field(min_length=1)]
+    """
+    Eligible rep user ids to distribute among
+    """
+    features: dict[str, Any] | None = None
+    """
+    Optional context/ML signals captured at offer time
+    """
+    lead_ref: Annotated[str, Field(min_length=1)]
+    """
+    Caller-owned external key for the unit of work (CRM lead id, ticket id, shift id, ...)
+    """
+    policy: str | None = None
+    """
+    Distribution policy: round_robin (default) or load_balanced
+    """
+    sla_seconds: Annotated[int | None, Field(ge=0)] = None
+    """
+    Offer window in seconds before re-offer to the next candidate (default 900)
+    """
+
+
+class OfferLeadAssignmentResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/OfferLeadAssignmentResponse.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    assignment: LeadAssignmentBody
+    deduplicated: bool
+    """
+    True when the lead already had an active assignment; assignment is then the pre-existing one
+    """
+
+
+class OfferSuggestBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/OfferSuggestBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    contact_id: str
+    """
+    Stable contact/lead identifier — report the outcome via POST /builtin-agents/ml/offer_optimization/feedback with the returned action_id so the bandit learns the margin-weighted reward.
+    """
+    context: dict[str, Any] | None = None
+    """
+    Optional bandit context features (e.g. this contact's engagement signals, deal stage).
+    """
+
+
+class OfferSuggestionBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    action_id: str
+    channel: str | None = None
+    cost_hint: float | None = None
+    intrusiveness: str | None = None
+    label: str | None = None
+    propensity: float
+
+
+class OmnichannelConversationDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/OmnichannelConversationDTO.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    channel_type: str
+    connection_id: str | None = None
+    controller: str
+    controller_operator_id: str | None = None
+    conversation_id: str
+    created_at: AwareDatetime
+    handoffs: Any
+    last_direction: str | None = None
+    last_message_at: AwareDatetime
+    last_message_preview: str | None = None
+    meta: Any
+    project_id: str
+    session_id: str | None = None
+    status: str
+    takeover_started_at: AwareDatetime | None = None
+    unread_count: int
+    updated_at: AwareDatetime
+    user_id: str
+
+
+class OmnichannelMessageDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    attachments: Any | None = None
+    author_id: str | None = None
+    author_type: str
+    channel_message_id: str | None = None
+    content: str
+    conversation_id: str
+    created_at: AwareDatetime
+    delivery_detail: str | None = None
+    delivery_status: str | None = None
+    direction: str
+    message_id: str
+    role: str
+    session_id: str | None = None
+
+
 class OnboardProjectVerticalRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6137,6 +7799,27 @@ class OrgUsageSummaryBody(BaseModel):
     total_tokens: Annotated[int, Field(alias='totalTokens')]
 
 
+class OverridePermanentRouteRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/OverridePermanentRouteRequest.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    """
+    The override agent ID
+    """
+
+
 class PaginatedAgentsResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6176,6 +7859,48 @@ class PaginatedEvalRunsResponse(BaseModel):
     runs: list[EvalRun] | None
 
 
+class PatchChannelConnectionInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/PatchChannelConnectionInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    default_agent_id: str | None = None
+    status: str | None = None
+    templates: Any | None = None
+
+
+class PatchConversationInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/PatchConversationInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str | None = None
+    """
+    Reassign to agent id
+    """
+    status: Literal['open', 'snoozed', 'closed'] | None = None
+
+
 class PatchScheduleInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6207,6 +7932,29 @@ class PendingCapability(BaseModel):
     )
     capability: str
     context: str | None = None
+
+
+class PermanentRouteBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/PermanentRouteBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    classified_at: AwareDatetime
+    contact_name: str
+    id: str
+    overridden: bool
+    override_agent_id: str
+    project_id: str
+    tier: str
+    user_id: str
 
 
 class PersonalityDelta(BaseModel):
@@ -6264,6 +8012,24 @@ class PersonalityShift(BaseModel):
     trigger_types: list[str] | None
 
 
+class Phrase(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    phrasing: str
+    situation: str
+
+
+class PipelineStage(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    count: int
+    stage: str
+
+
 class PipelineStep(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6276,8 +8042,10 @@ class PipelineStep(BaseModel):
     """
     A URL to the JSON Schema for this object.
     """
+    kind: str | None = None
     slug: str
     title: str | None = None
+    write_kb: bool | None = None
 
 
 class PipelineStepResult(BaseModel):
@@ -6288,6 +8056,8 @@ class PipelineStepResult(BaseModel):
     cost_usd: float
     error: str | None = None
     findings: Any
+    kb_write: str | None = None
+    kb_write_error: str | None = None
     slug: str
     summary: str | None = None
     title: str | None = None
@@ -6341,6 +8111,24 @@ class PolicyView(BaseModel):
     features: list[str] | None
     policy: list[PolicyEntry] | None
     trained: bool
+
+
+class PredictMLExpectedValueRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/PredictMLExpectedValueRequest.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    features: dict[str, Any]
 
 
 class PredictMLScoringRequest(BaseModel):
@@ -6660,6 +8448,92 @@ class PropertySource(BaseModel):
     source: str | None = None
 
 
+class PushConversationMessageInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/PushConversationMessageInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    agent_id: str
+    """
+    Agent UUID or name authoring the message
+    """
+    channel_type: Literal['whatsapp', 'messenger', 'instagram'] | None = None
+    """
+    Restrict delivery to one channel; defaults to the first identity found (whatsapp, messenger, instagram)
+    """
+    connection_id: str | None = None
+    """
+    Pin the outbound channel connection UUID; defaults to the conversation's or the project's connection for the channel
+    """
+    content: str
+    """
+    Message text
+    """
+    project_id: str | None = None
+    """
+    Project UUID; defaults to authenticated project/default project
+    """
+    user_id: str
+    """
+    Platform user id to deliver to (channel identity owner)
+    """
+
+
+class PushConversationMessageOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/PushConversationMessageOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    channel_message_id: str | None = None
+    """
+    Provider message id
+    """
+    channel_type: str
+    """
+    Channel the message was delivered on
+    """
+    conversation_id: str | None = None
+    """
+    Durable conversation the message was recorded under
+    """
+    delivery_status: str
+    """
+    Provider delivery status (sent|delivered|read|failed)
+    """
+    external_id: str
+    """
+    Channel-native recipient id (e.g. WhatsApp phone)
+    """
+    session_id: str | None = None
+    """
+    Conversation session the outbound turn was recorded under
+    """
+    used_template: bool
+    """
+    True when the 24h window was closed and the send used the connection's approved re-engagement template
+    """
+
+
 class PutBYOKKeyInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6732,6 +8606,16 @@ class RecentTurn(BaseModel):
     """
 
 
+class Recommendation(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    detail: str
+    expected_impact: str
+    title: str
+
+
 class RecordMLFeedbackRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -6749,13 +8633,21 @@ class RecordMLFeedbackRequest(BaseModel):
     action_features: dict[str, Any] | None = None
     action_id: str | None = None
     context: dict[str, Any] | None = None
-    converted: bool
+    converted: bool | None = None
+    event: str | None = None
+    """
+    Alternative to converted/reward: a realized event name matched against the tenant manifest's objective.success_events.
+    """
     features: dict[str, Any] | None = None
     note: str | None = None
     predicted_score: int | None = None
     propensity: float | None = None
     reward: float | None = None
     subject_id: str | None = None
+    value: float | None = None
+    """
+    Realized deal value for this outcome (P1 EV ranking / deal_value regression label). Wins over deriving it from the tenant manifest's objective.value_field.
+    """
 
 
 class RecordOutcomeInputBody(BaseModel):
@@ -6941,6 +8833,19 @@ class ReplaceWisdomAttributedOutputBody(BaseModel):
     fact: AttributedFact
 
 
+class Report(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    caveats: list[str] | None
+    objection_taxonomy: list[Objection] | None
+    phrases_that_lost: list[Phrase] | None
+    phrases_that_worked: list[Phrase] | None
+    recommendations: list[Recommendation] | None
+    stall_points: list[str] | None
+
+
 class ResetInstanceOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -7007,6 +8912,55 @@ class ResetMemoryResponse(BaseModel):
     nodes_failed: int | None = None
     status: str
     success: bool
+
+
+class ResolveApprovalRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ResolveApprovalRequest.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    action: str
+    """
+    approve, reject, or take_over
+    """
+
+
+class RevivalItemBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    agent_id: str
+    contact_id: str
+    dormancy_days: float
+    expected_value: float | None = None
+    reason: str
+    revival_score: float
+
+
+class RevivalQueueBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/RevivalQueueBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    computed_at: str
+    items: list[RevivalItemBody] | None
 
 
 class RevokeAPIKeyOutputBody(BaseModel):
@@ -7099,6 +9053,10 @@ class RunPipelineInputBody(BaseModel):
     input: dict[str, Any] | None = None
     """
     Initial input passed to the first step
+    """
+    requested_by: str | None = None
+    """
+    User id to notify with results on completion (research pipelines). Callers with a bound end-user identity may only name themselves; API-key callers (trusted tenant backends) may name any of their reps.
     """
 
 
@@ -7321,6 +9279,34 @@ class SegmentCal(BaseModel):
     n: int
     p_hat: float
     segment: str
+
+
+class SendBucket(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    day_type: str
+    daypart: str
+
+
+class SendConversationMessageInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/SendConversationMessageInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    attachments: Any | None = None
+    content: str
 
 
 class ServiceUsageByOp(BaseModel):
@@ -7902,6 +9888,19 @@ class Step(BaseModel):
     step: str
 
 
+class StoredEvent(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    contact_ref: str | None = None
+    created_at: AwareDatetime
+    event_id: str
+    lead_ref: str | None = None
+    occurred_at: AwareDatetime
+    type: str
+
+
 class StoredFact(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -8113,6 +10112,23 @@ class StorefrontUpsertAgentInputBody(BaseModel):
     """
 
 
+class StreamMLRoundsRequest(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/StreamMLRoundsRequest.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    rounds: int | None = None
+    scenario: str | None = None
+    seed: int | None = None
+
+
 class StructuredImportSpec(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -8249,6 +10265,25 @@ class TenantBillingProfile(BaseModel):
     updated_at: Annotated[AwareDatetime, Field(alias='updatedAt')]
 
 
+class TestChannelConnectionInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/TestChannelConnectionInputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    message: str
+    to: str
+
+
 class TextToSpeechInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -8294,6 +10329,19 @@ class TicketSummary(BaseModel):
     title: str
     type: str
     updated_at: AwareDatetime
+
+
+class Tier(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    agent_id: str
+    agent_name: str
+    criteria: Any
+    label: str
+    name: str
+    prompt: str
 
 
 class TimeMachineMoodSnapshot(BaseModel):
@@ -8448,6 +10496,24 @@ class TraitPrecision(BaseModel):
     last_updated_at: AwareDatetime
     observation_count: int
     precision: float
+
+
+class TransitionInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/TransitionInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    rep_user_id: Annotated[str, Field(min_length=1)]
+    """
+    The acting rep's user id. Must match the assignment's rep_user_id (the rep the lead was offered to) — this binds the action to the rep on whose behalf it is performed. A mismatch returns 403, even for a caller otherwise authorized for the tenant/project.
+    """
 
 
 class TrialResult(BaseModel):
@@ -8889,6 +10955,14 @@ class UpdateCapabilitiesInputBody(BaseModel):
     auto_learn_skills: Annotated[bool | None, Field(alias='autoLearnSkills')] = None
     """
     Enable/disable agent-authored skills (sonzai_create_skill / sonzai_update_skill tools). Requires skills to also be enabled — otherwise force-cleared to false.
+    """
+    catalog_booking: Annotated[bool | None, Field(alias='catalogBooking')] = None
+    """
+    Enable/disable the catalog_book_viewing tool (creates a TTL'd booking hold against a catalog item/slot). Off by default.
+    """
+    catalog_grounding: Annotated[bool | None, Field(alias='catalogGrounding')] = None
+    """
+    Enable/disable the sales-inventory grounding layer: the proactive context-builder block plus the catalog_search/catalog_item_details tools. Off by default.
     """
     composio: bool | None = None
     """
@@ -9845,6 +11919,35 @@ class WebhookDeliveryAttempt(BaseModel):
     webhook_url: str
 
 
+class WinlossReportResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/WinlossReportResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    cached: bool
+    """
+    true when this is a previously-generated report returned unchanged (idempotence); false when freshly generated.
+    """
+    created_at: AwareDatetime
+    evidence_stats: EvidenceStats
+    project_id: str
+    report: Report
+    report_id: str
+    violations: list[str] | None = None
+    """
+    Envelope sanitizations applied to the model output (e.g. over-cap arrays dropped). Present only on a fresh generation.
+    """
+    window_end: AwareDatetime
+    window_start: AwareDatetime
+
+
 class WisdomAuditResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10246,6 +12349,25 @@ class WorkbenchStateResponse(BaseModel):
     relationship: WorkbenchStateRelation | None = None
 
 
+class WorkspaceSessionOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/WorkspaceSessionOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    token: str
+    workspace_url: str
+
+
 class AddContentRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10275,6 +12397,8 @@ class AgentCapabilities(BaseModel):
     A URL to the JSON Schema for this object.
     """
     auto_learn_skills: Annotated[bool | None, Field(alias='autoLearnSkills')] = None
+    catalog_booking: Annotated[bool | None, Field(alias='catalogBooking')] = None
+    catalog_grounding: Annotated[bool | None, Field(alias='catalogGrounding')] = None
     composio: bool | None = None
     custom_tools: Annotated[
         list[CustomToolDefinition] | None, Field(alias='customTools')
@@ -10305,6 +12429,7 @@ class AgentCapabilities(BaseModel):
     ] = None
     proactive_mode: Annotated[str | None, Field(alias='proactiveMode')] = None
     remember_name: Annotated[bool | None, Field(alias='rememberName')] = None
+    rep_copilot: Annotated[bool | None, Field(alias='repCopilot')] = None
     shared_memory: Annotated[bool | None, Field(alias='sharedMemory')] = None
     skills: bool | None = None
     video_generation: Annotated[bool, Field(alias='videoGeneration')]
@@ -10427,6 +12552,159 @@ class Calibration(BaseModel):
     updated_at: AwareDatetime
 
 
+class CatalogItem(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CatalogItem.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    attributes: dict[str, Any]
+    created_at: AwareDatetime
+    currency: str | None = None
+    description: str | None = None
+    external_ref: str | None = None
+    is_active: bool
+    item_id: str
+    item_type: str
+    kb_node_id: str | None = None
+    media: list[CatalogMedia] | None
+    name: str
+    parent_item_id: str | None = None
+    price: float | None = None
+    price_unit: str | None = None
+    price_updated_at: AwareDatetime | None = None
+    project_id: str
+    status: str
+    tenant_id: str
+    updated_at: AwareDatetime
+    version: int
+
+
+class CatalogItemWriteBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CatalogItemWriteBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    attributes: dict[str, Any] | None = None
+    currency: str | None = None
+    description: str | None = None
+    external_ref: str | None = None
+    item_type: str
+    media: list[CatalogMedia] | None = None
+    name: str
+    parent_item_id: str | None = None
+    price: float | None = None
+    price_unit: str | None = None
+    status: str | None = None
+
+
+class CatalogListItemsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CatalogListItemsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    items: list[CatalogItem] | None
+
+
+class CatalogListSlotsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CatalogListSlotsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    slots: list[CatalogSlot] | None
+
+
+class CatalogSchema(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CatalogSchema.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    created_at: AwareDatetime
+    fields: list[CatalogSchemaField] | None
+    item_type: str
+    project_id: str
+    schema_id: str
+    tenant_id: str
+    updated_at: AwareDatetime
+    version: int
+
+
+class CatalogSyncInputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CatalogSyncInputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    items: list[CatalogSyncItemBody] | None
+    remove_missing: bool | None = None
+    """
+    Soft-deactivate active items (of the item_types in this batch) whose external_ref is absent from it
+    """
+
+
+class ChannelDeliverOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ChannelDeliverOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    deliveries: list[DeliveryResult] | None
+
+
 class ChatSSEChoice(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10504,6 +12782,32 @@ class ChatSSEChunk(BaseModel):
     """
 
 
+class Cohort(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    cohort_label: str
+    entry_week: str
+    points: list[CohortPoint] | None
+    size: int
+
+
+class CohortsBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/CohortsBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    cohorts: list[Cohort] | None
+
+
 class ComposioConnectCallbackOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10540,6 +12844,23 @@ class ComposioUsageResponse(BaseModel):
     summary: ComposioUsageResponseSummaryStruct
 
 
+class Config(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/Config.json'])
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    channel_bindings: list[ChannelBinding] | None
+    guide_agent: GuideAgent
+    handoffs: list[Handoff] | None
+    tiers: list[Tier] | None
+
+
 class ConstellationResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10555,6 +12876,66 @@ class ConstellationResponse(BaseModel):
     edges: list[Edge] | None
     insights: list[Insight] | None
     nodes: list[Node] | None
+
+
+class ContactTimingSuggestResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ContactTimingSuggestResponse.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    action_id: str
+    channel: str
+    propensity: float
+    send_bucket: SendBucket
+
+
+class ConversationBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    agent: str
+    agent_name: str
+    channel: str
+    cost_usd: float
+    created_at: AwareDatetime
+    handoffs: list[ConversationHandoff] | None
+    id: str
+    last_activity: AwareDatetime
+    last_message: str
+    model: str
+    status: str
+    tags: list[str] | None
+    tier: str
+    title: str
+
+
+class ConversationDetailBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/ConversationDetailBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    conversation: OmnichannelConversationDTO
+    source: str
 
 
 class CostBreakdownResponse(BaseModel):
@@ -10783,6 +13164,27 @@ class CreateEvalTemplateInputBody(BaseModel):
     """
 
 
+class DepthDistributionBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/DepthDistributionBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    at_risk: int
+    avg_depth: float
+    bands: dict[str, int]
+    declining: int
+    deepened: int
+    total: int
+    trend: list[DepthTrend] | None
+
+
 class EnrichLeadBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -10949,6 +13351,21 @@ class EvaluateRequest(BaseModel):
     """
 
 
+class FleetActivityBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/FleetActivityBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    items: list[FleetActivityItem] | None
+
+
 class GenerateSeedMemoriesInputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -11091,6 +13508,29 @@ class InventoryWriteResponse(BaseModel):
     inventory_item_id: str | None = None
     kb_resolution: KbResolutionInfo | None = None
     status: str
+
+
+class JobDTO(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None, Field(alias='$schema', examples=['/api/v1/schemas/JobDTO.json'])
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    created_at: AwareDatetime
+    error: str | None = None
+    job_id: str
+    params: dict[str, Any] | None = None
+    progress: JobProgressDTO
+    result: dict[str, Any] | None = None
+    status: str
+    tenant_id: str | None = None
+    type: str
+    updated_at: AwareDatetime
 
 
 class KBEntitySchema(BaseModel):
@@ -11510,6 +13950,65 @@ class ListBuiltinAgentSessionsResponse(BaseModel):
     sessions: list[SessionBody] | None
 
 
+class ListConversationMessagesOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListConversationMessagesOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    has_more: bool
+    items: list[OmnichannelMessageDTO] | None
+    messages: list[OmnichannelMessageDTO] | None
+    next_cursor: str | None = None
+
+
+class ListConversationsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListConversationsOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    conversations: list[ConversationBody] | None
+    has_more: bool
+    items: list[ConversationBody] | None
+    next_cursor: str | None = None
+    total: int
+
+
+class ListEventsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ListEventsOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    events: list[StoredEvent] | None
+    next_cursor: str | None = None
+
+
 class ListFactsResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -11525,6 +14024,41 @@ class ListFactsResponse(BaseModel):
     facts: list[StoredFact] | None
     next_page_token: str | None = None
     total_count: int
+
+
+class ListJobsOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ListJobsOutputBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    jobs: list[JobDTO] | None
+    next_cursor: str | None = None
+
+
+class ListPermanentRoutesResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/ListPermanentRoutesResponse.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    routes: list[PermanentRouteBody] | None
+    total: int
 
 
 class ListProjectSkillsOutputBody(BaseModel):
@@ -11675,6 +14209,25 @@ class MeResponse(BaseModel):
     user_id: str
 
 
+class MoatIndexBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/MoatIndexBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    comparison: MoatIndexComparison
+    components: MoatIndexComponents
+    moat_index: float
+    moat_index_delta: float
+    moat_index_prev: float
+
+
 class MoodResponse(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -11688,6 +14241,24 @@ class MoodResponse(BaseModel):
     A URL to the JSON Schema for this object.
     """
     mood: MoodState
+
+
+class OfferSuggestResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/OfferSuggestResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    gated: bool
+    have: int | None = None
+    needed: int | None = None
+    suggestion: OfferSuggestionBody
 
 
 class OnboardSummary(BaseModel):
@@ -11807,6 +14378,21 @@ class PipelineDTO(BaseModel):
     updated_at: AwareDatetime
 
 
+class PipelineFlowBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/PipelineFlowBody.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    stages: list[PipelineStage] | None
+
+
 class PipelineRun(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -11824,6 +14410,7 @@ class PipelineRun(BaseModel):
     error: str | None = None
     final_findings: Any
     pipeline_id: str
+    requested_by: str | None = None
     run_id: str
     status: str
     steps: list[PipelineStepResult] | None
@@ -11891,6 +14478,23 @@ class ProcessToolCall(BaseModel):
     function: ProcessToolCallFunction
     id: str
     type: str
+
+
+class ResultItem(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/ResultItem.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    availability: ItemAvailability
+    item: CatalogItem
+    kb_snippets: list[str] | None = None
 
 
 class SearchResponse(BaseModel):
@@ -12420,6 +15024,50 @@ class BatchPersonalityResponse(BaseModel):
     personalities: dict[str, BatchPersonalityEntry]
 
 
+class CatalogImportOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema', examples=['/api/v1/schemas/CatalogImportOutputBody.json']
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    mapping: list[ColumnMapping] | None
+    preview: list[CatalogItem] | None = None
+    """
+    First rows as they would be written — only populated on dry_run
+    """
+    result: CatalogSyncResult | None = None
+    """
+    Only populated when dry_run=false
+    """
+    row_errors: list[ImportRowError] | None = None
+
+
+class CatalogListSchemasOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/CatalogListSchemasOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    schemas: list[CatalogSchema] | None
+
+
 class EnrichPersonOutputBody(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -12458,6 +15106,24 @@ class EnrichPersonOutputBody(BaseModel):
     """
     Per-step waterfall trace for transparency.
     """
+
+
+class GroundingAvailabilityOutputBody(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(
+            alias='$schema',
+            examples=['/api/v1/schemas/GroundingAvailabilityOutputBody.json'],
+        ),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    items: list[ResultItem] | None
 
 
 class KbCompareOutputBody(BaseModel):
@@ -12538,6 +15204,23 @@ class ProcessMessage(BaseModel):
     tool_calls: list[ProcessToolCall] | None = None
 
 
+class QueryResponse(BaseModel):
+    model_config = ConfigDict(
+        extra='forbid',
+        populate_by_name=True,
+    )
+    field_schema: Annotated[
+        AnyUrl | None,
+        Field(alias='$schema', examples=['/api/v1/schemas/QueryResponse.json']),
+    ] = None
+    """
+    A URL to the JSON Schema for this object.
+    """
+    as_of: AwareDatetime
+    items: list[ResultItem] | None
+    knowledge: list[KnowledgeHit] | None
+
+
 class RunEvalRequest(BaseModel):
     model_config = ConfigDict(
         extra='forbid',
@@ -12589,6 +15272,10 @@ class SessionMessage(BaseModel):
         extra='forbid',
         populate_by_name=True,
     )
+    author: str | None = None
+    """
+    Non-empty when this message was authored by a human operator
+    """
     content: str | None = None
     """
     Message content; null for assistant messages that only call tools
@@ -12812,392 +15499,3 @@ class ProcessInputBody(BaseModel):
     """
     ID of the user whose conversation is being processed
     """
-
-
-# Omnichannel Conversations / Meta channel connections (from monolith OpenAPI).
-class ChannelConnectionDTO(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=['https://api.sonz.ai/api/v1/schemas/ChannelConnectionDTO.json'],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    app_id: str | None = None
-    channel_type: str
-    connection_id: str
-    created_at: AwareDatetime
-    default_agent_id: str | None = None
-    display_name: str
-    ig_account_id: str | None = None
-    page_id: str | None = None
-    phone_number_id: str | None = None
-    project_id: str
-    provider_mode: str
-    status: str
-    status_detail: str | None = None
-    templates: Any | None = None
-    test_send_succeeded: bool | None = None
-    updated_at: AwareDatetime
-    verify_token: str | None = None
-    waba_id: str | None = None
-    webhook_callback_url: str | None = None
-
-
-class ChannelConnectionsOutputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=[
-                'https://api.sonz.ai/api/v1/schemas/ChannelConnectionsOutputBody.json'
-            ],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    connections: list[ChannelConnectionDTO] | None
-    items: list[ChannelConnectionDTO] | None
-
-
-class ConversationHandoff(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    from_: Annotated[str, Field(alias='from')]
-    to: str
-    when: str
-
-
-class ConversationMessage(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    content: str
-    role: str
-    session_id: str
-    timestamp: AwareDatetime
-
-
-class OmnichannelConversationDTO(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=[
-                'https://api.sonz.ai/api/v1/schemas/OmnichannelConversationDTO.json'
-            ],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    agent_id: str
-    channel_type: str
-    connection_id: str | None = None
-    controller: str
-    controller_operator_id: str | None = None
-    conversation_id: str
-    created_at: AwareDatetime
-    handoffs: Any
-    last_direction: str | None = None
-    last_message_at: AwareDatetime
-    last_message_preview: str | None = None
-    meta: Any
-    project_id: str
-    session_id: str | None = None
-    status: str
-    takeover_started_at: AwareDatetime | None = None
-    unread_count: int
-    updated_at: AwareDatetime
-    user_id: str
-
-
-class OmnichannelMessageDTO(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    attachments: Any | None = None
-    author_id: str | None = None
-    author_type: str
-    channel_message_id: str | None = None
-    content: str
-    conversation_id: str
-    created_at: AwareDatetime
-    delivery_detail: str | None = None
-    delivery_status: str | None = None
-    direction: str
-    message_id: str
-    role: str
-    session_id: str | None = None
-
-
-class CreateChannelConnectionInputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=[
-                'https://api.sonz.ai/api/v1/schemas/CreateChannelConnectionInputBody.json'
-            ],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    access_token: str | None = None
-    """
-    Customer system-user access token; encrypted at rest; required for byo_app.
-    """
-    app_id: str | None = None
-    """
-    Customer Meta app id; required for byo_app.
-    """
-    app_secret: str | None = None
-    """
-    Customer Meta app secret; encrypted at rest; required for byo_app.
-    """
-    channel_type: Literal['whatsapp', 'messenger', 'instagram']
-    code: str | None = None
-    """
-    Embedded Signup OAuth code; required for embedded_signup.
-    """
-    default_agent_id: str | None = None
-    display_name: str | None = None
-    ig_account_id: str | None = None
-    page_id: str | None = None
-    phone_number_id: str | None = None
-    provider_mode: Literal['byo_app', 'embedded_signup'] | None = None
-    """
-    Connection provider mode. Defaults to byo_app.
-    """
-    templates: Any | None = None
-    test_message: str | None = None
-    test_to: str | None = None
-    """
-    Optional channel recipient id for an immediate test send.
-    """
-    verify_token: str | None = None
-    """
-    Customer webhook verify token; required for byo_app.
-    """
-    waba_id: str | None = None
-
-
-class PatchChannelConnectionInputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=[
-                'https://api.sonz.ai/api/v1/schemas/PatchChannelConnectionInputBody.json'
-            ],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    default_agent_id: str | None = None
-    status: str | None = None
-    templates: Any | None = None
-
-
-class PatchConversationInputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=[
-                'https://api.sonz.ai/api/v1/schemas/PatchConversationInputBody.json'
-            ],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    agent_id: str | None = None
-    """
-    Reassign to agent id
-    """
-    status: Literal['open', 'snoozed', 'closed'] | None = None
-
-
-class SendConversationMessageInputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=[
-                'https://api.sonz.ai/api/v1/schemas/SendConversationMessageInputBody.json'
-            ],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    attachments: Any | None = None
-    content: str
-
-
-class TestChannelConnectionInputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=[
-                'https://api.sonz.ai/api/v1/schemas/TestChannelConnectionInputBody.json'
-            ],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    message: str
-    to: str
-
-
-class ConversationBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    agent: str
-    agent_name: str
-    channel: str
-    cost_usd: float
-    created_at: AwareDatetime
-    handoffs: list[ConversationHandoff] | None
-    id: str
-    last_activity: AwareDatetime
-    last_message: str
-    model: str
-    status: str
-    tags: list[str] | None
-    tier: str
-    title: str
-
-
-class ConversationDetailBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=['https://api.sonz.ai/api/v1/schemas/ConversationDetailBody.json'],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    conversation: OmnichannelConversationDTO
-    source: str
-
-
-class ListConversationMessagesOutputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=[
-                'https://api.sonz.ai/api/v1/schemas/ListConversationMessagesOutputBody.json'
-            ],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    has_more: bool
-    items: list[OmnichannelMessageDTO] | None
-    messages: list[OmnichannelMessageDTO] | None
-    next_cursor: str | None = None
-
-
-class ListConversationsOutputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=[
-                'https://api.sonz.ai/api/v1/schemas/ListConversationsOutputBody.json'
-            ],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    conversations: list[ConversationBody] | None
-    has_more: bool
-    items: list[ConversationBody] | None
-    next_cursor: str | None = None
-    total: int
-
-
-class ListUserConversationsOutputBody(BaseModel):
-    model_config = ConfigDict(
-        extra='forbid',
-        populate_by_name=True,
-    )
-    field_schema: Annotated[
-        AnyUrl | None,
-        Field(
-            alias='$schema',
-            examples=[
-                'https://api.sonz.ai/api/v1/schemas/ListUserConversationsOutputBody.json'
-            ],
-        ),
-    ] = None
-    """
-    A URL to the JSON Schema for this object.
-    """
-    messages: list[ConversationMessage] | None
-    source: str

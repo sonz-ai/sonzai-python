@@ -7,6 +7,8 @@ from __future__ import annotations
 from typing import Any
 from urllib.parse import quote
 from sonzai._generated.models import (
+    ChannelDeliverBody,
+    ChannelDeliverOutputBody,
     ChannelDTO,
     ChannelWriteBody,
     ListChannelsOutputBody,
@@ -59,6 +61,24 @@ class NotificationChannels(_NotificationChannelsBase):
         body = encode_body(ChannelWriteBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
+
+    def deliver_to_channels(
+        self,
+        *,
+        event_type: str,
+        payload: dict[str, Any] | None = None,
+    ) -> ChannelDeliverOutputBody:
+        """Deliver an event to notification channels"""
+        path = f"/api/v1/channels/deliver"
+        params = None
+        _raw: dict[str, Any] = {}
+        if event_type is not None:
+            _raw["event_type"] = event_type
+        if payload is not None:
+            _raw["payload"] = payload
+        body = encode_body(ChannelDeliverBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return ChannelDeliverOutputBody.model_validate(data)
 
     def delete_channel(
         self,
@@ -151,6 +171,25 @@ class NotificationChannels(_NotificationChannelsBase):
         body = encode_body(ChannelWriteBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
+
+    def deliver_to_channels_for_project(
+        self,
+        project_id: str,
+        *,
+        event_type: str,
+        payload: dict[str, Any] | None = None,
+    ) -> ChannelDeliverOutputBody:
+        """Deliver an event to project notification channels"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/channels/deliver"
+        params = None
+        _raw: dict[str, Any] = {}
+        if event_type is not None:
+            _raw["event_type"] = event_type
+        if payload is not None:
+            _raw["payload"] = payload
+        body = encode_body(ChannelDeliverBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return ChannelDeliverOutputBody.model_validate(data)
 
     def delete_channel_for_project(
         self,
@@ -253,6 +292,24 @@ class AsyncNotificationChannels(_NotificationChannelsBase):
         data = await self._http.post(path, params=params, json_data=body)
         return data
 
+    async def deliver_to_channels(
+        self,
+        *,
+        event_type: str,
+        payload: dict[str, Any] | None = None,
+    ) -> ChannelDeliverOutputBody:
+        """Deliver an event to notification channels"""
+        path = f"/api/v1/channels/deliver"
+        params = None
+        _raw: dict[str, Any] = {}
+        if event_type is not None:
+            _raw["event_type"] = event_type
+        if payload is not None:
+            _raw["payload"] = payload
+        body = encode_body(ChannelDeliverBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return ChannelDeliverOutputBody.model_validate(data)
+
     async def delete_channel(
         self,
         channel_id: str,
@@ -344,6 +401,25 @@ class AsyncNotificationChannels(_NotificationChannelsBase):
         body = encode_body(ChannelWriteBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
+
+    async def deliver_to_channels_for_project(
+        self,
+        project_id: str,
+        *,
+        event_type: str,
+        payload: dict[str, Any] | None = None,
+    ) -> ChannelDeliverOutputBody:
+        """Deliver an event to project notification channels"""
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/channels/deliver"
+        params = None
+        _raw: dict[str, Any] = {}
+        if event_type is not None:
+            _raw["event_type"] = event_type
+        if payload is not None:
+            _raw["payload"] = payload
+        body = encode_body(ChannelDeliverBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return ChannelDeliverOutputBody.model_validate(data)
 
     async def delete_channel_for_project(
         self,

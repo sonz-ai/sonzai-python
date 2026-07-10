@@ -14,6 +14,7 @@ from sonzai._generated.models import (
     FactHistoryResponse,
     ListAllFactsResponse,
     ListFactsResponse,
+    ListUserConversationsOutputBody,
     MemoryResponse,
     SearchResponse,
     StoredFact,
@@ -345,6 +346,21 @@ class Memory(_MemoryBase):
         if isinstance(data, dict):
             return DeleteWisdomResponse.model_validate(data)
         return DeleteWisdomResponse()
+
+    def list_user_conversations(
+        self,
+        agent_id: str,
+        user_id: str,
+        *,
+        limit: int | None = None,
+    ) -> ListUserConversationsOutputBody:
+        """Get an agent-user conversation history"""
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/conversations"
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        data = self._http.get(path, params=params)
+        return ListUserConversationsOutputBody.model_validate(data)
 
     def list_user_facts(
         self,
@@ -695,6 +711,21 @@ class AsyncMemory(_MemoryBase):
         if isinstance(data, dict):
             return DeleteWisdomResponse.model_validate(data)
         return DeleteWisdomResponse()
+
+    async def list_user_conversations(
+        self,
+        agent_id: str,
+        user_id: str,
+        *,
+        limit: int | None = None,
+    ) -> ListUserConversationsOutputBody:
+        """Get an agent-user conversation history"""
+        path = f"/api/v1/agents/{quote(agent_id, safe='')}/users/{quote(user_id, safe='')}/conversations"
+        params: dict[str, Any] = {}
+        if limit is not None:
+            params["limit"] = limit
+        data = await self._http.get(path, params=params)
+        return ListUserConversationsOutputBody.model_validate(data)
 
     async def list_user_facts(
         self,

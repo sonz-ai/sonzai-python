@@ -102,6 +102,7 @@ class Pipelines(_PipelinesBase):
         pipeline_id: str,
         *,
         input: dict[str, Any] | None = None,
+        requested_by: str | None = None,
     ) -> Any:
         """Start a pipeline run (async)"""
         path = f"/api/v1/pipelines/{quote(pipeline_id, safe='')}/run"
@@ -109,6 +110,8 @@ class Pipelines(_PipelinesBase):
         _raw: dict[str, Any] = {}
         if input is not None:
             _raw["input"] = input
+        if requested_by is not None:
+            _raw["requested_by"] = requested_by
         body = encode_body(RunPipelineInputBody, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return data
@@ -142,17 +145,23 @@ class Pipelines(_PipelinesBase):
         self,
         pipeline_id: str,
         *,
+        kind: str | None = None,
         slug: str,
         title: str | None = None,
+        write_kb: bool | None = None,
     ) -> PipelineDTO:
         """Append a step to a pipeline"""
         path = f"/api/v1/pipelines/{quote(pipeline_id, safe='')}/steps"
         params = None
         _raw: dict[str, Any] = {}
+        if kind is not None:
+            _raw["kind"] = kind
         if slug is not None:
             _raw["slug"] = slug
         if title is not None:
             _raw["title"] = title
+        if write_kb is not None:
+            _raw["write_kb"] = write_kb
         body = encode_body(PipelineStep, _raw)
         data = self._http.post(path, params=params, json_data=body)
         return PipelineDTO.model_validate(data)
@@ -236,6 +245,7 @@ class AsyncPipelines(_PipelinesBase):
         pipeline_id: str,
         *,
         input: dict[str, Any] | None = None,
+        requested_by: str | None = None,
     ) -> Any:
         """Start a pipeline run (async)"""
         path = f"/api/v1/pipelines/{quote(pipeline_id, safe='')}/run"
@@ -243,6 +253,8 @@ class AsyncPipelines(_PipelinesBase):
         _raw: dict[str, Any] = {}
         if input is not None:
             _raw["input"] = input
+        if requested_by is not None:
+            _raw["requested_by"] = requested_by
         body = encode_body(RunPipelineInputBody, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return data
@@ -276,17 +288,23 @@ class AsyncPipelines(_PipelinesBase):
         self,
         pipeline_id: str,
         *,
+        kind: str | None = None,
         slug: str,
         title: str | None = None,
+        write_kb: bool | None = None,
     ) -> PipelineDTO:
         """Append a step to a pipeline"""
         path = f"/api/v1/pipelines/{quote(pipeline_id, safe='')}/steps"
         params = None
         _raw: dict[str, Any] = {}
+        if kind is not None:
+            _raw["kind"] = kind
         if slug is not None:
             _raw["slug"] = slug
         if title is not None:
             _raw["title"] = title
+        if write_kb is not None:
+            _raw["write_kb"] = write_kb
         body = encode_body(PipelineStep, _raw)
         data = await self._http.post(path, params=params, json_data=body)
         return PipelineDTO.model_validate(data)

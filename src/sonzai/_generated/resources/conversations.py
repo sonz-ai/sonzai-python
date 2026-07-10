@@ -4,15 +4,18 @@
 
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any
 from urllib.parse import quote
-
 from sonzai._generated.models import (
     ConversationBody,
     ConversationDetailBody,
+    ListConversationMessagesOutputBody,
+    ListConversationsOutputBody,
     OmnichannelConversationDTO,
     OmnichannelMessageDTO,
     PatchConversationInputBody,
+    PushConversationMessageInputBody,
+    PushConversationMessageOutputBody,
     SendConversationMessageInputBody,
 )
 from sonzai._pagination import AsyncPage, Page
@@ -41,7 +44,7 @@ class Conversations(_ConversationsBase):
         limit: int = 100,
     ) -> Page[ConversationBody]:
         """List conversations"""
-        path = "/api/v1/conversations"
+        path = f"/api/v1/conversations"
         params: dict[str, Any] = {"limit": limit, "cursor": None}
         if project_id is not None:
             params["project_id"] = project_id
@@ -72,13 +75,43 @@ class Conversations(_ConversationsBase):
             total_key="total",
         )
 
+    def push_conversation_message(
+        self,
+        *,
+        agent_id: str,
+        channel_type: str | None = None,
+        connection_id: str | None = None,
+        content: str,
+        project_id: str | None = None,
+        user_id: str,
+    ) -> PushConversationMessageOutputBody:
+        """Push a proactive agent message to a user's connected channel"""
+        path = f"/api/v1/conversations/push"
+        params = None
+        _raw: dict[str, Any] = {}
+        if agent_id is not None:
+            _raw["agent_id"] = agent_id
+        if channel_type is not None:
+            _raw["channel_type"] = channel_type
+        if connection_id is not None:
+            _raw["connection_id"] = connection_id
+        if content is not None:
+            _raw["content"] = content
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(PushConversationMessageInputBody, _raw)
+        data = self._http.post(path, params=params, json_data=body)
+        return PushConversationMessageOutputBody.model_validate(data)
+
     def stream_conversations(
         self,
         *,
         project_id: str | None = None,
     ) -> Any:
         """Stream conversation events"""
-        path = "/api/v1/conversations/stream"
+        path = f"/api/v1/conversations/stream"
         params: dict[str, Any] = {}
         if project_id is not None:
             params["project_id"] = project_id
@@ -170,7 +203,7 @@ class Conversations(_ConversationsBase):
         data = self._http.delete(path, params=params)
         if isinstance(data, dict):
             return OmnichannelConversationDTO.model_validate(data)
-        return OmnichannelConversationDTO.model_construct()
+        return OmnichannelConversationDTO()
 
     def take_over_conversation(
         self,
@@ -207,7 +240,7 @@ class AsyncConversations(_ConversationsBase):
         limit: int = 100,
     ) -> AsyncPage[ConversationBody]:
         """List conversations"""
-        path = "/api/v1/conversations"
+        path = f"/api/v1/conversations"
         params: dict[str, Any] = {"limit": limit, "cursor": None}
         if project_id is not None:
             params["project_id"] = project_id
@@ -231,7 +264,7 @@ class AsyncConversations(_ConversationsBase):
             params["tier"] = tier
 
         async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
-            return cast(dict[str, Any], await self._http.get(path, params=p))
+            return await self._http.get(path, params=p)
 
         return AsyncPage(
             fetcher=fetcher,
@@ -242,13 +275,43 @@ class AsyncConversations(_ConversationsBase):
             total_key="total",
         )
 
+    async def push_conversation_message(
+        self,
+        *,
+        agent_id: str,
+        channel_type: str | None = None,
+        connection_id: str | None = None,
+        content: str,
+        project_id: str | None = None,
+        user_id: str,
+    ) -> PushConversationMessageOutputBody:
+        """Push a proactive agent message to a user's connected channel"""
+        path = f"/api/v1/conversations/push"
+        params = None
+        _raw: dict[str, Any] = {}
+        if agent_id is not None:
+            _raw["agent_id"] = agent_id
+        if channel_type is not None:
+            _raw["channel_type"] = channel_type
+        if connection_id is not None:
+            _raw["connection_id"] = connection_id
+        if content is not None:
+            _raw["content"] = content
+        if project_id is not None:
+            _raw["project_id"] = project_id
+        if user_id is not None:
+            _raw["user_id"] = user_id
+        body = encode_body(PushConversationMessageInputBody, _raw)
+        data = await self._http.post(path, params=params, json_data=body)
+        return PushConversationMessageOutputBody.model_validate(data)
+
     async def stream_conversations(
         self,
         *,
         project_id: str | None = None,
     ) -> Any:
         """Stream conversation events"""
-        path = "/api/v1/conversations/stream"
+        path = f"/api/v1/conversations/stream"
         params: dict[str, Any] = {}
         if project_id is not None:
             params["project_id"] = project_id
@@ -295,7 +358,7 @@ class AsyncConversations(_ConversationsBase):
         params: dict[str, Any] = {"limit": limit, "cursor": None}
 
         async def fetcher(p: dict[str, Any]) -> dict[str, Any]:
-            return cast(dict[str, Any], await self._http.get(path, params=p))
+            return await self._http.get(path, params=p)
 
         return AsyncPage(
             fetcher=fetcher,
@@ -344,7 +407,7 @@ class AsyncConversations(_ConversationsBase):
         data = await self._http.delete(path, params=params)
         if isinstance(data, dict):
             return OmnichannelConversationDTO.model_validate(data)
-        return OmnichannelConversationDTO.model_construct()
+        return OmnichannelConversationDTO()
 
     async def take_over_conversation(
         self,

@@ -197,6 +197,8 @@ class Agents(_AgentsBase):
         agent_id: str,
         *,
         auto_learn_skills: bool | None = None,
+        catalog_booking: bool | None = None,
+        catalog_grounding: bool | None = None,
         composio: bool | None = None,
         image_generation: bool | None = None,
         inventory: bool | None = None,
@@ -218,6 +220,10 @@ class Agents(_AgentsBase):
         _raw: dict[str, Any] = {}
         if auto_learn_skills is not None:
             _raw["autoLearnSkills"] = auto_learn_skills
+        if catalog_booking is not None:
+            _raw["catalogBooking"] = catalog_booking
+        if catalog_grounding is not None:
+            _raw["catalogGrounding"] = catalog_grounding
         if composio is not None:
             _raw["composio"] = composio
         if image_generation is not None:
@@ -255,6 +261,8 @@ class Agents(_AgentsBase):
         agent_id: str,
         *,
         auto_learn_skills: bool | None = None,
+        catalog_booking: bool | None = None,
+        catalog_grounding: bool | None = None,
         composio: bool | None = None,
         image_generation: bool | None = None,
         inventory: bool | None = None,
@@ -276,6 +284,10 @@ class Agents(_AgentsBase):
         _raw: dict[str, Any] = {}
         if auto_learn_skills is not None:
             _raw["autoLearnSkills"] = auto_learn_skills
+        if catalog_booking is not None:
+            _raw["catalogBooking"] = catalog_booking
+        if catalog_grounding is not None:
+            _raw["catalogGrounding"] = catalog_grounding
         if composio is not None:
             _raw["composio"] = composio
         if image_generation is not None:
@@ -652,6 +664,8 @@ class AsyncAgents(_AgentsBase):
         agent_id: str,
         *,
         auto_learn_skills: bool | None = None,
+        catalog_booking: bool | None = None,
+        catalog_grounding: bool | None = None,
         composio: bool | None = None,
         image_generation: bool | None = None,
         inventory: bool | None = None,
@@ -673,6 +687,10 @@ class AsyncAgents(_AgentsBase):
         _raw: dict[str, Any] = {}
         if auto_learn_skills is not None:
             _raw["autoLearnSkills"] = auto_learn_skills
+        if catalog_booking is not None:
+            _raw["catalogBooking"] = catalog_booking
+        if catalog_grounding is not None:
+            _raw["catalogGrounding"] = catalog_grounding
         if composio is not None:
             _raw["composio"] = composio
         if image_generation is not None:
@@ -710,6 +728,8 @@ class AsyncAgents(_AgentsBase):
         agent_id: str,
         *,
         auto_learn_skills: bool | None = None,
+        catalog_booking: bool | None = None,
+        catalog_grounding: bool | None = None,
         composio: bool | None = None,
         image_generation: bool | None = None,
         inventory: bool | None = None,
@@ -731,6 +751,10 @@ class AsyncAgents(_AgentsBase):
         _raw: dict[str, Any] = {}
         if auto_learn_skills is not None:
             _raw["autoLearnSkills"] = auto_learn_skills
+        if catalog_booking is not None:
+            _raw["catalogBooking"] = catalog_booking
+        if catalog_grounding is not None:
+            _raw["catalogGrounding"] = catalog_grounding
         if composio is not None:
             _raw["composio"] = composio
         if image_generation is not None:

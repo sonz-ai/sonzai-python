@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from typing import Any
 from urllib.parse import quote
-
 from sonzai._generated.models import (
     ChannelConnectionDTO,
     ChannelConnectionsOutputBody,
@@ -14,6 +13,7 @@ from sonzai._generated.models import (
     PatchChannelConnectionInputBody,
     TestChannelConnectionInputBody,
 )
+from sonzai._pagination import AsyncPage, Page
 from sonzai._request_helpers import encode_body
 
 
@@ -100,10 +100,7 @@ class ChannelConnections(_ChannelConnectionsBase):
         id: str,
     ) -> Any:
         """Delete channel connection"""
-        path = (
-            f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/"
-            f"{quote(id, safe='')}"
-        )
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/{quote(id, safe='')}"
         params = None
         data = self._http.delete(path, params=params)
         return data
@@ -114,10 +111,7 @@ class ChannelConnections(_ChannelConnectionsBase):
         id: str,
     ) -> ChannelConnectionDTO:
         """Get channel connection"""
-        path = (
-            f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/"
-            f"{quote(id, safe='')}"
-        )
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/{quote(id, safe='')}"
         params = None
         data = self._http.get(path, params=params)
         return ChannelConnectionDTO.model_validate(data)
@@ -132,10 +126,7 @@ class ChannelConnections(_ChannelConnectionsBase):
         templates: str | None = None,
     ) -> ChannelConnectionDTO:
         """Update channel connection"""
-        path = (
-            f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/"
-            f"{quote(id, safe='')}"
-        )
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/{quote(id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if default_agent_id is not None:
@@ -157,10 +148,7 @@ class ChannelConnections(_ChannelConnectionsBase):
         to: str,
     ) -> ChannelConnectionDTO:
         """Test channel connection"""
-        path = (
-            f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/"
-            f"{quote(id, safe='')}/test"
-        )
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/{quote(id, safe='')}/test"
         params = None
         _raw: dict[str, Any] = {}
         if message is not None:
@@ -250,10 +238,7 @@ class AsyncChannelConnections(_ChannelConnectionsBase):
         id: str,
     ) -> Any:
         """Delete channel connection"""
-        path = (
-            f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/"
-            f"{quote(id, safe='')}"
-        )
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/{quote(id, safe='')}"
         params = None
         data = await self._http.delete(path, params=params)
         return data
@@ -264,10 +249,7 @@ class AsyncChannelConnections(_ChannelConnectionsBase):
         id: str,
     ) -> ChannelConnectionDTO:
         """Get channel connection"""
-        path = (
-            f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/"
-            f"{quote(id, safe='')}"
-        )
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/{quote(id, safe='')}"
         params = None
         data = await self._http.get(path, params=params)
         return ChannelConnectionDTO.model_validate(data)
@@ -282,10 +264,7 @@ class AsyncChannelConnections(_ChannelConnectionsBase):
         templates: str | None = None,
     ) -> ChannelConnectionDTO:
         """Update channel connection"""
-        path = (
-            f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/"
-            f"{quote(id, safe='')}"
-        )
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/{quote(id, safe='')}"
         params = None
         _raw: dict[str, Any] = {}
         if default_agent_id is not None:
@@ -307,10 +286,7 @@ class AsyncChannelConnections(_ChannelConnectionsBase):
         to: str,
     ) -> ChannelConnectionDTO:
         """Test channel connection"""
-        path = (
-            f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/"
-            f"{quote(id, safe='')}/test"
-        )
+        path = f"/api/v1/projects/{quote(project_id, safe='')}/channel-connections/{quote(id, safe='')}/test"
         params = None
         _raw: dict[str, Any] = {}
         if message is not None:
