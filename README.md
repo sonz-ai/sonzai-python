@@ -4,13 +4,37 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 
-The official Python SDK for the [Sonzai Mind Layer API](https://sonz.ai). Build AI agents with persistent memory, evolving personality, and proactive behaviors.
+The official Python SDK for the [Sonzai Mind Layer API](https://sonz.ai).
+Build tenant runtimes that use Sonzai memory while calling their LLM provider
+directly.
 
 ## Installation
 
 ```bash
 pip install sonzai
 ```
+
+## Runtime-owned inference
+
+```python
+from sonzai import Sonzai
+
+with Sonzai(api_key="sk-...") as client:
+    bundle = client.runtime.context_bundle(
+        "your-agent-id",
+        user_id="user-123",
+        session_id="session-123",
+        current_message="Hello!",
+    )
+    # Invoke OpenAI, Gemini, OpenRouter, or a BYOM endpoint here, inside your
+    # runtime. Provider credentials and quota never pass through platform-api.
+    print(bundle.system_prompt_parts, bundle.memory_context)
+```
+
+`client.runtime` intentionally has no completion method. Use `report_turns`
+after the direct provider call, then `sign_runtime_usage_report` and
+`submit_usage_report` for attributed billing. Standard usage is provider
+benchmark cost × 1.33; BYOK/BYOM usage is a 33% Sonzai service fee.
 
 ## Staying in sync with the production API
 

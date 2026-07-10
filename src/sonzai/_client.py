@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from typing import Any
 
 import httpx
 
@@ -35,6 +36,8 @@ from .resources.project_notifications import (
     ProjectNotifications,
 )
 from .resources.projects import AsyncProjects, Projects
+from .resources.routing import AsyncRouting, Routing
+from .resources.runtime import AsyncRuntime, Runtime
 from .resources.schedules import AsyncSchedules, Schedules
 from .resources.skills import AsyncSkills, Skills
 from .resources.storefront import AsyncStorefront, Storefront
@@ -111,6 +114,8 @@ class Sonzai:
     storefront: Storefront
     support: Support
     tenants: Tenants
+    runtime: Runtime
+    routing: Routing
 
     def __init__(
         self,
@@ -224,6 +229,35 @@ class Sonzai:
         self.storefront = Storefront(self._http)
         self.support = Support(self._http)
         self.tenants = Tenants(self._http)
+        self.runtime = Runtime(self._http)
+        self.routing = Routing(self._http)
+
+    def request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        idempotency_key: str | None = None,
+        timeout: float | None = None,
+    ) -> Any:
+        """Call any platform operation through the SDK transport.
+
+        Prefer a named resource when available. This escape hatch keeps a
+        custom runtime compatible with newly added OpenAPI operations before
+        the next convenience-resource release.
+        """
+        return self._http.request(
+            method,
+            path,
+            json_data=json_data,
+            params=params,
+            headers=headers,
+            idempotency_key=idempotency_key,
+            timeout=timeout,
+        )
 
     def list_models(self) -> PlatformModelsResponse:
         """Return all LLM providers and model variants enabled on this deployment.
@@ -309,6 +343,8 @@ class AsyncSonzai:
     storefront: AsyncStorefront
     support: AsyncSupport
     tenants: AsyncTenants
+    runtime: AsyncRuntime
+    routing: AsyncRouting
 
     def __init__(
         self,
@@ -401,6 +437,30 @@ class AsyncSonzai:
         self.storefront = AsyncStorefront(self._http)
         self.support = AsyncSupport(self._http)
         self.tenants = AsyncTenants(self._http)
+        self.runtime = AsyncRuntime(self._http)
+        self.routing = AsyncRouting(self._http)
+
+    async def request(
+        self,
+        method: str,
+        path: str,
+        *,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        idempotency_key: str | None = None,
+        timeout: float | None = None,
+    ) -> Any:
+        """Async form of :meth:`Sonzai.request`."""
+        return await self._http.request(
+            method,
+            path,
+            json_data=json_data,
+            params=params,
+            headers=headers,
+            idempotency_key=idempotency_key,
+            timeout=timeout,
+        )
 
     async def list_models(self) -> PlatformModelsResponse:
         """Return all LLM providers and model variants enabled on this deployment.

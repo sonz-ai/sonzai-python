@@ -47,6 +47,27 @@ from .event_types import (
     CONVERSATION_UNROUTED,
     LEAD_ENRICHED,
 )
+from .resources.routing import AsyncRouting, Routing, RoutingConfig
+from .resources.runtime import (
+    RUNTIME_USAGE_SCHEMA_VERSION,
+    AsyncRuntime,
+    Runtime,
+    RuntimeBackendAgentArtifact,
+    RuntimeBillingMode,
+    RuntimeCompletedTurn,
+    RuntimeContextBundle,
+    RuntimeConversation,
+    RuntimeToolCall,
+    RuntimeToolCallFunction,
+    RuntimeTurnMessage,
+    RuntimeTurnReport,
+    RuntimeTurnReportResult,
+    RuntimeUsageCounter,
+    RuntimeUsageReport,
+    RuntimeUsageReportResult,
+    canonical_runtime_usage_report,
+    sign_runtime_usage_report,
+)
 from .sse_chunk import DEFAULT_MAX_CHUNK_SIZE, chunk_payload
 from .types import (
     AcknowledgeResponse,
@@ -93,6 +114,8 @@ from .types import (
     ConversationBody,
     ConversationDetailBody,
     ConversationHandoff,
+    CreateAPIKeyResponse,
+    CreateOrgNodeOptions,
     CRMActivity,
     CRMCompany,
     CRMContact,
@@ -104,8 +127,6 @@ from .types import (
     CRMImportResult,
     CRMPipeline,
     CRMStage,
-    CreateAPIKeyResponse,
-    CreateOrgNodeOptions,
     CustomAgent,
     CustomAgentListResponse,
     CustomLLMConfigResponse,
@@ -329,11 +350,32 @@ from .types import (
     WisdomAuditResponse,
 )
 
-__version__ = "1.8.0"
+__version__ = "1.9.0"
 
 __all__ = [
     # Clients
     "Sonzai",
+    "Runtime",
+    "AsyncRuntime",
+    "Routing",
+    "AsyncRouting",
+    "RoutingConfig",
+    "RuntimeBillingMode",
+    "RuntimeBackendAgentArtifact",
+    "RuntimeContextBundle",
+    "RuntimeToolCallFunction",
+    "RuntimeToolCall",
+    "RuntimeTurnMessage",
+    "RuntimeCompletedTurn",
+    "RuntimeTurnReport",
+    "RuntimeTurnReportResult",
+    "RuntimeConversation",
+    "RuntimeUsageCounter",
+    "RuntimeUsageReport",
+    "RuntimeUsageReportResult",
+    "RUNTIME_USAGE_SCHEMA_VERSION",
+    "canonical_runtime_usage_report",
+    "sign_runtime_usage_report",
     "AsyncSonzai",
     # Pagination
     "Page",

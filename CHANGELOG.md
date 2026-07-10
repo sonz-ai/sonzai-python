@@ -3,6 +3,27 @@
 All notable changes to `sonzai` are documented here. The project follows
 [Semantic Versioning](https://semver.org/). Dates are `YYYY-MM-DD`.
 
+## 1.9.0 — 2026-07-10
+
+### Added
+
+- `client.runtime` / `async_client.runtime` for context bundles, transcript
+  read/write, provider-neutral backend-agent artifacts, and signed
+  invoice-grade usage ingestion. The resource intentionally has no completion
+  method: the tenant runtime calls its provider directly.
+- Cross-language usage schema v2 and canonical HMAC helpers with
+  tenant/project/agent/provider/model attribution, cache tokens, billing mode,
+  idempotent report IDs, and unreported-turn accounting.
+- `client.routing` / `async_client.routing` for routing configuration,
+  contact classification, and permanent routes.
+- Sync and async generic `request(...)` escape hatches for platform operations
+  added between convenience-resource releases.
+
+### Changed
+
+- Standard usage represents provider benchmark cost × 1.33. BYOK/BYOM usage
+  represents a 33% service fee because the tenant pays its provider directly.
+
 ## 1.8.0 — 2026-07-10
 
 ### Added
