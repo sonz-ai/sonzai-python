@@ -60,9 +60,6 @@ All notable changes to `sonzai` are documented here. The project follows
 Both changes mirror the sonzai-go SDK (`ChatOptions.Temperature`,
 `ChatStreamChannelDetached` / `DetachOptions`).
 
-## 1.8.0 — 2026-07-10
-
-### Added
 
 - **Runtime CRM resource (`client.crm`)** — sync and async access to an
   app-runtime's adapter-token CRM surface. Configure `runtime_base_url` and
