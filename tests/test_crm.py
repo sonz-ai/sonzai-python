@@ -8,7 +8,20 @@ import httpx
 import pytest
 import respx
 
-from sonzai import AsyncSonzai, CRMImportItem, Sonzai
+from sonzai import (
+    AsyncSonzai,
+    CRMActivity,
+    CRMCompany,
+    CRMContact,
+    CRMCustomField,
+    CRMDeal,
+    CRMDealStageHistory,
+    CRMEvent,
+    CRMImportItem,
+    CRMPipeline,
+    CRMStage,
+    Sonzai,
+)
 from sonzai.resources.crm import AsyncCrm, Crm
 
 
@@ -61,6 +74,59 @@ CONTACT = {
     "created_at": "2026-07-10T00:00:00Z",
     "updated_at": "2026-07-10T00:00:00Z",
 }
+
+
+def test_crm_models_mirror_runtime_json_shapes() -> None:
+    contact = CRMContact.model_validate(CONTACT)
+    company = CRMCompany.model_validate({"id": "company-1", "name": "Acme", "custom": {}})
+    pipeline = CRMPipeline.model_validate({"id": "pipeline-1", "name": "Sales", "is_default": True})
+    stage = CRMStage.model_validate(
+        {"id": "stage-1", "pipeline_id": pipeline.id, "name": "New", "kind": "open"}
+    )
+    deal = CRMDeal.model_validate(
+        {
+            "id": "deal-1",
+            "pipeline_id": pipeline.id,
+            "stage_id": stage.id,
+            "contact_id": contact.id,
+            "value_cents": 500_000,
+            "custom": {},
+        }
+    )
+    activity = CRMActivity.model_validate(
+        {"id": "activity-1", "kind": "note", "contact_id": contact.id, "payload": {}}
+    )
+    custom_field = CRMCustomField.model_validate(
+        {
+            "id": "field-1",
+            "object_type": "contact",
+            "field_key": "segment",
+            "label": "Segment",
+            "field_type": "select",
+            "options": ["enterprise"],
+        }
+    )
+    history = CRMDealStageHistory.model_validate(
+        {"id": "history-1", "deal_id": deal.id, "to_stage_id": stage.id}
+    )
+    event = CRMEvent.model_validate(
+        {
+            "cursor": "7",
+            "event": "deal.stage_changed",
+            "entity_id": deal.id,
+            "entity_type": "deal",
+            "payload": {"deal_id": deal.id},
+            "at": "2026-07-10T00:00:00Z",
+        }
+    )
+
+    assert company.name == "Acme"
+    assert stage.pipeline_id == pipeline.id
+    assert deal.value_cents == 500_000
+    assert activity.payload == {}
+    assert custom_field.options == ["enterprise"]
+    assert history.to_stage_id == stage.id
+    assert event.event == "deal.stage_changed"
 
 
 def test_client_exposes_runtime_crm(client: Sonzai, async_client: AsyncSonzai) -> None:
@@ -124,36 +190,41 @@ def test_import_contacts_uses_runtime_base_url_token_and_tenant(
 
 @respx.mock
 def test_events_uses_cursor_pagination(client: Sonzai, runtime_url: str) -> None:
-    first = respx.get(f"{runtime_url}/api/rt/crm/events").mock(
-        return_value=httpx.Response(
-            200,
-            json={
-                "events": [
-                    {
-                        "cursor": "1",
-                        "tenant_id": "tenant-1",
-                        "event": "contact.imported",
-                        "entity_id": "contact-1",
-                        "entity_type": "contact",
-                        "payload": {"contact_id": "contact-1"},
-                        "at": "2026-07-10T00:00:00Z",
-                    }
-                ],
-                "next_cursor": "1",
-            },
-        )
+    responses = iter(
+        [
+            httpx.Response(
+                200,
+                json={
+                    "events": [
+                        {
+                            "cursor": "1",
+                            "tenant_id": "tenant-1",
+                            "event": "contact.imported",
+                            "entity_id": "contact-1",
+                            "entity_type": "contact",
+                            "payload": {"contact_id": "contact-1"},
+                            "at": "2026-07-10T00:00:00Z",
+                        }
+                    ],
+                    "next_cursor": "1",
+                },
+            ),
+            # app-runtime returns the supplied cursor when a poll has no new
+            # events. Page stops after this empty page instead of refetching.
+            httpx.Response(200, json={"events": [], "next_cursor": "1"}),
+        ]
     )
-    second = respx.get(f"{runtime_url}/api/rt/crm/events").mock(
-        return_value=httpx.Response(200, json={"events": [], "next_cursor": ""})
+    route = respx.get(f"{runtime_url}/api/rt/crm/events").mock(
+        side_effect=lambda _request: next(responses)
     )
 
     page = client.crm.events(cursor="0", limit=1, tenant_id="tenant-1")
     events = list(page)
 
-    assert first.calls[0].request.url.params["cursor"] == "0"
-    assert first.calls[0].request.url.params["limit"] == "1"
-    assert first.calls[0].request.headers["X-Sonzai-Tenant-ID"] == "tenant-1"
-    assert second.calls[0].request.url.params["cursor"] == "1"
+    assert route.calls[0].request.url.params["cursor"] == "0"
+    assert route.calls[0].request.url.params["limit"] == "1"
+    assert route.calls[0].request.headers["X-Sonzai-Tenant-ID"] == "tenant-1"
+    assert route.calls[1].request.url.params["cursor"] == "1"
     assert events[0].event == "contact.imported"
     assert events[0].payload == {"contact_id": "contact-1"}
 
@@ -165,6 +236,32 @@ def test_crm_requires_runtime_base_url() -> None:
             client.crm.import_contacts([{"external_ref": "sf-1"}])
     finally:
         client.close()
+
+
+def test_runtime_base_url_requires_adapter_token(runtime_url: str) -> None:
+    with pytest.raises(ValueError, match="runtime_api_key"):
+        Sonzai(api_key="platform-key", runtime_base_url=runtime_url)
+
+
+def test_runtime_credentials_support_headless_client(runtime_url: str) -> None:
+    client = Sonzai(runtime_base_url=runtime_url, runtime_api_key="adapter-token")
+    try:
+        assert isinstance(client.crm, Crm)
+    finally:
+        client.close()
+
+
+async def test_async_runtime_credentials_support_headless_client(runtime_url: str) -> None:
+    client = AsyncSonzai(runtime_base_url=runtime_url, runtime_api_key="adapter-token")
+    try:
+        assert isinstance(client.crm, AsyncCrm)
+    finally:
+        await client.close()
+
+
+async def test_async_runtime_base_url_requires_adapter_token(runtime_url: str) -> None:
+    with pytest.raises(ValueError, match="runtime_api_key"):
+        AsyncSonzai(api_key="platform-key", runtime_base_url=runtime_url)
 
 
 @respx.mock

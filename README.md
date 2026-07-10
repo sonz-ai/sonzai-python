@@ -194,7 +194,6 @@ and use the app-runtime adapter token for the CRM resource.
 from sonzai import Sonzai
 
 client = Sonzai(
-    api_key="platform-api-key",
     runtime_base_url="https://your-runtime.example.com",
     runtime_api_key="adapter-token",
 )
@@ -219,7 +218,8 @@ for event in client.crm.events(cursor=None, tenant_id="tenant-id"):
 ```
 
 Only adapter-token routes are exposed: bulk contact import and the CRM change
-feed. Browser-session staff CRM CRUD routes are intentionally not SDK methods.
+feed. A platform API key is unnecessary for this adapter-only client.
+Browser-session staff CRM CRUD routes are intentionally not SDK methods.
 
 ## Meta Channel Connections
 
@@ -802,10 +802,10 @@ asyncio.run(main())
 
 ```python
 client = Sonzai(
-    api_key="sk-...",                         # or SONZAI_API_KEY env var
+    api_key="sk-...",                           # Platform resources; SONZAI_API_KEY
     base_url="https://api.sonz.ai",           # or SONZAI_BASE_URL env var
     runtime_base_url="https://rt.example.com",  # or SONZAI_RUNTIME_BASE_URL
-    runtime_api_key="adapter-token",          # or SONZAI_RUNTIME_API_KEY
+    runtime_api_key="adapter-token",            # required with runtime URL; SONZAI_RUNTIME_API_KEY
     timeout=30.0,                             # request timeout in seconds
     max_retries=2,                            # retry count for failed requests
 )

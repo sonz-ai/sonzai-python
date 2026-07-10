@@ -128,12 +128,15 @@ class Sonzai:
 
         Args:
             api_key: Your project API key. Falls back to ``SONZAI_API_KEY`` env var.
+                Required for platform API resources; CRM-only clients may omit it
+                when both runtime credentials are configured.
             base_url: API base URL. Falls back to ``SONZAI_BASE_URL`` or the default.
             runtime_base_url: Deployed app-runtime base URL for runtime-local resources
                 such as CRM. Falls back to ``SONZAI_RUNTIME_BASE_URL``.
             runtime_api_key: Runtime adapter token for ``Authorization: Bearer`` on
-                app-runtime routes. Falls back to ``SONZAI_RUNTIME_API_KEY`` and then
-                ``api_key``.
+                app-runtime routes. Falls back to ``SONZAI_RUNTIME_API_KEY``. Required
+                whenever ``runtime_base_url`` is configured; it is distinct from
+                ``api_key`` and is never inferred from it.
             timeout: Request timeout in seconds.
             retry: ``RetryPolicy`` instance controlling retry behaviour. When provided,
                 takes precedence over ``max_retries``.
@@ -143,16 +146,19 @@ class Sonzai:
                 uses this client directly instead of creating a new one.
         """
         resolved_key = api_key or os.environ.get("SONZAI_API_KEY", "")
-        if not resolved_key:
-            raise ValueError(
-                "api_key must be provided or set via the SONZAI_API_KEY environment variable"
-            )
-
         resolved_url = base_url or os.environ.get("SONZAI_BASE_URL", DEFAULT_BASE_URL)
         resolved_runtime_url = runtime_base_url or os.environ.get("SONZAI_RUNTIME_BASE_URL")
-        resolved_runtime_key = (
-            runtime_api_key or os.environ.get("SONZAI_RUNTIME_API_KEY") or resolved_key
-        )
+        resolved_runtime_key = runtime_api_key or os.environ.get("SONZAI_RUNTIME_API_KEY", "")
+        if resolved_runtime_url and not resolved_runtime_key:
+            raise ValueError(
+                "runtime_api_key must be provided or set via the SONZAI_RUNTIME_API_KEY "
+                "environment variable when runtime_base_url is configured"
+            )
+        if not resolved_key and not (resolved_runtime_url and resolved_runtime_key):
+            raise ValueError(
+                "api_key must be provided or set via the SONZAI_API_KEY environment variable "
+                "unless both runtime_base_url and runtime_api_key are configured"
+            )
 
         # Build the effective RetryPolicy. retry= wins; max_retries= is compat shim.
         if retry is None and max_retries is not None:
@@ -317,16 +323,19 @@ class AsyncSonzai:
         http_client: httpx.AsyncClient | None = None,
     ) -> None:
         resolved_key = api_key or os.environ.get("SONZAI_API_KEY", "")
-        if not resolved_key:
-            raise ValueError(
-                "api_key must be provided or set via the SONZAI_API_KEY environment variable"
-            )
-
         resolved_url = base_url or os.environ.get("SONZAI_BASE_URL", DEFAULT_BASE_URL)
         resolved_runtime_url = runtime_base_url or os.environ.get("SONZAI_RUNTIME_BASE_URL")
-        resolved_runtime_key = (
-            runtime_api_key or os.environ.get("SONZAI_RUNTIME_API_KEY") or resolved_key
-        )
+        resolved_runtime_key = runtime_api_key or os.environ.get("SONZAI_RUNTIME_API_KEY", "")
+        if resolved_runtime_url and not resolved_runtime_key:
+            raise ValueError(
+                "runtime_api_key must be provided or set via the SONZAI_RUNTIME_API_KEY "
+                "environment variable when runtime_base_url is configured"
+            )
+        if not resolved_key and not (resolved_runtime_url and resolved_runtime_key):
+            raise ValueError(
+                "api_key must be provided or set via the SONZAI_API_KEY environment variable "
+                "unless both runtime_base_url and runtime_api_key are configured"
+            )
 
         # Build the effective RetryPolicy. retry= wins; max_retries= is compat shim.
         if retry is None and max_retries is not None:
